@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' https://tiles.openfreemap.org; worker-src 'self' blob:; child-src blob:; object-src 'none'; base-uri 'self'; form-action 'none'" />
+    <meta name="referrer" content="strict-origin-when-cross-origin" />
+    <meta name="description" content="Banjir3D — open, reproducible flood simulation for research. Phase 0: data catalog and 2D map." />
+    <link rel="icon" href="./favicon.svg" type="image/svg+xml" />
+    <title>Banjir3D</title>
+  </head>
+  <body>
+    <header class="topbar">
+      <a class="brand" href="#/map" aria-label="Banjir3D home">
+        <svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true"><path d="M3 21c3.5 0 3.5-3 7-3s3.5 3 7 3 3.5-3 7-3 3.5 3 5 3" /><path d="M3 26c3.5 0 3.5-3 7-3s3.5 3 7 3 3.5-3 7-3 3.5 3 5 3" /><path d="M16 4 8 15h16z" /></svg>
+        <span class="brand-name">Banjir3D</span>
+        <span class="phase-badge" data-i18n="phase">Phase 0 · Data</span>
+      </a>
+      <nav class="tabs" aria-label="Pages">
+        <a href="#/map" data-route="map" data-i18n="nav.map">Map</a>
+        <a href="#/catalog" data-route="catalog" data-i18n="nav.catalog">Data catalog</a>
+      </nav>
+      <div class="top-actions">
+        <button class="chip" id="lang-toggle" type="button" aria-label="Language">EN</button>
+        <button class="chip icon" id="theme-toggle" type="button" aria-label="Light / dark theme"><svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="6.2" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M8 1.8a6.2 6.2 0 0 1 0 12.4z" fill="currentColor"/></svg></button>
+      </div>
+    </header>
+    <main id="app"></main>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

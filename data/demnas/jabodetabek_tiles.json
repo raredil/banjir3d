@@ -1,0 +1,463 @@
+{
+ "region": "jabodetabek",
+ "bbox": [
+  106.35,
+  -6.85,
+  107.35,
+  -5.9
+ ],
+ "scheme": "RBI 1:50,000 sheet (15' x 15'), origin 90E 15S; see pipeline/b3d/rbi.py",
+ "land_check": "ESA WorldCover 2021 v200, land = classes other than 0 and 80",
+ "tiles": [
+  {
+   "code": "1109-32",
+   "bounds": [
+    106.25,
+    -7.0,
+    106.5,
+    -6.75
+   ],
+   "land_fraction_in_region": 1.0,
+   "needed": true,
+   "file_name": "DEMNAS_1109-32_v1.0.tif",
+   "sub_sheets_25k": [
+    "1109-321",
+    "1109-322",
+    "1109-323",
+    "1109-324"
+   ]
+  },
+  {
+   "code": "1209-11",
+   "bounds": [
+    106.5,
+    -7.0,
+    106.75,
+    -6.75
+   ],
+   "land_fraction_in_region": 0.9999,
+   "needed": true,
+   "file_name": "DEMNAS_1209-11_v1.0.tif",
+   "sub_sheets_25k": [
+    "1209-111",
+    "1209-112",
+    "1209-113",
+    "1209-114"
+   ]
+  },
+  {
+   "code": "1209-12",
+   "bounds": [
+    106.75,
+    -7.0,
+    107.0,
+    -6.75
+   ],
+   "land_fraction_in_region": 0.9998,
+   "needed": true,
+   "file_name": "DEMNAS_1209-12_v1.0.tif",
+   "sub_sheets_25k": [
+    "1209-121",
+    "1209-122",
+    "1209-123",
+    "1209-124"
+   ]
+  },
+  {
+   "code": "1209-21",
+   "bounds": [
+    107.0,
+    -7.0,
+    107.25,
+    -6.75
+   ],
+   "land_fraction_in_region": 0.9999,
+   "needed": true,
+   "file_name": "DEMNAS_1209-21_v1.0.tif",
+   "sub_sheets_25k": [
+    "1209-211",
+    "1209-212",
+    "1209-213",
+    "1209-214"
+   ]
+  },
+  {
+   "code": "1209-22",
+   "bounds": [
+    107.25,
+    -7.0,
+    107.5,
+    -6.75
+   ],
+   "land_fraction_in_region": 0.9343,
+   "needed": true,
+   "file_name": "DEMNAS_1209-22_v1.0.tif",
+   "sub_sheets_25k": [
+    "1209-221",
+    "1209-222",
+    "1209-223",
+    "1209-224"
+   ]
+  },
+  {
+   "code": "1109-34",
+   "bounds": [
+    106.25,
+    -6.75,
+    106.5,
+    -6.5
+   ],
+   "land_fraction_in_region": 0.9999,
+   "needed": true,
+   "file_name": "DEMNAS_1109-34_v1.0.tif",
+   "sub_sheets_25k": [
+    "1109-341",
+    "1109-342",
+    "1109-343",
+    "1109-344"
+   ]
+  },
+  {
+   "code": "1209-13",
+   "bounds": [
+    106.5,
+    -6.75,
+    106.75,
+    -6.5
+   ],
+   "land_fraction_in_region": 0.9994,
+   "needed": true,
+   "file_name": "DEMNAS_1209-13_v1.0.tif",
+   "sub_sheets_25k": [
+    "1209-131",
+    "1209-132",
+    "1209-133",
+    "1209-134"
+   ]
+  },
+  {
+   "code": "1209-14",
+   "bounds": [
+    106.75,
+    -6.75,
+    107.0,
+    -6.5
+   ],
+   "land_fraction_in_region": 0.9997,
+   "needed": true,
+   "file_name": "DEMNAS_1209-14_v1.0.tif",
+   "sub_sheets_25k": [
+    "1209-141",
+    "1209-142",
+    "1209-143",
+    "1209-144"
+   ]
+  },
+  {
+   "code": "1209-23",
+   "bounds": [
+    107.0,
+    -6.75,
+    107.25,
+    -6.5
+   ],
+   "land_fraction_in_region": 0.9999,
+   "needed": true,
+   "file_name": "DEMNAS_1209-23_v1.0.tif",
+   "sub_sheets_25k": [
+    "1209-231",
+    "1209-232",
+    "1209-233",
+    "1209-234"
+   ]
+  },
+  {
+   "code": "1209-24",
+   "bounds": [
+    107.25,
+    -6.75,
+    107.5,
+    -6.5
+   ],
+   "land_fraction_in_region": 0.7945,
+   "needed": true,
+   "file_name": "DEMNAS_1209-24_v1.0.tif",
+   "sub_sheets_25k": [
+    "1209-241",
+    "1209-242",
+    "1209-243",
+    "1209-244"
+   ]
+  },
+  {
+   "code": "1109-62",
+   "bounds": [
+    106.25,
+    -6.5,
+    106.5,
+    -6.25
+   ],
+   "land_fraction_in_region": 0.9991,
+   "needed": true,
+   "file_name": "DEMNAS_1109-62_v1.0.tif",
+   "sub_sheets_25k": [
+    "1109-621",
+    "1109-622",
+    "1109-623",
+    "1109-624"
+   ]
+  },
+  {
+   "code": "1209-41",
+   "bounds": [
+    106.5,
+    -6.5,
+    106.75,
+    -6.25
+   ],
+   "land_fraction_in_region": 0.993,
+   "needed": true,
+   "file_name": "DEMNAS_1209-41_v1.0.tif",
+   "sub_sheets_25k": [
+    "1209-411",
+    "1209-412",
+    "1209-413",
+    "1209-414"
+   ]
+  },
+  {
+   "code": "1209-42",
+   "bounds": [
+    106.75,
+    -6.5,
+    107.0,
+    -6.25
+   ],
+   "land_fraction_in_region": 0.9963,
+   "needed": true,
+   "file_name": "DEMNAS_1209-42_v1.0.tif",
+   "sub_sheets_25k": [
+    "1209-421",
+    "1209-422",
+    "1209-423",
+    "1209-424"
+   ]
+  },
+  {
+   "code": "1209-51",
+   "bounds": [
+    107.0,
+    -6.5,
+    107.25,
+    -6.25
+   ],
+   "land_fraction_in_region": 0.9959,
+   "needed": true,
+   "file_name": "DEMNAS_1209-51_v1.0.tif",
+   "sub_sheets_25k": [
+    "1209-511",
+    "1209-512",
+    "1209-513",
+    "1209-514"
+   ]
+  },
+  {
+   "code": "1209-52",
+   "bounds": [
+    107.25,
+    -6.5,
+    107.5,
+    -6.25
+   ],
+   "land_fraction_in_region": 0.9949,
+   "needed": true,
+   "file_name": "DEMNAS_1209-52_v1.0.tif",
+   "sub_sheets_25k": [
+    "1209-521",
+    "1209-522",
+    "1209-523",
+    "1209-524"
+   ]
+  },
+  {
+   "code": "1109-64",
+   "bounds": [
+    106.25,
+    -6.25,
+    106.5,
+    -6.0
+   ],
+   "land_fraction_in_region": 0.8401,
+   "needed": true,
+   "file_name": "DEMNAS_1109-64_v1.0.tif",
+   "sub_sheets_25k": [
+    "1109-641",
+    "1109-642",
+    "1109-643",
+    "1109-644"
+   ]
+  },
+  {
+   "code": "1209-43",
+   "bounds": [
+    106.5,
+    -6.25,
+    106.75,
+    -6.0
+   ],
+   "land_fraction_in_region": 0.8293,
+   "needed": true,
+   "file_name": "DEMNAS_1209-43_v1.0.tif",
+   "sub_sheets_25k": [
+    "1209-431",
+    "1209-432",
+    "1209-433",
+    "1209-434"
+   ]
+  },
+  {
+   "code": "1209-44",
+   "bounds": [
+    106.75,
+    -6.25,
+    107.0,
+    -6.0
+   ],
+   "land_fraction_in_region": 0.5809,
+   "needed": true,
+   "file_name": "DEMNAS_1209-44_v1.0.tif",
+   "sub_sheets_25k": [
+    "1209-441",
+    "1209-442",
+    "1209-443",
+    "1209-444"
+   ]
+  },
+  {
+   "code": "1209-53",
+   "bounds": [
+    107.0,
+    -6.25,
+    107.25,
+    -6.0
+   ],
+   "land_fraction_in_region": 0.9221,
+   "needed": true,
+   "file_name": "DEMNAS_1209-53_v1.0.tif",
+   "sub_sheets_25k": [
+    "1209-531",
+    "1209-532",
+    "1209-533",
+    "1209-534"
+   ]
+  },
+  {
+   "code": "1209-54",
+   "bounds": [
+    107.25,
+    -6.25,
+    107.5,
+    -6.0
+   ],
+   "land_fraction_in_region": 0.9467,
+   "needed": true,
+   "file_name": "DEMNAS_1209-54_v1.0.tif",
+   "sub_sheets_25k": [
+    "1209-541",
+    "1209-542",
+    "1209-543",
+    "1209-544"
+   ]
+  },
+  {
+   "code": "1110-32",
+   "bounds": [
+    106.25,
+    -6.0,
+    106.5,
+    -5.75
+   ],
+   "land_fraction_in_region": 0.0191,
+   "needed": true,
+   "file_name": "DEMNAS_1110-32_v1.0.tif",
+   "sub_sheets_25k": [
+    "1110-321",
+    "1110-322",
+    "1110-323",
+    "1110-324"
+   ]
+  },
+  {
+   "code": "1210-11",
+   "bounds": [
+    106.5,
+    -6.0,
+    106.75,
+    -5.75
+   ],
+   "land_fraction_in_region": 0.0046,
+   "needed": true,
+   "file_name": "DEMNAS_1210-11_v1.0.tif",
+   "sub_sheets_25k": [
+    "1210-111",
+    "1210-112",
+    "1210-113",
+    "1210-114"
+   ]
+  },
+  {
+   "code": "1210-12",
+   "bounds": [
+    106.75,
+    -6.0,
+    107.0,
+    -5.75
+   ],
+   "land_fraction_in_region": 0.003,
+   "needed": true,
+   "file_name": "DEMNAS_1210-12_v1.0.tif",
+   "sub_sheets_25k": [
+    "1210-121",
+    "1210-122",
+    "1210-123",
+    "1210-124"
+   ]
+  },
+  {
+   "code": "1210-21",
+   "bounds": [
+    107.0,
+    -6.0,
+    107.25,
+    -5.75
+   ],
+   "land_fraction_in_region": 0.0983,
+   "needed": true,
+   "file_name": "DEMNAS_1210-21_v1.0.tif",
+   "sub_sheets_25k": [
+    "1210-211",
+    "1210-212",
+    "1210-213",
+    "1210-214"
+   ]
+  },
+  {
+   "code": "1210-22",
+   "bounds": [
+    107.25,
+    -6.0,
+    107.5,
+    -5.75
+   ],
+   "land_fraction_in_region": 0.0199,
+   "needed": true,
+   "file_name": "DEMNAS_1210-22_v1.0.tif",
+   "sub_sheets_25k": [
+    "1210-221",
+    "1210-222",
+    "1210-223",
+    "1210-224"
+   ]
+  }
+ ]
+}

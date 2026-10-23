@@ -1,0 +1,112 @@
+"""Ingest the owner's DEMNAS upload (private draft release 'demnas-private').
+
+Steps: list draft assets → download (.tif or .zip) → check against the expected tile list →
+mosaic + reproject to the region grid (UTM, 8 m, bilinear) → COG → upload the COG, a tile report and
+checksums back to the SAME draft release. Nothing is published: DEMNAS stays private until its licence is read.
+
+Needs GITHUB_TOKEN (contents: write) and GITHUB_REPOSITORY.
+"""
+from __future__ import annotations
+
+import json
+import os
+import re
+import sys
+import zipfile
+from pathlib import Path
+
+import requests
+from rasterio.warp import Resampling
+
+from b3d import DATA, load_regions
+from b3d.grid import region_grid, warp_to_grid
+from b3d.util import now_utc, output_record, sha256, write_cog
+
+API = "https://api.github.com"
+TAG = "demnas-private"
+NODATA = -9999.0
+
+
+def gh(method, url, **kw):
+    h = {"Authorization": f"Bearer {os.environ['GITHUB_TOKEN']}", "X-GitHub-Api-Version": "2022-11-28", **kw.pop("headers", {})}
+    r = requests.request(method, url, headers=h, timeout=600, **kw)
+    r.raise_for_status()
+    return r
+
+
+def find_release(repo):
+    for page in range(1, 6):
+        for rel in gh("GET", f"{API}/repos/{repo}/releases", params={"per_page": 100, "page": page}).json():
+            if rel["tag_name"] == TAG:
+                return rel
+    return None
+
+
+def main(region_id="jabodetabek", work=Path("demnas_work")) -> int:
+    repo = os.environ["GITHUB_REPOSITORY"]
+    rel = find_release(repo)
+    if rel is None:
+        print("No release with tag 'demnas-private' yet — nothing to do.")
+        return 0
+    if not rel["draft"]:
+        print("::warning::The DEMNAS release is PUBLISHED (public). It should be a draft. Continuing, but please revert it to draft.")
+    work.mkdir(exist_ok=True)
+    tifs = []
+    for a in rel["assets"]:
+        name = a["name"]
+        if name.startswith("dem_demnas") or name in ("demnas_report.json", "DEMNAS_SHA256SUMS"):
+            continue
+        dst = work / name
+        if not dst.exists():
+            with gh("GET", a["url"], headers={"Accept": "application/octet-stream"}, stream=True) as r, open(dst, "wb") as f:
+                for chunk in r.iter_content(1 << 20):
+                    f.write(chunk)
+        if name.lower().endswith(".zip"):
+            with zipfile.ZipFile(dst) as z:
+                for m in z.namelist():
+                    if m.lower().endswith((".tif", ".tiff")):
+                        out = work / Path(m).name
+                        out.write_bytes(z.read(m))
+                        tifs.append(out)
+        elif name.lower().endswith((".tif", ".tiff")):
+            tifs.append(dst)
+    expected = json.loads((DATA / "demnas" / f"{region_id}_tiles.json").read_text())["tiles"]
+    found = {}
+    for p in tifs:
+        m = re.search(r"(\d{4}-\d{2,3})", p.name)
+        if m:
+            found.setdefault(m.group(1), []).append(p.name)
+    def covered(code):
+        return code in found or all(s in found for s in next(t["sub_sheets_25k"] for t in expected if t["code"] == code))
+    missing = [t["code"] for t in expected if t["needed"] and not covered(t["code"])]
+    report = {"checked": now_utc(), "files": len(tifs), "tiles_found": sorted(found), "missing_tiles": missing,
+              "inputs": [{"file": p.name, "sha256": sha256(p)} for p in tifs]}
+    print(json.dumps({k: report[k] for k in ("files", "tiles_found", "missing_tiles")}, indent=1))
+    if tifs:
+        region = load_regions()[region_id]
+        grid = region_grid(region, 8)
+        arr = warp_to_grid([str(p) for p in sorted(tifs)], grid, nodata=NODATA, resampling=Resampling.bilinear)
+        cog = write_cog(work / f"dem_demnas_{region_id}_utm48s_8m.tif", arr, transform=grid.transform, crs=grid.crs,
+                        nodata=NODATA, predictor=3, overview_resampling="average",
+                        tags={"units": "m", "vertical_datum": "EGM2008", "source": "DEMNAS (BIG), private"})
+        report["output"] = output_record(cog, units="m", vertical_datum="EGM2008",
+                                         steps=["mosaic", "reproject EPSG:32748", "8 m", "bilinear"])
+        upload = [cog]
+    else:
+        upload = []
+    rep = work / "demnas_report.json"
+    rep.write_text(json.dumps(report, indent=1) + "\n")
+    upload.append(rep)
+    for a in rel["assets"]:  # replace earlier outputs
+        if a["name"] in {p.name for p in upload}:
+            gh("DELETE", a["url"])
+    base = rel["upload_url"].split("{")[0]
+    for p in upload:
+        with open(p, "rb") as f:
+            gh("POST", base, params={"name": p.name}, headers={"Content-Type": "application/octet-stream"}, data=f)
+        print("uploaded", p.name)
+    return 1 if missing else 0
+
+
+if __name__ == "__main__":
+    sys.exit(main(*(sys.argv[1:2] or [])))
