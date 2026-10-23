@@ -1,0 +1,70 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Banjir3D data catalog",
+  "type": "object",
+  "required": ["catalog_version", "updated", "datasets"],
+  "additionalProperties": false,
+  "properties": {
+    "catalog_version": {"type": "string"},
+    "updated": {"type": "string", "format": "date"},
+    "datasets": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "name", "theme", "role", "provider", "version", "licence", "resolution", "access", "citation", "status", "checked"],
+        "additionalProperties": false,
+        "properties": {
+          "id": {"type": "string", "pattern": "^[a-z0-9-]+$"},
+          "name": {"type": "string"},
+          "theme": {"enum": ["terrain", "subsidence", "bathymetry", "sea-level", "land-cover", "water-bodies", "buildings", "population", "admin", "rain", "imagery", "observed-flood", "river-inflow"]},
+          "role": {"enum": ["primary", "alternative", "validation", "planned"]},
+          "provider": {"type": "string"},
+          "version": {"type": "string"},
+          "temporal": {"type": "string"},
+          "doi": {"type": ["string", "null"], "pattern": "^10\\.\\d{4,9}/\\S+$"},
+          "url": {"type": "string", "format": "uri"},
+          "licence": {
+            "type": "object",
+            "required": ["id", "redistributable"],
+            "additionalProperties": false,
+            "properties": {
+              "id": {"type": "string"},
+              "url": {"type": "string", "format": "uri"},
+              "redistributable": {"enum": ["yes", "no", "unknown"]},
+              "non_commercial": {"type": "boolean"},
+              "share_alike": {"type": "boolean"},
+              "attribution": {"type": "string"}
+            }
+          },
+          "resolution": {"type": "string"},
+          "crs": {"type": "string"},
+          "vertical_datum": {"type": ["string", "null"]},
+          "access": {
+            "type": "object",
+            "required": ["method"],
+            "additionalProperties": false,
+            "properties": {
+              "method": {"type": "string"},
+              "endpoint": {"type": "string"},
+              "auth": {"enum": ["none", "free-account", "api-key", "owner-download"]},
+              "probe": {"type": "string"}
+            }
+          },
+          "citation": {
+            "type": "object",
+            "required": ["text", "bibtex"],
+            "additionalProperties": false,
+            "properties": {
+              "text": {"type": "string"},
+              "bibtex": {"type": "string"}
+            }
+          },
+          "status": {"enum": ["verified", "single-source", "unverified"]},
+          "checked": {"type": "string", "format": "date"},
+          "notes": {"type": "string"},
+          "in_region_pack": {"type": "boolean"}
+        }
+      }
+    }
+  }
+}
