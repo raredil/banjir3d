@@ -133,12 +133,14 @@ def main(region_id="jakarta", work=Path("demnas_work")) -> int:
     if tifs:
         region = load_regions()[region_id]
         grid = region_grid(region, 8)
-        arr = warp_to_grid([str(p) for p in sorted(tifs)], grid, nodata=NODATA, resampling=Resampling.bilinear)
+        # DEMNAS tiles carry no CRS tag; BIG documents them as geographic (WGS 84 lon/lat), EGM2008 heights
+        arr = warp_to_grid([str(p) for p in sorted(tifs)], grid, nodata=NODATA, resampling=Resampling.bilinear,
+                           assume_crs="EPSG:4326")
         cog = write_cog(work / f"dem_demnas_{region_id}_utm48s_8m.tif", arr, transform=grid.transform, crs=grid.crs,
                         nodata=NODATA, predictor=3, overview_resampling="average",
                         tags={"units": "m", "vertical_datum": "EGM2008", "source": "DEMNAS (BIG), private"})
         report["output"] = output_record(cog, units="m", vertical_datum="EGM2008",
-                                         steps=["mosaic", "reproject EPSG:32748", "8 m", "bilinear"])
+                                         steps=["assign EPSG:4326 (no CRS tag in tiles)", "mosaic", "reproject EPSG:32748", "8 m", "bilinear"])
         report["qa"] = qa_stats(arr, grid, region)
         print(json.dumps({"qa": report["qa"]}, indent=1))
         upload = [cog]

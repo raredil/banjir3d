@@ -36,15 +36,25 @@ def region_grid(region: dict, res: float) -> Grid:
 
 
 def warp_to_grid(sources: list[str], grid: Grid, *, dtype="float32", nodata=None, resampling=Resampling.bilinear,
-                 band: int = 1, src_nodata=None) -> np.ndarray:
-    """Warp one band of each source (in order, later fills gaps) onto the grid."""
+                 band: int = 1, src_nodata=None, assume_crs=None) -> np.ndarray:
+    """Warp one band of each source (in order, later fills gaps) onto the grid.
+
+    assume_crs: CRS for sources that carry none (e.g. DEMNAS tiles: geographic, no CRS tag). Without it such a
+    source is an error, because GDAL would otherwise warp it to an all-no-data result without complaint.
+    """
     fill = nodata if nodata is not None else 0
     out = np.full(grid.shape, fill, dtype=dtype)
     for s in sources:
         with rasterio.open(s) as src:
+            src_crs = src.crs or (CRS.from_user_input(assume_crs) if assume_crs else None)
+            if src_crs is None:
+                raise ValueError(f"{s}: no CRS in file and no assume_crs given")
             tmp = np.full(grid.shape, fill, dtype=dtype)
+            # a Band source always uses the file's own (missing) CRS, so CRS-less files are read into memory first
+            source = rasterio.band(src, band) if src.crs else src.read(band)
             reproject(
-                rasterio.band(src, band), tmp,
+                source, tmp,
+                src_crs=src_crs, src_transform=src.transform,
                 src_nodata=src_nodata if src_nodata is not None else src.nodata,
                 dst_transform=grid.transform, dst_crs=grid.crs, dst_nodata=fill,
                 resampling=resampling, num_threads=4,
