@@ -1,8 +1,8 @@
 # HANDOFF
-Updated: 2026-10-24 | Commit: see `git log -1` on main | Phase: P0, step 5 (Gate 0 ready) | Waiting for owner: yes. Needs (1) switch on GitHub Pages, (2) screenshot of the DEMNAS licence terms
+Updated: 2026-10-24 | Commit: see `git log -1` on main | Phase: P0, step 5 (Gate 0 ready) | Waiting for owner: yes. Needs the DEMNAS licence screenshot; owner to look at the live site and say if Pages shows the map
 
 ## How to open the current build
-1. https://raredil.github.io/banjir3d/ (after Settings → Pages → Source: GitHub Actions).
+1. https://raredil.github.io/banjir3d/ — Pages deploy run 40137979397 (main, after merge of PR #3) succeeded, so Pages is on. github.io itself is blocked from the cloud session: ask the owner for a screenshot.
 2. Map tab = all layers; Data catalog tab = datasets, licences, DOIs, BibTeX.
 3. Data = newest release `region-jakarta-*` (Actions → Region pack → Run workflow → region `jakarta`). Pages workflow then copies its PMTiles into the site.
 4. Region preview image: `previews/gate0/region-jakarta.jpg`.
@@ -35,11 +35,11 @@ docs/adr/0005-region-jakarta-buffer.md. A5 done, A6 corrected+confirmed, A7 conf
 2026-10-23: npm audit 0, pip-audit clean, CSP, actions pinned by SHA, Dependabot. New: osmium-tool from Ubuntu apt in region-pack water job; Geofabrik download md5-checked. Open: DEMNAS licence. docs/SECURITY_LOG.md.
 
 ## Next steps (ordered, specific, file paths)
-1. After merge: run Pages (`pages.yml` on main) so the site shows `region-jakarta-20261024-r2`; screenshot the map (domain outline, buildings at z14) for Gate 0; review against CORE §9.
+1. Done: merged (PR #3), Pages redeployed with `region-jakarta-20261024-r2`. Next: render the built site locally with the release PMTiles (curl them into `web/dist/data/jakarta/`) and screenshot the map (domain outline, buildings at z14) for Gate 0; review against CORE §9.
 2. Update `data/catalog.json` statuses from the release `verify-report.json` (download via curl, see above); regenerate `REFERENCES.bib`.
 3. Send Gate 0 message (catalog page + map + region preview + DEMNAS QA numbers).
 4. Phase 1 prep: look-lock on the 10 × 10 km sample (BLUEPRINT §"3 test styles"); compare DEMNAS vs FABDEM vs GLO-30 on the sample (needs DEMNAS clip read in an Action — private).
-Owner actions pending: enable Pages; DEMNAS licence screenshot.
+Owner actions pending: DEMNAS licence screenshot; check the live site.
 
 ## Token-saving rules (owner asked, 2026-10-24)
 - Hand off at ~half context OR at every gate/merge point, whichever comes first.
