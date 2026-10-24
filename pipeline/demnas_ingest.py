@@ -42,19 +42,36 @@ def find_release(repo):
     return None
 
 
+def describe(path: Path) -> dict:
+    """Header facts and a decimated value sample of one input file (to spot broken or un-georeferenced files)."""
+    import rasterio
+
+    d = {"file": path.name, "bytes": path.stat().st_size}
+    try:
+        with rasterio.open(path) as src:
+            a = src.read(1, out_shape=(min(src.height, 500), min(src.width, 500)), masked=True)
+            d.update(driver=src.driver, crs=str(src.crs), bounds=[round(x, 5) for x in src.bounds], size=[src.width, src.height],
+                     dtype=src.dtypes[0], nodata=src.nodata, count=src.count, transform_is_identity=src.transform.is_identity,
+                     valid_share=round(float(a.count()) / a.size, 4),
+                     min_max=[round(float(a.min()), 2), round(float(a.max()), 2)] if a.count() else None)
+    except Exception as e:
+        d["error"] = f"{type(e).__name__}: {e}"
+    return d
+
+
 def qa_stats(arr, grid, region) -> dict:
     """Coverage and value ranges inside the domain and inside the admin area (no-data there = missing tiles)."""
     import numpy as np
     from rasterio.features import geometry_mask
-    from shapely.geometry import shape
-    from shapely.ops import transform as sh_transform
+    import shapely
     from pyproj import Transformer
+    from shapely.geometry import shape
 
     fc = json.loads((DATA / region["domain"]).read_text()) if region.get("domain") else None
     out = {}
     to_utm = Transformer.from_crs("EPSG:4326", grid.crs, always_xy=True).transform
     for f in (fc or {}).get("features", []):
-        geom = sh_transform(to_utm, shape(f["geometry"]))
+        geom = shapely.transform(shape(f["geometry"]), lambda c: np.column_stack(to_utm(c[:, 0], c[:, 1])))
         inside = ~geometry_mask([geom], out_shape=grid.shape, transform=grid.transform)
         v = arr[inside]
         ok = v[(v != NODATA) & np.isfinite(v)]
@@ -106,9 +123,12 @@ def main(region_id="jakarta", work=Path("demnas_work")) -> int:
     def covered(code):
         return code in found or all(s in found for s in next(t["sub_sheets_25k"] for t in expected if t["code"] == code))
     missing = [t["code"] for t in expected if t["needed"] and not covered(t["code"])]
+    diag = [describe(p) for p in sorted(tifs)]
+    for d in diag:
+        print(json.dumps(d))
     report = {"checked": now_utc(), "region": region_id, "files": len(tifs), "skipped_outside_domain": skipped,
               "tiles_found": sorted(found), "missing_tiles": missing,
-              "inputs": [{"file": p.name, "sha256": sha256(p)} for p in tifs]}
+              "inputs": [{"file": p.name, "sha256": sha256(p)} for p in tifs], "diagnostics": diag}
     print(json.dumps({k: report[k] for k in ("files", "tiles_found", "missing_tiles")}, indent=1), f"skipped {len(skipped)}")
     if tifs:
         region = load_regions()[region_id]
@@ -135,7 +155,10 @@ def main(region_id="jakarta", work=Path("demnas_work")) -> int:
         with open(p, "rb") as f:
             gh("POST", base, params={"name": p.name}, headers={"Content-Type": "application/octet-stream"}, data=f)
         print("uploaded", p.name)
-    return 1 if missing else 0
+    admin_gap = report.get("qa", {}).get("admin", {}).get("nodata_share", 0)
+    if admin_gap > 0.01:
+        print(f"::error title=DEMNAS mosaic incomplete::{admin_gap:.1%} of DKI Jakarta has no data; see diagnostics above")
+    return 1 if missing or admin_gap > 0.01 else 0
 
 
 if __name__ == "__main__":
