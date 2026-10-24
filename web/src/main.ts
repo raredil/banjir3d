@@ -8,7 +8,7 @@ import { applyStatic, lang, setLang } from "./i18n";
 import type { Catalog, Manifest, VerifyReport } from "./types";
 import { fetchJson } from "./util";
 
-const REGION = "jabodetabek";
+const REGION = "jakarta";
 const DATA = `data/${REGION}`;
 const app = document.querySelector<HTMLElement>("#app")!;
 let current: { remove(): void } | null = null;
@@ -16,12 +16,12 @@ let current: { remove(): void } | null = null;
 const state = (async () => {
   const [catalog, regions, manifest, verify, release] = await Promise.all([
     fetchJson<Catalog>("meta/catalog.json"),
-    fetchJson<Record<string, { bbox: number[]; name: string }>>("meta/regions.json"),
+    fetchJson<Record<string, { bbox: number[]; name: string; domain?: string }>>("meta/regions.json"),
     fetchJson<Manifest>(`${DATA}/manifest.json`),
     fetchJson<VerifyReport>(`${DATA}/verify-report.json`),
     fetchJson<{ tag: string }>(`${DATA}/release.json`),
   ]);
-  return { catalog: catalog!, region: regions![REGION], manifest, verify, releaseTag: release?.tag ?? null };
+  return { catalog: catalog!, regionId: REGION, region: regions![REGION], manifest, verify, releaseTag: release?.tag ?? null };
 })();
 
 async function route() {
@@ -37,7 +37,7 @@ async function route() {
   } else {
     document.body.dataset.page = "map";
     const { renderMap } = await import("./map");
-    current = await renderMap(app, { region: s.region, manifest: s.manifest, catalog: s.catalog, dataBase: DATA, at: new URLSearchParams(query).get("at") });
+    current = await renderMap(app, { regionId: s.regionId, region: s.region, manifest: s.manifest, catalog: s.catalog, dataBase: DATA, at: new URLSearchParams(query).get("at") });
   }
 }
 

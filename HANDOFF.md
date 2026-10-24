@@ -1,57 +1,55 @@
 # HANDOFF
-Updated: 2026-10-24 | Commit: see `git log -1` on main | Phase: P0, step 5 | Waiting for owner: yes. Needs (1) switch on GitHub Pages, (2) DEMNAS download + upload, (3) screenshot of the DEMNAS licence terms
+Updated: 2026-10-24 | Commit: see `git log -1` on main | Phase: P0, step 5 (Gate 0 ready) | Waiting for owner: yes. Needs (1) switch on GitHub Pages, (2) screenshot of the DEMNAS licence terms
 
 ## How to open the current build
 1. https://raredil.github.io/banjir3d/ (after Settings → Pages → Source: GitHub Actions).
 2. Map tab = all layers; Data catalog tab = datasets, licences, DOIs, BibTeX.
-3. Data appears after the `Region pack` Action has run (Actions → Region pack → Run workflow → region `jabodetabek`).
+3. Data = newest release `region-jakarta-*` (Actions → Region pack → Run workflow → region `jakarta`). Pages workflow then copies its PMTiles into the site.
+4. Region preview image: `previews/gate0/region-jakarta.jpg`.
 
 ## What works
-- `data/catalog.json` (21 datasets) + schema + `REFERENCES.bib` (generated: `cd pipeline && python catalog_tools.py --write-bib`).
-- DEMNAS tile list: 25 RBI 1:50k sheets (`data/demnas/jabodetabek_tiles.json`, `pipeline/b3d/rbi.py`, tested on known sheets). Owner guide `docs/PANDUAN_DEMNAS.md`.
-- Pipeline tested locally on `sample-ciliwung`: GLO-30, IO LULC 2017–2024, WorldCover, GSW, Overture buildings (330k in 10 × 10 km), Sentinel-2 composite. OSM water is tested only on synthetic data (Overpass is blocked in the cloud session).
-- Web app: map (MapLibre 6, PMTiles, EN/ID, light/dark), catalog page; screenshots reviewed (software-rendered).
+- **Region = mainland DKI Jakarta + 10 km buffer** (owner correction 2026-10-24, ADR 0005). `pipeline/make_domain.py jakarta` → `data/regions/jakarta_domain.geojson` (features `domain`, `admin`); `b3d.load_domain(region)`. bbox 106.595–107.064 E, 5.998–6.462 S; domain 2,129 km²; DKI 643 km². Old `jabodetabek` region removed.
+- Region pack run 2 (release `region-jakarta-20261024-r2`, Actions run 40115445991): **all 10 datasets ok** (GLO-30, FABDEM, IO LULC 2017–2024, WorldCover, GSW, OSM water via Geofabrik+osmium, Overture buildings 4.3 M in domain, WorldPop 2025, geoBoundaries ADM2, Sentinel-2). verify job ok. Release 464 MB, PMTiles 73 MB.
+- DEMNAS: owner uploaded 25 sheets to draft release `demnas-private`; ingest (run 40137567057) uses the 6 inside the domain → `dem_demnas_jakarta_utm48s_8m.tif` + `demnas_report.json` in the same draft. QA: DKI no-data 0 %, min/p1/p50/p99/max = −4.56/−1.92/9.68/66.1/91.47 m (EGM2008). Tiles have **no CRS tag** → `warp_to_grid(..., assume_crs="EPSG:4326")`; CRS-less sources now raise unless assume_crs is given.
+- Release assets of public releases ARE reachable from the cloud session (`curl -L github.com/.../releases/download/...`) and the public REST API (60 req/h unauthenticated).
+- Tests: `cd pipeline && python -m pytest -q` (8), `cd web && npm run check && npm run build`.
 
 ## Broken / Known gaps
-- Not yet run in Actions: FABDEM (zip listing regex on data.bris.ac.uk), OSM Overpass, WorldPop, geoBoundaries, `verify_sources.py`, and the full-region size/time of buildings and Sentinel-2. Check the first Region pack run and fix whatever fails.
-- Pages site size must stay < 1 GB (buildings tiled at z14 only).
-- DEMNAS ingest (`demnas.yml`) has not been tested (no upload yet).
-- Cloud session network: only GitHub/S3/GCS/npm/PyPI are reachable; all other data hosts work only inside Actions.
+- geoBoundaries API returns ADM2 only for IDN (ADM3/ADM4 skipped). Kecamatan/kelurahan boundaries need another source (BIG / BPS) → BACKLOG.
+- Buildings PMTiles (z14 only, MAX_SIZE 2 MB/tile, 46 MB) may drop features in the densest tiles — check visually on the live site.
+- Pages workflow on `main` must loop `jakarta` (done in this branch; takes effect after merge). Pages not yet switched on by the owner.
+- DEMNAS licence still unknown → stays private (ADR 0002).
+- Upstream catchments are outside the domain → river inflow boundary conditions needed (Phase 2, ADR 0005).
 
 ## Locked decisions (look, mechanics, tech) with links
-- Data hosting: ADR 0001. DEMNAS private: ADR 0002. Web stack: ADR 0003. Pipeline libs: ADR 0004.
+- Data hosting ADR 0001 · DEMNAS private ADR 0002 · Web stack ADR 0003 · Pipeline libs ADR 0004 · Region DKI+10 km ADR 0005.
 - Look NOT locked (Phase 1). Current UI = neutral research style, IBM Plex.
 
 ## Decisions since last handoff (ADR links)
-docs/adr/0001–0004 (all new this session).
+docs/adr/0005-region-jakarta-buffer.md. A5 done, A6 corrected+confirmed, A7 confirmed (docs/ASSUMPTIONS.md).
 
 ## Owner feedback: applied / in BACKLOG
-None yet (FEEDBACK.md empty).
+2026-10-24: region correction (applied); DEMNAS notes from BIG (used: confirmed format, geographic CRS, EGM2008 = same datum as GLO-30/FABDEM, so no datum conversion; gdal_merge/GMT steps not needed, the pipeline does it).
 
 ## Security status (last check date, open items)
-2026-10-23: npm audit 0, pip-audit clean, CSP, actions pinned by SHA, Dependabot. Open: DEMNAS licence. docs/SECURITY_LOG.md.
+2026-10-23: npm audit 0, pip-audit clean, CSP, actions pinned by SHA, Dependabot. New: osmium-tool from Ubuntu apt in region-pack water job; Geofabrik download md5-checked. Open: DEMNAS licence. docs/SECURITY_LOG.md.
 
 ## Next steps (ordered, specific, file paths)
-First Region pack run (Actions run 39964714045, release `region-jabodetabek-20261023-r1`): dem ✅ (GLO-30 + FABDEM), landcover ✅. Failures and fixes in `pipeline/b3d/layers.py`:
-1. `worldpop`: "Range downloading not supported" → download the whole IDN tif with `download()` first, then window-read locally.
-2. `geoboundaries`: `gpd.read_file(github.com/.../raw/...)` fails (redirect/LFS) → `download()` to a temp file, then read.
-3. `osm_water`: Overpass 504 → Geofabrik `asia/indonesia/java-latest.osm.pbf` (+ .md5), `osmium extract -b <bbox> --strategy smart`, then `osmium tags-filter` (natural=water, water, landuse=reservoir,basin, natural=wetland, waterway=river,riverbank,canal,stream,drain,ditch); add `sudo apt-get install -y osmium-tool` to region-pack.yml; snapshot from `osmium fileinfo`. Put the fetch in `_fetch_osm_water()` so `tests/test_osm_water.py` can monkeypatch it.
-4. `sentinel2_composite`: `KeyError: 'red'` (some items use `B04/B03/B02/SCL` keys) → asset lookup with fallbacks (red|B04, green|B03, blue|B02, scl|SCL); skip items lacking them.
-5. `overture_buildings`: runner shut down after ~70 s (likely out of memory on the full region) → stream `dset.to_batches()`, write GeoParquet incrementally, build PMTiles from the file; or split the bbox into 4 parts.
-6. `verify` job failed: read its log first (`tail_lines` ≤ 60).
-Then: re-run Region pack, update `data/catalog.json` statuses from `verify-report.json`, send the Gate 0 message.
-Owner actions pending (re-sent 2026-10-24): enable Pages; DEMNAS download/upload; DEMNAS licence screenshot; ok on A6/A7 (`docs/ASSUMPTIONS.md`).
+1. After merge: run Pages (`pages.yml` on main) so the site shows `region-jakarta-20261024-r2`; screenshot the map (domain outline, buildings at z14) for Gate 0; review against CORE §9.
+2. Update `data/catalog.json` statuses from the release `verify-report.json` (download via curl, see above); regenerate `REFERENCES.bib`.
+3. Send Gate 0 message (catalog page + map + region preview + DEMNAS QA numbers).
+4. Phase 1 prep: look-lock on the 10 × 10 km sample (BLUEPRINT §"3 test styles"); compare DEMNAS vs FABDEM vs GLO-30 on the sample (needs DEMNAS clip read in an Action — private).
+Owner actions pending: enable Pages; DEMNAS licence screenshot.
 
 ## Token-saving rules (owner asked, 2026-10-24)
 - Hand off at ~half context OR at every gate/merge point, whichever comes first.
-- Never read full Action logs: `get_job_logs` with `tail_lines` ≤ 60; make region_pack.py write a short error summary to `$GITHUB_STEP_SUMMARY`.
-- Release assets and artifact storage are NOT reachable from the cloud session; logs are the only window.
+- Never read full Action logs: `get_job_logs` with `tail_lines` ≤ 60; region_pack.py writes a status table to `$GITHUB_STEP_SUMMARY` and `::error` annotations.
+- `list_workflow_jobs` output is large; prefer `get_workflow_job` for one job.
 - No repeated web research: facts live in `research/phase0-datasets.md`.
-- No big greps into node_modules or large files in chat.
 - Force-push is blocked by the permission classifier: update the branch with `git merge --ff-only origin/main`.
 
 ## File map (key files, project skills)
-`data/` catalog, regions, demnas tile list · `pipeline/b3d/{layers,tiles,grid,rbi,util}.py` · `pipeline/region_pack.py` (build/merge) · `pipeline/verify_sources.py` · `pipeline/demnas_ingest.py` · `web/src/{main,map,catalog,layers,i18n,util}.ts` · `.github/workflows/{ci,region-pack,pages,demnas}.yml`. Local preview: `cd web && npm run build && npx vite preview` (put PMTiles in `web/dist/data/jabodetabek/`). No project skills yet.
+`data/` catalog, regions (+ `regions/jakarta_domain.geojson`), demnas tile list (`demnas/jakarta_tiles.*`) · `pipeline/b3d/{layers,tiles,grid,rbi,util}.py` · `pipeline/make_domain.py` · `pipeline/region_pack.py` · `pipeline/verify_sources.py` · `pipeline/demnas_ingest.py` · `pipeline/demnas_tiles.py` · `web/src/{main,map,catalog,layers,i18n,util}.ts` · `.github/workflows/{ci,region-pack,pages,demnas}.yml`. Local preview: `cd web && npm run build && npx vite preview` (put PMTiles in `web/dist/data/jakarta/`). No project skills yet.
 
 ## CODES
 None.

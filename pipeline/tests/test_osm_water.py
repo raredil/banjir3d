@@ -1,4 +1,4 @@
-"""OSM water parsing on a tiny synthetic Overpass response (no network)."""
+"""OSM water parsing on a tiny synthetic OSM file (no network)."""
 import pyogrio
 
 from b3d import layers
@@ -22,9 +22,9 @@ OSM = """<?xml version="1.0" encoding="UTF-8"?>
 
 
 def test_osm_water(tmp_path, monkeypatch):
-    class R:
-        content = OSM.encode()
-    monkeypatch.setattr(layers, "http_get", lambda *a, **k: R())
+    osm = tmp_path / "water.osm"
+    osm.write_text(OSM)
+    monkeypatch.setattr(layers, "_fetch_osm_water", lambda bbox: (osm, "2026-10-23T00:00:00Z", {"op": "test"}))
     region = {"bbox": [106.8, -6.3, 106.9, -6.1], "crs": "EPSG:32748"}
     rec = layers.osm_water(region, tmp_path)
     assert rec["version"] == "OSM snapshot 2026-10-23T00:00:00Z"

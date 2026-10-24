@@ -16,8 +16,8 @@
       "access": {"method": "Ina-Geoportal download per RBI 1:50k sheet; owner uploads to private draft release 'demnas-private'", "auth": "owner-download"},
       "citation": {"text": "Badan Informasi Geospasial (BIG). DEMNAS: Seamless Digital Elevation Model Nasional, v1.0. https://tanahair.indonesia.go.id",
         "bibtex": "@misc{big_demnas,\n  author = {{Badan Informasi Geospasial}},\n  title = {{DEMNAS}: Seamless Digital Elevation Model Nasional},\n  version = {1.0},\n  howpublished = {\\url{https://tanahair.indonesia.go.id}},\n  note = {Built from IFSAR (5 m), TerraSAR-X (5 m), ALOS PALSAR (11.25 m) and stereo mass points; EGM2008 datum}\n}"},
-      "status": "single-source", "checked": "2026-10-23", "in_region_pack": false,
-      "notes": "Kept out of the public site until licence is read. DSM/DTM behaviour in dense urban areas to be compared with FABDEM in Phase 2. Tile list: data/demnas/jabodetabek_tiles.json."
+      "status": "verified", "checked": "2026-10-24", "in_region_pack": false,
+      "notes": "Format verified 2026-10-24 from BIG's own DEMNAS description (sent by the owner: 0.27 arc-second, EGM2008, geographic, GeoTIFF float32; files DEMNAS_xxxx-yy-v1.0.tif per RBI 1:50k sheet, xxxx-yyy for 1:25k) and from the owner's upload (25 sheets; 6 inside the Jakarta domain, mosaicked by demnas.yml). Licence still unverified: kept out of the public site. DSM/DTM behaviour in dense urban areas to be compared with FABDEM in Phase 2. Tile list: data/demnas/jakarta_tiles.json."
     },
     {
       "id": "fabdem",
@@ -203,7 +203,7 @@
       "version": "gbOpen current (version recorded at run time)",
       "doi": "10.1371/journal.pone.0231866",
       "url": "https://www.geoboundaries.org",
-      "licence": {"id": "per-file (mostly CC-BY-4.0 / ODbL); recorded at run time", "redistributable": "yes"},
+      "licence": {"id": "CC-BY-3.0-IGO (IDN ADM2, source BPS/WFP/OCHA ROAP 2020); other levels recorded at run time", "redistributable": "yes"},
       "resolution": "vector",
       "access": {"method": "geoBoundaries API → GeoJSON", "endpoint": "https://www.geoboundaries.org/api/current/gbOpen/IDN/", "auth": "none"},
       "citation": {"text": "Runfola, D., et al. (2020). geoBoundaries: A global database of political administrative boundaries. PLoS ONE, 15(4), e0231866. doi:10.1371/journal.pone.0231866",

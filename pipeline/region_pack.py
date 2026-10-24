@@ -34,6 +34,16 @@ def build(region_id: str, group: str, out: Path) -> int:
             failed += 1
         records.append(rec)
     (out / f"record-{group}.json").write_text(json.dumps(records, indent=1, default=str) + "\n")
+    summary = os.environ.get("GITHUB_STEP_SUMMARY")
+    if summary:  # short status table, so the run can be checked without reading full logs
+        with open(summary, "a") as f:
+            f.write(f"### {region_id} / {group}\n\n| dataset | status | error |\n|---|---|---|\n")
+            for r in records:
+                err = str(r.get("error", "")).replace("|", "/").replace("\n", " ")[:300]
+                f.write(f"| {r['dataset']} | {r['status']} | {err} |\n")
+    for r in records:
+        if r["status"] == "failed":
+            print(f"::error title={r['dataset']} failed::{str(r['error'])[:300]}")
     return failed
 
 

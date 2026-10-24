@@ -1,15 +1,26 @@
 {
-  "jabodetabek": {
-    "name": "Jabodetabek",
-    "description": "Jakarta, Bogor, Depok, Tangerang, Bekasi (mainland; Kepulauan Seribu excluded) incl. upper Ciliwung/Cisadane/Bekasi catchments",
-    "bbox": [106.35, -6.85, 107.35, -5.90],
+  "jakarta": {
+    "name": "DKI Jakarta + 10 km",
+    "description": "Mainland DKI Jakarta (Jakarta Barat, Pusat, Selatan, Timur, Utara; Kepulauan Seribu excluded) plus a 10 km buffer, incl. the adjoining parts of Tangerang (Banten) and Bekasi/Depok/Bogor (Jawa Barat). Exact shape: data/regions/jakarta_domain.geojson",
+    "bbox": [
+      106.595,
+      -6.462,
+      107.064,
+      -5.998
+    ],
+    "domain": "regions/jakarta_domain.geojson",
     "crs": "EPSG:32748",
     "vertical_datum": "EGM2008"
   },
   "sample-ciliwung": {
     "name": "Sample: Ciliwung, Kampung Melayu–Manggarai (10 × 10 km)",
     "description": "Phase 1 look-lock and Phase 2 engine comparison sample",
-    "bbox": [106.812, -6.260, 106.902, -6.170],
+    "bbox": [
+      106.812,
+      -6.26,
+      106.902,
+      -6.17
+    ],
     "crs": "EPSG:32748",
     "vertical_datum": "EGM2008"
   }

@@ -36,7 +36,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          for region in jabodetabek; do
+          for region in jakarta; do
             tag=$(gh release list --repo "$GITHUB_REPOSITORY" --limit 100 --json tagName,isDraft,createdAt \
               --jq "[.[] | select(.isDraft | not) | select(.tagName | startswith(\"region-${region}-\"))] | sort_by(.createdAt) | last | .tagName // empty")
             if [ -z "$tag" ]; then echo "no region pack yet for $region"; continue; fi

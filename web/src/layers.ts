@@ -16,7 +16,7 @@ export type LayerDef = {
   ramp?: { label: string; stops: [number, string][]; unit: string };
 };
 
-// Lowland-weighted hypsometric ramp: most flood-relevant terrain in Jabodetabek lies below 60 m.
+// Lowland-weighted hypsometric ramp: most flood-relevant terrain around Jakarta lies below 60 m.
 export const ELEVATION_RAMP: [number, string][] = [
   [-5, "#3b6e9e"], [0, "#e9f2e1"], [5, "#b9dcae"], [15, "#86c08a"], [30, "#5aa37a"], [60, "#d8c879"],
   [150, "#c9944f"], [400, "#9c6b43"], [1000, "#7d5b4f"], [2000, "#b8aaa3"], [3000, "#ffffff"],
@@ -40,10 +40,10 @@ export const LAYERS: LayerDef[] = [
     legend: [{ label: "Building footprint", color: "#6b6f7a" }] },
   { id: "pop", group: "g.exposure", title: "Population, WorldPop Global2 R2025A (people per ~100 m cell)", catalogId: "worldpop-global2", file: "population_worldpop.pmtiles", kind: "raster", visible: false, opacity: 0.85,
     ramp: { label: "People per cell", unit: "", stops: [[10, "#fdd0a2"], [100, "#f16913"], [500, "#7f2704"]] } },
-  { id: "admin", group: "g.admin", title: "Administrative boundaries, geoBoundaries (kabupaten/kota, kecamatan)", catalogId: "geoboundaries-idn", file: "admin_geoboundaries.pmtiles", kind: "admin", visible: true, opacity: 1,
-    legend: [{ label: "Kabupaten / kota (ADM2)", color: "#3a3f4b" }, { label: "Kecamatan (ADM3)", color: "#8a8f9c" }] },
+  { id: "admin", group: "g.admin", title: "Administrative boundaries, geoBoundaries (kabupaten/kota)", catalogId: "geoboundaries-idn", file: "admin_geoboundaries.pmtiles", kind: "admin", visible: true, opacity: 1,
+    legend: [{ label: "Kabupaten / kota (ADM2)", color: "#3a3f4b" }] },
   { id: "demnas-grid", group: "g.admin", title: "DEMNAS tile grid (RBI 1:50,000 sheets) — download guide", catalogId: "demnas", kind: "demnas-grid", visible: false, opacity: 1,
     legend: [{ label: "Tile to download", color: "#d9480f" }] },
-  { id: "region", group: "g.admin", title: "Region box: Jabodetabek", catalogId: "", kind: "region", visible: true, opacity: 1,
-    legend: [{ label: "Simulation region", color: "#e8590c" }] },
+  { id: "region", group: "g.admin", title: "Simulation region: DKI Jakarta (mainland) + 10 km buffer", catalogId: "geoboundaries-idn", kind: "region", visible: true, opacity: 1,
+    legend: [{ label: "Simulation region (10 km buffer)", color: "#e8590c" }, { label: "DKI Jakarta boundary (Kepulauan Seribu excluded)", color: "#7a2e0b" }] },
 ];

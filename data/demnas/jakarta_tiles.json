@@ -1,0 +1,176 @@
+{
+ "region": "jakarta",
+ "bbox": [
+  106.595,
+  -6.462,
+  107.064,
+  -5.998
+ ],
+ "domain": "regions/jakarta_domain.geojson",
+ "scheme": "RBI 1:50,000 sheet (15' x 15'), origin 90E 15S; see pipeline/b3d/rbi.py",
+ "land_check": "ESA WorldCover 2021 v200, land = classes other than 0 and 80",
+ "tiles": [
+  {
+   "code": "1209-41",
+   "bounds": [
+    106.5,
+    -6.5,
+    106.75,
+    -6.25
+   ],
+   "land_fraction_in_region": 0.9927,
+   "needed": true,
+   "file_name": "DEMNAS_1209-41_v1.0.tif",
+   "sub_sheets_25k": [
+    "1209-411",
+    "1209-412",
+    "1209-413",
+    "1209-414"
+   ]
+  },
+  {
+   "code": "1209-42",
+   "bounds": [
+    106.75,
+    -6.5,
+    107.0,
+    -6.25
+   ],
+   "land_fraction_in_region": 0.9961,
+   "needed": true,
+   "file_name": "DEMNAS_1209-42_v1.0.tif",
+   "sub_sheets_25k": [
+    "1209-421",
+    "1209-422",
+    "1209-423",
+    "1209-424"
+   ]
+  },
+  {
+   "code": "1209-51",
+   "bounds": [
+    107.0,
+    -6.5,
+    107.25,
+    -6.25
+   ],
+   "land_fraction_in_region": 0.9976,
+   "needed": true,
+   "file_name": "DEMNAS_1209-51_v1.0.tif",
+   "sub_sheets_25k": [
+    "1209-511",
+    "1209-512",
+    "1209-513",
+    "1209-514"
+   ]
+  },
+  {
+   "code": "1209-43",
+   "bounds": [
+    106.5,
+    -6.25,
+    106.75,
+    -6.0
+   ],
+   "land_fraction_in_region": 0.8047,
+   "needed": true,
+   "file_name": "DEMNAS_1209-43_v1.0.tif",
+   "sub_sheets_25k": [
+    "1209-431",
+    "1209-432",
+    "1209-433",
+    "1209-434"
+   ]
+  },
+  {
+   "code": "1209-44",
+   "bounds": [
+    106.75,
+    -6.25,
+    107.0,
+    -6.0
+   ],
+   "land_fraction_in_region": 0.585,
+   "needed": true,
+   "file_name": "DEMNAS_1209-44_v1.0.tif",
+   "sub_sheets_25k": [
+    "1209-441",
+    "1209-442",
+    "1209-443",
+    "1209-444"
+   ]
+  },
+  {
+   "code": "1209-53",
+   "bounds": [
+    107.0,
+    -6.25,
+    107.25,
+    -6.0
+   ],
+   "land_fraction_in_region": 0.8433,
+   "needed": true,
+   "file_name": "DEMNAS_1209-53_v1.0.tif",
+   "sub_sheets_25k": [
+    "1209-531",
+    "1209-532",
+    "1209-533",
+    "1209-534"
+   ]
+  },
+  {
+   "code": "1210-11",
+   "bounds": [
+    106.5,
+    -6.0,
+    106.75,
+    -5.75
+   ],
+   "land_fraction_in_region": 0.0,
+   "needed": false,
+   "file_name": "DEMNAS_1210-11_v1.0.tif",
+   "sub_sheets_25k": [
+    "1210-111",
+    "1210-112",
+    "1210-113",
+    "1210-114"
+   ]
+  },
+  {
+   "code": "1210-12",
+   "bounds": [
+    106.75,
+    -6.0,
+    107.0,
+    -5.75
+   ],
+   "land_fraction_in_region": 0.0,
+   "needed": false,
+   "file_name": "DEMNAS_1210-12_v1.0.tif",
+   "sub_sheets_25k": [
+    "1210-121",
+    "1210-122",
+    "1210-123",
+    "1210-124"
+   ]
+  },
+  {
+   "code": "1210-21",
+   "bounds": [
+    107.0,
+    -6.0,
+    107.25,
+    -5.75
+   ],
+   "land_fraction_in_region": 0.0,
+   "needed": false,
+   "file_name": "DEMNAS_1210-21_v1.0.tif",
+   "sub_sheets_25k": [
+    "1210-211",
+    "1210-212",
+    "1210-213",
+    "1210-214"
+   ]
+  }
+ ]
+}

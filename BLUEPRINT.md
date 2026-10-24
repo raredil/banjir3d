@@ -133,7 +133,7 @@ Design rules:
 7. Validation page (metrics, benchmark results).
 8. Methods page (full model description with references).
 
-Scale: Jabodetabek ≈ 100 × 100 km. Explore: 60 m full region (≈2.8 M cells), 30 m zoom (≈1 M cells for 30 × 30 km). Research Run: SFINCS subgrid allows coarse compute grid (e.g., 50–100 m) with fine DEM (8–30 m) inside cells; final grid chosen in Phase 2 to fit the 6-hour job.
+Scale (owner correction 2026-10-24, ADR 0005): main region = mainland DKI Jakarta + 10 km buffer (≈ 52 × 51 km box, 2,129 km² domain; Kepulauan Seribu excluded); upstream catchments enter as river inflow boundaries. The cell counts below were written for the larger Jabodetabek box and are now upper bounds. Explore: 60 m full region (≈2.8 M cells), 30 m zoom (≈1 M cells for 30 × 30 km). Research Run: SFINCS subgrid allows coarse compute grid (e.g., 50–100 m) with fine DEM (8–30 m) inside cells; final grid chosen in Phase 2 to fit the 6-hour job.
 
 ## 9a. Time features (MUST-12)
 Three kinds of "time" the app supports:
