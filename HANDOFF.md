@@ -1,5 +1,5 @@
 # HANDOFF
-Updated: 2026-10-23 | Commit: see `git log -1` on main | Phase: P0, step 5 | Waiting for owner: yes. Needs (1) switch on GitHub Pages, (2) DEMNAS download + upload, (3) screenshot of the DEMNAS licence terms
+Updated: 2026-10-24 | Commit: see `git log -1` on main | Phase: P0, step 5 | Waiting for owner: yes. Needs (1) switch on GitHub Pages, (2) DEMNAS download + upload, (3) screenshot of the DEMNAS licence terms
 
 ## How to open the current build
 1. https://raredil.github.io/banjir3d/ (after Settings → Pages → Source: GitHub Actions).
@@ -32,10 +32,23 @@ None yet (FEEDBACK.md empty).
 2026-10-23: npm audit 0, pip-audit clean, CSP, actions pinned by SHA, Dependabot. Open: DEMNAS licence. docs/SECURITY_LOG.md.
 
 ## Next steps (ordered, specific, file paths)
-1. Check the Region pack run (`.github/workflows/region-pack.yml`); fix failing builders in `pipeline/b3d/layers.py`; re-run.
-2. Check `verify-report.json` in the release; update `data/catalog.json` statuses (FABDEM licence, WorldPop licence, Zenodo 19456870 licence, IO 2025) → `catalog_tools.py --write-bib`.
-3. When the owner says "DEMNAS sudah diupload": run `DEMNAS ingest` Action; read `demnas_report.json` in the draft release.
-4. Gate 0 message (CORE Appendix B) with screenshots of the live site; then Phase 1 (look-lock, 3 styles on `sample-ciliwung`).
+First Region pack run (Actions run 39964714045, release `region-jabodetabek-20261023-r1`): dem ✅ (GLO-30 + FABDEM), landcover ✅. Failures and fixes in `pipeline/b3d/layers.py`:
+1. `worldpop`: "Range downloading not supported" → download the whole IDN tif with `download()` first, then window-read locally.
+2. `geoboundaries`: `gpd.read_file(github.com/.../raw/...)` fails (redirect/LFS) → `download()` to a temp file, then read.
+3. `osm_water`: Overpass 504 → Geofabrik `asia/indonesia/java-latest.osm.pbf` (+ .md5), `osmium extract -b <bbox> --strategy smart`, then `osmium tags-filter` (natural=water, water, landuse=reservoir,basin, natural=wetland, waterway=river,riverbank,canal,stream,drain,ditch); add `sudo apt-get install -y osmium-tool` to region-pack.yml; snapshot from `osmium fileinfo`. Put the fetch in `_fetch_osm_water()` so `tests/test_osm_water.py` can monkeypatch it.
+4. `sentinel2_composite`: `KeyError: 'red'` (some items use `B04/B03/B02/SCL` keys) → asset lookup with fallbacks (red|B04, green|B03, blue|B02, scl|SCL); skip items lacking them.
+5. `overture_buildings`: runner shut down after ~70 s (likely out of memory on the full region) → stream `dset.to_batches()`, write GeoParquet incrementally, build PMTiles from the file; or split the bbox into 4 parts.
+6. `verify` job failed: read its log first (`tail_lines` ≤ 60).
+Then: re-run Region pack, update `data/catalog.json` statuses from `verify-report.json`, send the Gate 0 message.
+Owner actions pending (re-sent 2026-10-24): enable Pages; DEMNAS download/upload; DEMNAS licence screenshot; ok on A6/A7 (`docs/ASSUMPTIONS.md`).
+
+## Token-saving rules (owner asked, 2026-10-24)
+- Hand off at ~half context OR at every gate/merge point, whichever comes first.
+- Never read full Action logs: `get_job_logs` with `tail_lines` ≤ 60; make region_pack.py write a short error summary to `$GITHUB_STEP_SUMMARY`.
+- Release assets and artifact storage are NOT reachable from the cloud session; logs are the only window.
+- No repeated web research: facts live in `research/phase0-datasets.md`.
+- No big greps into node_modules or large files in chat.
+- Force-push is blocked by the permission classifier: update the branch with `git merge --ff-only origin/main`.
 
 ## File map (key files, project skills)
 `data/` catalog, regions, demnas tile list · `pipeline/b3d/{layers,tiles,grid,rbi,util}.py` · `pipeline/region_pack.py` (build/merge) · `pipeline/verify_sources.py` · `pipeline/demnas_ingest.py` · `web/src/{main,map,catalog,layers,i18n,util}.ts` · `.github/workflows/{ci,region-pack,pages,demnas}.yml`. Local preview: `cd web && npm run build && npx vite preview` (put PMTiles in `web/dist/data/jabodetabek/`). No project skills yet.
