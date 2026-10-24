@@ -27,4 +27,4 @@ jobs:
       - working-directory: pipeline
         env:
           GITHUB_TOKEN: ${{ github.token }}
-        run: python demnas_ingest.py jabodetabek
+        run: python demnas_ingest.py jakarta

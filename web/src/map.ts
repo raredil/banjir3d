@@ -16,7 +16,7 @@ const GLYPHS = "https://tiles.openfreemap.org/fonts/{fontstack}/{range}.pbf";
 const FONT = ["Noto Sans Regular"];
 let protocolAdded = false;
 
-type Ctx = { region: { bbox: number[]; name: string }; manifest: Manifest | null; catalog: Catalog; dataBase: string; at?: string | null };
+type Ctx = { regionId: string; region: { bbox: number[]; name: string; domain?: string }; manifest: Manifest | null; catalog: Catalog; dataBase: string; at?: string | null };
 
 function attributionFor(def: LayerDef, catalog: Catalog): string {
   const d = catalog.datasets.find((x) => x.id === def.catalogId);
@@ -79,7 +79,10 @@ function mlLayers(def: LayerDef, src: string): LayerSpecification[] {
         { id: `${def.id}-label`, type: "symbol", source: src, layout: { visibility: vis, "text-field": ["get", "code"], "text-font": FONT, "text-size": 13 }, paint: { "text-color": "#d9480f", "text-halo-color": "#ffffff", "text-halo-width": 1.5 } },
       ];
     case "region":
-      return [{ id: def.id, type: "line", source: src, layout: { visibility: vis }, paint: { "line-color": "#e8590c", "line-width": 2, "line-dasharray": [4, 2] } }];
+      return [
+        { id: def.id, type: "line", source: src, filter: ["==", ["get", "role"], "domain"], layout: { visibility: vis }, paint: { "line-color": "#e8590c", "line-width": 2.5 } },
+        { id: `${def.id}-admin`, type: "line", source: src, filter: ["==", ["get", "role"], "admin"], layout: { visibility: vis }, paint: { "line-color": "#7a2e0b", "line-width": 1.5, "line-dasharray": [4, 2] } },
+      ];
   }
 }
 
@@ -153,7 +156,8 @@ export async function renderMap(root: HTMLElement, ctx: Ctx) {
   map.addControl(new ScaleControl({ unit: "metric", maxWidth: 160 }), "bottom-right");
   map.addControl(new AttributionControl({ compact: true }), "bottom-right");
 
-  const tileGrid = new URL("meta/jabodetabek_tiles.geojson", location.href).href;
+  const tileGrid = new URL(`meta/${ctx.regionId}_tiles.geojson`, location.href).href;
+  const domain = ctx.region.domain ? new URL(`meta/${ctx.region.domain.split("/").pop()}`, location.href).href : null;
   const addOverlays = () => {
     const firstSymbol = map.getStyle().layers.find((l) => l.type === "symbol")?.id;
     for (const def of LAYERS) {
@@ -162,7 +166,7 @@ export async function renderMap(root: HTMLElement, ctx: Ctx) {
       if (!map.getSource(src)) {
         const attribution = attributionFor(def, ctx.catalog);
         if (def.kind === "demnas-grid") map.addSource(src, { type: "geojson", data: tileGrid });
-        else if (def.kind === "region") map.addSource(src, { type: "geojson", data: { type: "Feature", properties: {}, geometry: { type: "Polygon", coordinates: [[[w, s], [e, s], [e, n], [w, n], [w, s]]] } } });
+        else if (def.kind === "region") map.addSource(src, { type: "geojson", data: domain ?? { type: "Feature", properties: { role: "domain" }, geometry: { type: "Polygon", coordinates: [[[w, s], [e, s], [e, n], [w, n], [w, s]]] } } });
         else {
           const url = `pmtiles://${new URL(`${ctx.dataBase}/${def.file}`, location.href).href}`;
           const meta = files.get(def.file!) ?? {};

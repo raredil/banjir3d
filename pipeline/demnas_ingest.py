@@ -42,7 +42,7 @@ def find_release(repo):
     return None
 
 
-def main(region_id="jabodetabek", work=Path("demnas_work")) -> int:
+def main(region_id="jakarta", work=Path("demnas_work")) -> int:
     repo = os.environ["GITHUB_REPOSITORY"]
     rel = find_release(repo)
     if rel is None:
@@ -51,10 +51,16 @@ def main(region_id="jabodetabek", work=Path("demnas_work")) -> int:
     if not rel["draft"]:
         print("::warning::The DEMNAS release is PUBLISHED (public). It should be a draft. Continuing, but please revert it to draft.")
     work.mkdir(exist_ok=True)
-    tifs = []
+    expected = json.loads((DATA / "demnas" / f"{region_id}_tiles.json").read_text())["tiles"]
+    wanted = {c for t in expected if t["needed"] for c in [t["code"], *t["sub_sheets_25k"]]}
+    tifs, skipped = [], []
     for a in rel["assets"]:
         name = a["name"]
         if name.startswith("dem_demnas") or name in ("demnas_report.json", "DEMNAS_SHA256SUMS"):
+            continue
+        m = re.search(r"(\d{4}-\d{2,3})", name)
+        if m and m.group(1) not in wanted:  # sheet outside this region's domain: keep it in the release, don't download
+            skipped.append(name)
             continue
         dst = work / name
         if not dst.exists():
@@ -70,7 +76,6 @@ def main(region_id="jabodetabek", work=Path("demnas_work")) -> int:
                         tifs.append(out)
         elif name.lower().endswith((".tif", ".tiff")):
             tifs.append(dst)
-    expected = json.loads((DATA / "demnas" / f"{region_id}_tiles.json").read_text())["tiles"]
     found = {}
     for p in tifs:
         m = re.search(r"(\d{4}-\d{2,3})", p.name)
@@ -79,9 +84,10 @@ def main(region_id="jabodetabek", work=Path("demnas_work")) -> int:
     def covered(code):
         return code in found or all(s in found for s in next(t["sub_sheets_25k"] for t in expected if t["code"] == code))
     missing = [t["code"] for t in expected if t["needed"] and not covered(t["code"])]
-    report = {"checked": now_utc(), "files": len(tifs), "tiles_found": sorted(found), "missing_tiles": missing,
+    report = {"checked": now_utc(), "region": region_id, "files": len(tifs), "skipped_outside_domain": skipped,
+              "tiles_found": sorted(found), "missing_tiles": missing,
               "inputs": [{"file": p.name, "sha256": sha256(p)} for p in tifs]}
-    print(json.dumps({k: report[k] for k in ("files", "tiles_found", "missing_tiles")}, indent=1))
+    print(json.dumps({k: report[k] for k in ("files", "tiles_found", "missing_tiles")}, indent=1), f"skipped {len(skipped)}")
     if tifs:
         region = load_regions()[region_id]
         grid = region_grid(region, 8)

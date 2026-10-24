@@ -7,7 +7,7 @@ on:
     inputs:
       region:
         description: "Region id from data/regions.json"
-        default: "jabodetabek"
+        default: "jakarta"
         required: true
 
 permissions:
