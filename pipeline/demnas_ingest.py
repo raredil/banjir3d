@@ -42,6 +42,28 @@ def find_release(repo):
     return None
 
 
+def qa_stats(arr, grid, region) -> dict:
+    """Coverage and value ranges inside the domain and inside the admin area (no-data there = missing tiles)."""
+    import numpy as np
+    from rasterio.features import geometry_mask
+    from shapely.geometry import shape
+    from shapely.ops import transform as sh_transform
+    from pyproj import Transformer
+
+    fc = json.loads((DATA / region["domain"]).read_text()) if region.get("domain") else None
+    out = {}
+    to_utm = Transformer.from_crs("EPSG:4326", grid.crs, always_xy=True).transform
+    for f in (fc or {}).get("features", []):
+        geom = sh_transform(to_utm, shape(f["geometry"]))
+        inside = ~geometry_mask([geom], out_shape=grid.shape, transform=grid.transform)
+        v = arr[inside]
+        ok = v[(v != NODATA) & np.isfinite(v)]
+        p = np.percentile(ok, [0, 1, 50, 99, 100]).round(2).tolist() if ok.size else []
+        out[f["properties"]["role"]] = {"cells": int(v.size), "nodata_share": round(1 - ok.size / max(v.size, 1), 5),
+                                        "min_p1_p50_p99_max_m": p}
+    return out
+
+
 def main(region_id="jakarta", work=Path("demnas_work")) -> int:
     repo = os.environ["GITHUB_REPOSITORY"]
     rel = find_release(repo)
@@ -97,6 +119,8 @@ def main(region_id="jakarta", work=Path("demnas_work")) -> int:
                         tags={"units": "m", "vertical_datum": "EGM2008", "source": "DEMNAS (BIG), private"})
         report["output"] = output_record(cog, units="m", vertical_datum="EGM2008",
                                          steps=["mosaic", "reproject EPSG:32748", "8 m", "bilinear"])
+        report["qa"] = qa_stats(arr, grid, region)
+        print(json.dumps({"qa": report["qa"]}, indent=1))
         upload = [cog]
     else:
         upload = []

@@ -19,9 +19,9 @@ from b3d.util import USER_AGENT, now_utc
 H = {"User-Agent": USER_AGENT}
 
 
-def get(url, **kw):
+def get(url, headers=None, **kw):
     try:
-        return requests.get(url, headers=H, timeout=60, **kw)
+        return requests.get(url, headers={**H, **(headers or {})}, timeout=60, **kw)
     except requests.RequestException as e:
         return e
 

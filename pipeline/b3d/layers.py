@@ -6,10 +6,10 @@ COGs (analysis, EPSG of the region) and PMTiles (web display) are written to `ou
 from __future__ import annotations
 
 import io
+import json
 import math
 import re
 import tempfile
-import xml.etree.ElementTree as ET
 import zipfile
 from pathlib import Path
 
@@ -19,6 +19,7 @@ import rasterio
 from rasterio.warp import Resampling, transform_bounds
 from rasterio.windows import from_bounds
 
+from . import load_domain
 from .grid import region_grid, warp_to_grid
 from .tiles import palette_render, ramp_render, render_pmtiles, rgb_render, terrarium
 from .util import download, http_get, now_utc, output_record, url_exists, write_cog
@@ -32,7 +33,7 @@ S3_OVERTURE = "overturemaps-us-west-2"
 FABDEM_BASE = "https://data.bris.ac.uk/datasets/s5hqmjcdj8yo2ibzi9b4ew3sn"
 WORLDPOP_BASE = "https://data.worldpop.org/GIS/Population/Global_2015_2030/R2025A"
 GEOBOUNDARIES = "https://www.geoboundaries.org/api/current/gbOpen/IDN"
-OVERPASS = "https://overpass-api.de/api/interpreter"
+GEOFABRIK_JAVA = "https://download.geofabrik.de/asia/indonesia/java-latest.osm.pbf"
 
 DEM_NODATA = -9999.0
 
@@ -266,17 +267,35 @@ def gsw_occurrence(region: dict, out: Path) -> dict:
     return rec
 
 
-OSM_QUERY = """[out:xml][timeout:1200][maxsize:2000000000];
-(
-  nwr["natural"="water"]({s},{w},{n},{e});
-  nwr["water"]({s},{w},{n},{e});
-  nwr["landuse"~"^(reservoir|basin)$"]({s},{w},{n},{e});
-  nwr["natural"="wetland"]({s},{w},{n},{e});
-  way["waterway"~"^(river|riverbank|canal|stream|drain|ditch)$"]({s},{w},{n},{e});
-);
-(._;>;);
-out body;
-"""
+OSM_FILTERS = ["nwr/natural=water,wetland", "nwr/water", "nwr/landuse=reservoir,basin",
+               "w/waterway=river,riverbank,canal,stream,drain,ditch"]
+
+
+def _fetch_osm_water(bbox) -> tuple[Path, str | None, dict]:
+    """Geofabrik Java extract → osmium bbox extract → water tags only. Returns (file, snapshot time, step record)."""
+    import hashlib
+    import subprocess
+
+    td = Path(tempfile.mkdtemp())
+    java = download(GEOFABRIK_JAVA, td / "java.osm.pbf")
+    md5 = http_get(GEOFABRIK_JAVA + ".md5").text.split()[0]
+    h = hashlib.md5()
+    with open(java, "rb") as f:
+        for chunk in iter(lambda: f.read(1 << 20), b""):
+            h.update(chunk)
+    if h.hexdigest() != md5:
+        raise RuntimeError("Geofabrik md5 mismatch")
+    snap = subprocess.run(["osmium", "fileinfo", "-g", "header.option.osmosis_replication_timestamp", str(java)],
+                          capture_output=True, text=True).stdout.strip() or None
+    part = td / "region.osm.pbf"
+    bb = ",".join(str(x) for x in bbox)
+    subprocess.run(["osmium", "extract", "-b", bb, "--strategy", "smart", "-o", str(part), str(java)], check=True)
+    water = td / "water.osm.pbf"
+    subprocess.run(["osmium", "tags-filter", "-o", str(water), str(part), *OSM_FILTERS], check=True)
+    java.unlink()
+    step = {"op": "osmium extract + tags-filter", "tool": "osmium-tool",
+            "params": {"source_md5": md5, "bbox": bbox, "strategy": "smart", "filters": OSM_FILTERS}}
+    return water, snap, step
 
 
 def osm_water(region: dict, out: Path) -> dict:
@@ -284,18 +303,17 @@ def osm_water(region: dict, out: Path) -> dict:
     import pandas as pd
     import pyogrio
 
-    rec = _rec("osm-water", "Overpass snapshot")
-    w, s, e, n = region["bbox"]
-    q = OSM_QUERY.format(s=s, w=w, n=n, e=e)
-    tmp = Path(tempfile.mkdtemp()) / "water.osm"
-    tmp.write_bytes(http_get(OVERPASS, data={"data": q}, timeout=1500).content)
-    base = ET.parse(tmp).getroot().find("meta")
-    snapshot = base.get("osm_base") if base is not None else None
+    rec = _rec("osm-water", "Geofabrik extract")
+    tmp, snapshot, step = _fetch_osm_water(region["bbox"])
     rec["version"] = f"OSM snapshot {snapshot}"
-    rec["sources"] = [OVERPASS]
-    rec["steps"].append({"op": "overpass-query", "params": {"query": q, "osm_base": snapshot}})
+    rec["sources"] = [GEOFABRIK_JAVA]
+    rec["steps"].append(step)
+    domain = load_domain(region)
     areas = pyogrio.read_dataframe(tmp, layer="multipolygons")
     lines = pyogrio.read_dataframe(tmp, layer="lines")
+    areas = areas[areas.intersects(domain)]
+    lines = lines[lines.intersects(domain)]
+    rec["steps"].append({"op": "keep features intersecting the region domain"})
     tags = areas.get("other_tags", pd.Series([""] * len(areas))).fillna("")
     water_tag = tags.str.extract(r'"water"=>"([^"]+)"')[0]
     areas["kind"] = np.select(
@@ -328,8 +346,11 @@ def osm_water(region: dict, out: Path) -> dict:
 # ---------------------------------------------------------------- buildings
 def overture_buildings(region: dict, out: Path, release: str | None = None) -> dict:
     import geopandas as gpd
+    import pandas as pd
+    import pyarrow as pa
     import pyarrow.compute as pc
     import pyarrow.dataset as ds
+    import pyarrow.parquet as pq_mod
     import pyarrow.fs as pafs
     import pyogrio
     import shapely
@@ -347,19 +368,41 @@ def overture_buildings(region: dict, out: Path, release: str | None = None) -> d
     flt = ((pc.field("bbox", "xmin") < e) & (pc.field("bbox", "xmax") > w) &
            (pc.field("bbox", "ymin") < n) & (pc.field("bbox", "ymax") > s))
     cols = ["id", "geometry", "height", "num_floors", "class", "sources"]
-    tbl = dset.to_table(columns=cols, filter=flt)
-    rec["steps"].append({"op": "bbox-filter", "tool": "pyarrow.dataset", "params": {"bbox": region["bbox"], "rows": tbl.num_rows}})
-    geoms = shapely.from_wkb(tbl.column("geometry").to_numpy(zero_copy_only=False))
-    src = [x[0]["dataset"] if x else None for x in tbl.column("sources").to_pylist()]
-    gdf = gpd.GeoDataFrame({"id": tbl.column("id").to_numpy(zero_copy_only=False),
-                            "height": tbl.column("height").to_numpy(zero_copy_only=False),
-                            "num_floors": tbl.column("num_floors").to_numpy(zero_copy_only=False),
-                            "class": tbl.column("class").to_numpy(zero_copy_only=False),
-                            "source": src}, geometry=geoms, crs="EPSG:4326")
+    domain = load_domain(region)
+    shapely.prepare(domain)
     pq = out / "buildings_overture.parquet"
-    gdf.to_parquet(pq, compression="zstd")
+    writer, rows, kept, parts = None, 0, 0, []
+    # streamed in record batches: the full-table read ran the runner out of memory
+    for batch in dset.to_batches(columns=cols, filter=flt, batch_size=100_000):
+        rows += batch.num_rows
+        geoms = shapely.from_wkb(batch.column("geometry").to_numpy(zero_copy_only=False))
+        inside = shapely.intersects(domain, geoms)
+        if not inside.any():
+            continue
+        src = [x[0]["dataset"] if x else None for x in batch.column("sources").to_pylist()]
+        part = gpd.GeoDataFrame({"id": batch.column("id").to_numpy(zero_copy_only=False),
+                                 "height": batch.column("height").to_numpy(zero_copy_only=False),
+                                 "num_floors": batch.column("num_floors").to_numpy(zero_copy_only=False),
+                                 "class": batch.column("class").to_numpy(zero_copy_only=False),
+                                 "source": src}, geometry=geoms, crs="EPSG:4326")[inside]
+        tbl = pa.Table.from_pandas(part.to_wkb(), preserve_index=False)
+        if writer is None:  # GeoParquet 1.0 metadata (WKB, OGC:CRS84); geometry_types left open
+            geo = {"version": "1.0.0", "primary_column": "geometry",
+                   "columns": {"geometry": {"encoding": "WKB", "geometry_types": [], "crs": part.crs.to_json_dict()}}}
+            schema = tbl.schema.with_metadata({b"geo": json.dumps(geo).encode()})
+            writer = pq_mod.ParquetWriter(pq, schema, compression="zstd")
+        writer.write_table(tbl.cast(schema))
+        kept += len(part)
+        parts.append(part[["height", "source", "geometry"]])
+    if writer is None:
+        raise RuntimeError("no buildings found in the region")
+    writer.close()
+    rec["steps"].append({"op": "bbox-filter + domain clip (intersects)", "tool": "pyarrow.dataset (streamed)",
+                         "params": {"bbox": region["bbox"], "rows_in_bbox": rows, "rows_in_domain": kept}})
+    gdf = gpd.GeoDataFrame(pd.concat(parts, ignore_index=True), crs="EPSG:4326")
+    del parts
     counts = gdf["source"].value_counts().to_dict()
-    rec["outputs"].append(output_record(pq, features=len(gdf), by_source=counts))
+    rec["outputs"].append(output_record(pq, features=kept, by_source=counts))
     pm = out / "buildings_overture.pmtiles"
     pyogrio.write_dataframe(gdf[["height", "geometry"]], pm, driver="PMTiles", layer="buildings",
                             dataset_options={"MINZOOM": 14, "MAXZOOM": 14, "NAME": "Overture buildings",
@@ -375,7 +418,8 @@ def worldpop(region: dict, out: Path, year: int = 2025) -> dict:
     name = re.findall(r'href="([^"]+\.tif)"', http_get(base).text)[0].split("/")[-1]
     url = base + name
     rec["sources"] = [url]
-    with rasterio.open(f"/vsicurl/{url}") as src:
+    local = download(url, Path(tempfile.mkdtemp()) / name)  # the host does not support range requests
+    with rasterio.open(local) as src:
         win = from_bounds(*region["bbox"], transform=src.transform).round_offsets().round_lengths()
         arr = src.read(1, window=win, boundless=True, fill_value=src.nodata)
         tr = src.window_transform(win)
@@ -394,11 +438,16 @@ def worldpop(region: dict, out: Path, year: int = 2025) -> dict:
 
 
 # ---------------------------------------------------------------- admin
+def _lfs_url(url: str) -> str:
+    """github.com/<o>/<r>/raw/<ref>/<path> (a Git LFS pointer) → media.githubusercontent.com (the file itself)."""
+    m = re.match(r"https://github\.com/([^/]+)/([^/]+)/raw/(.+)$", url)
+    return f"https://media.githubusercontent.com/media/{m[1]}/{m[2]}/{m[3]}" if m else url
+
+
 def geoboundaries(region: dict, out: Path) -> dict:
     import geopandas as gpd
     import pandas as pd
     import pyogrio
-    from shapely.geometry import box
 
     rec = _rec("geoboundaries-idn", "gbOpen current")
     frames, meta = [], {}
@@ -407,17 +456,17 @@ def geoboundaries(region: dict, out: Path) -> dict:
             info = http_get(f"{GEOBOUNDARIES}/{lvl}/", retries=2).json()
         except Exception:  # level not published for IDN
             continue
-        url = info["gjDownloadURL"]
-        g = gpd.read_file(url)
-        g = g[g.intersects(box(*region["bbox"]))].copy()
+        url = _lfs_url(info["gjDownloadURL"])
+        g = gpd.read_file(download(url, Path(tempfile.mkdtemp()) / f"{lvl}.geojson"))
+        g = g[g.intersects(load_domain(region))].copy()
         g["level"] = lvl
         frames.append(g[["shapeName", "shapeID", "level", "geometry"]])
         meta[lvl] = {k: info.get(k) for k in ("boundaryID", "boundaryYearRepresented", "boundaryLicense",
                                               "boundarySource", "buildDate", "sourceDataUpdateDate")}
-        meta[lvl]["features_in_bbox"] = len(g)
+        meta[lvl]["features_in_domain"] = len(g)
         rec["sources"].append(url)
     rec["version"] = "gbOpen: " + ", ".join(f"{k} {v.get('boundaryID')}" for k, v in meta.items())
-    rec["steps"].append({"op": "select features intersecting bbox", "params": {"levels": list(meta)}})
+    rec["steps"].append({"op": "select features intersecting the region domain", "params": {"levels": list(meta)}})
     allg = gpd.GeoDataFrame(pd.concat(frames, ignore_index=True), crs="EPSG:4326")
     gpkg = out / "admin_geoboundaries.gpkg"
     for i, (lvl, g) in enumerate(allg.groupby("level")):
@@ -462,6 +511,21 @@ def _s2_candidates(square, months):
     return items
 
 
+S2_KEYS = {"red": ("red", "B04"), "green": ("green", "B03"), "blue": ("blue", "B02"), "scl": ("scl", "SCL")}
+
+
+def _s2_assets(item) -> dict | None:
+    """COG hrefs for red/green/blue/scl; item JSONs use either common names or band ids. None if any is missing."""
+    a = item.get("assets", {})
+    out = {}
+    for k, names in S2_KEYS.items():
+        href = next((a[n]["href"] for n in names if n in a and a[n].get("href", "").endswith(".tif")), None)
+        if href is None:
+            return None
+        out[k] = href
+    return out
+
+
 def sentinel2_composite(region: dict, out: Path, months_back: int = 12, per_tile: int = 6, max_cloud: float = 60.0) -> dict:
     import datetime as dt
 
@@ -471,7 +535,8 @@ def sentinel2_composite(region: dict, out: Path, months_back: int = 12, per_tile
               for k in range(months_back)]
     chosen = []
     for square in _mgrs_squares(region["bbox"]):
-        cands = [it for it in _s2_candidates(square, months) if it["properties"]["eo:cloud_cover"] <= max_cloud]
+        cands = [it for it in _s2_candidates(square, months)
+                 if it["properties"]["eo:cloud_cover"] <= max_cloud and _s2_assets(it)]
         cands.sort(key=lambda it: it["properties"]["eo:cloud_cover"])
         chosen += cands[:per_tile]
     if not chosen:
@@ -498,13 +563,13 @@ def sentinel2_composite(region: dict, out: Path, months_back: int = 12, per_tile
             for it, f in zip(chosen, foot):
                 if f[0] >= bounds[2] or f[2] <= bounds[0] or f[1] >= bounds[3] or f[3] <= bounds[1]:
                     continue
-                a = it["assets"]
+                a = _s2_assets(it)
                 bands = []
                 for key in ("red", "green", "blue"):
-                    with rasterio.open(f"/vsicurl/{a[key]['href']}") as src:
+                    with rasterio.open(f"/vsicurl/{a[key]}") as src:
                         win = from_bounds(*bounds, transform=src.transform).round_offsets().round_lengths()
                         bands.append(src.read(1, window=win, out_shape=(h, w), boundless=True, fill_value=0).astype("float32"))
-                with rasterio.open(f"/vsicurl/{a['scl']['href']}") as src:
+                with rasterio.open(f"/vsicurl/{a['scl']}") as src:
                     win = from_bounds(*bounds, transform=src.transform)
                     scl = src.read(1, window=win, out_shape=(h, w), boundless=True, fill_value=0,
                                    resampling=Resampling.nearest)
