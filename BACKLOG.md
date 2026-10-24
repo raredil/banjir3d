@@ -13,3 +13,6 @@
 | GPM IMERG (NASA Earthdata account as Secret) | 4 |
 | Land-cover year series in the UI (2017–2024 already in the region pack) | 5 |
 | CITATION.cff + Zenodo DOI | 3 |
+| Kecamatan (ADM3) boundaries: geoBoundaries API has ADM2 only for IDN → BIG/BPS source with an open licence | 1 |
+| River inflow boundary conditions at the domain edge (Ciliwung, Cisadane, Bekasi, Angke, Pesanggrahan…) from gauges or an upstream model (ADR 0005) | 2 |
+| Check Overture buildings PMTiles for dropped features in dense z14 tiles | 1 |
