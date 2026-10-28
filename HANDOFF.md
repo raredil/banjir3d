@@ -1,5 +1,17 @@
 # HANDOFF
-Updated: 2026-10-24 | Commit: see `git log -1` on main | Phase: P0, step 5 (Gate 0 ready) | Waiting for owner: yes. Needs the DEMNAS licence screenshot; owner to look at the live site and say if Pages shows the map
+Updated: 2026-10-29 | Commit: see `git log -1` on main | Phase: P0, Gate 0 accepted by owner (verbal) | Waiting for owner: DEMNAS licence screenshot (not blocking); Phase 1 look choice later
+
+## SESSION LOG (newest first). Claude Code: read this before anything else
+Each entry says WHERE the work was done. Entries marked **claude.ai chat** were done without a browser, without Chromium and without visual checks, so they are NOT visually verified. A Claude Code session should audit them (see "Audit checklist").
+- **2026-10-29, claude.ai chat** (owner's Claude Code usage had run out). Cloned repo, `npm ci` + `npm run build` OK, downloaded release `region-jakarta-20261024-r2` PMTiles into `web/dist/data/jakarta/` (not committed). `pipeline/catalog_tools.py --write-bib`: catalog OK, REFERENCES.bib unchanged. Verify-report: all URLs HTTP 200 except FABDEM landing page (ReadTimeout, DOI registered; likely transient, recheck). Chromium download is blocked in the cloud chat, so **no screenshot was taken**. Only HANDOFF.md changed in this entry.
+- Owner answers 2026-10-29: (1) DEMNAS licence: "aman dipakai" (owner says it is safe to use; no screenshot or licence text yet, so `data/catalog.json` still says "not yet read" and ADR 0002 keeps DEMNAS private until the text is recorded). (2) Live site: map shows; there is no flood layer yet (expected, flood modelling starts in a later phase).
+
+### Audit checklist (for a Claude Code session after a claude.ai chat session)
+1. `git log --oneline -10` and `git diff <last Claude Code commit>..main --stat`: list everything done in chat sessions.
+2. `cd pipeline && python -m pytest -q` and `cd web && npm run check && npm run build`.
+3. Render the site with the release PMTiles and take screenshots (CORE §9); check anything marked "not visually verified" above.
+4. Re-run `python pipeline/verify_sources.py` if the FABDEM timeout is still in the newest verify-report.
+5. Record the audit result as a new line at the top of this log.
 
 ## How to open the current build
 1. https://raredil.github.io/banjir3d/ — Pages deploy run 40137979397 (main, after merge of PR #3) succeeded, so Pages is on. github.io itself is blocked from the cloud session: ask the owner for a screenshot.
@@ -35,11 +47,11 @@ docs/adr/0005-region-jakarta-buffer.md. A5 done, A6 corrected+confirmed, A7 conf
 2026-10-23: npm audit 0, pip-audit clean, CSP, actions pinned by SHA, Dependabot. New: osmium-tool from Ubuntu apt in region-pack water job; Geofabrik download md5-checked. Open: DEMNAS licence. docs/SECURITY_LOG.md.
 
 ## Next steps (ordered, specific, file paths)
-1. Done: merged (PR #3), Pages redeployed with `region-jakarta-20261024-r2`. Next: render the built site locally with the release PMTiles (curl them into `web/dist/data/jakarta/`) and screenshot the map (domain outline, buildings at z14) for Gate 0; review against CORE §9.
-2. Update `data/catalog.json` statuses from the release `verify-report.json` (download via curl, see above); regenerate `REFERENCES.bib`.
-3. Send Gate 0 message (catalog page + map + region preview + DEMNAS QA numbers).
-4. Phase 1 prep: look-lock on the 10 × 10 km sample (BLUEPRINT §"3 test styles"); compare DEMNAS vs FABDEM vs GLO-30 on the sample (needs DEMNAS clip read in an Action — private).
-Owner actions pending: DEMNAS licence screenshot; check the live site.
+1. Done: merged (PR #3), Pages redeployed with `region-jakarta-20261024-r2`. Local build + release data fetch verified 2026-10-29 (claude.ai chat). Screenshot of the map for Gate 0: NOT possible in the chat (no Chromium); owner confirmed the map shows on the live site. Do the CORE §9 screenshot review in the next Claude Code session.
+2. Done 2026-10-29: catalog validated, REFERENCES.bib regenerated (no change). Catalog `status`/`checked` fields are curated; the site reads the release `verify-report.json` live, so nothing else to sync. Recheck the FABDEM landing page URL (timeout once).
+3. Gate 0: owner has seen the live site and says the map works; treat Gate 0 as accepted. No separate Gate 0 message needed.
+4. Phase 1 prep (next): look-lock on the 10 × 10 km sample (BLUEPRINT §"3 test styles"). This needs screenshots and an owner choice, so do it in Claude Code or with owner-supplied screenshots. Compare DEMNAS vs FABDEM vs GLO-30 on the sample (needs the private DEMNAS clip read inside an Action).
+Owner actions pending: DEMNAS licence screenshot or text (to record in `data/catalog.json` and ADR 0002).
 
 ## Token-saving rules (owner asked, 2026-10-24)
 - Hand off at ~half context OR at every gate/merge point, whichever comes first.
