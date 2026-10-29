@@ -38,3 +38,28 @@ export function sampleOutline(b: number[]) {
 export function zoomForWidth(px: number): number {
   return SAMPLE_VIEW.zoom - Math.max(0, Math.log2(900 / Math.max(px, 200)));
 }
+
+// User-drawn simulation area. Boxes are [W, S, E, N] in degrees and must lie inside the region pack.
+export const MIN_BOX_KM = 1;
+const KM_PER_DEG = 111.32;
+
+/** Width and height (km) of a box. */
+export function boxKm(b: number[]): [number, number] {
+  const c = Math.cos((((b[1] + b[3]) / 2) * Math.PI) / 180);
+  return [(b[2] - b[0]) * KM_PER_DEG * c, (b[3] - b[1]) * KM_PER_DEG];
+}
+
+/** Box from two dragged corners, clipped to the region; null if it is smaller than MIN_BOX_KM on a side or outside. */
+export function boxFromCorners(a: [number, number], b: [number, number], region: number[]): number[] | null {
+  const box = [Math.max(Math.min(a[0], b[0]), region[0]), Math.max(Math.min(a[1], b[1]), region[1]), Math.min(Math.max(a[0], b[0]), region[2]), Math.min(Math.max(a[1], b[1]), region[3])];
+  if (box[2] <= box[0] || box[3] <= box[1]) return null;
+  const [w, h] = boxKm(box);
+  return w >= MIN_BOX_KM && h >= MIN_BOX_KM ? box.map((v) => Math.round(v * 1e5) / 1e5) : null;
+}
+
+/** Box from the `box=W,S,E,N` deep-link value, or null if malformed or not usable in the region. */
+export function parseBox(v: string | null | undefined, region: number[]): number[] | null {
+  if (!v || !/^-?\d+(\.\d+)?(,-?\d+(\.\d+)?){3}$/.test(v)) return null;
+  const n = v.split(",").map(Number);
+  return boxFromCorners([n[0], n[1]], [n[2], n[3]], region);
+}

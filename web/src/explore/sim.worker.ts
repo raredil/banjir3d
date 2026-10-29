@@ -1,5 +1,6 @@
 import { LocalInertial } from "./local-inertial";
-import { FRAME_SECONDS, MM_PER_H, clampScenario, riverCells, type Scenario } from "./scenario";
+import { frameSeconds, MM_PER_H, clampScenario, edgesOf, hyetographOf, riverCells, type Scenario } from "./scenario";
+import { durationS, rainRate } from "./rain";
 
 export type RunMsg = { type: "run"; z: Float64Array; nx: number; ny: number; dx: number; dy: number; scenario: Scenario; manningField?: Float64Array };
 export type OutMsg =
@@ -15,19 +16,19 @@ self.onmessage = async (ev: MessageEvent<RunMsg | { type: "cancel" }>) => {
   if (m.type === "cancel") { cancelled = true; return; }
   cancelled = false;
   const sc = clampScenario(m.scenario);
+  const hy = hyetographOf(sc);
   const s = new LocalInertial({ nx: m.nx, ny: m.ny, dx: m.dx, dy: m.dy, z: m.z }, {
-    manning: sc.manning, manningField: m.manningField, openNorth: true, outflowSlope: 0.0005, inflowCells: sc.inflowM3s > 0 ? riverCells(m.z, m.nx, m.ny) : [],
+    manning: sc.manning, manningField: m.manningField, openEdges: edgesOf(sc), inflowCells: sc.inflowM3s > 0 ? riverCells(m.z, m.nx, m.ny) : [],
   });
   s.drain = sc.drainMmH * MM_PER_H;
-  s.inflow = sc.inflowM3s;
-  const total = sc.totalHours * 3600, rainEnd = sc.rainHours * 3600;
+  const total = sc.totalHours * 3600, rainEnd = durationS(hy), every = frameSeconds(sc.totalHours);
   const maxDepth = new Float32Array(m.nx * m.ny);
   const t0 = performance.now();
   let steps = 0, nextFrame = 0, index = 0, yieldAt = performance.now() + 40;
-  const emit = () => { post({ type: "frame", index: index++, t: s.t, depth: Float32Array.from(s.h) }); nextFrame += FRAME_SECONDS; };
+  const emit = () => { post({ type: "frame", index: index++, t: s.t, depth: Float32Array.from(s.h) }); nextFrame += every; };
   emit();
   while (s.t < total && !cancelled) {
-    s.rain = s.t < rainEnd ? sc.rainMmH * MM_PER_H : 0;
+    s.rain = rainRate(hy, s.t);
     s.inflow = s.t < rainEnd ? sc.inflowM3s : 0;
     s.step(); steps++;
     for (let c = 0; c < maxDepth.length; c++) if (s.h[c] > maxDepth[c]) maxDepth[c] = s.h[c];

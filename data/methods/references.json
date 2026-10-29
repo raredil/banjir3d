@@ -1,0 +1,314 @@
+{
+ "style": "Harvard (Cite Them Right). In-text: up to three surnames, four or more = first surname et al.",
+ "verified": "research/phase2-methods-sources.md (2026-10-29). Only peer-reviewed papers, official datasets with DOI, standards, agency manuals and textbooks.",
+ "references": [
+  {
+   "key": "abidin2011",
+   "type": "article",
+   "authors": [
+    "Abidin, H.Z.",
+    "Andreas, H.",
+    "Gumilar, I.",
+    "Fukuda, Y.",
+    "Pohan, Y.E.",
+    "Deguchi, T."
+   ],
+   "year": 2011,
+   "title": "Land subsidence of Jakarta (Indonesia) and its relation with urban development",
+   "journal": "Natural Hazards",
+   "volume": "59",
+   "issue": "3",
+   "pages": "1753–1771",
+   "doi": "10.1007/s11069-011-9866-9"
+  },
+  {
+   "key": "arcement1989",
+   "type": "report",
+   "authors": [
+    "Arcement, G.J.",
+    "Schneider, V.R."
+   ],
+   "year": 1989,
+   "title": "Guide for selecting Manning's roughness coefficients for natural channels and flood plains",
+   "series": "U.S. Geological Survey Water-Supply Paper 2339",
+   "place": "Denver",
+   "publisher": "U.S. Geological Survey",
+   "url": "https://pubs.usgs.gov/wsp/2339/report.pdf"
+  },
+  {
+   "key": "bates2010",
+   "type": "article",
+   "authors": [
+    "Bates, P.D.",
+    "Horritt, M.S.",
+    "Fewtrell, T.J."
+   ],
+   "year": 2010,
+   "title": "A simple inertial formulation of the shallow water equations for efficient two-dimensional flood inundation modelling",
+   "journal": "Journal of Hydrology",
+   "volume": "387",
+   "issue": "1–2",
+   "pages": "33–45",
+   "doi": "10.1016/j.jhydrol.2010.03.027"
+  },
+  {
+   "key": "beretta2018",
+   "type": "article",
+   "authors": [
+    "Beretta, R.",
+    "Ravazzani, G.",
+    "Maiorano, C.",
+    "Mancini, M."
+   ],
+   "year": 2018,
+   "title": "Simulating the influence of buildings on flood inundation in urban areas",
+   "journal": "Geosciences",
+   "volume": "8",
+   "issue": "2",
+   "pages": "77",
+   "doi": "10.3390/geosciences8020077"
+  },
+  {
+   "key": "bsn2016",
+   "type": "standard",
+   "authors": [
+    "Badan Standardisasi Nasional"
+   ],
+   "org": true,
+   "short": "BSN",
+   "year": 2016,
+   "title": "SNI 2415:2016 Tata cara perhitungan debit banjir rencana",
+   "place": "Jakarta",
+   "publisher": "Badan Standardisasi Nasional"
+  },
+  {
+   "key": "chow1959",
+   "type": "book",
+   "authors": [
+    "Chow, V.T."
+   ],
+   "year": 1959,
+   "title": "Open-channel hydraulics",
+   "place": "New York",
+   "publisher": "McGraw-Hill"
+  },
+  {
+   "key": "chow1988",
+   "type": "book",
+   "authors": [
+    "Chow, V.T.",
+    "Maidment, D.R.",
+    "Mays, L.W."
+   ],
+   "year": 1988,
+   "title": "Applied hydrology",
+   "place": "New York",
+   "publisher": "McGraw-Hill",
+   "isbn": "0-07-010810-2"
+  },
+  {
+   "key": "dealmeida2012",
+   "type": "article",
+   "authors": [
+    "de Almeida, G.A.M.",
+    "Bates, P.",
+    "Freer, J.E.",
+    "Souvignet, M."
+   ],
+   "year": 2012,
+   "title": "Improving the stability of a simple formulation of the shallow water equations for 2-D flood modeling",
+   "journal": "Water Resources Research",
+   "volume": "48",
+   "pages": "W05528",
+   "doi": "10.1029/2011WR011570"
+  },
+  {
+   "key": "dealmeida2013",
+   "type": "article",
+   "authors": [
+    "de Almeida, G.A.M.",
+    "Bates, P."
+   ],
+   "year": 2013,
+   "title": "Applicability of the local inertial approximation of the shallow water equations to flood modeling",
+   "journal": "Water Resources Research",
+   "volume": "49",
+   "issue": "8",
+   "pages": "4833–4844",
+   "doi": "10.1002/wrcr.20366"
+  },
+  {
+   "key": "hawker2022",
+   "type": "article",
+   "authors": [
+    "Hawker, L.",
+    "Uhe, P.",
+    "Paulo, L.",
+    "Sosa, J.",
+    "Savage, J.",
+    "Sampson, C.",
+    "Neal, J."
+   ],
+   "year": 2022,
+   "title": "A 30 m global map of elevation with forests and buildings removed",
+   "journal": "Environmental Research Letters",
+   "volume": "17",
+   "pages": "024016",
+   "doi": "10.1088/1748-9326/ac4d4f"
+  },
+  {
+   "key": "hecras2d",
+   "type": "web",
+   "authors": [
+    "U.S. Army Corps of Engineers Hydrologic Engineering Center"
+   ],
+   "org": true,
+   "short": "USACE HEC",
+   "year": "n.d.",
+   "title": "HEC-RAS 2D user's manual, version 6.6: land classification layers",
+   "url": "https://www.hec.usace.army.mil/confluence/rasdocs/rmum/6.6/land-classification-layers",
+   "accessed": "29 October 2026"
+  },
+  {
+   "key": "hunter2005",
+   "type": "article",
+   "authors": [
+    "Hunter, N.M.",
+    "Horritt, M.S.",
+    "Bates, P.D.",
+    "Wilson, M.D.",
+    "Werner, M.G.F."
+   ],
+   "year": 2005,
+   "title": "An adaptive time step solution for raster-based storage cell modelling of floodplain inundation",
+   "journal": "Advances in Water Resources",
+   "volume": "28",
+   "pages": "975–991",
+   "doi": "10.1016/j.advwatres.2005.03.007"
+  },
+  {
+   "key": "leijnse2021",
+   "type": "article",
+   "authors": [
+    "Leijnse, T.",
+    "van Ormondt, M.",
+    "Nederhoff, K.",
+    "van Dongeren, A."
+   ],
+   "year": 2021,
+   "title": "Modeling compound flooding in coastal systems using a computationally efficient reduced-physics solver: including fluvial, pluvial, tidal, wind- and wave-driven processes",
+   "journal": "Coastal Engineering",
+   "volume": "163",
+   "pages": "103796",
+   "doi": "10.1016/j.coastaleng.2020.103796"
+  },
+  {
+   "key": "lubis2022",
+   "type": "article",
+   "authors": [
+    "Lubis, S.W.",
+    "Hagos, S.",
+    "Hermawan, E.",
+    "Respati, M.R.",
+    "Ridho, A.",
+    "Risyanto",
+    "Paski, J.A.I.",
+    "Muhammad, F.R.",
+    "Siswanto",
+    "Ratri, D.N.",
+    "Setiawan, S.",
+    "Permana, D.S."
+   ],
+   "year": 2022,
+   "title": "Record-breaking precipitation in Indonesia's capital of Jakarta in early January 2020 linked to the northerly surge, equatorial waves, and MJO",
+   "journal": "Geophysical Research Letters",
+   "volume": "49",
+   "issue": "22",
+   "doi": "10.1029/2022GL101513"
+  },
+  {
+   "key": "maitsa2021",
+   "type": "article",
+   "authors": [
+    "Maitsa, T.R.",
+    "Kuntoro, A.A.",
+    "Septiadi, D."
+   ],
+   "year": 2021,
+   "title": "Analisis tren perubahan intensitas hujan (studi kasus: Jakarta dan Bogor)",
+   "journal": "Jurnal Teknik Sipil",
+   "volume": "28",
+   "issue": "2",
+   "pages": "163–172",
+   "doi": "10.5614/jts.2021.28.2.5"
+  },
+  {
+   "key": "neelz2013",
+   "type": "report",
+   "authors": [
+    "Néelz, S.",
+    "Pender, G."
+   ],
+   "year": 2013,
+   "title": "Benchmarking the latest generation of 2D hydraulic modelling packages",
+   "series": "Report SC120002",
+   "place": "Bristol",
+   "publisher": "Environment Agency",
+   "url": "https://www.gov.uk/government/publications/benchmarking-the-latest-generation-of-2d-hydraulic-flood-modelling-packages"
+  },
+  {
+   "key": "stephens2014",
+   "type": "article",
+   "authors": [
+    "Stephens, E.",
+    "Schumann, G.",
+    "Bates, P."
+   ],
+   "year": 2014,
+   "title": "Problems with binary pattern measures for flood model evaluation",
+   "journal": "Hydrological Processes",
+   "volume": "28",
+   "issue": "18",
+   "pages": "4928–4937",
+   "doi": "10.1002/hyp.9979"
+  },
+  {
+   "key": "vanormondt2025",
+   "type": "article",
+   "authors": [
+    "van Ormondt, M.",
+    "Leijnse, T.",
+    "de Goede, R.",
+    "Nederhoff, K.",
+    "van Dongeren, A."
+   ],
+   "year": 2025,
+   "title": "Subgrid corrections for the linear inertial equations of a compound flood model – a case study using SFINCS 2.1.1 Dollerup release",
+   "journal": "Geoscientific Model Development",
+   "volume": "18",
+   "pages": "843–861",
+   "doi": "10.5194/gmd-18-843-2025"
+  },
+  {
+   "key": "zanaga2022",
+   "type": "dataset",
+   "authors": [
+    "Zanaga, D.",
+    "Van De Kerchove, R.",
+    "Daems, D.",
+    "De Keersmaecker, W.",
+    "Brockmann, C.",
+    "Kirches, G.",
+    "Wevers, J.",
+    "Cartus, O.",
+    "Santoro, M.",
+    "Fritz, S."
+   ],
+   "etal": true,
+   "year": 2022,
+   "title": "ESA WorldCover 10 m 2021 v200",
+   "publisher": "Zenodo",
+   "doi": "10.5281/zenodo.7254221"
+  }
+ ]
+}

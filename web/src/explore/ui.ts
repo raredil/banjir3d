@@ -1,18 +1,20 @@
 import type { CanvasSource, Map as MlMap } from "maplibre-gl";
 import { t, type Key } from "../i18n";
-import { loadDem, loadLandCover, gridWindow, type GridWindow } from "./dem-grid";
+import { aggregationFor, gridWindow, loadDem, loadLandCover, type GridWindow } from "./dem-grid";
 import { nFieldFromCodes, type RoughMode } from "./roughness";
 import { paintDepth } from "./palette";
-import { DEFAULT_SCENARIO, clampScenario, type Scenario } from "./scenario";
+import { parseHourly, totalMm } from "./rain";
+import { DEFAULT_SCENARIO, clampScenario, hyetographOf, type RainMode, type Scenario } from "./scenario";
 import type { OutMsg, RunMsg } from "./sim.worker";
 
 type Opts = { demUrl: string; landUrl: string; bbox: number[]; cap: HTMLElement; onActive: (active: boolean) => void };
+// Documented cases only: the 1 Jan 2020 event (Lubis et al. 2022) and the case used for the SFINCS comparison.
 const PRESETS: Record<string, Partial<Scenario>> = {
-  moderate: { rainMmH: 50, rainHours: 2, drainMmH: 20, inflowM3s: 0, totalHours: 6 },
-  heavy: { rainMmH: 100, rainHours: 3, drainMmH: 20, inflowM3s: 0, totalHours: 8 },
-  extreme: { rainMmH: 150, rainHours: 3, drainMmH: 20, inflowM3s: 300, totalHours: 8 },
+  jan2020: { rainMode: "design", r24: 377, stormHours: 24, totalHours: 30, drainMmH: 0, inflowM3s: 0, open: true },
+  sfincs: { rainMode: "constant", rainMmH: 100, rainHours: 3, totalHours: 8, drainMmH: 0, inflowM3s: 0, open: false },
 };
 const RAMP = "linear-gradient(90deg,#d7e6f4,#9ecae1,#4292c6,#2171b5,#08306b)";
+const FLOOD_M = 0.15; // flooded-area threshold: lower bound of the second depth class (BLUEPRINT 8), above the 0.05 m wet/dry limit
 
 const fmtTime = (s: number) => `${Math.floor(s / 3600)} h ${String(Math.round((s % 3600) / 60)).padStart(2, "0")} min`;
 
@@ -20,15 +22,30 @@ export function mountExplore(map: MlMap, box: HTMLElement, o: Opts) {
   const d = DEFAULT_SCENARIO;
   const slider = (id: string, key: Key, min: number, max: number, step: number, v: number, unit: string) =>
     `<label class="opacity s3-ctl"><span>${t(key)}</span><input type="range" id="${id}" min="${min}" max="${max}" step="${step}" value="${v}"><output id="${id}-v" data-unit="${unit}">${v} ${unit}</output></label>`;
+  const k = aggregationFor(o.bbox);
+  const win: GridWindow = gridWindow(o.bbox, k);
   box.innerHTML = `
     <div class="group"><h3>${t("ex.title")}</h3>
-      <div class="ex-presets">${Object.keys(PRESETS).map((k) => `<button class="chip" type="button" data-preset="${k}">${t(`ex.p.${k}` as Key)}</button>`).join("")}</div>
-      ${slider("ex-rain", "ex.rain", 0, 200, 5, d.rainMmH, "mm/h")}
-      ${slider("ex-rainh", "ex.rainh", 0.5, 12, 0.5, d.rainHours, "h")}
+      <p class="crs-note">${t("ex.grid").replace("{nx}", String(win.nx)).replace("{ny}", String(win.ny)).replace("{d}", win.dx.toFixed(0))}${k > 1 ? " " + t("ex.coarse") : ""}</p>
+      <div class="ex-presets">${Object.keys(PRESETS).map((p) => `<button class="chip" type="button" data-preset="${p}" title="${t(`ex.p.${p}.d` as Key)}">${t(`ex.p.${p}` as Key)}</button>`).join("")}</div>
+      <label class="opacity s3-ctl"><span>${t("ex.rainmode")}</span><select id="ex-mode">${(["design", "hourly", "constant"] as const).map((m) => `<option value="${m}">${t(`ex.mode.${m}` as Key)}</option>`).join("")}</select></label>
+      <div data-mode="design">
+        ${slider("ex-r24", "ex.r24", 0, 500, 1, d.r24, "mm")}
+        ${slider("ex-storm", "ex.storm", 1, 24, 1, d.stormHours, "h")}
+      </div>
+      <div data-mode="hourly" hidden>
+        <label class="s3-ctl ex-text"><span>${t("ex.hourly")}</span><textarea id="ex-hourly" rows="2" spellcheck="false" placeholder="5, 20, 60, 35, 10"></textarea></label>
+      </div>
+      <div data-mode="constant" hidden>
+        ${slider("ex-rain", "ex.rain", 0, 200, 5, d.rainMmH, "mm/h")}
+        ${slider("ex-rainh", "ex.rainh", 0.5, 12, 0.5, d.rainHours, "h")}
+      </div>
+      <p class="crs-note" id="ex-rainsum"></p>
       ${slider("ex-drain", "ex.drain", 0, 100, 5, d.drainMmH, "mm/h")}
       ${slider("ex-inflow", "ex.inflow", 0, 600, 25, d.inflowM3s, "m³/s")}
-      ${slider("ex-total", "ex.total", 1, 12, 1, d.totalHours, "h")}
+      ${slider("ex-total", "ex.total", 1, 48, 1, d.totalHours, "h")}
       <label class="opacity s3-ctl"><span>${t("ex.rough")}</span><select id="ex-rough">${(["n", "low", "high", "uniform"] as const).map((m) => `<option value="${m}">${t(`ex.rough.${m}` as Key)}</option>`).join("")}</select></label>
+      <label class="opacity s3-ctl"><span>${t("ex.edges")}</span><select id="ex-edges"><option value="open">${t("ex.edges.open")}</option><option value="closed">${t("ex.edges.closed")}</option></select></label>
       <div class="ex-actions"><button class="chip primary" id="ex-run" type="button">${t("ex.run")}</button><button class="chip" id="ex-cancel" type="button" hidden>${t("ex.cancel")}</button><button class="chip" id="ex-clear" type="button" hidden>${t("ex.clear")}</button></div>
       <div class="ex-status" id="ex-status" role="status"></div>
       <div id="ex-result" hidden>
@@ -38,23 +55,48 @@ export function mountExplore(map: MlMap, box: HTMLElement, o: Opts) {
         <div class="ex-stats" id="ex-stats"></div>
       </div>
       <div class="notice">${t("ex.warn")}</div>
-      <p class="crs-note">${t("ex.note")}</p>
+      <p class="crs-note">${t("ex.note")} <a href="#/methods">${t("ex.methods")}</a></p>
     </div>`;
   const $ = <T extends HTMLElement>(id: string) => box.querySelector<T>(`#${id}`)!;
   const num = (id: string) => Number($<HTMLInputElement>(id).value);
+
+  const read = (): Scenario | null => {
+    const mode = $<HTMLSelectElement>("ex-mode").value as RainMode;
+    const hourly = mode === "hourly" ? parseHourly($<HTMLTextAreaElement>("ex-hourly").value) : null;
+    if (mode === "hourly" && !hourly) return null;
+    return clampScenario({
+      rainMode: mode, r24: num("ex-r24"), stormHours: num("ex-storm"), hourly: hourly?.mm ?? [], rainMmH: num("ex-rain"), rainHours: num("ex-rainh"),
+      drainMmH: num("ex-drain"), inflowM3s: num("ex-inflow"), totalHours: num("ex-total"), manning: d.manning, open: $<HTMLSelectElement>("ex-edges").value === "open",
+    });
+  };
+  const summarize = () => {
+    const mode = $<HTMLSelectElement>("ex-mode").value;
+    box.querySelectorAll<HTMLElement>("[data-mode]").forEach((el) => (el.hidden = el.dataset.mode !== mode));
+    const sc = read();
+    if (!sc) { $("ex-rainsum").textContent = t("ex.hourlybad"); return; }
+    const hy = hyetographOf(sc);
+    const peak = Math.max(0, ...hy.mm.map((v) => (v * 3600) / hy.blockSeconds));
+    $("ex-rainsum").textContent = t(`ex.sum.${sc.rainMode}` as Key).replace("{mm}", totalMm(hy).toFixed(0)).replace("{h}", String((hy.mm.length * hy.blockSeconds) / 3600)).replace("{p}", peak.toFixed(0));
+  };
   for (const el of box.querySelectorAll<HTMLInputElement>('input[type="range"][id^="ex-"]')) {
     const out = box.querySelector<HTMLElement>(`#${el.id}-v`);
-    if (out) el.addEventListener("input", () => (out.textContent = `${el.value} ${out.dataset.unit}`));
+    el.addEventListener("input", () => { if (out) out.textContent = `${el.value} ${out.dataset.unit}`; summarize(); });
   }
+  $("ex-mode").addEventListener("change", summarize);
+  $("ex-hourly").addEventListener("input", summarize);
   box.querySelectorAll<HTMLButtonElement>("[data-preset]").forEach((b) =>
     b.addEventListener("click", () => {
       const p = PRESETS[b.dataset.preset!];
       const set = (id: string, v: number | undefined) => { if (v === undefined) return; const el = $<HTMLInputElement>(id); el.value = String(v); el.dispatchEvent(new Event("input")); };
-      set("ex-rain", p.rainMmH); set("ex-rainh", p.rainHours); set("ex-drain", p.drainMmH); set("ex-inflow", p.inflowM3s); set("ex-total", p.totalHours);
+      if (p.rainMode) $<HTMLSelectElement>("ex-mode").value = p.rainMode;
+      if (p.open !== undefined) $<HTMLSelectElement>("ex-edges").value = p.open ? "open" : "closed";
+      set("ex-r24", p.r24); set("ex-storm", p.stormHours); set("ex-rain", p.rainMmH); set("ex-rainh", p.rainHours);
+      set("ex-drain", p.drainMmH); set("ex-inflow", p.inflowM3s); set("ex-total", p.totalHours);
+      summarize();
     }));
+  summarize();
 
   // overlay: the simulation grid drawn as an image draped on the terrain
-  const win: GridWindow = gridWindow(o.bbox);
   const canvas = document.createElement("canvas");
   canvas.width = win.nx; canvas.height = win.ny;
   const ctx2 = canvas.getContext("2d")!;
@@ -68,7 +110,8 @@ export function mountExplore(map: MlMap, box: HTMLElement, o: Opts) {
     if (!depth) ctx2.clearRect(0, 0, win.nx, win.ny);
     else { paintDepth(depth, img.data); ctx2.putImageData(img, 0, 0); }
     // upload the new pixels on the next render, then stop animating again
-    const src = map.getSource("flood") as CanvasSource;
+    const src = map.getSource("flood") as CanvasSource | undefined;
+    if (!src) return;
     src.play();
     map.once("render", () => src.pause());
     // A layer draped on 3D terrain is cached per terrain tile; a tiny paint change makes MapLibre redraw those tiles.
@@ -95,7 +138,7 @@ export function mountExplore(map: MlMap, box: HTMLElement, o: Opts) {
     const showMax = $<HTMLInputElement>("ex-max").checked && maxDepth;
     const i = Math.min(Number($<HTMLInputElement>("ex-frame").value), frames.length - 1);
     draw(showMax ? maxDepth : frames[i]);
-    $("ex-time").textContent = showMax ? t("ex.maxlabel") : fmtTime(times[i]);
+    $("ex-time").textContent = showMax ? t("ex.maxshort") : fmtTime(times[i]);
     setCap(t("ex.cap").replace("{t}", showMax ? t("ex.maxlabel") : fmtTime(times[i])));
   };
   const stopPlay = () => { if (playTimer) clearInterval(playTimer); playTimer = undefined; $("ex-play").textContent = t("ex.play"); };
@@ -113,11 +156,13 @@ export function mountExplore(map: MlMap, box: HTMLElement, o: Opts) {
 
   $("ex-run").addEventListener("click", async () => {
     if (running) return;
+    const scenario = read();
+    if (!scenario) { status(t("ex.hourlybad")); return; }
     stopPlay(); frames = []; times = []; maxDepth = null;
     $("ex-result").hidden = true; $("ex-stats").textContent = "";
     setRunning(true); status(t("ex.loading"));
     try {
-      dem ??= await loadDem(o.demUrl, o.bbox);
+      dem ??= await loadDem(o.demUrl, o.bbox, k);
     } catch {
       setRunning(false); status(t("ex.err")); return;
     }
@@ -125,7 +170,7 @@ export function mountExplore(map: MlMap, box: HTMLElement, o: Opts) {
     let field: Float64Array | undefined;
     if (mode !== "uniform") {
       try {
-        land ??= await loadLandCover(o.landUrl, o.bbox);
+        land ??= await loadLandCover(o.landUrl, o.bbox, k);
         field = nFieldFromCodes(land.codes, land.nx, land.ny, land.f, mode);
       } catch {
         mode = "uniform"; status(t("ex.roughfail"));
@@ -133,7 +178,6 @@ export function mountExplore(map: MlMap, box: HTMLElement, o: Opts) {
     }
     roughLabel = t(`ex.rough.${mode}` as Key);
     roughMean = field ? field.reduce((a, v) => a + v, 0) / field.length : d.manning;
-    const scenario = clampScenario({ rainMmH: num("ex-rain"), rainHours: num("ex-rainh"), drainMmH: num("ex-drain"), inflowM3s: num("ex-inflow"), totalHours: num("ex-total"), manning: d.manning });
     worker?.terminate();
     worker = new Worker(new URL("./sim.worker.ts", import.meta.url), { type: "module" });
     worker.onerror = () => { setRunning(false); status(t("ex.err")); };
@@ -151,7 +195,7 @@ export function mountExplore(map: MlMap, box: HTMLElement, o: Opts) {
       } else {
         maxDepth = m.maxDepth; setRunning(false);
         let peak = 0, wet = 0;
-        for (const v of maxDepth) { if (v > peak) peak = v; if (v > 0.1) wet++; }
+        for (const v of maxDepth) { if (v > peak) peak = v; if (v > FLOOD_M) wet++; }
         const area = (wet * dem!.dx * dem!.dy) / 1e6;
         status(t("ex.done"));
         $("ex-stats").textContent = t("ex.stats").replace("{peak}", peak.toFixed(2)).replace("{area}", area.toFixed(2)).replace("{err}", m.massError.toExponential(1)).replace("{s}", (m.wallMs / 1000).toFixed(1)) + " " + t("ex.roughstat").replace("{m}", roughLabel).replace("{n}", roughMean.toFixed(3));
@@ -177,5 +221,11 @@ export function mountExplore(map: MlMap, box: HTMLElement, o: Opts) {
       fr.value = String(next); show();
     }, 140);
   });
-  return { destroy() { stopPlay(); worker?.terminate(); } };
+  return {
+    destroy() {
+      stopPlay(); worker?.terminate(); o.onActive(false); setCap("");
+      if (map.getLayer("flood")) map.removeLayer("flood");
+      if (map.getSource("flood")) map.removeSource("flood");
+    },
+  };
 }
