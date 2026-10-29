@@ -16,7 +16,7 @@ const GLYPHS = "https://tiles.openfreemap.org/fonts/{fontstack}/{range}.pbf";
 const FONT = ["Noto Sans Regular"];
 let protocolAdded = false;
 
-type Ctx = { regionId: string; region: { bbox: number[]; name: string; domain?: string }; manifest: Manifest | null; catalog: Catalog; dataBase: string; at?: string | null };
+type Ctx = { regionId: string; region: { bbox: number[]; name: string; domain?: string }; manifest: Manifest | null; catalog: Catalog; dataBase: string; at?: string | null; sample?: number[] | null };
 
 function attributionFor(def: LayerDef, catalog: Catalog): string {
   const d = catalog.datasets.find((x) => x.id === def.catalogId);
@@ -78,11 +78,12 @@ function mlLayers(def: LayerDef, src: string): LayerSpecification[] {
         { id: `${def.id}-line`, type: "line", source: src, layout: { visibility: vis }, paint: { "line-color": "#d9480f", "line-width": 1.5 } },
         { id: `${def.id}-label`, type: "symbol", source: src, layout: { visibility: vis, "text-field": ["get", "code"], "text-font": FONT, "text-size": 13 }, paint: { "text-color": "#d9480f", "text-halo-color": "#ffffff", "text-halo-width": 1.5 } },
       ];
-    case "region":
-      return [
-        { id: def.id, type: "line", source: src, filter: ["==", ["get", "role"], "domain"], layout: { visibility: vis }, paint: { "line-color": "#e8590c", "line-width": 2.5 } },
-        { id: `${def.id}-admin`, type: "line", source: src, filter: ["==", ["get", "role"], "admin"], layout: { visibility: vis }, paint: { "line-color": "#7a2e0b", "line-width": 1.5, "line-dasharray": [4, 2] } },
-      ];
+    case "region": {
+      const base = { id: def.id, type: "line" as const, source: src, layout: { visibility: vis as "visible" | "none" } };
+      if (def.role === "admin") return [{ ...base, filter: ["==", ["get", "role"], "admin"], paint: { "line-color": "#7a2e0b", "line-width": 1.5, "line-dasharray": [4, 2] } }];
+      if (def.role === "sample") return [{ ...base, filter: ["==", ["get", "role"], "sample"], paint: { "line-color": "#9c36b5", "line-width": 2.2, "line-dasharray": [2, 1.5] } }];
+      return [{ ...base, filter: ["==", ["get", "role"], "domain"], paint: { "line-color": "#e8590c", "line-width": 2.5 } }];
+    }
   }
 }
 
@@ -109,7 +110,7 @@ export async function renderMap(root: HTMLElement, ctx: Ctx) {
     protocolAdded = true;
   }
   const files = displayFiles(ctx.manifest);
-  const available = (d: LayerDef) => !d.file || files.has(d.file);
+  const available = (d: LayerDef) => (d.role === "sample" ? !!ctx.sample : !d.file || files.has(d.file));
   const packInfo = ctx.manifest
     ? `<div class="pack-info">${t("pack.built")}: <span class="mono">${esc(ctx.manifest.created.slice(0, 10))}</span>${ctx.manifest.layers.filter((l) => l.status === "failed").length ? ` · <span class="warn">${ctx.manifest.layers.filter((l) => l.status === "failed").map((l) => esc(l.dataset)).join(", ")}: ${t("status.failed")}</span>` : ""}</div>`
     : `<div class="notice">${t("nopack")}</div>`;
@@ -162,10 +163,14 @@ export async function renderMap(root: HTMLElement, ctx: Ctx) {
     const firstSymbol = map.getStyle().layers.find((l) => l.type === "symbol")?.id;
     for (const def of LAYERS) {
       if (!available(def)) continue;
-      const src = `src-${def.file ?? def.id}`;
+      const src = def.kind === "region" ? (def.role === "sample" ? "src-sample" : "src-region") : `src-${def.file ?? def.id}`;
       if (!map.getSource(src)) {
         const attribution = attributionFor(def, ctx.catalog);
         if (def.kind === "demnas-grid") map.addSource(src, { type: "geojson", data: tileGrid });
+        else if (def.kind === "region" && def.role === "sample") {
+          const [sw, ss, se, sn] = ctx.sample!;
+          map.addSource(src, { type: "geojson", data: { type: "Feature", properties: { role: "sample" }, geometry: { type: "Polygon", coordinates: [[[sw, ss], [se, ss], [se, sn], [sw, sn], [sw, ss]]] } } });
+        }
         else if (def.kind === "region") map.addSource(src, { type: "geojson", data: domain ?? { type: "Feature", properties: { role: "domain" }, geometry: { type: "Polygon", coordinates: [[[w, s], [e, s], [e, n], [w, n], [w, s]]] } } });
         else {
           const url = `pmtiles://${new URL(`${ctx.dataBase}/${def.file}`, location.href).href}`;
