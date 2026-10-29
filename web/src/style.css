@@ -120,6 +120,19 @@ select { font: inherit; color: var(--ink); background: var(--surface-2); border:
 .s3-caption { position: absolute; left: 10px; top: 10px; max-width: 440px; background: rgb(255 255 255 / 94%); color: #7a1d22; border: 1px solid #e3b4b7; padding: 7px 11px; border-radius: 8px; font-size: 12px; font-weight: 600; line-height: 1.35; pointer-events: none; }
 .s3-caption:empty { display: none; }
 
+/* explore engine panel */
+.ex-presets { display: flex; gap: 6px; flex-wrap: wrap; margin: 4px 0 6px; }
+.ex-actions { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px; }
+.ex-actions .chip[hidden] { display: none; }
+.chip.primary { background: var(--accent); color: #fff; border-color: var(--accent); }
+.chip:disabled { opacity: 0.55; cursor: default; }
+.ex-status { font-size: 12px; color: var(--ink-2); margin-top: 8px; min-height: 1.4em; }
+.ex-timeline { display: flex; align-items: center; gap: 8px; margin: 8px 0 4px; font-size: 12px; }
+.ex-timeline input { flex: 1; accent-color: var(--accent); }
+.ex-timeline output { min-width: 62px; text-align: right; font-family: var(--mono); font-size: 11.5px; }
+.ex-stats { font-size: 12px; color: var(--ink-2); margin-top: 8px; line-height: 1.4; }
+#explore-box .notice { margin-top: 10px; }
+
 /* catalog */
 .catalog-page { max-width: 1180px; margin: 0 auto; padding: 28px 16px 64px; }
 .cat-head { display: flex; justify-content: space-between; align-items: flex-end; gap: 24px; flex-wrap: wrap; }

@@ -1,11 +1,11 @@
 # ROADMAP
-**Current position: Phase 0, step 5 — waiting for the first Region pack run + owner's DEMNAS upload.**
+**Current position: Phase 2 in progress (Explore engine v0 live on the 3D sample page, exploratory, not yet verified). Phase 1 done: the owner kept all three looks. Phase 0 still open: DEMNAS upload and licence text.**
 
 | Phase | Work | Gate (owner sees) | Status |
 |---|---|---|---|
 | 0 | Data & licences: verify datasets, catalog, region pack Action, DEMNAS guide | Data catalog page + 2D map with all layers | in progress |
-| 1 | Look-lock: 3D sample in 3 styles (Ciliwung 10 × 10 km) | Pick style | next |
-| 2 | Engines: Explore (WebGPU) + SFINCS Research Run, benchmarks | Same scenario in both engines | — |
+| 1 | Look-lock: 3D sample in 3 styles (Ciliwung 10 × 10 km) | Pick style | done (all three kept, selectable) |
+| 2 | Engines: Explore (WebGPU) + SFINCS Research Run, benchmarks | Same scenario in both engines | in progress (Explore v0 on CPU, ADR 0006) |
 | 3 | Provenance: record, Reproduce, export ZIP, CITATION.cff, Zenodo | ZIP with METHODS.md + REFERENCES.bib | — |
 | 4 | Validation: 2 events, CSI/Hit/FAR, sensitivity | Validation page | — |
 | 5 | Full region + live rain + ensembles | Probability map | — |
