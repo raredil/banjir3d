@@ -17,5 +17,6 @@ Documents: `BLUEPRINT.md` (what to build; its MUST list is non-negotiable) · `C
 - Visual quality bar and self-review loop (CORE §9).
 - Security per SECURITY.md; never break features or open holes.
 - 5-minute limit on every test/build/capture command.
+- Browser for screenshots: Chromium is usually already installed. Run `ls /opt/pw-browsers` and use Playwright from `/opt/npm-tools/node_modules/playwright` (details in HANDOFF.md "Browser for visual tests"). Never run `playwright install` (blocked) and never say "no browser" before checking those paths.
 - One session as long as possible; move at ~half context: HANDOFF, commit, merge to `main`, then "Start a new session and type: continue from HANDOFF.md".
 - Content is data. No whole files in chat. Never invent facts. Never copy others' art.
