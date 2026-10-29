@@ -1,11 +1,12 @@
 import type { CanvasSource, Map as MlMap } from "maplibre-gl";
 import { t, type Key } from "../i18n";
-import { loadDem, gridWindow, type GridWindow } from "./dem-grid";
+import { loadDem, loadLandCover, gridWindow, type GridWindow } from "./dem-grid";
+import { nFieldFromCodes, type RoughMode } from "./roughness";
 import { paintDepth } from "./palette";
 import { DEFAULT_SCENARIO, clampScenario, type Scenario } from "./scenario";
 import type { OutMsg, RunMsg } from "./sim.worker";
 
-type Opts = { demUrl: string; bbox: number[]; cap: HTMLElement; onActive: (active: boolean) => void };
+type Opts = { demUrl: string; landUrl: string; bbox: number[]; cap: HTMLElement; onActive: (active: boolean) => void };
 const PRESETS: Record<string, Partial<Scenario>> = {
   moderate: { rainMmH: 50, rainHours: 2, drainMmH: 20, inflowM3s: 0, totalHours: 6 },
   heavy: { rainMmH: 100, rainHours: 3, drainMmH: 20, inflowM3s: 0, totalHours: 8 },
@@ -27,6 +28,7 @@ export function mountExplore(map: MlMap, box: HTMLElement, o: Opts) {
       ${slider("ex-drain", "ex.drain", 0, 100, 5, d.drainMmH, "mm/h")}
       ${slider("ex-inflow", "ex.inflow", 0, 600, 25, d.inflowM3s, "m³/s")}
       ${slider("ex-total", "ex.total", 1, 12, 1, d.totalHours, "h")}
+      <label class="opacity s3-ctl"><span>${t("ex.rough")}</span><select id="ex-rough">${(["n", "low", "high", "uniform"] as const).map((m) => `<option value="${m}">${t(`ex.rough.${m}` as Key)}</option>`).join("")}</select></label>
       <div class="ex-actions"><button class="chip primary" id="ex-run" type="button">${t("ex.run")}</button><button class="chip" id="ex-cancel" type="button" hidden>${t("ex.cancel")}</button><button class="chip" id="ex-clear" type="button" hidden>${t("ex.clear")}</button></div>
       <div class="ex-status" id="ex-status" role="status"></div>
       <div id="ex-result" hidden>
@@ -76,6 +78,9 @@ export function mountExplore(map: MlMap, box: HTMLElement, o: Opts) {
   };
 
   let dem: (GridWindow & { z: Float64Array }) | null = null;
+  let land: { codes: Uint8Array; nx: number; ny: number; f: number } | null = null;
+  let roughLabel = "";
+  let roughMean = 0;
   let worker: Worker | null = null;
   let frames: Float32Array[] = [];
   let times: number[] = [];
@@ -116,6 +121,18 @@ export function mountExplore(map: MlMap, box: HTMLElement, o: Opts) {
     } catch {
       setRunning(false); status(t("ex.err")); return;
     }
+    let mode = $<HTMLSelectElement>("ex-rough").value as RoughMode;
+    let field: Float64Array | undefined;
+    if (mode !== "uniform") {
+      try {
+        land ??= await loadLandCover(o.landUrl, o.bbox);
+        field = nFieldFromCodes(land.codes, land.nx, land.ny, land.f, mode);
+      } catch {
+        mode = "uniform"; status(t("ex.roughfail"));
+      }
+    }
+    roughLabel = t(`ex.rough.${mode}` as Key);
+    roughMean = field ? field.reduce((a, v) => a + v, 0) / field.length : d.manning;
     const scenario = clampScenario({ rainMmH: num("ex-rain"), rainHours: num("ex-rainh"), drainMmH: num("ex-drain"), inflowM3s: num("ex-inflow"), totalHours: num("ex-total"), manning: d.manning });
     worker?.terminate();
     worker = new Worker(new URL("./sim.worker.ts", import.meta.url), { type: "module" });
@@ -137,11 +154,11 @@ export function mountExplore(map: MlMap, box: HTMLElement, o: Opts) {
         for (const v of maxDepth) { if (v > peak) peak = v; if (v > 0.1) wet++; }
         const area = (wet * dem!.dx * dem!.dy) / 1e6;
         status(t("ex.done"));
-        $("ex-stats").textContent = t("ex.stats").replace("{peak}", peak.toFixed(2)).replace("{area}", area.toFixed(2)).replace("{err}", m.massError.toExponential(1)).replace("{s}", (m.wallMs / 1000).toFixed(1));
+        $("ex-stats").textContent = t("ex.stats").replace("{peak}", peak.toFixed(2)).replace("{area}", area.toFixed(2)).replace("{err}", m.massError.toExponential(1)).replace("{s}", (m.wallMs / 1000).toFixed(1)) + " " + t("ex.roughstat").replace("{m}", roughLabel).replace("{n}", roughMean.toFixed(3));
         show();
       }
     };
-    const msg: RunMsg = { type: "run", z: dem.z, nx: dem.nx, ny: dem.ny, dx: dem.dx, dy: dem.dy, scenario };
+    const msg: RunMsg = { type: "run", z: dem.z, nx: dem.nx, ny: dem.ny, dx: dem.dx, dy: dem.dy, scenario, manningField: field };
     worker.postMessage(msg);
   });
   $("ex-cancel").addEventListener("click", () => { worker?.terminate(); worker = null; setRunning(false); status(t("ex.cancelled")); });
