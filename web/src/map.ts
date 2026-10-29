@@ -1,11 +1,9 @@
 import "maplibre-gl/dist/maplibre-gl.css";
 import {
-  AttributionControl, Map as MlMap, NavigationControl, ScaleControl, addProtocol, setWorkerUrl,
+  AttributionControl, Map as MlMap, NavigationControl, ScaleControl,
   type LayerSpecification, type StyleSpecification,
 } from "maplibre-gl";
-// MapLibre 6 resolves its worker next to its own module; after bundling we point it at Vite's worker chunk.
-import workerUrl from "maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url";
-import { Protocol } from "pmtiles";
+import { ensurePmtiles } from "./pmtiles-init";
 import { t, type Key } from "./i18n";
 import { LAYERS, type LayerDef, type LegendItem } from "./layers";
 import type { Catalog, Manifest } from "./types";
@@ -14,7 +12,6 @@ import { esc, toUtm } from "./util";
 const BASEMAP = "https://tiles.openfreemap.org/styles/positron";
 const GLYPHS = "https://tiles.openfreemap.org/fonts/{fontstack}/{range}.pbf";
 const FONT = ["Noto Sans Regular"];
-let protocolAdded = false;
 
 type Ctx = { regionId: string; region: { bbox: number[]; name: string; domain?: string }; manifest: Manifest | null; catalog: Catalog; dataBase: string; at?: string | null; sample?: number[] | null };
 
@@ -103,12 +100,7 @@ function legendHtml(def: LayerDef, display: Record<string, unknown> | undefined)
 }
 
 export async function renderMap(root: HTMLElement, ctx: Ctx) {
-  if (!protocolAdded) {
-    setWorkerUrl(new URL(workerUrl, location.href).href);
-    const p = new Protocol();
-    addProtocol("pmtiles", p.tile);
-    protocolAdded = true;
-  }
+  ensurePmtiles();
   const files = displayFiles(ctx.manifest);
   const available = (d: LayerDef) => (d.role === "sample" ? !!ctx.sample : !d.file || files.has(d.file));
   const packInfo = ctx.manifest

@@ -34,6 +34,10 @@ async function route() {
     document.body.dataset.page = "catalog";
     renderCatalog(app, { ...s, focus: new URLSearchParams(query).get("d") ?? undefined });
     if (!query) window.scrollTo(0, 0);
+  } else if (path === "sample") {
+    document.body.dataset.page = "map";
+    const { renderSample } = await import("./sample3d");
+    current = await renderSample(app, { manifest: s.manifest, catalog: s.catalog, dataBase: DATA, sample: s.sample, look: new URLSearchParams(query).get("look") });
   } else {
     document.body.dataset.page = "map";
     const { renderMap } = await import("./map");
