@@ -1,0 +1,26 @@
+{
+ "nx": 263,
+ "ny": 264,
+ "cell_m": 37.993890778205525,
+ "rain_mm_h": 100,
+ "rain_h": 3,
+ "hours": 8,
+ "manning": 0.05,
+ "z_min": 1.0,
+ "z_max": 29.55078125,
+ "manning_source": "ESA WorldCover 2021 + data/roughness/worldcover-manning.json (n)",
+ "manning_field": true,
+ "class_fractions": {
+  "Tree cover": 0.1098,
+  "Grassland": 0.0142,
+  "Cropland": 0.0009,
+  "Built-up": 0.8708,
+  "Bare / sparse vegetation": 0.0008,
+  "Permanent water bodies": 0.0034,
+  "Herbaceous wetland": 0.0
+ },
+ "nodata_fraction": 0.0,
+ "n_mean": 0.14158563999668738,
+ "n_min": 0.0225,
+ "n_max": 0.15
+}

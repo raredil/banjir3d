@@ -1,0 +1,32 @@
+{
+  "id": "worldcover-manning",
+  "version": "0.1.0",
+  "status": "literature values, NOT calibrated for Jakarta. Run sensitivity (low and high) before any quantitative use.",
+  "landcover_dataset": "esa-worldcover-2021",
+  "unit": "s m^-1/3",
+  "how_used": "Cell value = mean of the class n over the WorldCover 10 m pixels inside the model cell. Face value = mean of the two neighbouring cell values (same as SFINCS).",
+  "classes": {
+    "10": { "label": "Tree cover", "n": 0.094, "low": 0.070, "high": 0.124, "basis": "HEC-RAS Table 3-1 / Chow (1959) floodplain trees and brush, medium of the plugin table" },
+    "20": { "label": "Shrubland", "n": 0.066, "low": 0.045, "high": 0.096, "basis": "HEC-RAS Table 3-1 / Chow (1959) medium to dense brush" },
+    "30": { "label": "Grassland", "n": 0.033, "low": 0.028, "high": 0.043, "basis": "HEC-RAS Table 3-1 / Chow (1959) pasture, short and high grass" },
+    "40": { "label": "Cropland", "n": 0.035, "low": 0.025, "high": 0.045, "basis": "HEC-RAS Table 3-1 / Chow (1959) mature row crops" },
+    "50": { "label": "Built-up", "n": 0.15, "low": 0.10, "high": 0.20, "basis": "Effective roughness for a bare-earth DEM (FABDEM removes buildings): 0.15 as in the HEC-RAS 2D manual for high-intensity development and Beretta et al. (2018). NOT the plugin value 0.018 (that is a smooth constructed channel). The low and high values are an assumed sensitivity range, not literature values; the literature shows very wide practice (Syme 2008) and resolution dependence (Neelz and Pender 2007)." },
+    "60": { "label": "Bare / sparse vegetation", "n": 0.0225, "low": 0.010, "high": 0.035, "basis": "NRCS Ch. 15 Table 15-1 smooth surface 0.011, HEC-RAS barren land 0.023 to 0.030" },
+    "80": { "label": "Permanent water bodies", "n": 0.035, "low": 0.025, "high": 0.045, "basis": "HEC-RAS land classification open water 0.025 to 0.05; Chow clean winding channel" },
+    "90": { "label": "Herbaceous wetland", "n": 0.09, "low": 0.06, "high": 0.12, "basis": "HEC-RAS emergent herbaceous wetlands 0.05 to 0.085; USGS WSP 2339 vegetation adjustment" },
+    "95": { "label": "Mangroves", "n": 0.225, "low": 0.15, "high": 0.30, "basis": "USGS WSP 2339 dense woody vegetation (plugin value, not used in the Jakarta sample)" }
+  },
+  "colors": { "10": "#006400", "20": "#ffbb22", "30": "#ffff4c", "40": "#f096ff", "50": "#fa0000", "60": "#b4b4b4", "80": "#0064c8", "90": "#0096a0", "95": "#00cf75" },
+  "default_n_for_nodata": 0.15,
+  "tables_from": "https://github.com/mabdazzam/mannings_roughness_generator (lookups/references.md, commit 827d5a0678da2a38459d0b8a5be26c2916947371), all classes except Built-up",
+  "references": [
+    "U.S. Army Corps of Engineers, Hydrologic Engineering Center. HEC-RAS Hydraulic Reference Manual, Table 3-1 Manning's n values (after Chow 1959). https://www.hec.usace.army.mil/confluence/rasdocs/ras1dtechref/6.6/basic-data-requirements/geometric-data/energy-loss-coefficients",
+    "U.S. Army Corps of Engineers, Hydrologic Engineering Center. HEC-RAS 2D User's Manual (land classification layers). https://www.hec.usace.army.mil/confluence/rasdocs/rmum/latest/land-classification-layers",
+    "Chow, V.T. (1959). Open-Channel Hydraulics. McGraw-Hill.",
+    "Arcement, G.J., Jr., and Schneider, V.R. (1989). Guide for Selecting Manning's Roughness Coefficients for Natural Channels and Flood Plains. USGS Water-Supply Paper 2339. https://pubs.usgs.gov/wsp/2339/report.pdf",
+    "Beretta, R., Ravazzani, G., Maiorano, C., Mancini, M. (2018). Simulating the Influence of Buildings on Flood Inundation in Urban Areas. Geosciences 8(2), 77. https://www.mdpi.com/2076-3263/8/2/77",
+    "Syme, W.J. (2008). Flooding in urban areas, 2D modelling approaches for buildings and fences. 9th National Conference on Hydraulics in Water Engineering, Darwin. https://www.tuflow.com/media/4997/2008-flooding-in-urban-areas-2d-modelling-approaches-for-buildings-and-fences-syme-hwe-aus.pdf",
+    "Neelz, S., Pender, G. (2007). Sub-grid scale parameterisation of 2D hydrodynamic models of inundation in the urban area. https://researchportal.hw.ac.uk/en/publications/sub-grid-scale-parameterisation-of-2d-hydrodynamic-models-of-inun/",
+    "Zanaga, D. et al. (2022). ESA WorldCover 10 m 2021 v200. https://doi.org/10.5281/zenodo.7254221"
+  ]
+}
