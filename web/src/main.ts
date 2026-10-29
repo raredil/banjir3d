@@ -21,7 +21,7 @@ const state = (async () => {
     fetchJson<VerifyReport>(`${DATA}/verify-report.json`),
     fetchJson<{ tag: string }>(`${DATA}/release.json`),
   ]);
-  return { catalog: catalog!, regionId: REGION, region: regions![REGION], manifest, verify, releaseTag: release?.tag ?? null };
+  return { catalog: catalog!, regionId: REGION, region: regions![REGION], sample: regions!["sample-ciliwung"]?.bbox ?? null, manifest, verify, releaseTag: release?.tag ?? null };
 })();
 
 async function route() {
@@ -34,10 +34,14 @@ async function route() {
     document.body.dataset.page = "catalog";
     renderCatalog(app, { ...s, focus: new URLSearchParams(query).get("d") ?? undefined });
     if (!query) window.scrollTo(0, 0);
+  } else if (path === "sample") {
+    document.body.dataset.page = "map";
+    const { renderSample } = await import("./sample3d");
+    current = await renderSample(app, { manifest: s.manifest, catalog: s.catalog, dataBase: DATA, sample: s.sample, look: new URLSearchParams(query).get("look") });
   } else {
     document.body.dataset.page = "map";
     const { renderMap } = await import("./map");
-    current = await renderMap(app, { regionId: s.regionId, region: s.region, manifest: s.manifest, catalog: s.catalog, dataBase: DATA, at: new URLSearchParams(query).get("at") });
+    current = await renderMap(app, { regionId: s.regionId, region: s.region, manifest: s.manifest, catalog: s.catalog, sample: s.sample, dataBase: DATA, at: new URLSearchParams(query).get("at") });
   }
 }
 

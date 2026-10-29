@@ -8,6 +8,7 @@ export type LayerDef = {
   title: string;
   catalogId: string;
   file?: string;
+  role?: "domain" | "admin" | "sample";
   kind: "raster" | "hillshade" | "relief" | "water" | "buildings" | "admin" | "demnas-grid" | "region";
   visible: boolean;
   opacity: number;
@@ -44,6 +45,10 @@ export const LAYERS: LayerDef[] = [
     legend: [{ label: "Kabupaten / kota (ADM2)", color: "#3a3f4b" }] },
   { id: "demnas-grid", group: "g.admin", title: "DEMNAS tile grid (RBI 1:50,000 sheets) — download guide", catalogId: "demnas", kind: "demnas-grid", visible: false, opacity: 1,
     legend: [{ label: "Tile to download", color: "#d9480f" }] },
-  { id: "region", group: "g.admin", title: "Simulation region: DKI Jakarta (mainland) + 10 km buffer", catalogId: "geoboundaries-idn", kind: "region", visible: true, opacity: 1,
-    legend: [{ label: "Simulation region (10 km buffer)", color: "#e8590c" }, { label: "DKI Jakarta boundary (Kepulauan Seribu excluded)", color: "#7a2e0b" }] },
+  { id: "region-domain", group: "g.admin", title: "Simulation region outline: DKI Jakarta (mainland) + 10 km buffer", catalogId: "geoboundaries-idn", kind: "region", role: "domain", visible: true, opacity: 1,
+    legend: [{ label: "Simulation region (10 km buffer)", color: "#e8590c" }] },
+  { id: "region-dki", group: "g.admin", title: "DKI Jakarta boundary (Kepulauan Seribu excluded)", catalogId: "geoboundaries-idn", kind: "region", role: "admin", visible: true, opacity: 1,
+    legend: [{ label: "DKI Jakarta boundary", color: "#7a2e0b" }] },
+  { id: "sample-area", group: "g.admin", title: "Sample area for 3D look tests (10 × 10 km, Kampung Melayu–Manggarai)", catalogId: "", kind: "region", role: "sample", visible: true, opacity: 1,
+    legend: [{ label: "Sample area (10 × 10 km)", color: "#9c36b5" }] },
 ];

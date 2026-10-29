@@ -1,0 +1,44 @@
+<!doctype html><meta charset="utf-8"><link rel="stylesheet" href="maplibre-gl.css">
+<style>html,body,#map{margin:0;height:100%;font-family:'IBM Plex Sans',system-ui,sans-serif}#tag{position:absolute;left:14px;bottom:14px;max-width:560px;padding:10px 14px;border-radius:8px;background:rgba(255,255,255,.92);color:#1b2330;font-size:13px;line-height:1.45;box-shadow:0 1px 6px rgba(0,0,0,.18)}#tag b{display:block;font-size:14px;margin-bottom:2px}#tag i{color:#a4262c;font-style:normal}</style>
+<div id="map"></div><div id="tag"></div>
+<script src="pmtiles.js"></script>
+<script type="module">
+import { Map as MlMap, addProtocol, setWorkerUrl } from "./maplibre-gl.mjs";
+setWorkerUrl(new URL("./maplibre-gl-worker.mjs", import.meta.url).href);
+addProtocol("pmtiles", new pmtiles.Protocol().tile);
+const q = new URLSearchParams(location.search), st = q.get("style") || "1";
+const base = new URL("../data/jakarta/", location.href).href;
+const u = (f) => `pmtiles://${base}${f}`;
+const LEVEL = 6; // illustrative bathtub level (m, EGM2008), style 3 only
+const dem = (id) => ({ type: "raster-dem", url: u("dem_fabdem.pmtiles"), encoding: "terrarium", tileSize: 256 });
+const sources = { dem: dem(), demhs: dem(), water: { type: "vector", url: u("water_osm.pmtiles") },
+  sample: { type: "geojson", data: { type: "Feature", properties: {}, geometry: { type: "Polygon", coordinates: [[[106.812,-6.26],[106.902,-6.26],[106.902,-6.17],[106.812,-6.17],[106.812,-6.26]]] } } } }, layers = [];
+const waterLayers = (lineC, fillC) => [
+  { id: "wfill", type: "fill", source: "water", "source-layer": "water", filter: ["==", ["get", "geom"], "area"], paint: { "fill-color": fillC, "fill-opacity": 0.85 } },
+  { id: "wline", type: "line", source: "water", "source-layer": "water", filter: ["all", ["==", ["get", "geom"], "line"], ["match", ["get", "kind"], ["river", "canal"], true, false]], layout: { "line-cap": "round" }, paint: { "line-color": lineC, "line-opacity": 0.9, "line-width": ["interpolate", ["linear"], ["zoom"], 10, 1, 14, 3] } }];
+const outline = { id: "sample", type: "line", source: "sample", paint: { "line-color": "#c026d3", "line-width": 2.4, "line-dasharray": [2, 1.5] } };
+const hs = (ex, sh) => ({ id: "hs", type: "hillshade", source: "demhs", paint: { "hillshade-exaggeration": ex, "hillshade-shadow-color": sh, "hillshade-highlight-color": "#ffffff", "hillshade-accent-color": "#5b6573", "hillshade-illumination-direction": 315 } });
+let tag;
+if (st === "1") {
+  sources.s2 = { type: "raster", url: u("imagery_s2.pmtiles"), tileSize: 256 };
+  layers.push({ id: "bg", type: "background", paint: { "background-color": "#dfe6ee" } }, { id: "s2", type: "raster", source: "s2" }, hs(0.45, "#1f2933"), ...waterLayers("#5ec8f2", "#3aa6dc"), outline);
+  tag = ["Style 1 · Satellite drape", "Sentinel-2 10 m cloud-free composite draped on FABDEM terrain, soft hillshade lighting."];
+} else if (st === "2") {
+  sources.lc = { type: "raster", url: u("lulc_io_latest.pmtiles"), tileSize: 256 };
+  layers.push({ id: "bg", type: "background", paint: { "background-color": "#dfe6ee" } }, { id: "lc", type: "raster", source: "lc", paint: { "raster-resampling": "nearest" } }, hs(0.5, "#1f2933"), ...waterLayers("#1f5fa8", "#1f5fa8"), outline);
+  tag = ["Style 2 · Land-cover drape", "Impact Observatory / Esri 10 m land use/land cover on FABDEM terrain, hillshade lighting."];
+} else {
+  const T = "rgba(255,255,255,0)";
+  layers.push({ id: "bg", type: "background", paint: { "background-color": "#eef0f3" } },
+    { id: "tint", type: "color-relief", source: "dem", paint: { "color-relief-opacity": 1, "color-relief-color": ["interpolate", ["linear"], ["elevation"], 0, "#f3f4f6", 12, "#e0e3e8", 30, "#c4c9d1", 60, "#a2a9b4"] } },
+    hs(1, "#2f3542"), { ...hs(1, "#2f3542"), id: "hs2" },
+    { id: "depth", type: "color-relief", source: "dem", paint: { "color-relief-opacity": 0.92, "color-relief-color": ["interpolate", ["linear"], ["elevation"],
+      -30, "#08306b", LEVEL - 4, "#08306b", LEVEL - 3, "#2171b5", LEVEL - 2, "#4292c6", LEVEL - 1, "#9ecae1", LEVEL - 0.05, "#d7e6f4", LEVEL, T, 200, T] } },
+    ...waterLayers("#14385f", "#14385f"), outline);
+  tag = ["Style 3 · Print-friendly grey hillshade + depth ramp", `Grey relief with a strong blue depth ramp. <i>ILLUSTRATIVE ONLY: a flat water level of ${LEVEL} m above sea level poured over FABDEM (bathtub fill). Not a flood model result.</i>`];
+}
+document.getElementById("tag").innerHTML = `<b>${tag[0]}</b>${tag[1]}<br><span style="color:#5b6573">Sample: Ciliwung, Kampung Melayu–Manggarai (10 × 10 km) · terrain exaggeration ×4 · look test only</span>`;
+const map = new MlMap({ container: "map", style: { version: 8, sources, layers }, center: [106.857, -6.215], zoom: 12.5, pitch: 45, bearing: 0, maxPitch: 75, attributionControl: false, canvasContextAttributes: { preserveDrawingBuffer: true } });
+window.map = map;
+map.on("load", () => { map.setTerrain({ source: "dem", exaggeration: 4 }); });
+</script>
