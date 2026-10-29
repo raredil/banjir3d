@@ -7,11 +7,12 @@ export const G = 9.81;
 export type Grid = { nx: number; ny: number; dx: number; dy: number; z: Float64Array };
 
 export type SolverOptions = {
-  manning?: number; // n, s m^-1/3 (uniform)
-  theta?: number; // flux averaging weight, 0.7 in Bates et al. 2010
-  alpha?: number; // CFL factor
+  manning?: number; // n, s m^-1/3 (uniform, used when no field is given)
+  manningField?: Float64Array; // n per cell; the face value is the mean of its two cells (as in SFINCS)
+  theta?: number; // flux averaging weight; SFINCS default 1.0 (Bates et al. 2010 used 0.7)
+  alpha?: number; // CFL factor; SFINCS default 0.5
   dtMax?: number; // s
-  hMin?: number; // m, wet/dry threshold
+  hMin?: number; // m, wet/dry threshold; SFINCS 'huthresh' default 0.05
   openNorth?: boolean; // normal-flow outflow through the north edge (row 0)
   outflowSlope?: number; // slope used for the north-edge normal flow
   inflowCells?: number[]; // cell indices that receive the river inflow
@@ -38,6 +39,7 @@ export class LocalInertial {
   inflow = 0; // m3/s in total
   readonly totals: Totals = { rain: 0, drain: 0, inflow: 0, outflow: 0 };
   readonly manning: number;
+  readonly manningField: Float64Array | null;
   readonly theta: number;
   readonly alpha: number;
   readonly dtMax: number;
@@ -55,10 +57,12 @@ export class LocalInertial {
     this.qx = new Float64Array(n); this.qy = new Float64Array(n);
     this.qxN = new Float64Array(n); this.qyN = new Float64Array(n);
     this.qn = new Float64Array(grid.nx); this.out = new Float64Array(n);
-    this.manning = o.manning ?? 0.05; this.theta = o.theta ?? 0.7; this.alpha = o.alpha ?? 0.7;
-    this.dtMax = o.dtMax ?? 15; this.hMin = o.hMin ?? 0.001;
+    // Defaults follow SFINCS (theta 1.0, alpha 0.5, huthresh 0.05 m): with these the solver reproduces SFINCS on the sample, see verification/explore-vs-sfincs.
+    this.manning = o.manning ?? 0.05; this.theta = o.theta ?? 1.0; this.alpha = o.alpha ?? 0.5;
+    this.dtMax = o.dtMax ?? 15; this.hMin = o.hMin ?? 0.05;
     this.openNorth = o.openNorth ?? false; this.outflowSlope = o.outflowSlope ?? 0.001;
     this.inflowCells = o.inflowCells ?? [];
+    this.manningField = o.manningField ?? null;
     this.initialVolume = this.volume();
     for (let c = 0; c < n; c++) if (this.h[c] > this.hMaxNow) this.hMaxNow = this.h[c];
   }
@@ -87,7 +91,8 @@ export class LocalInertial {
   step(): number {
     const { nx, ny, dx, dy, z, h, qx, qy, qxN, qyN, qn, out } = this;
     const dt = this.dtNow();
-    const n2 = this.manning * this.manning;
+    const nField = this.manningField;
+    const n2u = this.manning * this.manning;
     const th = this.theta, hMin = this.hMin;
 
     // 1. new fluxes from old fluxes and old depths
@@ -104,6 +109,7 @@ export class LocalInertial {
         qt *= 0.25;
         const q0 = qx[c];
         const num = th * q0 + 0.5 * (1 - th) * (qL + qR) - (G * hf * dt * (etaR - etaL)) / dx;
+        const nn = nField ? 0.5 * (nField[c] + nField[r]) : 0, n2 = nField ? nn * nn : n2u;
         const den = 1 + (G * dt * n2 * Math.sqrt(q0 * q0 + qt * qt)) / (hf * hf * Math.cbrt(hf));
         let q = num / den;
         const qmax = hf * Math.sqrt(G * hf);
@@ -125,6 +131,7 @@ export class LocalInertial {
         qt *= 0.25;
         const q0 = qy[c];
         const num = th * q0 + 0.5 * (1 - th) * (qL + qR) - (G * hf * dt * (etaR - etaL)) / dy;
+        const nn = nField ? 0.5 * (nField[c] + nField[r]) : 0, n2 = nField ? nn * nn : n2u;
         const den = 1 + (G * dt * n2 * Math.sqrt(q0 * q0 + qt * qt)) / (hf * hf * Math.cbrt(hf));
         let q = num / den;
         const qmax = hf * Math.sqrt(G * hf);

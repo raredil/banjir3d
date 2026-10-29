@@ -1,0 +1,103 @@
+{
+ "grid": "263 x 264",
+ "cell_m": 37.99,
+ "rain_mm_h": 100,
+ "rain_h": 3,
+ "hours": 8,
+ "manning": 0.05,
+ "rain_volume_m3": 30068271.97629659,
+ "sfincs": {
+  "final_volume_m3": 30065652.0,
+  "volume_vs_rain": 0.9999128580093384,
+  "hmax_peak_m": 3.7736945152282715
+ },
+ "runs": {
+  "parity_nfield": {
+   "settings": {
+    "theta": 1,
+    "alpha": 0.5,
+    "hmin_m": 0.05
+   },
+   "explore_mass_error": 7.431384153653117e-15,
+   "explore_steps": 7859,
+   "explore_final_volume_m3": 30077494.75515056,
+   "volume_ratio_explore_to_sfincs_final": 1.000393896501914,
+   "max_volume_diff_pct_over_run": 0.355252113445917,
+   "hmax_peak_m": 3.82508941370916,
+   "hmax": {
+    "rmse_m": 0.055899041229125895,
+    "mae_m": 0.03334322097681862,
+    "bias_m": 0.0018650378349180296,
+    "pearson_r": 0.9947938624738412,
+    "cells_compared": 69432
+   },
+   "final_depth": {
+    "rmse_m": 0.0876117454069857,
+    "mae_m": 0.06511632588664361,
+    "bias_m": 0.0007262342261858597,
+    "pearson_r": 0.9875532455767845,
+    "cells_compared": 30889
+   },
+   "extent_hmax": [
+    {
+     "thr_m": 0.05,
+     "CSI": 1.0,
+     "hit_rate": 1.0,
+     "false_alarm_ratio": 0.0,
+     "sfincs_km2": 100.22757325432195,
+     "explore_km2": 100.22757325432195
+    },
+    {
+     "thr_m": 0.1,
+     "CSI": 0.7999596530159371,
+     "hit_rate": 0.8021280038838093,
+     "false_alarm_ratio": 0.003367849602895345,
+     "sfincs_km2": 71.3626326679436,
+     "explore_km2": 57.4353998825176
+    },
+    {
+     "thr_m": 0.3,
+     "CSI": 0.9505676102888346,
+     "hit_rate": 0.9659754672897196,
+     "false_alarm_ratio": 0.01650312221231044,
+     "sfincs_km2": 39.54133089328245,
+     "explore_km2": 38.83688545388694
+    },
+    {
+     "thr_m": 1.0,
+     "CSI": 0.9202133333333333,
+     "hit_rate": 0.9969952617589275,
+     "false_alarm_ratio": 0.07722751096373943,
+     "sfincs_km2": 12.490914727642123,
+     "explore_km2": 13.495615600222607
+    }
+   ],
+   "extent_final": [
+    {
+     "thr_m": 0.05,
+     "CSI": 0.9041406325876525,
+     "hit_rate": 0.918140574659741,
+     "false_alarm_ratio": 0.016585091024331842,
+     "sfincs_km2": 43.9094700318292,
+     "explore_km2": 40.99497137990392
+    },
+    {
+     "thr_m": 0.1,
+     "CSI": 0.8958698372966207,
+     "hit_rate": 0.90817806133546,
+     "false_alarm_ratio": 0.0149024850581944,
+     "sfincs_km2": 39.82137682615689,
+     "explore_km2": 36.712000849808675
+    },
+    {
+     "thr_m": 0.3,
+     "CSI": 0.9247526682586871,
+     "hit_rate": 0.9436073399970163,
+     "false_alarm_ratio": 0.02115037400051586,
+     "sfincs_km2": 29.028060124599037,
+     "explore_km2": 27.982940251397498
+    }
+   ]
+  }
+ }
+}
