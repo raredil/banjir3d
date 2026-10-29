@@ -16,26 +16,48 @@ export const pxToLon = (x: number) => (x / WORLD) * 360 - 180;
 export const pxToLat = (y: number) => (Math.atan(Math.sinh(Math.PI * (1 - (2 * y) / WORLD))) * 180) / Math.PI;
 export const terrarium = (r: number, g: number, b: number) => r * 256 + g + b / 256 - 32768;
 
-export type GridWindow = { x0: number; y0: number; nx: number; ny: number; dx: number; dy: number; corners: [number, number][] };
+export type GridWindow = { x0: number; y0: number; k: number; nx: number; ny: number; dx: number; dy: number; corners: [number, number][] };
+export const MAX_CELLS = 160_000; // keeps one run within about a minute on a normal laptop CPU
 
-/** The block of z12 DEM pixels covering bbox [W,S,E,N], its ground cell size and its image corners (lon/lat, NW first). */
-export function gridWindow(b: number[]): GridWindow {
-  const x0 = Math.floor(lonToPx(b[0])), x1 = Math.ceil(lonToPx(b[2]));
-  const y0 = Math.floor(latToPy(b[3])), y1 = Math.ceil(latToPy(b[1]));
-  const cell = (EARTH / WORLD) * Math.cos((((b[1] + b[3]) / 2) * Math.PI) / 180);
+/** Model grid over bbox [W,S,E,N]: blocks of k x k z12 DEM pixels (k = 1 gives about 38 m cells at Jakarta), its ground cell
+ *  size and its image corners (lon/lat, NW first). x0, y0 are z12 pixel coordinates. */
+export function gridWindow(b: number[], k = 1): GridWindow {
+  const x0 = Math.floor(lonToPx(b[0])), y0 = Math.floor(latToPy(b[3]));
+  const nx = Math.ceil((Math.ceil(lonToPx(b[2])) - x0) / k), ny = Math.ceil((Math.ceil(latToPy(b[1])) - y0) / k);
+  const x1 = x0 + nx * k, y1 = y0 + ny * k;
+  const cell = (EARTH / WORLD) * Math.cos((((b[1] + b[3]) / 2) * Math.PI) / 180) * k;
   return {
-    x0, y0, nx: x1 - x0, ny: y1 - y0, dx: cell, dy: cell,
+    x0, y0, k, nx, ny, dx: cell, dy: cell,
     corners: [[pxToLon(x0), pxToLat(y0)], [pxToLon(x1), pxToLat(y0)], [pxToLon(x1), pxToLat(y1)], [pxToLon(x0), pxToLat(y1)]],
   };
 }
 
+/** Smallest aggregation factor k whose grid has at most maxCells cells. */
+export function aggregationFor(b: number[], maxCells = MAX_CELLS): number {
+  let k = 1;
+  for (;;) { const w = gridWindow(b, k); if (w.nx * w.ny <= maxCells || k >= 16) return k; k++; }
+}
+
+/** Mean of k x k blocks of a fine grid (row 0 = north), NaN ignored. */
+export function blockMean(fine: Float64Array, nx: number, ny: number, k: number): Float64Array {
+  if (k === 1) return fine;
+  const W = nx * k, out = new Float64Array(nx * ny);
+  for (let j = 0; j < ny; j++) for (let i = 0; i < nx; i++) {
+    let s = 0, n = 0;
+    for (let dj = 0; dj < k; dj++) for (let di = 0; di < k; di++) { const v = fine[(j * k + dj) * W + i * k + di]; if (!Number.isNaN(v)) { s += v; n++; } }
+    out[j * nx + i] = n ? s / n : NaN;
+  }
+  return out;
+}
+
 /** Read the DEM window from the FABDEM PMTiles (browser only). Returns metres, row 0 = north. */
-export async function loadDem(url: string, b: number[]): Promise<GridWindow & { z: Float64Array }> {
-  const w = gridWindow(b);
+export async function loadDem(url: string, b: number[], k = 1): Promise<GridWindow & { z: Float64Array }> {
+  const w = gridWindow(b, k);
+  const W = w.nx * k, H = w.ny * k;
   const pm = new PMTiles(url);
-  const z = new Float64Array(w.nx * w.ny).fill(NaN);
-  const tx0 = Math.floor(w.x0 / TS), tx1 = Math.floor((w.x0 + w.nx - 1) / TS);
-  const ty0 = Math.floor(w.y0 / TS), ty1 = Math.floor((w.y0 + w.ny - 1) / TS);
+  const fine = new Float64Array(W * H).fill(NaN);
+  const tx0 = Math.floor(w.x0 / TS), tx1 = Math.floor((w.x0 + W - 1) / TS);
+  const ty0 = Math.floor(w.y0 / TS), ty1 = Math.floor((w.y0 + H - 1) / TS);
   const canvas = document.createElement("canvas");
   canvas.width = TS; canvas.height = TS;
   const ctx = canvas.getContext("2d", { willReadFrequently: true })!;
@@ -49,16 +71,17 @@ export async function loadDem(url: string, b: number[]): Promise<GridWindow & { 
       const px = ctx.getImageData(0, 0, TS, TS).data;
       for (let j = 0; j < TS; j++) {
         const gy = ty * TS + j - w.y0;
-        if (gy < 0 || gy >= w.ny) continue;
+        if (gy < 0 || gy >= H) continue;
         for (let i = 0; i < TS; i++) {
           const gx = tx * TS + i - w.x0;
-          if (gx < 0 || gx >= w.nx) continue;
-          const k = (j * TS + i) * 4;
-          z[gy * w.nx + gx] = terrarium(px[k], px[k + 1], px[k + 2]);
+          if (gx < 0 || gx >= W) continue;
+          const p = (j * TS + i) * 4;
+          fine[gy * W + gx] = terrarium(px[p], px[p + 1], px[p + 2]);
         }
       }
     }
   }
+  const z = blockMean(fine, w.nx, w.ny, k);
   let fill = 0, have = false;
   for (const v of z) if (!Number.isNaN(v)) { fill = Number.isNaN(fill) || !have ? v : Math.min(fill, v); have = true; }
   for (let c = 0; c < z.length; c++) if (Number.isNaN(z[c])) z[c] = fill;
@@ -66,10 +89,10 @@ export async function loadDem(url: string, b: number[]): Promise<GridWindow & { 
 }
 
 /** WorldCover class code (0 = no data) for every z14 pixel inside the DEM window, row 0 = north (browser only). */
-export async function loadLandCover(url: string, b: number[]): Promise<{ codes: Uint8Array; nx: number; ny: number; f: number }> {
-  const w = gridWindow(b);
-  const f = WORLDCOVER_FACTOR, zt = DEM_Z + Math.log2(f);
-  const W = w.nx * f, H = w.ny * f, gx0 = w.x0 * f, gy0 = w.y0 * f;
+export async function loadLandCover(url: string, b: number[], k = 1): Promise<{ codes: Uint8Array; nx: number; ny: number; f: number }> {
+  const w = gridWindow(b, k);
+  const f = WORLDCOVER_FACTOR * k, zt = DEM_Z + Math.log2(WORLDCOVER_FACTOR);
+  const W = w.nx * f, H = w.ny * f, gx0 = w.x0 * WORLDCOVER_FACTOR, gy0 = w.y0 * WORLDCOVER_FACTOR;
   const codes = new Uint8Array(W * H);
   const pm = new PMTiles(url);
   const canvas = document.createElement("canvas");

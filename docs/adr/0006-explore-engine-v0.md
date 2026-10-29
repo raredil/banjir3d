@@ -1,6 +1,6 @@
 # ADR 0006: Explore engine v0 runs on the CPU in a Web Worker first, WebGPU later
 
-Status: accepted for v0 (2026-10-29). To revisit when the WebGPU port starts.
+Status: accepted for v0 (2026-10-29). Boundaries, rain input and presets superseded by ADR 0007. To revisit when the WebGPU port starts.
 
 ## Context
 BLUEPRINT 4.1 specifies the Explore engine as a 2D local-inertial shallow-water solver (Bates et al. 2010, LISFLOOD-FP "ACC") in the browser, written for WebGPU. The chat sandbox used to build it has no GPU, so a WebGPU kernel could not be run or tested there. The owner wants a working flood map without more delay.

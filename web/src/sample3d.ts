@@ -1,15 +1,15 @@
 import "maplibre-gl/dist/maplibre-gl.css";
-import { AttributionControl, Map as MlMap, NavigationControl, ScaleControl, type ExpressionSpecification, type LayerSpecification, type StyleSpecification } from "maplibre-gl";
+import { AttributionControl, Map as MlMap, NavigationControl, ScaleControl, type ExpressionSpecification, type GeoJSONSource, type LayerSpecification, type MapMouseEvent, type MapTouchEvent, type StyleSpecification } from "maplibre-gl";
 import { t, type Key } from "./i18n";
 import { mountExplore } from "./explore/ui";
 import { ensurePmtiles } from "./pmtiles-init";
 import {
-  DEFAULTS, LOOKS, LOOK_ONLY_LAYERS, LOOK_PARAMS, SAMPLE_VIEW, depthColorExpr, parseLook, sampleCenter, sampleOutline, zoomForWidth, type Look,
+  DEFAULTS, LOOKS, LOOK_ONLY_LAYERS, LOOK_PARAMS, SAMPLE_VIEW, boxFromCorners, boxKm, depthColorExpr, parseBox, parseLook, sampleCenter, sampleOutline, zoomForWidth, type Look,
 } from "./sample-look";
 import type { Catalog, Manifest } from "./types";
 import { esc } from "./util";
 
-type Ctx = { manifest: Manifest | null; catalog: Catalog; dataBase: string; sample?: number[] | null; look?: string | null };
+type Ctx = { manifest: Manifest | null; catalog: Catalog; dataBase: string; sample?: number[] | null; region?: number[] | null; look?: string | null; box?: string | null };
 
 const NEEDED = ["dem_fabdem.pmtiles", "imagery_s2.pmtiles", "lulc_io_latest.pmtiles", "water_osm.pmtiles"];
 const RAMP = "linear-gradient(90deg,#d7e6f4,#9ecae1,#4292c6,#2171b5,#08306b)";
@@ -22,7 +22,9 @@ export async function renderSample(root: HTMLElement, ctx: Ctx) {
     root.innerHTML = `<section class="map-page"><aside class="panel"><div class="notice">${t("s3.nodata")}</div></aside><div class="map-wrap"></div></section>`;
     return { remove() {} };
   }
-  const bbox = ctx.sample;
+  const sampleBox = ctx.sample;
+  const region = ctx.region ?? sampleBox;
+  let bbox = parseBox(ctx.box, region) ?? sampleBox; // simulation area: the 10 km sample or a box the user drew
   const center = sampleCenter(bbox);
   let look: Look = parseLook(ctx.look);
   let level: number = DEFAULTS.level;
@@ -43,6 +45,7 @@ export async function renderSample(root: HTMLElement, ctx: Ctx) {
       lc: { type: "raster", url: url("lulc_io_latest.pmtiles"), tileSize: 256, attribution: attr("io-lulc-annual") },
       water: { type: "vector", url: url("water_osm.pmtiles"), attribution: attr("osm-water") },
       sample: { type: "geojson", data: sampleOutline(bbox) },
+      draft: { type: "geojson", data: { type: "FeatureCollection", features: [] } },
     },
     layers: [
       { id: "bg", type: "background", paint: { "background-color": LOOK_PARAMS[look].bg } },
@@ -56,6 +59,7 @@ export async function renderSample(root: HTMLElement, ctx: Ctx) {
       { id: "wline", type: "line", source: "water", "source-layer": "water", filter: ["all", ["==", ["get", "geom"], "line"], ["match", ["get", "kind"], ["river", "canal"], true, false]],
         layout: { "line-cap": "round" }, paint: { "line-color": "#5ec8f2", "line-opacity": 0.9, "line-width": ["interpolate", ["linear"], ["zoom"], 10, 1, 14, 3] } },
       { id: "outline", type: "line", source: "sample", paint: { "line-color": "#c026d3", "line-width": 2.4, "line-dasharray": [2, 1.5] } },
+      { id: "draft", type: "line", source: "draft", paint: { "line-color": "#f97316", "line-width": 2.4 } },
     ] as LayerSpecification[],
   };
 
@@ -76,6 +80,11 @@ export async function renderSample(root: HTMLElement, ctx: Ctx) {
             <div class="notice">${t("s3.warn")}</div>
           </div>
           <button class="chip" id="s3-reset" type="button">${t("s3.reset")}</button>
+        </div>
+        <div class="group"><h3>${t("s3.area")}</h3>
+          <p class="crs-note" id="s3-area-txt"></p>
+          <div class="ex-actions"><button class="chip" id="s3-draw" type="button">${t("s3.draw")}</button><button class="chip" id="s3-back" type="button">${t("s3.back")}</button></div>
+          <p class="crs-note" id="s3-draw-hint" hidden>${t("s3.drawhint")}</p>
         </div>
         <div id="explore-box"></div>
         <p class="crs-note">${t("s3.note")}</p>
@@ -105,15 +114,68 @@ export async function renderSample(root: HTMLElement, ctx: Ctx) {
     $("s3-level-box").hidden = !grey || simActive;
     if (!simActive) $("s3-cap").textContent = grey ? t("s3.cap").replace("{n}", String(level)) : "";
   };
-  map.on("load", () => {
-    map.setTerrain({ source: "dem", exaggeration: DEFAULTS.exaggeration });
-    apply();
+  const mount = () => {
+    explore?.destroy();
     explore = mountExplore(map, $("explore-box"), {
       demUrl: new URL(`${ctx.dataBase}/dem_fabdem.pmtiles`, location.href).href,
       landUrl: new URL(`${ctx.dataBase}/lulc_worldcover_2021.pmtiles`, location.href).href, bbox, cap: $("s3-cap"),
       onActive: (a) => { simActive = a; apply(); },
     });
+    const [w, h] = boxKm(bbox);
+    const isSample = bbox.join() === sampleBox.join();
+    $("s3-area-txt").textContent = t(isSample ? "s3.area.sample" : "s3.area.own").replace("{w}", w.toFixed(1)).replace("{h}", h.toFixed(1)).replace("{b}", bbox.map((v) => v.toFixed(4)).join(", "));
+    $<HTMLButtonElement>("s3-back").hidden = isSample;
+  };
+  const setBox = (b: number[]) => {
+    bbox = b;
+    (map.getSource("sample") as GeoJSONSource).setData(sampleOutline(b));
+    const q = new URLSearchParams(location.hash.split("?")[1] ?? "");
+    if (b.join() === sampleBox.join()) q.delete("box"); else q.set("box", b.join(","));
+    history.replaceState(null, "", `#/sample${q.toString() ? "?" + q.toString().replace(/%2C/g, ",") : ""}`);
+    mount();
+    map.fitBounds([[b[0], b[1]], [b[2], b[3]]], { padding: 40, pitch: SAMPLE_VIEW.pitch, bearing: 0, duration: 800 });
+  };
+  map.on("load", () => {
+    // start with the attribution folded into its (i) button so it does not cover the map; one click opens it
+    map.getContainer().querySelector(".maplibregl-ctrl-attrib")?.classList.remove("maplibregl-compact-show");
+    map.setTerrain({ source: "dem", exaggeration: DEFAULTS.exaggeration });
+    apply();
+    mount();
+    if (bbox !== sampleBox) map.fitBounds([[bbox[0], bbox[1]], [bbox[2], bbox[3]]], { padding: 40, pitch: SAMPLE_VIEW.pitch, bearing: 0, duration: 0 });
   });
+
+  // Drawing a box: the map turns flat and north-up so a dragged rectangle is a true lon/lat box, then the old view returns.
+  let drawing = false, start: [number, number] | null = null;
+  const draft = (a: [number, number], b: [number, number]) => (map.getSource("draft") as GeoJSONSource).setData(sampleOutline([Math.min(a[0], b[0]), Math.min(a[1], b[1]), Math.max(a[0], b[0]), Math.max(a[1], b[1])]));
+  const endDraw = () => {
+    drawing = false; start = null;
+    map.dragPan.enable(); map.touchZoomRotate.enable();
+    map.getCanvas().style.cursor = "";
+    $("s3-draw-hint").hidden = true;
+    $<HTMLButtonElement>("s3-draw").textContent = t("s3.draw");
+    (map.getSource("draft") as GeoJSONSource).setData({ type: "FeatureCollection", features: [] });
+  };
+  const down = (e: MapMouseEvent | MapTouchEvent) => { if (!drawing) return; e.preventDefault(); start = [e.lngLat.lng, e.lngLat.lat]; };
+  const move = (e: MapMouseEvent | MapTouchEvent) => { if (drawing && start) draft(start, [e.lngLat.lng, e.lngLat.lat]); };
+  const up = (e: MapMouseEvent | MapTouchEvent) => {
+    if (!drawing || !start) return;
+    const b = boxFromCorners(start, [e.lngLat.lng, e.lngLat.lat], region);
+    endDraw();
+    if (b) setBox(b); else $("s3-area-txt").textContent = t("s3.toosmall");
+  };
+  map.on("mousedown", down); map.on("touchstart", down);
+  map.on("mousemove", move); map.on("touchmove", move);
+  map.on("mouseup", up); map.on("touchend", up);
+  $("s3-draw").addEventListener("click", () => {
+    if (drawing) { endDraw(); return; }
+    drawing = true;
+    map.dragPan.disable(); map.touchZoomRotate.disable();
+    map.getCanvas().style.cursor = "crosshair";
+    map.easeTo({ pitch: 0, bearing: 0, duration: 500 });
+    $("s3-draw-hint").hidden = false;
+    $<HTMLButtonElement>("s3-draw").textContent = t("s3.drawcancel");
+  });
+  $("s3-back").addEventListener("click", () => setBox(sampleBox));
 
   root.querySelectorAll<HTMLInputElement>('input[name="look"]').forEach((r) =>
     r.addEventListener("change", () => { look = parseLook(r.value); if (map.isStyleLoaded() || map.loaded()) apply(); }));
@@ -138,6 +200,6 @@ export async function renderSample(root: HTMLElement, ctx: Ctx) {
     map.setPaintProperty("depth", "color-relief-color", depthColorExpr(level) as ExpressionSpecification);
     $("s3-cap").textContent = t("s3.cap").replace("{n}", String(level));
   });
-  $("s3-reset").addEventListener("click", () => map.easeTo({ center, zoom: startZoom, pitch: SAMPLE_VIEW.pitch, bearing: SAMPLE_VIEW.bearing }));
+  $("s3-reset").addEventListener("click", () => map.fitBounds([[bbox[0], bbox[1]], [bbox[2], bbox[3]]], { padding: 40, pitch: SAMPLE_VIEW.pitch, bearing: SAMPLE_VIEW.bearing }));
   return { remove() { explore?.destroy(); map.remove(); } };
 }

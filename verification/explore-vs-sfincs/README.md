@@ -16,6 +16,8 @@ Cases A and B: console output of the first run, copied here because the SFINCS o
 
 Reading: with SFINCS-matched settings Explore reproduces SFINCS closely on this rain-on-grid case. The old defaults (case B) gave a very different peak depth, so the defaults were changed to the SFINCS values. The flood extent at the shallow threshold 0.1 m differs more (CSI 0.80 in case C) because of the 0.05 m wet/dry threshold, so shallow-depth extent should not be quoted from Explore.
 
+Still valid after ADR 0007 (2026-10-29): the comparison used closed edges and constant rain, which the new boundary and rain code leave unchanged.
+
 ## What this does NOT show
 - Only rain-on-grid redistribution on a closed domain. Open boundaries, river inflow, tide, drainage and infiltration are not compared.
 - Not a validation: both models share the same DEM, roughness and rain, so errors in those inputs are not tested. Nothing here is compared with an observed flood.

@@ -26,7 +26,10 @@ const state = (async () => {
 
 async function route() {
   const [path, query] = (location.hash.replace(/^#\//, "") || "map").split("?");
-  document.querySelectorAll<HTMLAnchorElement>("[data-route]").forEach((a) => a.classList.toggle("active", a.dataset.route === path));
+  document.querySelectorAll<HTMLAnchorElement>("[data-route]").forEach((a) => {
+    a.classList.toggle("active", a.dataset.route === path);
+    if (a.dataset.route === path) a.scrollIntoView({ block: "nearest", inline: "nearest" }); // tabs scroll sideways on phones
+  });
   const s = await state;
   current?.remove();
   current = null;
@@ -34,10 +37,16 @@ async function route() {
     document.body.dataset.page = "catalog";
     renderCatalog(app, { ...s, focus: new URLSearchParams(query).get("d") ?? undefined });
     if (!query) window.scrollTo(0, 0);
+  } else if (path === "methods") {
+    document.body.dataset.page = "methods";
+    const { renderMethods } = await import("./methods/page");
+    renderMethods(app);
+    window.scrollTo(0, 0);
   } else if (path === "sample") {
     document.body.dataset.page = "map";
     const { renderSample } = await import("./sample3d");
-    current = await renderSample(app, { manifest: s.manifest, catalog: s.catalog, dataBase: DATA, sample: s.sample, look: new URLSearchParams(query).get("look") });
+    const q = new URLSearchParams(query);
+    current = await renderSample(app, { manifest: s.manifest, catalog: s.catalog, dataBase: DATA, sample: s.sample, region: s.region?.bbox ?? null, look: q.get("look"), box: q.get("box") });
   } else {
     document.body.dataset.page = "map";
     const { renderMap } = await import("./map");

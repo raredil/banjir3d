@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { LocalInertial, type Grid } from "./local-inertial";
+import { analyticalWave } from "./analytical";
 
 function flat(nx: number, ny: number, d = 10, zf: (i: number, j: number) => number = () => 0): Grid {
   const z = new Float64Array(nx * ny);
@@ -49,7 +50,7 @@ describe("local-inertial solver (exploratory, sanity tests only)", () => {
     const nx = 10, ny = 30, d = 10, slope = 0.01;
     const g = flat(nx, ny, d, (_i, j) => slope * d * j);
     const row = Array.from({ length: nx }, (_, i) => (ny - 1) * nx + i);
-    const s = new LocalInertial(g, { manning: 0.03, openNorth: true, outflowSlope: slope, inflowCells: row });
+    const s = new LocalInertial(g, { manning: 0.03, openEdges: ["n"], inflowCells: row });
     s.inflow = 10; // m3/s over 100 m of width = 0.1 m2/s
     run(s, 2400);
     const t0 = s.totals.outflow, tt = s.t;
@@ -57,5 +58,25 @@ describe("local-inertial solver (exploratory, sanity tests only)", () => {
     const rate = (s.totals.outflow - t0) / (s.t - tt);
     expect(Math.abs(rate - 10) / 10).toBeLessThan(0.05);
     expect(Math.abs(s.massError())).toBeLessThan(1e-9);
+  });
+  it("follows the Hunter et al. (2005) analytical wave over a dry horizontal plane", () => {
+    const a = analyticalWave({ n: 0.03, u: 1, dx: 50, theta: 1, length: 5000, seconds: 3600 });
+    expect(a.rmse / a.h0).toBeLessThan(0.02);
+    expect(Math.abs(a.frontModel - a.frontTrue)).toBeLessThanOrEqual(100);
+    const b = analyticalWave({ n: 0.15, u: 0.5, dx: 38, theta: 1, length: 3000, seconds: 3600 });
+    expect(b.rmse / b.h0).toBeLessThan(0.05);
+  });
+  it("lets water leave through every open edge and none through walls", () => {
+    // bed falls by 1 % towards the open edge; a transmissive edge passes the flow that arrives, a flat lake at rest stays
+    const down = { n: (_i: number, j: number) => 0.1 * j, s: (_i: number, j: number) => 0.1 * (19 - j), w: (i: number) => 0.1 * i, e: (i: number) => 0.1 * (19 - i) };
+    for (const e of ["n", "s", "w", "e"] as const) {
+      const s = new LocalInertial(flat(20, 20, 10, down[e]), { manning: 0.03, openEdges: [e] }, new Float64Array(400).fill(0.5));
+      run(s, 1800);
+      expect(s.totals.outflow).toBeGreaterThan(0);
+      expect(Math.abs(s.massError())).toBeLessThan(1e-9);
+    }
+    const closed = new LocalInertial(flat(20, 20, 10, down.n), { manning: 0.03 }, new Float64Array(400).fill(0.5));
+    run(closed, 1800);
+    expect(closed.totals.outflow).toBe(0);
   });
 });
