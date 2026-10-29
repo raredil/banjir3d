@@ -109,7 +109,8 @@ export async function renderSample(root: HTMLElement, ctx: Ctx) {
     map.setTerrain({ source: "dem", exaggeration: DEFAULTS.exaggeration });
     apply();
     explore = mountExplore(map, $("explore-box"), {
-      demUrl: new URL(`${ctx.dataBase}/dem_fabdem.pmtiles`, location.href).href, bbox, cap: $("s3-cap"),
+      demUrl: new URL(`${ctx.dataBase}/dem_fabdem.pmtiles`, location.href).href,
+      landUrl: new URL(`${ctx.dataBase}/lulc_worldcover_2021.pmtiles`, location.href).href, bbox, cap: $("s3-cap"),
       onActive: (a) => { simActive = a; apply(); },
     });
   });

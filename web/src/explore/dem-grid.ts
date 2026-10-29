@@ -1,4 +1,5 @@
 import { PMTiles } from "pmtiles";
+import { WORLDCOVER_FACTOR, classify } from "./roughness";
 
 // Geometry on the Web Mercator pixel grid of the FABDEM tiles (z12, 256 px tiles). Pure functions are unit-tested.
 export const DEM_Z = 12;
@@ -62,4 +63,37 @@ export async function loadDem(url: string, b: number[]): Promise<GridWindow & { 
   for (const v of z) if (!Number.isNaN(v)) { fill = Number.isNaN(fill) || !have ? v : Math.min(fill, v); have = true; }
   for (let c = 0; c < z.length; c++) if (Number.isNaN(z[c])) z[c] = fill;
   return { ...w, z };
+}
+
+/** WorldCover class code (0 = no data) for every z14 pixel inside the DEM window, row 0 = north (browser only). */
+export async function loadLandCover(url: string, b: number[]): Promise<{ codes: Uint8Array; nx: number; ny: number; f: number }> {
+  const w = gridWindow(b);
+  const f = WORLDCOVER_FACTOR, zt = DEM_Z + Math.log2(f);
+  const W = w.nx * f, H = w.ny * f, gx0 = w.x0 * f, gy0 = w.y0 * f;
+  const codes = new Uint8Array(W * H);
+  const pm = new PMTiles(url);
+  const canvas = document.createElement("canvas");
+  canvas.width = TS; canvas.height = TS;
+  const ctx = canvas.getContext("2d", { willReadFrequently: true })!;
+  for (let ty = Math.floor(gy0 / TS); ty <= Math.floor((gy0 + H - 1) / TS); ty++) {
+    for (let tx = Math.floor(gx0 / TS); tx <= Math.floor((gx0 + W - 1) / TS); tx++) {
+      const tile = await pm.getZxy(zt, tx, ty);
+      if (!tile) continue;
+      const bmp = await createImageBitmap(new Blob([tile.data], { type: "image/png" }));
+      ctx.clearRect(0, 0, TS, TS);
+      ctx.drawImage(bmp, 0, 0);
+      const px = ctx.getImageData(0, 0, TS, TS).data;
+      for (let j = 0; j < TS; j++) {
+        const y = ty * TS + j - gy0;
+        if (y < 0 || y >= H) continue;
+        for (let i = 0; i < TS; i++) {
+          const x = tx * TS + i - gx0;
+          if (x < 0 || x >= W) continue;
+          const k = (j * TS + i) * 4;
+          if (px[k + 3] > 0) codes[y * W + x] = classify(px[k], px[k + 1], px[k + 2]);
+        }
+      }
+    }
+  }
+  return { codes, nx: w.nx, ny: w.ny, f };
 }

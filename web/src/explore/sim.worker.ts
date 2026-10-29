@@ -1,7 +1,7 @@
 import { LocalInertial } from "./local-inertial";
 import { FRAME_SECONDS, MM_PER_H, clampScenario, riverCells, type Scenario } from "./scenario";
 
-export type RunMsg = { type: "run"; z: Float64Array; nx: number; ny: number; dx: number; dy: number; scenario: Scenario };
+export type RunMsg = { type: "run"; z: Float64Array; nx: number; ny: number; dx: number; dy: number; scenario: Scenario; manningField?: Float64Array };
 export type OutMsg =
   | { type: "frame"; index: number; t: number; depth: Float32Array }
   | { type: "progress"; t: number; total: number }
@@ -16,7 +16,7 @@ self.onmessage = async (ev: MessageEvent<RunMsg | { type: "cancel" }>) => {
   cancelled = false;
   const sc = clampScenario(m.scenario);
   const s = new LocalInertial({ nx: m.nx, ny: m.ny, dx: m.dx, dy: m.dy, z: m.z }, {
-    manning: sc.manning, openNorth: true, outflowSlope: 0.0005, inflowCells: sc.inflowM3s > 0 ? riverCells(m.z, m.nx, m.ny) : [],
+    manning: sc.manning, manningField: m.manningField, openNorth: true, outflowSlope: 0.0005, inflowCells: sc.inflowM3s > 0 ? riverCells(m.z, m.nx, m.ny) : [],
   });
   s.drain = sc.drainMmH * MM_PER_H;
   s.inflow = sc.inflowM3s;
