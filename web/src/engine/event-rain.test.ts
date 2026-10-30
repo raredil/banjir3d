@@ -1,5 +1,4 @@
 import { describe, expect, it } from "vitest";
-import { readdirSync, readFileSync } from "node:fs";
 import { cumAtSteps, meanHyetograph, pointAt, zoneGrid, type EventRain } from "./event-rain";
 import { DT_S } from "./hydrology";
 import { toUtm } from "../util";
@@ -32,11 +31,9 @@ describe("observed-event rain", () => {
     expect(hy.mm[1]).toBeCloseTo(10 / 3);
   });
   it("ships complete event files (full grid, run window, report counts)", () => {
-    const dir = new URL("../../../data/events/", import.meta.url);
-    const files = readdirSync(dir).filter((f) => f.endsWith("_imerg.json"));
+    const files = Object.values(import.meta.glob<EventRain>("../../../data/events/*_imerg.json", { import: "default", eager: true }));
     expect(files.length).toBeGreaterThanOrEqual(3);
-    for (const f of files) {
-      const e = JSON.parse(readFileSync(new URL(f, dir), "utf8")) as EventRain;
+    for (const e of files) {
       expect(e.mm.length).toBe(e.lon.length * e.lat.length);
       expect(e.mm.every((v) => v.length === e.hours && v.every((x) => x >= 0 && x < 300))).toBe(true);
       expect(e.reports.n).toBeGreaterThan(0);
