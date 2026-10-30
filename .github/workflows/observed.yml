@@ -1,0 +1,40 @@
+name: Observed data
+
+# Fetches the observed data used for validation (verification/observed/fetch.py): PetaBencana.id flood reports, ERA5 / ERA5-Land
+# hourly rain (Open-Meteo) and NOAA station records. These hosts are not reachable from the cloud session, so this runs here.
+# Rain and station data are open (CC BY 4.0 / public domain) and go into a public release. PetaBencana answers go into the
+# public release only when their own terms page names an open licence (checked by publish.py); otherwise only counts are published.
+on:
+  workflow_dispatch:
+  push:
+    branches: ["claude/**"]
+    paths: ["verification/observed/fetch.py", "verification/observed/publish.py", "verification/observed/events.json", ".github/workflows/observed.yml"]
+
+permissions:
+  contents: read
+
+jobs:
+  fetch:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: "3.13"
+      - run: python verification/observed/fetch.py "$RUNNER_TEMP/obs"
+      - run: python verification/observed/publish.py "$RUNNER_TEMP/obs" "$RUNNER_TEMP/pub"
+      - name: Publish release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          tag="observed-jakarta-$(date -u +%Y%m%d)-o${GITHUB_RUN_NUMBER}"
+          cd "$RUNNER_TEMP/pub" && sha256sum -- * > SHA256SUMS && ls -la
+          gh release create "$tag" "$RUNNER_TEMP"/pub/* \
+            --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" \
+            --title "Observed data: jakarta ($(date -u +%Y-%m-%d))" \
+            --notes "Validation inputs fetched by verification/observed/fetch.py. Licences and per-request status in manifest.json. Run: ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
