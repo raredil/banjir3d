@@ -20,13 +20,19 @@ const VIEW: Record<string, (b: ArrayBuffer, o: number, n: number) => ArrayLike<n
   int32: (b, o, n) => new Int32Array(b, o, n), float32: (b, o, n) => new Float32Array(b, o, n),
 };
 
-/** Parse the uncompressed pack bytes. */
-export function parsePack(buf: ArrayBuffer): Pack {
+/** Header and named arrays of a pack file (4-byte header length, JSON header, arrays): engine and exposure packs. */
+export function readPackFile<H extends { arrays: PackHeader["arrays"] }>(buf: ArrayBuffer): { header: H; a: Record<string, ArrayLike<number>> } {
   const hl = new DataView(buf).getUint32(0, true);
-  const header = JSON.parse(new TextDecoder().decode(new Uint8Array(buf, 4, hl))) as PackHeader;
+  const header = JSON.parse(new TextDecoder().decode(new Uint8Array(buf, 4, hl))) as H;
   const base = 4 + hl;
   const a: Record<string, ArrayLike<number>> = {};
   for (const d of header.arrays) a[d.name] = VIEW[d.dtype](buf, base + d.offset, d.length);
+  return { header, a };
+}
+
+/** Parse the uncompressed pack bytes. */
+export function parsePack(buf: ArrayBuffer): Pack {
+  const { header, a } = readPackFile<PackHeader>(buf);
   const { nx, ny, dx, origin } = header.grid;
   const zone = Number(/327(\d\d)/.exec(header.grid.crs)?.[1] ?? 48);
   const z = Float32Array.from(a.z as Uint16Array, (v) => v / 100 - 20);
@@ -37,15 +43,16 @@ export function parsePack(buf: ArrayBuffer): Pack {
   };
 }
 
-export async function loadPack(url: string): Promise<Pack> {
+/** Fetch a .bin.gz pack: some servers send it with Content-Encoding (the browser already unpacked it), others as a plain file. */
+export async function fetchPackBytes(url: string): Promise<ArrayBuffer> {
   const r = await fetch(url);
-  if (!r.ok) throw new Error(`engine pack ${r.status}`);
-  let raw = await r.arrayBuffer();
+  if (!r.ok) throw new Error(`${url.split("/").pop()} ${r.status}`);
+  const raw = await r.arrayBuffer();
   const b = new Uint8Array(raw, 0, 2);
-  // some servers send the .gz with Content-Encoding (the browser already unpacked it), others as a plain file: check the gzip magic
-  if (b[0] === 0x1f && b[1] === 0x8b) raw = await new Response(new Blob([raw]).stream().pipeThrough(new DecompressionStream("gzip"))).arrayBuffer();
-  return parsePack(raw);
+  return b[0] === 0x1f && b[1] === 0x8b ? new Response(new Blob([raw]).stream().pipeThrough(new DecompressionStream("gzip"))).arrayBuffer() : raw;
 }
+
+export const loadPack = async (url: string): Promise<Pack> => parsePack(await fetchPackBytes(url));
 
 export type RunGrid = {
   nx: number; ny: number; dx: number; k: number; i0: number; j0: number;
