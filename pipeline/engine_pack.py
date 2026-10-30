@@ -225,7 +225,7 @@ def upstream(crs, soil: str, io_year: int, res: float = 90.0) -> tuple[dict, dic
     slope = np.hypot(gx, gy) * 100.0  # percent
     acc, acc_cn, acc_sl, length, down = d8_accumulate(np.asarray(fdir), dirmap, res, cn, slope)
     cell_km2 = res * res / 1e6
-    props = {"down": down, "transform": tr, "acc": acc, "area_km2": acc * cell_km2, "cn": acc_cn / acc, "slope_pct": acc_sl / acc, "length_m": length, "dem": dem}
+    props = {"hsg": hsg, "down": down, "transform": tr, "acc": acc, "area_km2": acc * cell_km2, "cn": acc_cn / acc, "slope_pct": acc_sl / acc, "length_m": length, "dem": dem}
     info = {"dem": "Copernicus GLO-90 (AWS public copy)", "tiles": [GLO90.format(t=x) for x in tiles], "box_lonlat": UPSTREAM_BOX, "res_m": res,
             "routing_burn": {"source": wsrc, "lines": int(len(lines)), "cells": int(burn.sum()), "depth_m": ROUTE_BURN_M},
             "method": "pysheds: fill pits, fill depressions, resolve flats, D8 directions; own topological pass: upstream area, area-mean CN and slope, longest flow path",
@@ -300,14 +300,17 @@ def build(pack: Path, out: Path, region: str, soil: str) -> dict:
     lc = np.zeros(fine_shape, np.uint8)
     with rasterio.open(pack / f"lulc_io_{io_year}.tif") as src:
         reproject(rasterio.band(src, 1), lc, dst_transform=fine_tr, dst_crs=crs, resampling=Resampling.nearest)
-    hsg_cell, soil_info = soil_groups(tr, shape, crs, soil)
+    up, up_info = upstream(crs, soil, io_year)
+    # soil groups are read once on the 90 m upstream grid (covers the region) and taken over by nearest neighbour
+    hsg_cell = np.zeros(shape, np.uint8)
+    reproject(up["hsg"], hsg_cell, src_transform=up["transform"], src_crs=crs, dst_transform=tr, dst_crs=crs, resampling=Resampling.nearest)
+    soil_info = up_info["soil"]
     hsg_fine = np.repeat(np.repeat(hsg_cell, f, axis=0), f, axis=1)
     n, cn, share = lc_to_n_cn(lc, hsg_fine, f)
     water_cell = (lc == 1).reshape(shape[0], f, shape[1], f).mean(axis=(1, 3)) >= 0.5
     zc, chan, chan_info = burn_channels(z, tr, crs, pack / "water_osm.gpkg")
     sea = sea_mask(zc, water_cell)
     chan &= ~sea
-    up, up_info = upstream(crs, soil, io_year)
     # Stream network: GLO-90 D8 cells with at least STREAM_KM2 upstream, with their downstream cell (index into the same list).
     acc_km2 = up["area_km2"]
     Hs, Ws = acc_km2.shape
