@@ -1,0 +1,160 @@
+name: Validate on observed floods
+
+# Runs engine v2 on an observed event (verification/observed/run_event.ts) with the hourly reanalysis rain from the newest
+# observed-data release, once per drainage capacity in 'drains', on the whole region. Results go into one release per run;
+# the comparison with the flood reports is done by verification/observed/compare.py.
+# A push that changes verification/observed/request.json runs the request in that file (workflow_dispatch needs main).
+on:
+  push:
+    branches: ["claude/**"]
+    paths: ["verification/observed/request.json"]
+  workflow_dispatch:
+    inputs:
+      event:
+        description: "Event id from verification/observed/events.json"
+        default: "2020-01-01"
+        required: true
+      drains:
+        description: "JSON list of drainage capacities (mm/h on a fully built cell)"
+        default: "[0, 10, 20, 40]"
+        required: true
+      rain:
+        description: "era5_land or era5"
+        default: "era5_land"
+        required: true
+      k:
+        description: "Cells of 30 m per model cell (3 = 90 m)"
+        default: "3"
+        required: true
+
+permissions:
+  contents: read
+
+jobs:
+  prep:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    outputs:
+      tag: ${{ steps.t.outputs.tag }}
+      event: ${{ steps.t.outputs.event }}
+      drains: ${{ steps.t.outputs.drains }}
+      rain: ${{ steps.t.outputs.rain }}
+      k: ${{ steps.t.outputs.k }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - id: t
+        env:
+          GH_TOKEN: ${{ github.token }}
+          IN_EVENT: ${{ inputs.event }}
+          IN_DRAINS: ${{ inputs.drains }}
+          IN_RAIN: ${{ inputs.rain }}
+          IN_K: ${{ inputs.k }}
+        run: |
+          python3 - <<'PY' >> "$GITHUB_OUTPUT"
+          import json, os, re
+          r = json.load(open("verification/observed/request.json"))
+          ev = os.environ["IN_EVENT"] or r["event"]
+          dr = json.loads(os.environ["IN_DRAINS"] or json.dumps(r["drains"]))
+          rain = os.environ["IN_RAIN"] or r["rain"]
+          k = os.environ["IN_K"] or str(r["k"])
+          assert re.fullmatch(r"\d{4}-\d\d-\d\d", ev) and rain in ("era5", "era5_land") and k in "123456" and len(k) == 1
+          assert isinstance(dr, list) and 0 < len(dr) <= 8 and all(isinstance(v, (int, float)) and 0 <= v <= 500 for v in dr)
+          print(f"event={ev}\ndrains={json.dumps(dr)}\nrain={rain}\nk={k}")
+          PY
+          EVENT=$(grep '^event=' "$GITHUB_OUTPUT" | tail -1 | cut -d= -f2)
+          case "$EVENT" in [0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]) ;; *) echo "::error::bad event id"; exit 1 ;; esac
+          tag="validation-jakarta-${EVENT}-v${GITHUB_RUN_NUMBER}"
+          gh release create "$tag" --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" --title "Validation run: ${EVENT}" \
+            --notes "Engine v2 on the observed event ${EVENT}; one result per drainage capacity. Run: ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+  run:
+    needs: prep
+    runs-on: ubuntu-24.04
+    timeout-minutes: 180
+    permissions:
+      contents: write
+    strategy:
+      fail-fast: false
+      matrix:
+        drain: ${{ fromJSON(needs.prep.outputs.drains) }}
+    env:
+      EVENT: ${{ needs.prep.outputs.event }}
+      RAIN: ${{ needs.prep.outputs.rain }}
+      K: ${{ needs.prep.outputs.k }}
+      DRAIN: ${{ matrix.drain }}
+      TAG: ${{ needs.prep.outputs.tag }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+      - run: npm ci
+        working-directory: web
+      - name: Download newest engine pack and observed data
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          case "$RAIN" in era5|era5_land) ;; *) echo "::error::bad rain"; exit 1 ;; esac
+          case "$K" in 1|2|3|4|5|6) ;; *) echo "::error::bad k"; exit 1 ;; esac
+          [[ "$DRAIN" =~ ^[0-9]+(\.[0-9]+)?$ ]] || { echo "::error::bad drain"; exit 1; }
+          newest() { gh release list --repo "$GITHUB_REPOSITORY" --limit 100 --json tagName,isDraft,createdAt \
+            --jq "[.[] | select(.isDraft | not) | select(.tagName | startswith(\"$1\"))] | sort_by(.createdAt) | last | .tagName // empty"; }
+          ep=$(newest region-jakarta-); ob=$(newest observed-jakarta-)
+          echo "engine pack: $ep  observed: $ob"
+          mkdir -p "$RUNNER_TEMP/in" && cd "$RUNNER_TEMP/in"
+          gh release download "$ep" --repo "$GITHUB_REPOSITORY" -p 'engine_jakarta.bin.gz' -p SHA256SUMS
+          grep ' engine_jakarta.bin.gz$' SHA256SUMS | sha256sum -c && rm SHA256SUMS
+          gh release download "$ob" --repo "$GITHUB_REPOSITORY" -p observed.tar.gz -p SHA256SUMS
+          grep ' observed.tar.gz$' SHA256SUMS | sha256sum -c && tar xzf observed.tar.gz
+          echo "SRC=engine $ep, observed $ob" >> "$GITHUB_ENV"
+      - name: Run the event
+        working-directory: web
+        run: |
+          read -r start hours < <(python3 -c "import json,sys; e=[e for e in json.load(open('../verification/observed/events.json'))['events'] if e['id']==sys.argv[1]][0]; print(e['utc'][0], e['run_hours'])" "$EVENT")
+          npx --yes vite-node@6.0.0 ../verification/observed/run_event.ts "$RUNNER_TEMP/in/engine_jakarta.bin.gz" "$RUNNER_TEMP/in/$EVENT/rain_${RAIN}.json" \
+            "$start" "$hours" "$RUNNER_TEMP/out" --k "$K" --drain "$DRAIN"
+      - name: Upload result
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          cd "$RUNNER_TEMP/out"
+          python3 -c "import json,os; s=json.load(open('summary.json')); s['sources']=os.environ['SRC']; json.dump(s,open('summary.json','w'),indent=1)"
+          n="${EVENT}_${RAIN}_k${K}_d${DRAIN}"
+          gzip -c hmax.f32 > "${n}_hmax.f32.gz" && gzip -c mask.u8 > "${n}_mask.u8.gz" && cp summary.json "${n}_summary.json"
+          gh release upload "$TAG" "${n}_hmax.f32.gz" "${n}_mask.u8.gz" "${n}_summary.json" --repo "$GITHUB_REPOSITORY"
+  score:
+    needs: [prep, run]
+    if: ${{ always() && needs.prep.result == 'success' }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    permissions:
+      contents: write
+    env:
+      EVENT: ${{ needs.prep.outputs.event }}
+      TAG: ${{ needs.prep.outputs.tag }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: "3.13"
+          cache: pip
+          cache-dependency-path: pipeline/requirements.txt
+      - run: pip install -r pipeline/requirements.txt
+      - name: Score against PetaBencana (raw answers stay on the runner)
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p "$RUNNER_TEMP/res" && gh release download "$TAG" --repo "$GITHUB_REPOSITORY" -D "$RUNNER_TEMP/res"
+          python verification/observed/fetch.py "$RUNNER_TEMP/pb" --petabencana-only
+          python verification/observed/compare.py "$RUNNER_TEMP/pb" "$EVENT" "$RUNNER_TEMP/res" "$RUNNER_TEMP/${EVENT}_scores.json"
+          gh release upload "$TAG" "$RUNNER_TEMP/${EVENT}_scores.json" --repo "$GITHUB_REPOSITORY" --clobber

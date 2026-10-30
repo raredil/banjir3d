@@ -1,25 +1,114 @@
 {
   "_about": "Shown on the Validation page. Every number is copied from a result file in verification/ (named in 'file'); update together.",
   "tests": [
-    { "id": "gpu-parity", "status": "pass", "file": "verification/gpu-parity/results.json",
+    {
+      "id": "gpu-parity",
+      "status": "pass",
+      "file": "verification/gpu-parity/results.json",
       "id_txt": "GPU vs CPU: hasil mesin kartu grafis sama dengan mesin acuan di prosesor pada medan asli (kotak Manggarai, 2 jam hujan 1 Jan 2020).",
       "en_txt": "GPU vs CPU: the graphics-card engine gives the same result as the processor reference on real terrain (Manggarai box, first 2 h of the 1 Jan 2020 storm).",
-      "metrics": [["RMSE max depth", "0.00005 m"], ["Largest difference", "0.003 m"], ["CSI (> 0.15 m)", "1.00"], ["Mass error GPU", "6e-8"]] },
-    { "id": "mass", "status": "pass", "file": "web/src/engine/engine.test.ts",
+      "metrics": [
+        [
+          "RMSE max depth",
+          "0.00005 m"
+        ],
+        [
+          "Largest difference",
+          "0.003 m"
+        ],
+        [
+          "CSI (> 0.15 m)",
+          "1.00"
+        ],
+        [
+          "Mass error GPU",
+          "6e-8"
+        ],
+        [
+          "RMSE, rain zones + drains (1 h)",
+          "0.0000015 m"
+        ]
+      ]
+    },
+    {
+      "id": "mass",
+      "status": "pass",
+      "file": "web/src/engine/engine.test.ts",
       "id_txt": "Neraca air: hujan + air hulu = resapan + keluar + ke laut + tersimpan. Diuji otomatis dan dilaporkan di setiap simulasi.",
       "en_txt": "Water balance: rain + upstream inflow = infiltration + outflow + sea + storage. Tested automatically and reported with every run.",
-      "metrics": [["Mass error (tests, CPU)", "< 1e-9"], ["Mass error, whole region 30 h (90 m)", "5e-15"]] },
-    { "id": "analytical", "status": "pass", "file": "verification/analytical-wave/results.json",
+      "metrics": [
+        [
+          "Mass error (tests, CPU)",
+          "< 1e-9"
+        ],
+        [
+          "Mass error, whole region 30 h (90 m)",
+          "5e-15"
+        ]
+      ]
+    },
+    {
+      "id": "analytical",
+      "status": "pass",
+      "file": "verification/analytical-wave/results.json",
       "id_txt": "Uji analitik gelombang banjir di dataran datar (Hunter dkk. 2005): skema numerik yang sama dengan mesin v2.",
       "en_txt": "Analytical flood-wave test on a flat plane (Hunter et al. 2005): same numerical scheme as engine v2.",
-      "metrics": [["RMSE / inflow depth (n 0.03, 100 m)", "2.9 %"], ["Front position error", "100 m of 3,600 m"]] },
-    { "id": "sfincs", "status": "pass", "file": "verification/explore-vs-sfincs/comparison-spatial-n.json",
+      "metrics": [
+        [
+          "RMSE / inflow depth (n 0.03, 100 m)",
+          "2.9 %"
+        ],
+        [
+          "Front position error",
+          "100 m of 3,600 m"
+        ]
+      ]
+    },
+    {
+      "id": "sfincs",
+      "status": "pass",
+      "file": "verification/explore-vs-sfincs/comparison-spatial-n.json",
       "id_txt": "Dibanding model terbitan SFINCS 2.4.0 (Deltares) pada medan, hujan dan kekasaran yang sama (mesin v1, skema sama; v2 akan diuji ulang).",
       "en_txt": "Against the published SFINCS 2.4.0 model (Deltares) on the same terrain, rain and roughness (engine v1, same scheme; v2 re-run pending).",
-      "metrics": [["RMSE max depth", "0.056 m"], ["Pearson r", "0.995"], ["Volume ratio", "1.0004"]] },
-    { "id": "observed", "status": "todo", "file": "",
-      "id_txt": "Dibanding banjir teramati (1 Jan 2020 dan satu kejadian lain: laporan PetaBencana, citra radar Sentinel-1). Belum dilakukan: ini langkah berikutnya, termasuk kalibrasi kapasitas drainase kota dari data teramati.",
-      "en_txt": "Against observed floods (1 Jan 2020 and one more event: PetaBencana reports, Sentinel-1 radar). Not done yet: next step, including calibrating the city drainage capacity on observed data.",
-      "metrics": [] }
+      "metrics": [
+        [
+          "RMSE max depth",
+          "0.056 m"
+        ],
+        [
+          "Pearson r",
+          "0.995"
+        ],
+        [
+          "Volume ratio",
+          "1.0004"
+        ]
+      ]
+    },
+    {
+      "id": "observed",
+      "status": "partial",
+      "file": "verification/observed/scores-2020-01-01-era5.json",
+      "id_txt": "Dibanding banjir teramati 1 Jan 2020: 259 laporan warga PetaBencana di wilayah model. Dengan hujan ERA5 (rata-rata 66 mm, padahal Halim mencatat 377 mm sehari) model terlalu kering: ini kesalahan data hujan, bukan mesin. Kalibrasi saluran kota menunggu hujan satelit GPM IMERG.",
+      "en_txt": "Against the observed flood of 1 Jan 2020: 259 PetaBencana reports inside the model area. With ERA5 rain (mean 66 mm, while Halim recorded 377 mm in one day) the model is too dry: an error of the rain input, not the engine. Drain calibration waits for GPM IMERG satellite rain.",
+      "metrics": [
+        [
+          "Reports hit (≥ 0.10 m), no drains",
+          "54 %"
+        ],
+        [
+          "Reports hit, drains 20 mm/h",
+          "5 %"
+        ],
+        [
+          "Median depth: reports / model",
+          "0.70 / 0.12 m"
+        ],
+        [
+          "Mass error",
+          "< 4e-15"
+        ]
+      ]
+    }
   ]
 }

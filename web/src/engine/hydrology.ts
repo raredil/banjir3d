@@ -74,3 +74,36 @@ export function inflowsFor(st: Streams, isIn: (x: number, y: number) => boolean,
     return { stream: k, x: st.x[st.down[k]], y: st.y[st.down[k]], areaKm2: effKm2, cn: st.cn[k], lagH, q: catchmentHydrograph(effKm2, st.cn[k], lagH, cumRain, steps) };
   });
 }
+
+/** For rain that differs in space: the stream cells that drain to each entry (outside the run area, upstream of it). members[k] is
+ *  the index into `entries` of the first entry downstream of stream cell k, or -1. The entry cell itself belongs to its entry. */
+export function entryMembers(st: Streams, isIn: (x: number, y: number) => boolean, entries: number[]): Int32Array {
+  const n = st.x.length, ins = new Uint8Array(n), which = new Int32Array(n).fill(-1), members = new Int32Array(n).fill(-1);
+  for (let k = 0; k < n; k++) ins[k] = +isIn(st.x[k], st.y[k]);
+  entries.forEach((k, e) => { which[k] = e; });
+  for (let k = 0; k < n; k++) {
+    let j = k, guard = 0;
+    while (j >= 0 && !ins[j] && which[j] < 0 && guard++ < n) j = st.down[j];
+    if (j >= 0 && which[j] >= 0) members[k] = which[j];
+  }
+  return members;
+}
+
+/** Upstream inflows with each catchment's own rain: cumRainOf(stream cell) gives the cumulative rain series (mm) at a stream cell;
+ *  the catchment takes the mean over its stream cells (they cover the catchment evenly on the 90 m stream grid). */
+export function inflowsForSpatial(st: Streams, isIn: (x: number, y: number) => boolean, cumRainOf: (k: number) => Float64Array, steps: number): (Inflow & { rainMm: number })[] {
+  const ents = findEntries(st, isIn), mem = entryMembers(st, isIn, ents.map((e) => e.stream));
+  const sum = ents.map(() => new Float64Array(steps + 1)), cnt = new Float64Array(ents.length);
+  for (let k = 0; k < mem.length; k++) {
+    const e = mem[k];
+    if (e < 0) continue;
+    const r = cumRainOf(k);
+    for (let s = 0; s <= steps; s++) sum[e][s] += r[Math.min(s, r.length - 1)];
+    cnt[e]++;
+  }
+  return ents.map(({ stream: k, effKm2 }, e) => {
+    const cum = sum[e].map((v) => v / Math.max(1, cnt[e]));
+    const lagH = nrcsLagHours(st.len[k], st.cn[k], st.slope[k]);
+    return { stream: k, x: st.x[st.down[k]], y: st.y[st.down[k]], areaKm2: effKm2, cn: st.cn[k], lagH, rainMm: cum[steps], q: catchmentHydrograph(effKm2, st.cn[k], lagH, cum, steps) };
+  });
+}

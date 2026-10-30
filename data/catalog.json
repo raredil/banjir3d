@@ -558,7 +558,7 @@
       "theme": "observed-flood",
       "role": "validation",
       "provider": "PetaBencana.id / Yayasan Peta Bencana",
-      "version": "API (archive needs key)",
+      "version": "API v2 (reports/archive and floods/archive answer without a key, checked 2026-10-30)",
       "doi": null,
       "url": "https://docs.petabencana.id",
       "licence": {
@@ -567,16 +567,16 @@
       },
       "resolution": "points / RW polygons",
       "access": {
-        "method": "REST API; archive endpoints need an API key",
+        "method": "REST API; archive endpoints fetched in the validation workflow (raw answers not redistributed: licence not stated)",
         "endpoint": "https://data.petabencana.id",
-        "auth": "api-key"
+        "auth": "none"
       },
       "citation": {
         "text": "PetaBencana.id. Crowdsourced flood reports, Jakarta. https://petabencana.id",
         "bibtex": "@misc{petabencana,\n  author = {{PetaBencana.id}},\n  title = {Crowdsourced flood reports and flooded areas, Jakarta},\n  howpublished = {\\url{https://petabencana.id}}\n}"
       },
       "status": "single-source",
-      "checked": "2026-10-23",
+      "checked": "2026-10-30",
       "in_region_pack": false,
       "notes": "Phase 4 validation. API key, if needed, only as GitHub Secret."
     },
