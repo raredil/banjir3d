@@ -29,14 +29,14 @@ def terrarium(h: np.ndarray, valid: np.ndarray) -> np.ndarray:
     return np.stack([r, g, b]).clip(0, 255).astype("uint8")
 
 
-def _encode(rgba: np.ndarray, fmt: str) -> bytes | None:
+def _encode(rgba: np.ndarray, fmt: str, quality: int = 82) -> bytes | None:
     """rgba: (bands, H, W) uint8 with 3 or 4 bands. Returns None for fully transparent tiles."""
     if rgba.shape[0] == 4 and not rgba[3].any():
         return None
     img = Image.fromarray(np.moveaxis(rgba, 0, -1), "RGBA" if rgba.shape[0] == 4 else "RGB")
     buf = io.BytesIO()
     if fmt == "webp":
-        img.save(buf, "WEBP", quality=82, method=4)
+        img.save(buf, "WEBP", quality=quality, method=4)
     else:
         img.save(buf, "PNG", optimize=True)
     return buf.getvalue()
@@ -44,8 +44,13 @@ def _encode(rgba: np.ndarray, fmt: str) -> bytes | None:
 
 def render_pmtiles(cog: Path, out: Path, *, bbox: list[float], minzoom: int, maxzoom: int,
                    render: Callable[[np.ndarray, np.ndarray], np.ndarray], fmt: str = "png",
-                   resampling=Resampling.bilinear, metadata: dict | None = None, bands=None) -> Path:
-    """render(data[bands,H,W], valid[H,W]) -> uint8 (3|4, H, W)."""
+                   resampling=Resampling.bilinear, metadata: dict | None = None, bands=None,
+                   max_resampling=None, quality: int = 82) -> Path:
+    """render(data[bands,H,W], valid[H,W]) -> uint8 (3|4, H, W).
+
+    max_resampling: resampling for the top zoom only. Use it when the top zoom is finer than the source (upsampling),
+    where an averaging kernel blurs: e.g. 10 m imagery at z14 (9.5 m pixels) keeps more detail with Lanczos.
+    """
     tiles = []
     for z in range(minzoom, maxzoom + 1):
         tiles += list(mercantile.tiles(*bbox, zooms=z))
@@ -58,13 +63,14 @@ def render_pmtiles(cog: Path, out: Path, *, bbox: list[float], minzoom: int, max
         for t in tiles:
             xb = mercantile.xy_bounds(t)
             tr = rasterio.transform.from_bounds(xb.left, xb.bottom, xb.right, xb.top, TILE, TILE)
-            with WarpedVRT(src, crs="EPSG:3857", transform=tr, width=TILE, height=TILE, resampling=resampling,
+            res = max_resampling if (max_resampling is not None and t.z == maxzoom) else resampling
+            with WarpedVRT(src, crs="EPSG:3857", transform=tr, width=TILE, height=TILE, resampling=res,
                            src_nodata=src.nodata, nodata=src.nodata) as vrt:
                 data = vrt.read(idx, masked=True)
             valid = ~np.ma.getmaskarray(data).any(axis=0)
             if not valid.any():
                 continue
-            blob = _encode(render(np.ma.getdata(data), valid), fmt)
+            blob = _encode(render(np.ma.getdata(data), valid), fmt, quality)
             if blob is None:
                 continue
             w.write_tile(zxy_to_tileid(t.z, t.x, t.y), blob)
@@ -79,7 +85,9 @@ def render_pmtiles(cog: Path, out: Path, *, bbox: list[float], minzoom: int, max
                 "center_zoom": max(minzoom, min(maxzoom, 10)),
                 "center_lon_e7": int(c[0] * 1e7), "center_lat_e7": int(c[1] * 1e7),
             },
-            {"format": fmt, "tiles_written": written, **(metadata or {})},
+            {"format": fmt, "tiles_written": written, "resampling": resampling.name,
+             **({"resampling_maxzoom": max_resampling.name} if max_resampling is not None else {}),
+             **({"webp_quality": quality} if fmt == "webp" else {}), **(metadata or {})},
         )
     return out
 

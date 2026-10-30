@@ -5,7 +5,7 @@ import "@fontsource/ibm-plex-mono/400.css";
 import "./style.css";
 import { renderCatalog } from "./catalog";
 import { applyStatic, lang, setLang } from "./i18n";
-import type { Catalog, Manifest, VerifyReport } from "./types";
+import type { Catalog, DataCheck, Manifest, VerifyReport } from "./types";
 import { fetchJson } from "./util";
 
 const REGION = "jakarta";
@@ -14,14 +14,15 @@ const app = document.querySelector<HTMLElement>("#app")!;
 let current: { remove(): void } | null = null;
 
 const state = (async () => {
-  const [catalog, regions, manifest, verify, release] = await Promise.all([
+  const [catalog, regions, manifest, verify, release, dataCheck] = await Promise.all([
     fetchJson<Catalog>("meta/catalog.json"),
     fetchJson<Record<string, { bbox: number[]; name: string; domain?: string }>>("meta/regions.json"),
     fetchJson<Manifest>(`${DATA}/manifest.json`),
     fetchJson<VerifyReport>(`${DATA}/verify-report.json`),
     fetchJson<{ tag: string }>(`${DATA}/release.json`),
+    fetchJson<DataCheck>(`${DATA}/data-check.json`),
   ]);
-  return { catalog: catalog!, regionId: REGION, region: regions![REGION], sample: regions!["sample-ciliwung"]?.bbox ?? null, manifest, verify, releaseTag: release?.tag ?? null };
+  return { catalog: catalog!, regionId: REGION, region: regions![REGION], sample: regions!["sample-ciliwung"]?.bbox ?? null, manifest, verify, dataCheck, releaseTag: release?.tag ?? null };
 })();
 
 async function route() {

@@ -1,0 +1,102 @@
+{
+ "pack": "region-jakarta-20261024-r2",
+ "checks": [
+  {
+   "id": "checksums",
+   "what": "Release files match SHA256SUMS",
+   "value": "11 ok, 0 mismatch",
+   "pass": true
+  },
+  {
+   "id": "dem",
+   "what": "Terrain the simulation reads = FABDEM source (largest difference, whole region)",
+   "value": "0.0039 m",
+   "limit": "<= 0.01 m",
+   "pass": true
+  },
+  {
+   "id": "landcover",
+   "what": "Land-cover class the simulation reads = WorldCover source (10 km sample)",
+   "value": "100.00 %",
+   "limit": ">= 99.9 %",
+   "pass": true
+  },
+  {
+   "id": "imagery",
+   "what": "Satellite map tiles keep the detail of the 10 m source (10 km sample, z14)",
+   "value": "82.5 % detail, 33.25 dB",
+   "limit": ">= 95 %, >= 38 dB",
+   "pass": false
+  }
+ ],
+ "checksums": {
+  "checked": 11,
+  "ok": [
+   "admin_geoboundaries.pmtiles",
+   "dem_fabdem.pmtiles",
+   "dem_fabdem.tif",
+   "imagery_s2.pmtiles",
+   "imagery_s2_rgb.tif",
+   "lulc_io_latest.pmtiles",
+   "lulc_worldcover_2021.pmtiles",
+   "lulc_worldcover_2021.tif",
+   "manifest.json",
+   "verify-report.json",
+   "water_osm.pmtiles"
+  ],
+  "mismatch": [],
+  "pass": true
+ },
+ "dem_sample": {
+  "tile_vs_cog_bilinear_m": {
+   "n": 262144,
+   "mean": -0.002,
+   "rmse": 0.0023,
+   "p95_abs": 0.0037,
+   "max_abs": 0.0039
+  },
+  "tile_vs_cog_cell_mean_m": {
+   "n": 262144,
+   "mean": -0.002,
+   "rmse": 0.0299,
+   "p95_abs": 0.0567,
+   "max_abs": 1.1254
+  },
+  "subcell_std_of_30m_pixels_m": {
+   "median": 0.097,
+   "p95": 0.577
+  }
+ },
+ "dem_region": {
+  "tile_vs_cog_bilinear_m": {
+   "n": 1872467,
+   "mean": -0.0016,
+   "rmse": 0.0021,
+   "p95_abs": 0.0037,
+   "max_abs": 0.0039
+  },
+  "tile_vs_cog_cell_mean_m": {
+   "n": 1872467,
+   "mean": -0.0016,
+   "rmse": 0.0538,
+   "p95_abs": 0.0809,
+   "max_abs": 2.7635
+  },
+  "subcell_std_of_30m_pixels_m": {
+   "median": 0.075,
+   "p95": 0.901
+  }
+ },
+ "landcover_sample": {
+  "pixels": 1638400,
+  "agreement": 1.0
+ },
+ "imagery_sample": {
+  "file": "imagery_s2.pmtiles",
+  "tiles_z14": 25,
+  "mean_kb_per_tile": 17.2,
+  "psnr_vs_cog_lanczos_db": 33.25,
+  "local_contrast_kept": 0.825
+ },
+ "pass": false
+}

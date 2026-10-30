@@ -27,3 +27,9 @@ export function paintDepth(depth: Float32Array, out: Uint8ClampedArray) {
     out[k] = r; out[k + 1] = g; out[k + 2] = b; out[k + 3] = Math.round(a * 255);
   }
 }
+
+/** Canvas pixels per model cell for the flood overlay: sharp cell edges when the map texture is magnified, within a
+ *  canvas of at most maxSide pixels (GPU texture limit with margin). */
+export function overlayScale(nx: number, ny: number, maxSide = 1024): number {
+  return Math.max(1, Math.min(16, Math.floor(maxSide / Math.max(nx, ny, 1))));
+}

@@ -1,11 +1,11 @@
 import { t } from "./i18n";
-import type { Catalog, Dataset, Manifest, VerifyReport } from "./types";
+import type { Catalog, DataCheck, Dataset, Manifest, VerifyReport } from "./types";
 import { esc, fmtBytes, safeUrl } from "./util";
 
 const REPO = "https://github.com/raredil/banjir3d";
 const THEMES = ["terrain", "subsidence", "bathymetry", "land-cover", "water-bodies", "buildings", "population", "admin", "rain", "imagery", "observed-flood", "river-inflow", "sea-level"];
 
-type Ctx = { catalog: Catalog; manifest: Manifest | null; verify: VerifyReport | null; releaseTag: string | null; focus?: string };
+type Ctx = { catalog: Catalog; manifest: Manifest | null; verify: VerifyReport | null; dataCheck?: DataCheck | null; releaseTag: string | null; focus?: string };
 
 function badge(cls: string, text: string) {
   return `<span class="badge ${esc(cls)}">${esc(text)}</span>`;
@@ -69,6 +69,8 @@ export function renderCatalog(root: HTMLElement, ctx: Ctx) {
       ${m ? `<div><span class="k">${t("pack.built")}</span> <a class="mono" href="${REPO}/releases/tag/${encodeURIComponent(ctx.releaseTag ?? "")}">${esc(ctx.releaseTag ?? "")}</a> · <span class="mono">${esc(m.created)}</span>${m.software.action_run ? ` · <a href="${safeUrl(m.software.action_run)}">Action run</a>` : ""}</div>
       <div><span class="k">${t("cat.outlicence")}</span> <b>${esc(m.output_licence)}</b> <span class="small">(${m.licences.map(esc).join(" · ")})</span></div>` : `<div class="warn">${t("cat.nopack")}</div>`}
       ${ctx.verify ? `<div><span class="k">${t("cat.auto")}</span> <span class="mono">${esc(ctx.verify.checked)}</span></div>` : ""}
+      ${ctx.dataCheck?.checks?.length ? `<div class="data-checks"><span class="k">${t("cat.checks")}</span><ul>${ctx.dataCheck.checks.map((c) =>
+        `<li>${badge(c.pass ? "ok" : "pack-failed", t(c.pass ? "cat.checks.pass" : "cat.checks.fail"))} ${esc(c.what)}: <span class="mono">${esc(c.value)}</span>${c.limit ? ` <span class="small">(${esc(c.limit)})</span>` : ""}</li>`).join("")}</ul></div>` : ""}
       <div><a class="chip" href="meta/REFERENCES.bib" download>${t("cat.bib")}</a></div>
     </div>
     ${THEMES.filter((th) => ds.some((d) => d.theme === th)).map((th) => `

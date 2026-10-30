@@ -1,0 +1,82 @@
+name: Re-tile region pack display
+
+# Re-renders the Sentinel-2 display tiles of an existing region pack from the pack's own COG (source data unchanged),
+# runs the data checks and publishes the result as a new region pack release. Much faster than a full rebuild.
+on:
+  workflow_dispatch:
+    inputs:
+      region:
+        description: "Region id from data/regions.json"
+        default: "jakarta"
+        required: true
+      source_tag:
+        description: "Release to re-tile (empty = newest region pack of this region)"
+        required: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: region-pack-${{ inputs.region }}
+  cancel-in-progress: false
+
+jobs:
+  retile:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    permissions:
+      contents: write
+      actions: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: "3.13"
+          cache: pip
+          cache-dependency-path: pipeline/requirements.txt
+      - run: pip install -r pipeline/requirements.txt
+      - name: Download source release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REGION: ${{ inputs.region }}
+          SOURCE_TAG: ${{ inputs.source_tag }}
+        run: |
+          tag="$SOURCE_TAG"
+          if [ -z "$tag" ]; then
+            tag=$(gh release list --repo "$GITHUB_REPOSITORY" --limit 100 --json tagName,isDraft,createdAt \
+              --jq "[.[] | select(.isDraft | not) | select(.tagName | startswith(\"region-${REGION}-\"))] | sort_by(.createdAt) | last | .tagName // empty")
+          fi
+          case "$tag" in region-"$REGION"-*) ;; *) echo "::error::no region pack release for $REGION"; exit 1 ;; esac
+          echo "SRC_TAG=$tag" >> "$GITHUB_ENV"
+          mkdir -p "$RUNNER_TEMP/pack"
+          gh release download "$tag" --repo "$GITHUB_REPOSITORY" -D "$RUNNER_TEMP/pack"
+          cd "$RUNNER_TEMP/pack" && sha256sum -c SHA256SUMS
+      - name: Re-tile
+        working-directory: pipeline
+        env:
+          REGION: ${{ inputs.region }}
+        run: |
+          python region_pack.py retile "$REGION" --out "$RUNNER_TEMP/pack" --source-tag "$SRC_TAG"
+          python verify_sources.py "$RUNNER_TEMP/pack/verify-report.json"
+          cd "$RUNNER_TEMP/pack" && rm -f SHA256SUMS data-check.json && sha256sum -- * > SHA256SUMS
+      - name: Data checks (what the app shows and simulates = the source data)
+        run: |
+          python -I verification/data-checks/check_pack.py "$RUNNER_TEMP/pack" "$RUNNER_TEMP/data-check.json" --tag "retile of $SRC_TAG"
+          mv "$RUNNER_TEMP/data-check.json" "$RUNNER_TEMP/pack/"
+          cd "$RUNNER_TEMP/pack" && sha256sum -- data-check.json >> SHA256SUMS && ls -la
+      - name: Publish release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REGION: ${{ inputs.region }}
+        run: |
+          tag="region-${REGION}-$(date -u +%Y%m%d)-t${GITHUB_RUN_NUMBER}"
+          gh release create "$tag" "$RUNNER_TEMP"/pack/* \
+            --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" \
+            --title "Region pack: ${REGION} ($(date -u +%Y-%m-%d), re-tiled)" \
+            --notes "Display tiles re-rendered from ${SRC_TAG} (source data unchanged). Provenance: manifest.json. Data checks: data-check.json. Checksums: SHA256SUMS. Run: ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
+      - name: Redeploy website with the new data
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run pages.yml --repo "$GITHUB_REPOSITORY" --ref main

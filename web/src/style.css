@@ -210,3 +210,6 @@ h2.theme { font-size: 13px; text-transform: uppercase; letter-spacing: 0.1em; co
 @media (max-width: 520px) {
   .brand-name { display: none; }
 }
+.data-checks { flex-basis: 100%; order: 10; }
+.data-checks ul { list-style: none; margin: 6px 0 0; padding: 0; display: grid; gap: 4px; }
+.data-checks li { font-size: 13px; color: var(--ink-2); }

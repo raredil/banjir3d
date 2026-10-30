@@ -13,3 +13,11 @@ EXPLORATORY RESULT, not for quantitative conclusions. The engine is not yet veri
 - `explore-v1-draw-run.jpg`: result in that 2.4 × 1.9 km box with the default 1 Jan 2020 event (377 mm over 24 h, Mononobe alternating block, open edges, no drainage, WorldCover roughness, 30 h): peak 1.27 m, 1.71 km² over 0.15 m, mass error 1.5e-14, maximum depth shown. Water follows the Ciliwung valley in the bare-earth terrain.
 - `explore-v1-sample-mobile.jpg`: 3D page at 390 px.
 EXPLORATORY RESULT, not for quantitative conclusions (not validated against observed floods).
+
+# Sharp display and data checks (2026-10-30, Claude Code, software-rendered, retina 2x)
+- `sharp-flood-before-after.png`: same run, zoomed in. Left: old overlay (depths smeared between 38 m cells). Right: every model cell a sharp square with its computed depth.
+- `sharp-imagery-z14-before-after.jpg`: map page at zoom 14. Left: old tiles (82.5 % of the 10 m source detail). Right: re-tiled (99.7 %); 15 % more on-screen detail.
+- `sharp-imagery-z16-pixels.png`: zoom 16: the real 10 m Sentinel-2 pixels shown as sharp squares instead of a blur.
+- `sharp-draw-run.jpg`: the 2.4 × 1.9 km run (default 1 Jan 2020 event) with the new overlay.
+- `data-checks-catalog.png`: data-check results on the Data catalog page.
+EXPLORATORY RESULT, not for quantitative conclusions (not validated against observed floods).

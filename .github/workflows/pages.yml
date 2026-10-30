@@ -42,7 +42,7 @@ jobs:
             if [ -z "$tag" ]; then echo "no region pack yet for $region"; continue; fi
             dest="web/dist/data/${region}"
             mkdir -p "$dest"
-            gh release download "$tag" --repo "$GITHUB_REPOSITORY" -D "$dest" -p '*.pmtiles' -p manifest.json -p verify-report.json -p SHA256SUMS
+            gh release download "$tag" --repo "$GITHUB_REPOSITORY" -D "$dest" -p '*.pmtiles' -p manifest.json -p verify-report.json -p SHA256SUMS -p data-check.json
             echo "{\"tag\": \"$tag\"}" > "$dest/release.json"
             du -sh "$dest"
           done

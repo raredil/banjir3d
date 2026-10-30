@@ -7,7 +7,7 @@ import { ensurePmtiles } from "./pmtiles-init";
 import { t, type Key } from "./i18n";
 import { LAYERS, type LayerDef, type LegendItem } from "./layers";
 import type { Catalog, Manifest } from "./types";
-import { esc, toUtm } from "./util";
+import { MAX_ZOOM, esc, rasterResampling, toUtm } from "./util";
 
 const BASEMAP = "https://tiles.openfreemap.org/styles/positron";
 const GLYPHS = "https://tiles.openfreemap.org/fonts/{fontstack}/{range}.pbf";
@@ -42,12 +42,12 @@ async function loadBasemap(kind: string): Promise<StyleSpecification> {
 }
 
 /** MapLibre layers for one definition. Returned layers are inserted under the basemap labels. */
-function mlLayers(def: LayerDef, src: string): LayerSpecification[] {
+function mlLayers(def: LayerDef, src: string, zoom: number): LayerSpecification[] {
   const vis = def.visible ? "visible" : "none";
   const o = def.opacity;
   switch (def.kind) {
     case "raster":
-      return [{ id: def.id, type: "raster", source: src, layout: { visibility: vis }, paint: { "raster-opacity": o, "raster-resampling": def.id.startsWith("lulc") ? "nearest" : "linear" } }];
+      return [{ id: def.id, type: "raster", source: src, layout: { visibility: vis }, paint: { "raster-opacity": o, "raster-resampling": rasterResampling(def.id === "s2", zoom) } }];
     case "hillshade":
       return [{ id: def.id, type: "hillshade", source: src, layout: { visibility: vis }, paint: { "hillshade-exaggeration": o, "hillshade-shadow-color": "#2b3440", "hillshade-highlight-color": "#ffffff", "hillshade-accent-color": "#5b6573" } }];
     case "relief": {
@@ -144,6 +144,7 @@ export async function renderMap(root: HTMLElement, ctx: Ctx) {
     ...view,
     attributionControl: false,
     maxPitch: 0,
+    maxZoom: MAX_ZOOM,
   });
   map.addControl(new NavigationControl({ visualizePitch: false }), "top-right");
   map.addControl(new ScaleControl({ unit: "metric", maxWidth: 160 }), "bottom-right");
@@ -172,9 +173,13 @@ export async function renderMap(root: HTMLElement, ctx: Ctx) {
           else map.addSource(src, { type: "raster", url, tileSize: 256, attribution });
         }
       }
-      for (const layer of mlLayers(def, src)) map.addLayer(layer, def.kind === "demnas-grid" || def.kind === "region" ? undefined : firstSymbol);
+      for (const layer of mlLayers(def, src, map.getZoom())) map.addLayer(layer, def.kind === "demnas-grid" || def.kind === "region" ? undefined : firstSymbol);
     }
   };
+  map.on("zoom", () => {
+    const r = rasterResampling(true, map.getZoom());
+    if (map.getLayer("s2") && map.getPaintProperty("s2", "raster-resampling") !== r) map.setPaintProperty("s2", "raster-resampling", r);
+  });
   map.on("load", () => {
     addOverlays();
     map.getContainer().querySelector(".maplibregl-ctrl-attrib")?.classList.remove("maplibregl-compact-show");

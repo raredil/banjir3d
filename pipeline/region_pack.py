@@ -2,6 +2,7 @@
 
   python region_pack.py build  <region> <group> --out DIR   # one layer group, writes DIR/record-<group>.json
   python region_pack.py merge  <region> --out DIR           # merge records into DIR/manifest.json
+  python region_pack.py retile <region> --out DIR           # re-render display tiles of a downloaded pack in DIR
 
 Groups: see b3d.layers.LAYERS. A failing dataset is recorded (status "failed" + error) and does not stop the others.
 """
@@ -86,13 +87,34 @@ def merge(region_id: str, out: Path) -> None:
     print(json.dumps({r["dataset"]: r["status"] for r in layers}, indent=1))
 
 
+def retile(region_id: str, out: Path, source_tag: str | None) -> None:
+    """Re-render the Sentinel-2 display tiles of an existing pack from its own COG (the source data is unchanged) and
+    record the step in manifest.json."""
+    from b3d.layers import imagery_display
+    region = load_regions()[region_id]
+    path = out / "manifest.json"
+    manifest = json.loads(path.read_text())
+    rec = next(r for r in manifest["layers"] if r["dataset"] == "sentinel-2-l2a" and r.get("status") == "ok")
+    imagery_display(rec, out / "imagery_s2_rgb.tif", out, region)
+    rec["steps"].append({"op": "re-tile display (sharper z14)", "tool": "b3d.layers.imagery_display", "date": now_utc(),
+                         "params": {"from_release": source_tag, "resampling": "average; lanczos at z14", "webp_quality": 92}})
+    manifest["retiled"] = {"date": now_utc(), "from_release": source_tag,
+                           "software": {**software_versions(), "git_commit": os.environ.get("GITHUB_SHA")}}
+    path.write_text(json.dumps(manifest, indent=1, default=str) + "\n")
+    print(json.dumps(rec["display"], indent=1))
+
+
 if __name__ == "__main__":
     ap = argparse.ArgumentParser()
-    ap.add_argument("cmd", choices=["build", "merge"])
+    ap.add_argument("cmd", choices=["build", "merge", "retile"])
     ap.add_argument("region")
     ap.add_argument("group", nargs="?")
     ap.add_argument("--out", type=Path, required=True)
+    ap.add_argument("--source-tag")
     a = ap.parse_args()
     if a.cmd == "build":
         sys.exit(1 if build(a.region, a.group, a.out) else 0)
-    merge(a.region, a.out)
+    if a.cmd == "retile":
+        retile(a.region, a.out, a.source_tag)
+    else:
+        merge(a.region, a.out)

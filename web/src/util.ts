@@ -61,3 +61,12 @@ export function toUtm(lon: number, lat: number, zone = Math.floor((lon + 180) / 
   const northing = k0 * A * y + (lat < 0 ? 10000000 : 0);
   return { zone, hemisphere: lat < 0 ? "S" : "N", easting, northing };
 }
+
+// Sharp rasters. Data grids (land cover, water occurrence, population) always show their cells as sharp squares. The
+// 10 m Sentinel-2 image is smoothed only while a source pixel spans at most about one screen pixel; from SHARP_IMAGERY_Z
+// on (10 m = 2+ screen pixels) it is drawn with nearest-neighbour, so zooming in shows the real 10 m pixels instead of blur.
+export const SHARP_IMAGERY_Z = 15;
+export const MAX_ZOOM = 18; // beyond this no layer holds more detail (buildings z14, imagery 10 m, terrain 30 m)
+export function rasterResampling(imagery: boolean, zoom: number): "linear" | "nearest" {
+  return imagery && zoom < SHARP_IMAGERY_Z ? "linear" : "nearest";
+}

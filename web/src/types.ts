@@ -18,3 +18,4 @@ export type Manifest = {
   attribution: string[]; software: Record<string, string | null>; layers: LayerRec[];
 };
 export type VerifyReport = { checked: string; datasets: { id: string; url_status: number | string; doi_registered?: boolean }[]; facts: Record<string, unknown> };
+export type DataCheck = { pack: string | null; pass: boolean; checks: { id: string; what: string; value: string; limit?: string; pass: boolean }[] };
