@@ -61,10 +61,11 @@ export function renderCatalog(root: HTMLElement, ctx: Ctx) {
   if (ctx.focus) { const el = root.querySelector<HTMLDetailsElement>(`#ds-${CSS.escape(ctx.focus)}`); el?.scrollIntoView({ block: "start" }); el?.querySelector("details")?.setAttribute("open", ""); }
 }
 
+const STATUS: Record<string, [string, string]> = { pass: ["lolos", "pass"], partial: ["berjalan", "in progress"], fail: ["gagal", "fail"], todo: ["belum", "to do"] };
 export function renderValidation(root: HTMLElement, v: { tests: { id: string; status: string; file: string; id_txt: string; en_txt: string; metrics: string[][] }[] }) {
   root.innerHTML = `<div class="doc"><div class="doc-head"><h1>${t("va.title")}</h1><p>${t("va.lead")}</p></div>
     <div class="grid-cards">${v.tests.map((x) => `<article class="ds card"><div class="ds-top"><h2>${esc((lang === "id" ? x.id_txt : x.en_txt).split(":")[0])}</h2>
-      <span class="pill ${x.status === "pass" ? "ok" : "warn"}">${x.status === "pass" ? (lang === "id" ? "lolos" : "pass") : (lang === "id" ? "belum" : "to do")}</span></div>
+      <span class="pill ${x.status === "pass" ? "ok" : "warn"}">${(STATUS[x.status] ?? STATUS.todo)[lang === "id" ? 0 : 1]}</span></div>
       <p class="use">${esc((lang === "id" ? x.id_txt : x.en_txt).split(":").slice(1).join(":").trim())}</p>
       ${x.metrics.length ? `<dl>${x.metrics.map(([a, b]) => `<dt>${esc(a)}</dt><dd class="mono">${esc(b)}</dd>`).join("")}</dl>` : ""}
       ${x.file ? `<p class="prov"><a href="${REPO}/blob/main/${esc(x.file)}" target="_blank" rel="noopener noreferrer">${esc(x.file)}</a></p>` : ""}</article>`).join("")}</div></div>`;
