@@ -13,6 +13,11 @@ on:
 permissions:
   contents: read
 
+# a newer push replaces a fetch still running (two runs racing to publish failed with HTTP 403 on 2026-10-30)
+concurrency:
+  group: observed-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   fetch:
     runs-on: ubuntu-24.04
