@@ -1,1 +1,1 @@
-{ "_about": "What the 'Validate on observed floods' workflow runs on push. drains: mm/h on a fully built cell.", "event": "2020-01-01", "drains": [0, 20], "rain": "era5", "k": 3 }
+{"_about": "What the 'Validate on observed floods' workflow runs on push. drains: mm/h on a fully built cell.", "event": "2020-01-01", "drains": [0, 5, 10, 20, 40], "rain": "imerg", "k": 3}

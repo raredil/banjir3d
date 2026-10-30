@@ -257,7 +257,7 @@ def chirps(ev: dict, out: Path):
                 mm[m] = round(float(tot * x), 3)
         pts.append({"lon": p["lon"], "lat": p["lat"], "time": times, "mm": mm, "daily_mm": {d: daily[d][k] for d in daily}})
     (out / "rain_chirps.json").write_text(json.dumps({"model": "chirps_daily_era5_hourly_pattern", "units": "mm per hour ending at time (UTC)",
-                                                      "source": "CHIRPS daily (Funk et al. 2015, doi:10.1038/sdata.2015.66), Climate Hazards Center UCSB; hourly pattern from ERA5 (Open-Meteo)",
+                                                      "source": "CHIRPS daily (v2.0 doi:10.1038/sdata.2015.66, v3.0 doi:10.15780/G2JQ0P; file in 'files'), Climate Hazards Center UCSB; hourly pattern from ERA5 (Open-Meteo)",
                                                       "files": used, "day_assumed": "UTC calendar day", "points": pts}))
 
 

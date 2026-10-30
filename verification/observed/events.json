@@ -20,9 +20,25 @@
           "https://www.antaranews.com/berita/1921596/banjir-dan-kenangan",
           "https://www.mobil123.com/berita/pemprov-dki-jakarta-klaim-banjir-kali-ini-tidak-seluas-tahun-lalu/62890/amp/"
         ],
-        "flooded_km2": null,
-        "flooded_rw": null,
-        "status": "to check"
+        "flooded_km2": 156,
+        "flooded_rw": 390,
+        "status": "checked in page text 2026-10-30 (reported_excerpts.json in release observed-jakarta-20261030-o8)",
+        "quote": "luas area tergenang 156 km persegi dengan jumlah RW tergenang sebanyak 390 (Antara, data Pemprov DKI, rapat koordinasi 7 Jan 2020)",
+        "context": {
+          "2007": {
+            "km2": 455,
+            "rw": 955,
+            "rain_mm_day": 340
+          },
+          "2013": {
+            "km2": 240,
+            "rw": 599
+          },
+          "2015": {
+            "km2": 281,
+            "rw": 702
+          }
+        }
       }
     },
     {
@@ -46,7 +62,7 @@
         ],
         "flooded_km2": null,
         "flooded_rw": null,
-        "status": "to check"
+        "status": "pages refused the Action (HTTP 403); search results only: 113 RW / 342 RT on 20 Feb 2021"
       }
     },
     {
@@ -69,7 +85,8 @@
         ],
         "flooded_km2": null,
         "flooded_rw": null,
-        "status": "to check"
+        "status": "checked in page text 2026-10-30: 121 RT and 5 roads at 15:00 WIB 4 Mar 2025 (BPBD via akurat.co); no area figure",
+        "flooded_rt": 121
       }
     }
   ]

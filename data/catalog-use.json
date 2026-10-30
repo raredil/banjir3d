@@ -17,6 +17,7 @@
   "sentinel-2-l2a": { "use": ["map"], "id": "Citra satelit 10 m terbaru (komposit 12 bulan terakhir) sebagai latar peta.", "en": "Newest 10 m satellite image (composite of the last 12 months) as the map background." },
   "era5-open-meteo": { "use": ["planned"], "id": "Hujan per jam dari reanalisis untuk kejadian nyata (tahap validasi).", "en": "Hourly reanalysis rain for real events (validation step)." },
   "open-meteo-forecast": { "use": ["planned"], "id": "Prakiraan hujan untuk mode 'sekarang' (tahap berikutnya).", "en": "Rain forecast for a 'now' mode (later step)." },
+  "chirps-v3-daily": { "use": ["validation"], "id": "Hujan harian satelit + stasiun untuk menguji kejadian banjir nyata (dibagi per jam mengikuti pola ERA5).", "en": "Daily satellite + station rain to test real flood events (spread over hours with the ERA5 pattern)." },
   "gpm-imerg-v07": { "use": ["planned"], "id": "Hujan satelit untuk validasi kejadian.", "en": "Satellite rain for event validation." },
   "sentinel-1-flood": { "use": ["validation"], "id": "Genangan teramati dari radar satelit, untuk menguji hasil simulasi.", "en": "Observed flooding from satellite radar, to test the simulation." },
   "petabencana": { "use": ["validation"], "id": "Laporan banjir warga (lokasi dan tinggi air), untuk menguji hasil simulasi.", "en": "Citizen flood reports (place and water depth), to test the simulation." },
