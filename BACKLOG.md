@@ -10,7 +10,7 @@
 | Kelurahan (ADM4) boundaries with an open licence | 5 |
 | PetaBencana archive (API key as GitHub Secret), Sentinel-1 flood maps for 2 events | 4 |
 | River gauge data (Katulampa, Depok, Manggarai) | 4 |
-| GPM IMERG (NASA Earthdata account as Secret) | 4 |
+| SFINCS re-run with engine v2 (Action) + EA benchmarks 1, 2, 4: postponed by owner 2026-10-30 ("ya") to finish in one session | later |
 | Land-cover year series in the UI (2017–2024 already in the region pack) | 5 |
 | CITATION.cff + Zenodo DOI | 3 |
 | Kecamatan (ADM3) boundaries: geoBoundaries API has ADM2 only for IDN → BIG/BPS source with an open licence | 1 |

@@ -52,9 +52,10 @@ docs/adr/0010-validation-observed-floods.md (Result section: drains 0 mm/h with 
 2026-10-30: no new dependencies; CSP unchanged (engine pack same-origin; exported HTML loads Leaflet/OSM from CDN only inside the downloaded file). New inputs: `#/sim?box=` (numbers, clipped to region), hourly rain (existing strict parser). npm audit not re-run this session (no dependency change).
 
 ## Next steps (ordered, specific, file paths)
+OWNER DECISION 2026-10-30: finish in ONE session: do 1, 2 and 4 (4 simple: totals per kecamatan); 3 moved to BACKLOG. Then final HANDOFF, merge to main.
 1. Event mode in the UI: "1 Jan 2020 / 20 Feb 2021 / 4 Mar 2025 as observed" with IMERG hourly rain per 0.1° zone. Ship compact rain files (`data/events/<id>_imerg.json`, from the newest `observed-jakarta-*` release `observed.tar.gz` -> `<id>/rain_imerg.json`; NASA open data) ; worker: `zone` + `rates` like `verification/observed/run_event.ts` (CPU `e.rates`, GPU `zoneMm`), inflows with `inflowsForSpatial`. Show PetaBencana report COUNT only (records not redistributable).
 2. Depth bias: test IMERG rain scaled to the Halim gauge (run_event `--scale`, e.g. 1.5, 2) as a sensitivity run, NOT as calibration; report in Validation.
-3. SFINCS re-run with v2 in an Action (clone Deltares/SFINCS there); EA benchmarks 1, 2, 4.
+3. (postponed to BACKLOG by owner) SFINCS re-run with v2; EA benchmarks.
 4. Exposure: buildings/people flooded per kecamatan (Overture + WorldPop).
 5. NOAA ISD hourly: URL gives the same 36,822-byte page for every station (not data).
 Owner actions pending: DEMNAS licence text; imagery choice (later).
