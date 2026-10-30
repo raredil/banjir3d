@@ -105,8 +105,8 @@ def class_tables():
     return n, cn, valid
 
 
-def lc_to_n_cn(lc: np.ndarray, hsg_fine: np.ndarray, f: int) -> tuple[np.ndarray, np.ndarray, dict]:
-    """Aggregate f x f land-cover pixels to model cells: area-weighted n and CN (unclassified pixels excluded)."""
+def lc_to_n_cn(lc: np.ndarray, hsg_fine: np.ndarray, f: int) -> tuple[np.ndarray, np.ndarray, dict, np.ndarray]:
+    """Aggregate f x f land-cover pixels to model cells: area-weighted n and CN (unclassified pixels excluded), built-area share."""
     ntab, cntab, valid = class_tables()
     H, W = lc.shape[0] // f, lc.shape[1] // f
     lc = lc[: H * f, : W * f]
@@ -120,7 +120,8 @@ def lc_to_n_cn(lc: np.ndarray, hsg_fine: np.ndarray, f: int) -> tuple[np.ndarray
     n = np.where(cnt > 0, blk(nv) / np.maximum(cnt, 1), built["n"])
     cn = np.where(cnt > 0, blk(cv) / np.maximum(cnt, 1), 98.0)
     share = {PARAMS["classes"][str(c)]["label"]: round(float((lc == c).mean()), 4) for c in range(256) if valid[c]}
-    return n, cn, share
+    built_share = np.where(cnt > 0, blk((lc == 7) & ok) / np.maximum(cnt, 1), 1.0)
+    return n, cn, share, built_share
 
 
 def burn_channels(z: np.ndarray, transform, crs, water_gpkg: Path) -> tuple[np.ndarray, np.ndarray, dict]:
@@ -306,7 +307,7 @@ def build(pack: Path, out: Path, region: str, soil: str) -> dict:
     reproject(up["hsg"], hsg_cell, src_transform=up["transform"], src_crs=crs, dst_transform=tr, dst_crs=crs, resampling=Resampling.nearest)
     soil_info = up_info["soil"]
     hsg_fine = np.repeat(np.repeat(hsg_cell, f, axis=0), f, axis=1)
-    n, cn, share = lc_to_n_cn(lc, hsg_fine, f)
+    n, cn, share, built_share = lc_to_n_cn(lc, hsg_fine, f)
     water_cell = (lc == 1).reshape(shape[0], f, shape[1], f).mean(axis=(1, 3)) >= 0.5
     zc, chan, chan_info = burn_channels(z, tr, crs, pack / "water_osm.gpkg")
     sea = sea_mask(zc, water_cell)
@@ -335,6 +336,7 @@ def build(pack: Path, out: Path, region: str, soil: str) -> dict:
     arrays = [
         ("z", "uint16", zq), ("n", "uint8", np.clip(np.round(n * 1000), 1, 255).astype(np.uint8)),
         ("cn", "uint8", np.clip(np.round(cn), 1, 100).astype(np.uint8)), ("flags", "uint8", flags),
+        ("built", "uint8", np.clip(np.round(built_share * 100), 0, 100).astype(np.uint8)),
         ("st_x", "float32", ST_X), ("st_y", "float32", ST_Y), ("st_down", "int32", st_down), ("st_area_km2", "float32", acc_km2.ravel()[ids]),
         ("st_cn", "float32", up["cn"].ravel()[ids]), ("st_slope_pct", "float32", up["slope_pct"].ravel()[ids]), ("st_length_m", "float32", up["length_m"].ravel()[ids]),
     ]
@@ -345,7 +347,7 @@ def build(pack: Path, out: Path, region: str, soil: str) -> dict:
     header = {
         "type": "banjir3d-engine-pack", "version": 1, "region": region, "created": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
         "grid": {"crs": str(crs), "nx": W_, "ny": H_, "dx": tr.a, "dy": -tr.e, "origin": [tr.c, tr.f], "corners_lonlat": corners},
-        "encoding": {"z": f"(z + {Z_OFFSET} m) in cm", "n": "n x 1000", "cn": "curve number", "flags": "bit0 channel, bit1 sea, bit2 inside the region domain polygon", "st_*": "GLO-90 D8 stream cells (>= 1 km2 upstream): centre in metres east/south of the model origin, downstream index (-1 none), upstream area, area-mean CN, mean slope (%), longest flow path (m)"},
+        "encoding": {"z": f"(z + {Z_OFFSET} m) in cm", "n": "n x 1000", "cn": "curve number", "flags": "bit0 channel, bit1 sea, bit2 inside the region domain polygon", "built": "built-area share of the cell (%), IO land cover class 7", "st_*": "GLO-90 D8 stream cells (>= 1 km2 upstream): centre in metres east/south of the model origin, downstream index (-1 none), upstream area, area-mean CN, mean slope (%), longest flow path (m)"},
         "arrays": [], "inputs_sha256": inputs, "landcover_year": io_year, "landcover_share": share,
         "parameters": PARAMS, "channels": chan_info, "sea": {"cells": int(sea.sum()), "rule": "IO water, z <= 0.5 m, connected to the north edge"},
         "soil": soil_info, "upstream": up_info,

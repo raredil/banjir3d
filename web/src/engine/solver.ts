@@ -1,6 +1,7 @@
 // Flood engine v2, CPU reference. 2D local-inertial shallow-water scheme (Bates et al. 2010; theta = 1 as SFINCS and LISFLOOD-FP ACC)
 // on a masked grid, with per-cell Manning n, rain turned into runoff per cell with the NRCS curve number, upstream river
 // inflow at points, a fixed sea level on sea cells and transmissive (zero-gradient) outflow wherever the run area ends.
+// Optional: rain that differs between zones (observed events) and a drainage sink (city drains, calibrated on observed floods).
 // The WebGPU solver (gpu.ts) implements exactly these steps in float32; tests compare the two (verification/gpu-parity).
 
 export const G = 9.81;
@@ -12,10 +13,12 @@ export type EngineGrid = {
   active: Uint8Array; // 1 = simulated, 0 = outside the run area (water that reaches it leaves the model)
   cn?: Float64Array; // NRCS curve number per cell (no infiltration if absent)
   sea?: Uint8Array; // 1 = sea cell, held at the sea level
+  zone?: Uint16Array; // rain zone per cell (rates set per zone in FloodEngine.rates); absent = one rate everywhere
+  drain?: Float64Array; // drainage capacity per cell (m/s): surface water up to this rate leaves through the city drains
 };
 // hMin: depth below which a face carries no flow; 0.001 m is the LISFLOOD-FP default, so thin runoff sheets still drain
 export type EngineOptions = { alpha?: number; dtMax?: number; hMin?: number; seaLevel?: number; inflowCells?: number[] };
-export type EngineTotals = { rain: number; infiltration: number; inflow: number; outflow: number; sea: number }; // m3
+export type EngineTotals = { rain: number; infiltration: number; inflow: number; outflow: number; sea: number; drain: number }; // m3
 
 /** NRCS curve-number direct runoff (mm) for cumulative rain p (mm), retention s (mm), initial abstraction 0.2 s. */
 export const scsRunoff = (p: number, s: number) => (p > 0.2 * s ? ((p - 0.2 * s) * (p - 0.2 * s)) / (p + 0.8 * s) : 0);
@@ -37,8 +40,10 @@ export class FloodEngine {
   t = 0;
   rainMm = 0; // cumulative gross rain (mm) since t = 0
   rate = 0; // current rain rate (mm/h), set by the caller
+  rates: number[] = []; // current rain rate per zone (mm/h) when the grid has zones
+  private zMm: Float64Array; // cumulative rain per zone (mm)
   inflows: number[] = []; // current discharge (m3/s) of each inflow cell, set by the caller
-  readonly totals: EngineTotals = { rain: 0, infiltration: 0, inflow: 0, outflow: 0, sea: 0 };
+  readonly totals: EngineTotals = { rain: 0, infiltration: 0, inflow: 0, outflow: 0, sea: 0, drain: 0 };
   readonly alpha: number;
   readonly dtMax: number;
   readonly hMin: number;
@@ -57,6 +62,9 @@ export class FloodEngine {
     this.inflowCells = o.inflowCells ?? [];
     this.area = g.dx * g.dx;
     this.s = g.cn ? Float64Array.from(g.cn, retention) : null;
+    let nz = 0;
+    if (g.zone) for (let c = 0; c < N; c++) nz = Math.max(nz, g.zone[c] + 1);
+    this.zMm = new Float64Array(nz);
     const { nx, ny, active } = g;
     const isOpen = (i: number, j: number) => i < 0 || j < 0 || i >= nx || j >= ny || !active[j * nx + i];
     this.open = [new Uint8Array(N), new Uint8Array(N), new Uint8Array(N), new Uint8Array(N)];
@@ -77,17 +85,17 @@ export class FloodEngine {
     for (let c = 0; c < this.h.length; c++) if (this.g.active[c]) v += this.h[c];
     return v * this.area;
   }
-  /** (initial + rain + inflow - infiltration - outflow - sea - stored) / (initial + rain + inflow). */
+  /** (initial + rain + inflow - infiltration - outflow - sea - drain - stored) / (initial + rain + inflow). */
   massError(): number {
     const T = this.totals, inn = this.initial + T.rain + T.inflow;
-    return inn > 0 ? (inn - T.infiltration - T.outflow - T.sea - this.volume()) / inn : 0;
+    return inn > 0 ? (inn - T.infiltration - T.outflow - T.sea - T.drain - this.volume()) / inn : 0;
   }
   dtNow(): number {
     return this.depthMax <= this.hMin ? this.dtMax : Math.min(this.dtMax, (this.alpha * this.g.dx) / Math.sqrt(G * this.depthMax));
   }
 
   step(): number {
-    const { nx, ny, dx, z, n, active, sea } = this.g;
+    const { nx, ny, dx, z, n, active, sea, zone, drain } = this.g;
     const { h, qx, qy, qxN, qyN, bnd, scale, hMin } = this;
     const dt = this.dtNow();
     const N = nx * ny;
@@ -148,19 +156,22 @@ export class FloodEngine {
       if (qyN[c] > 0) qyN[c] *= scale[c]; else if (qyN[c] < 0) qyN[c] *= scale[c + nx];
       bnd[c] *= scale[c];
     }
-    // 4. depth update with runoff (curve number), inflow and the sea level
-    const p0 = this.rainMm, p1 = p0 + (this.rate * dt) / 3600;
-    const gross = (p1 - p0) / 1000;
-    let hm = 0, out = 0, rainV = 0, effV = 0, seaV = 0;
+    // 4. depth update with runoff (curve number), drains, inflow and the sea level
+    const P0 = this.rainMm, P1 = P0 + (this.rate * dt) / 3600;
+    const z0 = Float64Array.from(this.zMm), zm = this.zMm;
+    for (let k = 0; k < zm.length; k++) zm[k] += ((this.rates[k] ?? 0) * dt) / 3600;
+    let hm = 0, out = 0, rainV = 0, effV = 0, seaV = 0, drV = 0;
     for (let c = 0; c < N; c++) {
       if (!active[c]) continue;
       const i = c % nx;
       let div = -qxN[c] - qyN[c];
       if (i > 0) div += qxN[c - 1];
       if (c >= nx) div += qyN[c - nx];
+      const p0 = zone ? z0[zone[c]] : P0, p1 = zone ? zm[zone[c]] : P1, gross = (p1 - p0) / 1000;
       const eff = this.s ? (scsRunoff(p1, this.s[c]) - scsRunoff(p0, this.s[c])) / 1000 : gross;
       let hn = h[c] + (dt * div) / dx - (bnd[c] * dt) / this.area + eff;
       if (hn < 0) hn = 0;
+      if (drain && drain[c] > 0) { const d = Math.min(hn, drain[c] * dt); hn -= d; drV += d; }
       out += bnd[c] * dt; rainV += gross; effV += eff;
       if (sea && sea[c]) { const fix = Math.max(0, this.seaLevel - z[c]); seaV += hn - fix; hn = fix; }
       h[c] = hn;
@@ -176,8 +187,8 @@ export class FloodEngine {
       if (h[c] > hm) hm = h[c];
     });
     this.totals.rain += rainV * this.area; this.totals.infiltration += (rainV - effV) * this.area;
-    this.totals.inflow += inV; this.totals.outflow += out; this.totals.sea += seaV * this.area;
-    this.rainMm = p1;
+    this.totals.inflow += inV; this.totals.outflow += out; this.totals.sea += seaV * this.area; this.totals.drain += drV * this.area;
+    this.rainMm = P1;
     this.depthMax = hm;
     this.qx = qxN; this.qxN = qx; this.qy = qyN; this.qyN = qy;
     this.t += dt;

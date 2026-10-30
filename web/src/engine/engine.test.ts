@@ -40,6 +40,18 @@ describe("flood engine v2 (CPU reference)", () => {
     // 60 mm on CN 85: runoff 60 -> scsRunoff(60, S(85)) = 22.2 mm, the rest infiltrates
     expect(e.totals.infiltration / e.totals.rain).toBeCloseTo(1 - scsRunoff(60, retention(85)) / 60, 3);
   });
+  it("rains per zone and drains through city drains, mass kept", () => {
+    const nx = 20, ny = 20, N = nx * ny, zone = new Uint16Array(N), drain = new Float64Array(N);
+    for (let c = 0; c < N; c++) { zone[c] = c % nx < 10 ? 0 : 1; drain[c] = c % nx >= 10 ? 5 / 3.6e6 : 0; } // 5 mm/h on the east half
+    const e = new FloodEngine(grid(nx, ny, 30, () => 0, { zone, drain, active: new Uint8Array(N).fill(1) }));
+    e.rates = [0, 20];
+    run(e, 1800);
+    expect(Math.abs(e.massError())).toBeLessThan(1e-9);
+    expect(e.h[5 * nx + 2]).toBe(0); // west half: no rain, far from the wet half
+    expect(e.totals.rain).toBeCloseTo(0.5 * N * 900 * 0.01, 6); // 10 mm on half the cells
+    expect(e.totals.drain / e.totals.rain).toBeGreaterThan(0.2);
+    expect(e.totals.drain / e.totals.rain).toBeLessThan(0.26); // capacity 5 of 20 mm/h, a little spreads west
+  });
   it("holds the sea level and drains a river into the sea", () => {
     const nx = 40, ny = 5, N = nx * ny, sea = new Uint8Array(N);
     for (let j = 0; j < ny; j++) for (let i = 30; i < nx; i++) sea[j * nx + i] = 1;
