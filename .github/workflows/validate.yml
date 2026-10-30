@@ -1,7 +1,8 @@
 name: Validate on observed floods
 
 # Runs engine v2 on an observed event (verification/observed/run_event.ts) with the hourly rain (reanalysis, CHIRPS daily or IMERG) from the newest
-# observed-data release, once per drainage capacity in 'drains', on the whole region. Results go into one release per run;
+# observed-data release, once per drainage capacity in 'drains' and rain multiplier in 'scales' (sensitivity only, 1 = rain as observed),
+# on the whole region. Results go into one release per run;
 # the comparison with the flood reports is done by verification/observed/compare.py.
 # A push that changes verification/observed/request.json runs the request in that file (workflow_dispatch needs main).
 on:
@@ -26,6 +27,10 @@ on:
         description: "Cells of 30 m per model cell (3 = 90 m)"
         default: "3"
         required: true
+      scales:
+        description: "JSON list of rain multipliers (sensitivity runs; 1 = rain as observed)"
+        default: "[1]"
+        required: false
 
 permissions:
   contents: read
@@ -42,6 +47,7 @@ jobs:
       drains: ${{ steps.t.outputs.drains }}
       rain: ${{ steps.t.outputs.rain }}
       k: ${{ steps.t.outputs.k }}
+      scales: ${{ steps.t.outputs.scales }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -53,6 +59,7 @@ jobs:
           IN_DRAINS: ${{ inputs.drains }}
           IN_RAIN: ${{ inputs.rain }}
           IN_K: ${{ inputs.k }}
+          IN_SCALES: ${{ inputs.scales }}
         run: |
           python3 - <<'PY' >> "$GITHUB_OUTPUT"
           import json, os, re
@@ -61,9 +68,11 @@ jobs:
           dr = json.loads(os.environ["IN_DRAINS"] or json.dumps(r["drains"]))
           rain = os.environ["IN_RAIN"] or r["rain"]
           k = os.environ["IN_K"] or str(r["k"])
+          sc = json.loads(os.environ["IN_SCALES"] or json.dumps(r.get("scales", [1])))
           assert re.fullmatch(r"\d{4}-\d\d-\d\d", ev) and rain in ("era5", "era5_land", "chirps", "imerg") and k in "123456" and len(k) == 1
           assert isinstance(dr, list) and 0 < len(dr) <= 8 and all(isinstance(v, (int, float)) and 0 <= v <= 500 for v in dr)
-          print(f"event={ev}\ndrains={json.dumps(dr)}\nrain={rain}\nk={k}")
+          assert isinstance(sc, list) and 0 < len(sc) * len(dr) <= 8 and all(isinstance(v, (int, float)) and 0.1 <= v <= 5 for v in sc)
+          print(f"event={ev}\ndrains={json.dumps(dr)}\nrain={rain}\nk={k}\nscales={json.dumps(sc)}")
           PY
           EVENT=$(grep '^event=' "$GITHUB_OUTPUT" | tail -1 | cut -d= -f2)
           case "$EVENT" in [0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]) ;; *) echo "::error::bad event id"; exit 1 ;; esac
@@ -81,11 +90,13 @@ jobs:
       fail-fast: false
       matrix:
         drain: ${{ fromJSON(needs.prep.outputs.drains) }}
+        scale: ${{ fromJSON(needs.prep.outputs.scales) }}
     env:
       EVENT: ${{ needs.prep.outputs.event }}
       RAIN: ${{ needs.prep.outputs.rain }}
       K: ${{ needs.prep.outputs.k }}
       DRAIN: ${{ matrix.drain }}
+      SCALE: ${{ matrix.scale }}
       TAG: ${{ needs.prep.outputs.tag }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -105,6 +116,7 @@ jobs:
           case "$RAIN" in era5|era5_land|chirps|imerg) ;; *) echo "::error::bad rain"; exit 1 ;; esac
           case "$K" in 1|2|3|4|5|6) ;; *) echo "::error::bad k"; exit 1 ;; esac
           [[ "$DRAIN" =~ ^[0-9]+(\.[0-9]+)?$ ]] || { echo "::error::bad drain"; exit 1; }
+          [[ "$SCALE" =~ ^[0-9]+(\.[0-9]+)?$ ]] || { echo "::error::bad scale"; exit 1; }
           newest() { gh release list --repo "$GITHUB_REPOSITORY" --limit 100 --json tagName,isDraft,createdAt \
             --jq "[.[] | select(.isDraft | not) | select(.tagName | startswith(\"$1\"))] | sort_by(.createdAt) | last | .tagName // empty"; }
           ep=$(newest region-jakarta-); ob=$(newest observed-jakarta-)
@@ -120,14 +132,14 @@ jobs:
         run: |
           read -r start hours < <(python3 -c "import json,sys; e=[e for e in json.load(open('../verification/observed/events.json'))['events'] if e['id']==sys.argv[1]][0]; print(e['utc'][0], e['run_hours'])" "$EVENT")
           npx --yes vite-node@6.0.0 ../verification/observed/run_event.ts "$RUNNER_TEMP/in/engine_jakarta.bin.gz" "$RUNNER_TEMP/in/$EVENT/rain_${RAIN}.json" \
-            "$start" "$hours" "$RUNNER_TEMP/out" --k "$K" --drain "$DRAIN"
+            "$start" "$hours" "$RUNNER_TEMP/out" --k "$K" --drain "$DRAIN" --scale "$SCALE"
       - name: Upload result
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           cd "$RUNNER_TEMP/out"
           python3 -c "import json,os; s=json.load(open('summary.json')); s['sources']=os.environ['SRC']; json.dump(s,open('summary.json','w'),indent=1)"
-          n="${EVENT}_${RAIN}_k${K}_d${DRAIN}"
+          n="${EVENT}_${RAIN}_k${K}_d${DRAIN}"; [ "$SCALE" = "1" ] || n="${n}_s${SCALE}"
           gzip -c hmax.f32 > "${n}_hmax.f32.gz" && gzip -c mask.u8 > "${n}_mask.u8.gz" && cp summary.json "${n}_summary.json"
           gh release upload "$TAG" "${n}_hmax.f32.gz" "${n}_mask.u8.gz" "${n}_summary.json" --repo "$GITHUB_REPOSITORY"
   score:
