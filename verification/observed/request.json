@@ -1,1 +1,1 @@
-{"_about":"What the 'Validate on observed floods' workflow runs on push. drains: mm/h on a fully built cell. scales: rain multipliers (sensitivity only, 1 = as observed).","event":"2021-02-20","drains":[0],"rain":"imerg","k":3,"scales":[1.5,2]}
+{"_about":"What the 'Validate on observed floods' workflow runs on push. drains: mm/h on a fully built cell. scales: rain multipliers (sensitivity only, 1 = as observed).","event":"2025-03-04","drains":[0],"rain":"imerg","k":3,"scales":[1.5,2]}
