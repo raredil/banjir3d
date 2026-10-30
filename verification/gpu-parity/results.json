@@ -1,0 +1,7 @@
+{
+  "what": "WebGPU solver (float32) vs CPU reference (float64), same grid, rain, curve numbers and upstream inflows",
+  "date": "2026-10-30",
+  "how": "web/verify-gpu.html?hours=2 (dev server), Chromium with SwiftShader WebGPU (software, so timings are not GPU speed)",
+  "case": {"box": [106.83, -6.25, 106.87, -6.21], "grid": "149 x 149 cells of 30 m", "rain": "1 Jan 2020 design storm (377 mm/24 h), first 2 h", "inflows": 3},
+  "result": {"rmse_max_depth_m": 5.2e-5, "max_abs_diff_max_depth_m": 0.0028, "csi_flooded_gt_0.15m": 1.0, "mass_error_cpu": -3.4e-15, "mass_error_gpu": 5.8e-8}
+}

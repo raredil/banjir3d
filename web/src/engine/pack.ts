@@ -38,8 +38,11 @@ export function parsePack(buf: ArrayBuffer): Pack {
 
 export async function loadPack(url: string): Promise<Pack> {
   const r = await fetch(url);
-  if (!r.ok || !r.body) throw new Error(`engine pack ${r.status}`);
-  const raw = url.endsWith(".gz") ? await new Response(r.body.pipeThrough(new DecompressionStream("gzip"))).arrayBuffer() : await r.arrayBuffer();
+  if (!r.ok) throw new Error(`engine pack ${r.status}`);
+  let raw = await r.arrayBuffer();
+  const b = new Uint8Array(raw, 0, 2);
+  // some servers send the .gz with Content-Encoding (the browser already unpacked it), others as a plain file: check the gzip magic
+  if (b[0] === 0x1f && b[1] === 0x8b) raw = await new Response(new Blob([raw]).stream().pipeThrough(new DecompressionStream("gzip"))).arrayBuffer();
   return parsePack(raw);
 }
 
