@@ -1,325 +1,703 @@
 {
   "catalog_version": "0.1.0",
-  "updated": "2026-10-23",
+  "updated": "2026-10-30",
   "datasets": [
     {
       "id": "demnas",
       "name": "DEMNAS — Indonesian National Digital Elevation Model",
-      "theme": "terrain", "role": "primary",
+      "theme": "terrain",
+      "role": "primary",
       "provider": "Badan Informasi Geospasial (BIG)",
       "version": "v1.0 tiles",
       "doi": null,
       "url": "https://tanahair.indonesia.go.id",
-      "licence": {"id": "BIG terms (not yet read)", "redistributable": "unknown", "attribution": "DEMNAS © Badan Informasi Geospasial"},
+      "licence": {
+        "id": "BIG terms (not yet read)",
+        "redistributable": "unknown",
+        "attribution": "DEMNAS © Badan Informasi Geospasial"
+      },
       "resolution": "0.27 arc-second (~8 m)",
-      "crs": "EPSG:4326", "vertical_datum": "EGM2008",
-      "access": {"method": "Ina-Geoportal download per RBI 1:50k sheet; owner uploads to private draft release 'demnas-private'", "auth": "owner-download"},
-      "citation": {"text": "Badan Informasi Geospasial (BIG). DEMNAS: Seamless Digital Elevation Model Nasional, v1.0. https://tanahair.indonesia.go.id",
-        "bibtex": "@misc{big_demnas,\n  author = {{Badan Informasi Geospasial}},\n  title = {{DEMNAS}: Seamless Digital Elevation Model Nasional},\n  version = {1.0},\n  howpublished = {\\url{https://tanahair.indonesia.go.id}},\n  note = {Built from IFSAR (5 m), TerraSAR-X (5 m), ALOS PALSAR (11.25 m) and stereo mass points; EGM2008 datum}\n}"},
-      "status": "verified", "checked": "2026-10-24", "in_region_pack": false,
+      "crs": "EPSG:4326",
+      "vertical_datum": "EGM2008",
+      "access": {
+        "method": "Ina-Geoportal download per RBI 1:50k sheet; owner uploads to private draft release 'demnas-private'",
+        "auth": "owner-download"
+      },
+      "citation": {
+        "text": "Badan Informasi Geospasial (BIG). DEMNAS: Seamless Digital Elevation Model Nasional, v1.0. https://tanahair.indonesia.go.id",
+        "bibtex": "@misc{big_demnas,\n  author = {{Badan Informasi Geospasial}},\n  title = {{DEMNAS}: Seamless Digital Elevation Model Nasional},\n  version = {1.0},\n  howpublished = {\\url{https://tanahair.indonesia.go.id}},\n  note = {Built from IFSAR (5 m), TerraSAR-X (5 m), ALOS PALSAR (11.25 m) and stereo mass points; EGM2008 datum}\n}"
+      },
+      "status": "verified",
+      "checked": "2026-10-24",
+      "in_region_pack": false,
       "notes": "Format verified 2026-10-24 from BIG's own DEMNAS description (sent by the owner: 0.27 arc-second, EGM2008, geographic, GeoTIFF float32; files DEMNAS_xxxx-yy-v1.0.tif per RBI 1:50k sheet, xxxx-yyy for 1:25k) and from the owner's upload (25 sheets; 6 inside the Jakarta domain, mosaicked by demnas.yml). Licence still unverified: kept out of the public site. DSM/DTM behaviour in dense urban areas to be compared with FABDEM in Phase 2. Tile list: data/demnas/jakarta_tiles.json."
     },
     {
       "id": "fabdem",
       "name": "FABDEM — Forest And Buildings removed Copernicus DEM",
-      "theme": "terrain", "role": "alternative",
+      "theme": "terrain",
+      "role": "alternative",
       "provider": "University of Bristol / Fathom",
-      "version": "V1-2", "temporal": "Copernicus DEM epoch 2011–2015",
+      "version": "V1-2",
+      "temporal": "Copernicus DEM epoch 2011–2015",
       "doi": "10.5523/bris.s5hqmjcdj8yo2ibzi9b4ew3sn",
       "url": "https://data.bris.ac.uk/data/dataset/s5hqmjcdj8yo2ibzi9b4ew3sn",
-      "licence": {"id": "CC-BY-NC-SA-4.0", "url": "https://creativecommons.org/licenses/by-nc-sa/4.0/", "redistributable": "yes", "non_commercial": true, "share_alike": true,
-        "attribution": "FABDEM V1-2 © University of Bristol (CC BY-NC-SA 4.0); produced using Copernicus WorldDEM-30 © DLR e.V. 2010-2014 and © Airbus Defence and Space GmbH 2014-2018 provided under COPERNICUS by the European Union and ESA"},
-      "resolution": "1 arc-second (~30 m)", "crs": "EPSG:4326", "vertical_datum": "EGM2008",
-      "access": {"method": "HTTPS zip of 1x1 degree tiles", "endpoint": "https://data.bris.ac.uk/datasets/s5hqmjcdj8yo2ibzi9b4ew3sn/", "auth": "none"},
-      "citation": {"text": "Hawker, L., Uhe, P., Paulo, L., Sosa, J., Savage, J., Sampson, C., Neal, J. (2022). A 30 m global map of elevation with forests and buildings removed. Environmental Research Letters, 17, 024016. doi:10.1088/1748-9326/ac4d4f",
-        "bibtex": "@article{hawker2022fabdem,\n  author = {Hawker, Laurence and Uhe, Peter and Paulo, Luntadila and Sosa, Jeison and Savage, James and Sampson, Christopher and Neal, Jeffrey},\n  title = {A 30 m global map of elevation with forests and buildings removed},\n  journal = {Environmental Research Letters},\n  volume = {17},\n  pages = {024016},\n  year = {2022},\n  doi = {10.1088/1748-9326/ac4d4f}\n}\n@misc{neal2023fabdem12,\n  author = {Neal, Jeffrey and Hawker, Laurence},\n  title = {{FABDEM} V1-2},\n  publisher = {University of Bristol},\n  year = {2023},\n  doi = {10.5523/bris.s5hqmjcdj8yo2ibzi9b4ew3sn}\n}"},
-      "status": "single-source", "checked": "2026-10-23", "in_region_pack": true,
+      "licence": {
+        "id": "CC-BY-NC-SA-4.0",
+        "url": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
+        "redistributable": "yes",
+        "non_commercial": true,
+        "share_alike": true,
+        "attribution": "FABDEM V1-2 © University of Bristol (CC BY-NC-SA 4.0); produced using Copernicus WorldDEM-30 © DLR e.V. 2010-2014 and © Airbus Defence and Space GmbH 2014-2018 provided under COPERNICUS by the European Union and ESA"
+      },
+      "resolution": "1 arc-second (~30 m)",
+      "crs": "EPSG:4326",
+      "vertical_datum": "EGM2008",
+      "access": {
+        "method": "HTTPS zip of 1x1 degree tiles",
+        "endpoint": "https://data.bris.ac.uk/datasets/s5hqmjcdj8yo2ibzi9b4ew3sn/",
+        "auth": "none"
+      },
+      "citation": {
+        "text": "Hawker, L., Uhe, P., Paulo, L., Sosa, J., Savage, J., Sampson, C., Neal, J. (2022). A 30 m global map of elevation with forests and buildings removed. Environmental Research Letters, 17, 024016. doi:10.1088/1748-9326/ac4d4f",
+        "bibtex": "@article{hawker2022fabdem,\n  author = {Hawker, Laurence and Uhe, Peter and Paulo, Luntadila and Sosa, Jeison and Savage, James and Sampson, Christopher and Neal, Jeffrey},\n  title = {A 30 m global map of elevation with forests and buildings removed},\n  journal = {Environmental Research Letters},\n  volume = {17},\n  pages = {024016},\n  year = {2022},\n  doi = {10.1088/1748-9326/ac4d4f}\n}\n@misc{neal2023fabdem12,\n  author = {Neal, Jeffrey and Hawker, Laurence},\n  title = {{FABDEM} V1-2},\n  publisher = {University of Bristol},\n  year = {2023},\n  doi = {10.5523/bris.s5hqmjcdj8yo2ibzi9b4ew3sn}\n}"
+      },
+      "status": "single-source",
+      "checked": "2026-10-23",
+      "in_region_pack": true,
       "notes": "Licence taken from catalog listings; Action verify step re-checks the Bristol record. Determines output licence (most restrictive input)."
     },
     {
       "id": "copernicus-glo30",
       "name": "Copernicus DEM GLO-30 (DSM)",
-      "theme": "terrain", "role": "alternative",
+      "theme": "terrain",
+      "role": "alternative",
       "provider": "ESA / Airbus (Copernicus)",
-      "version": "2021 release (AWS public copy)", "temporal": "2011–2015 acquisitions",
+      "version": "2021 release (AWS public copy)",
+      "temporal": "2011–2015 acquisitions",
       "doi": "10.5270/ESA-c5d3d65",
       "url": "https://registry.opendata.aws/copernicus-dem/",
-      "licence": {"id": "Copernicus DEM licence (free, attribution)", "url": "https://spacedata.copernicus.eu/documents/20123/121286/CSCDA_ESA_Mission-specific+Annex_31_Oct_22.pdf", "redistributable": "yes",
-        "attribution": "© DLR e.V. 2010-2014 and © Airbus Defence and Space GmbH 2014-2018 provided under COPERNICUS by the European Union and ESA; all rights reserved"},
-      "resolution": "1 arc-second (~30 m)", "crs": "EPSG:4326", "vertical_datum": "EGM2008",
-      "access": {"method": "S3 COG tiles", "endpoint": "https://copernicus-dem-30m.s3.amazonaws.com/", "auth": "none", "probe": "HTTP 206 on Copernicus_DSM_COG_10_S07_00_E106_00_DEM.tif (2026-10-23)"},
-      "citation": {"text": "European Space Agency, Airbus (2022). Copernicus DEM. doi:10.5270/ESA-c5d3d65",
-        "bibtex": "@misc{esa2022copdem,\n  author = {{European Space Agency} and {Airbus}},\n  title = {Copernicus {DEM}},\n  year = {2022},\n  doi = {10.5270/ESA-c5d3d65}\n}"},
-      "status": "verified", "checked": "2026-10-23", "in_region_pack": true,
+      "licence": {
+        "id": "Copernicus DEM licence (free, attribution)",
+        "url": "https://spacedata.copernicus.eu/documents/20123/121286/CSCDA_ESA_Mission-specific+Annex_31_Oct_22.pdf",
+        "redistributable": "yes",
+        "attribution": "© DLR e.V. 2010-2014 and © Airbus Defence and Space GmbH 2014-2018 provided under COPERNICUS by the European Union and ESA; all rights reserved"
+      },
+      "resolution": "1 arc-second (~30 m)",
+      "crs": "EPSG:4326",
+      "vertical_datum": "EGM2008",
+      "access": {
+        "method": "S3 COG tiles",
+        "endpoint": "https://copernicus-dem-30m.s3.amazonaws.com/",
+        "auth": "none",
+        "probe": "HTTP 206 on Copernicus_DSM_COG_10_S07_00_E106_00_DEM.tif (2026-10-23)"
+      },
+      "citation": {
+        "text": "European Space Agency, Airbus (2022). Copernicus DEM. doi:10.5270/ESA-c5d3d65",
+        "bibtex": "@misc{esa2022copdem,\n  author = {{European Space Agency} and {Airbus}},\n  title = {Copernicus {DEM}},\n  year = {2022},\n  doi = {10.5270/ESA-c5d3d65}\n}"
+      },
+      "status": "verified",
+      "checked": "2026-10-23",
+      "in_region_pack": true,
       "notes": "Surface model (includes buildings/trees). World-mode default terrain. ESA also serves a newer DGED 2023_1 version; DOI to be re-checked."
     },
     {
       "id": "jakarta-subsidence-sinking-city",
       "name": "Sinking City: multidimensional datasets for modelling the sinking Jakarta (land subsidence raster 2016–2024)",
-      "theme": "subsidence", "role": "planned",
+      "theme": "subsidence",
+      "role": "planned",
       "provider": "Zenodo (authors of record 19456870)",
-      "version": "v1 (2026-04-07)", "temporal": "2016–2024",
+      "version": "v1 (2026-04-07)",
+      "temporal": "2016–2024",
       "doi": "10.5281/zenodo.19456870",
       "url": "https://zenodo.org/records/19456870",
-      "licence": {"id": "unknown (check Zenodo record)", "redistributable": "unknown"},
+      "licence": {
+        "id": "unknown (check Zenodo record)",
+        "redistributable": "unknown"
+      },
       "resolution": "raster (to be checked)",
-      "access": {"method": "Zenodo zip '01 Land subsidence.zip' (~68 MB)", "auth": "none"},
-      "citation": {"text": "Sinking City: Multidimensional Datasets for Modelling the Sinking Jakarta (2026). Zenodo. doi:10.5281/zenodo.19456870",
-        "bibtex": "@dataset{sinkingcity2026,\n  title = {Sinking City: Multidimensional Datasets for Modelling the Sinking Jakarta},\n  publisher = {Zenodo},\n  year = {2026},\n  version = {v1},\n  doi = {10.5281/zenodo.19456870}\n}"},
-      "status": "single-source", "checked": "2026-10-23", "in_region_pack": false,
+      "access": {
+        "method": "Zenodo zip '01 Land subsidence.zip' (~68 MB)",
+        "auth": "none"
+      },
+      "citation": {
+        "text": "Sinking City: Multidimensional Datasets for Modelling the Sinking Jakarta (2026). Zenodo. doi:10.5281/zenodo.19456870",
+        "bibtex": "@dataset{sinkingcity2026,\n  title = {Sinking City: Multidimensional Datasets for Modelling the Sinking Jakarta},\n  publisher = {Zenodo},\n  year = {2026},\n  version = {v1},\n  doi = {10.5281/zenodo.19456870}\n}"
+      },
+      "status": "single-source",
+      "checked": "2026-10-23",
+      "in_region_pack": false,
       "notes": "Covers DKI Jakarta only (not all of Jabodetabek). Candidate for the DEM-epoch shift (BLUEPRINT §9a). Licence and units to be confirmed before use; authors to be filled from the record."
     },
     {
       "id": "batnas",
       "name": "BATNAS — Batimetri Nasional",
-      "theme": "bathymetry", "role": "planned",
+      "theme": "bathymetry",
+      "role": "planned",
       "provider": "Badan Informasi Geospasial (BIG)",
       "version": "current portal release",
       "doi": null,
       "url": "https://tanahair.indonesia.go.id",
-      "licence": {"id": "BIG terms (not yet read)", "redistributable": "unknown"},
-      "resolution": "6 arc-second (~185 m)", "vertical_datum": "MSL",
-      "access": {"method": "Ina-Geoportal download", "auth": "free-account"},
-      "citation": {"text": "Badan Informasi Geospasial (BIG). BATNAS: Batimetri Nasional. https://tanahair.indonesia.go.id",
-        "bibtex": "@misc{big_batnas,\n  author = {{Badan Informasi Geospasial}},\n  title = {{BATNAS}: Batimetri Nasional},\n  howpublished = {\\url{https://tanahair.indonesia.go.id}}\n}"},
-      "status": "single-source", "checked": "2026-10-23", "in_region_pack": false,
+      "licence": {
+        "id": "BIG terms (not yet read)",
+        "redistributable": "unknown"
+      },
+      "resolution": "6 arc-second (~185 m)",
+      "vertical_datum": "MSL",
+      "access": {
+        "method": "Ina-Geoportal download",
+        "auth": "free-account"
+      },
+      "citation": {
+        "text": "Badan Informasi Geospasial (BIG). BATNAS: Batimetri Nasional. https://tanahair.indonesia.go.id",
+        "bibtex": "@misc{big_batnas,\n  author = {{Badan Informasi Geospasial}},\n  title = {{BATNAS}: Batimetri Nasional},\n  howpublished = {\\url{https://tanahair.indonesia.go.id}}\n}"
+      },
+      "status": "single-source",
+      "checked": "2026-10-23",
+      "in_region_pack": false,
       "notes": "Needed in Phase 2 for the SFINCS sea boundary. Global fallback: GEBCO."
     },
     {
       "id": "io-lulc-annual",
       "name": "Impact Observatory / Esri 10 m Annual Land Use Land Cover (9-class, v2)",
-      "theme": "land-cover", "role": "primary",
+      "theme": "land-cover",
+      "role": "primary",
       "provider": "Impact Observatory, Esri, Microsoft",
-      "version": "v02 annual series", "temporal": "2017–2024 openly downloadable (2025 announced by Esri; pipeline picks the newest year found)",
+      "version": "v02 annual series",
+      "temporal": "2017–2024 openly downloadable (2025 announced by Esri; pipeline picks the newest year found)",
       "doi": null,
       "url": "https://registry.opendata.aws/io-lulc/",
-      "licence": {"id": "CC-BY-4.0", "url": "https://creativecommons.org/licenses/by/4.0/", "redistributable": "yes", "attribution": "Land cover © Impact Observatory, Esri, Microsoft (CC BY 4.0)"},
-      "resolution": "10 m", "crs": "UTM (per zone)",
-      "access": {"method": "S3 COG per UTM zone/band and year: {zone}{band}_{year}.tif (Jakarta: 48M)", "endpoint": "https://io-10m-annual-lulc.s3.amazonaws.com/", "auth": "none", "probe": "HTTP 206 for 48M_2017..2024, 404 for 48M_2025 (2026-10-23)"},
-      "citation": {"text": "Karra, K., Kontgis, C., Statman-Weil, Z., Mazzariello, J. C., Mathis, M., Brumby, S. P. (2021). Global land use/land cover with Sentinel 2 and deep learning. IGARSS 2021, 4704–4707. doi:10.1109/IGARSS47720.2021.9553499",
-        "bibtex": "@inproceedings{karra2021lulc,\n  author = {Karra, Krishna and Kontgis, Caitlin and Statman-Weil, Zoe and Mazzariello, Joseph C. and Mathis, Mark and Brumby, Steven P.},\n  title = {Global land use/land cover with Sentinel 2 and deep learning},\n  booktitle = {2021 IEEE International Geoscience and Remote Sensing Symposium IGARSS},\n  pages = {4704--4707},\n  year = {2021},\n  doi = {10.1109/IGARSS47720.2021.9553499}\n}"},
-      "status": "verified", "checked": "2026-10-23", "in_region_pack": true,
+      "licence": {
+        "id": "CC-BY-4.0",
+        "url": "https://creativecommons.org/licenses/by/4.0/",
+        "redistributable": "yes",
+        "attribution": "Land cover © Impact Observatory, Esri, Microsoft (CC BY 4.0)"
+      },
+      "resolution": "10 m",
+      "crs": "UTM (per zone)",
+      "access": {
+        "method": "S3 COG per UTM zone/band and year: {zone}{band}_{year}.tif (Jakarta: 48M)",
+        "endpoint": "https://io-10m-annual-lulc.s3.amazonaws.com/",
+        "auth": "none",
+        "probe": "HTTP 206 for 48M_2017..2024, 404 for 48M_2025 (2026-10-23)"
+      },
+      "citation": {
+        "text": "Karra, K., Kontgis, C., Statman-Weil, Z., Mazzariello, J. C., Mathis, M., Brumby, S. P. (2021). Global land use/land cover with Sentinel 2 and deep learning. IGARSS 2021, 4704–4707. doi:10.1109/IGARSS47720.2021.9553499",
+        "bibtex": "@inproceedings{karra2021lulc,\n  author = {Karra, Krishna and Kontgis, Caitlin and Statman-Weil, Zoe and Mazzariello, Joseph C. and Mathis, Mark and Brumby, Steven P.},\n  title = {Global land use/land cover with Sentinel 2 and deep learning},\n  booktitle = {2021 IEEE International Geoscience and Remote Sensing Symposium IGARSS},\n  pages = {4704--4707},\n  year = {2021},\n  doi = {10.1109/IGARSS47720.2021.9553499}\n}"
+      },
+      "status": "verified",
+      "checked": "2026-10-23",
+      "in_region_pack": true,
       "notes": "Esri notes 2017 is less accurate than 2018+. Official 9-class legend colours used."
     },
     {
       "id": "esa-worldcover-2021",
       "name": "ESA WorldCover 10 m 2021 v200",
-      "theme": "land-cover", "role": "alternative",
+      "theme": "land-cover",
+      "role": "alternative",
       "provider": "ESA / VITO consortium",
-      "version": "v200", "temporal": "2021",
+      "version": "v200",
+      "temporal": "2021",
       "doi": "10.5281/zenodo.7254221",
       "url": "https://esa-worldcover.org",
-      "licence": {"id": "CC-BY-4.0", "url": "https://creativecommons.org/licenses/by/4.0/", "redistributable": "yes", "attribution": "© ESA WorldCover project 2021 / Contains modified Copernicus Sentinel data (2021) processed by ESA WorldCover consortium"},
-      "resolution": "10 m", "crs": "EPSG:4326",
-      "access": {"method": "S3 COG 3x3 degree tiles", "endpoint": "https://esa-worldcover.s3.eu-central-1.amazonaws.com/v200/2021/map/", "auth": "none", "probe": "HTTP 206 on S09E105 tile (2026-10-23)"},
-      "citation": {"text": "Zanaga, D., Van De Kerchove, R., Daems, D., et al. (2022). ESA WorldCover 10 m 2021 v200. Zenodo. doi:10.5281/zenodo.7254221",
-        "bibtex": "@dataset{zanaga2022worldcover,\n  author = {Zanaga, Daniele and Van De Kerchove, Ruben and Daems, Dirk and De Keersmaecker, Wanda and Brockmann, Carsten and Kirches, Grit and Wevers, Jan and Cartus, Oliver and Santoro, Maurizio and Fritz, Steffen and others},\n  title = {{ESA} {WorldCover} 10 m 2021 v200},\n  publisher = {Zenodo},\n  year = {2022},\n  doi = {10.5281/zenodo.7254221}\n}"},
-      "status": "verified", "checked": "2026-10-23", "in_region_pack": true,
+      "licence": {
+        "id": "CC-BY-4.0",
+        "url": "https://creativecommons.org/licenses/by/4.0/",
+        "redistributable": "yes",
+        "attribution": "© ESA WorldCover project 2021 / Contains modified Copernicus Sentinel data (2021) processed by ESA WorldCover consortium"
+      },
+      "resolution": "10 m",
+      "crs": "EPSG:4326",
+      "access": {
+        "method": "S3 COG 3x3 degree tiles",
+        "endpoint": "https://esa-worldcover.s3.eu-central-1.amazonaws.com/v200/2021/map/",
+        "auth": "none",
+        "probe": "HTTP 206 on S09E105 tile (2026-10-23)"
+      },
+      "citation": {
+        "text": "Zanaga, D., Van De Kerchove, R., Daems, D., et al. (2022). ESA WorldCover 10 m 2021 v200. Zenodo. doi:10.5281/zenodo.7254221",
+        "bibtex": "@dataset{zanaga2022worldcover,\n  author = {Zanaga, Daniele and Van De Kerchove, Ruben and Daems, Dirk and De Keersmaecker, Wanda and Brockmann, Carsten and Kirches, Grit and Wevers, Jan and Cartus, Oliver and Santoro, Maurizio and Fritz, Steffen and others},\n  title = {{ESA} {WorldCover} 10 m 2021 v200},\n  publisher = {Zenodo},\n  year = {2022},\n  doi = {10.5281/zenodo.7254221}\n}"
+      },
+      "status": "verified",
+      "checked": "2026-10-23",
+      "in_region_pack": true,
       "notes": "Independent global overall accuracy ~76.7% (2021, single-source; check Product Validation Report). Official 11-class legend colours used."
     },
     {
       "id": "osm-water",
       "name": "OpenStreetMap water polygons and waterways",
-      "theme": "water-bodies", "role": "primary",
+      "theme": "water-bodies",
+      "role": "primary",
       "provider": "OpenStreetMap contributors",
       "version": "snapshot at region-pack run time (timestamp recorded)",
       "doi": null,
       "url": "https://www.openstreetmap.org",
-      "licence": {"id": "ODbL-1.0", "url": "https://opendatacommons.org/licenses/odbl/1-0/", "redistributable": "yes", "share_alike": true, "attribution": "© OpenStreetMap contributors (ODbL)"},
+      "licence": {
+        "id": "ODbL-1.0",
+        "url": "https://opendatacommons.org/licenses/odbl/1-0/",
+        "redistributable": "yes",
+        "share_alike": true,
+        "attribution": "© OpenStreetMap contributors (ODbL)"
+      },
       "resolution": "vector",
-      "access": {"method": "Overpass API query by bounding box", "endpoint": "https://overpass-api.de/api/interpreter", "auth": "none"},
-      "citation": {"text": "OpenStreetMap contributors (2026). OpenStreetMap data, retrieved via Overpass API. https://www.openstreetmap.org",
-        "bibtex": "@misc{osm,\n  author = {{OpenStreetMap contributors}},\n  title = {{OpenStreetMap}},\n  howpublished = {\\url{https://www.openstreetmap.org}},\n  note = {Data retrieved via Overpass API; snapshot time in provenance}\n}"},
-      "status": "verified", "checked": "2026-10-23", "in_region_pack": true,
+      "access": {
+        "method": "Overpass API query by bounding box",
+        "endpoint": "https://overpass-api.de/api/interpreter",
+        "auth": "none"
+      },
+      "citation": {
+        "text": "OpenStreetMap contributors (2026). OpenStreetMap data, retrieved via Overpass API. https://www.openstreetmap.org",
+        "bibtex": "@misc{osm,\n  author = {{OpenStreetMap contributors}},\n  title = {{OpenStreetMap}},\n  howpublished = {\\url{https://www.openstreetmap.org}},\n  note = {Data retrieved via Overpass API; snapshot time in provenance}\n}"
+      },
+      "status": "verified",
+      "checked": "2026-10-23",
+      "in_region_pack": true,
       "notes": "Includes natural=water (situ, ponds, reservoirs), landuse=reservoir/basin, waterway=river/canal/stream/drain/ditch."
     },
     {
       "id": "jrc-gsw",
       "name": "JRC Global Surface Water — occurrence 1984–2021",
-      "theme": "water-bodies", "role": "alternative",
+      "theme": "water-bodies",
+      "role": "alternative",
       "provider": "European Commission JRC / Google",
-      "version": "v1.4", "temporal": "1984–2021",
+      "version": "v1.4",
+      "temporal": "1984–2021",
       "doi": "10.1038/nature20584",
       "url": "https://global-surface-water.appspot.com",
-      "licence": {"id": "CC-BY-4.0 (to confirm)", "redistributable": "yes", "attribution": "Source: EC JRC/Google"},
-      "resolution": "1 arc-second (~30 m)", "crs": "EPSG:4326",
-      "access": {"method": "GCS GeoTIFF 10x10 degree tiles", "endpoint": "https://storage.googleapis.com/global-surface-water/downloads2021/occurrence/", "auth": "none", "probe": "HTTP 206 on occurrence_100E_0Nv1_4_2021.tif (2026-10-23)"},
-      "citation": {"text": "Pekel, J.-F., Cottam, A., Gorelick, N., Belward, A. S. (2016). High-resolution mapping of global surface water and its long-term changes. Nature, 540, 418–422. doi:10.1038/nature20584",
-        "bibtex": "@article{pekel2016gsw,\n  author = {Pekel, Jean-Fran{\\c{c}}ois and Cottam, Andrew and Gorelick, Noel and Belward, Alan S.},\n  title = {High-resolution mapping of global surface water and its long-term changes},\n  journal = {Nature},\n  volume = {540},\n  pages = {418--422},\n  year = {2016},\n  doi = {10.1038/nature20584}\n}"},
-      "status": "verified", "checked": "2026-10-23", "in_region_pack": true
+      "licence": {
+        "id": "CC-BY-4.0 (to confirm)",
+        "redistributable": "yes",
+        "attribution": "Source: EC JRC/Google"
+      },
+      "resolution": "1 arc-second (~30 m)",
+      "crs": "EPSG:4326",
+      "access": {
+        "method": "GCS GeoTIFF 10x10 degree tiles",
+        "endpoint": "https://storage.googleapis.com/global-surface-water/downloads2021/occurrence/",
+        "auth": "none",
+        "probe": "HTTP 206 on occurrence_100E_0Nv1_4_2021.tif (2026-10-23)"
+      },
+      "citation": {
+        "text": "Pekel, J.-F., Cottam, A., Gorelick, N., Belward, A. S. (2016). High-resolution mapping of global surface water and its long-term changes. Nature, 540, 418–422. doi:10.1038/nature20584",
+        "bibtex": "@article{pekel2016gsw,\n  author = {Pekel, Jean-Fran{\\c{c}}ois and Cottam, Andrew and Gorelick, Noel and Belward, Alan S.},\n  title = {High-resolution mapping of global surface water and its long-term changes},\n  journal = {Nature},\n  volume = {540},\n  pages = {418--422},\n  year = {2016},\n  doi = {10.1038/nature20584}\n}"
+      },
+      "status": "verified",
+      "checked": "2026-10-23",
+      "in_region_pack": true
     },
     {
       "id": "overture-buildings",
       "name": "Overture Maps buildings (OSM + Google Open Buildings + Microsoft + Esri Community Maps)",
-      "theme": "buildings", "role": "primary",
+      "theme": "buildings",
+      "role": "primary",
       "provider": "Overture Maps Foundation",
       "version": "2026-10-21.0",
       "doi": null,
       "url": "https://docs.overturemaps.org/guides/buildings/",
-      "licence": {"id": "ODbL-1.0", "url": "https://opendatacommons.org/licenses/odbl/1-0/", "redistributable": "yes", "share_alike": true, "attribution": "© OpenStreetMap contributors, Microsoft, Esri Community Maps contributors, Google Open Buildings; via Overture Maps Foundation"},
+      "licence": {
+        "id": "ODbL-1.0",
+        "url": "https://opendatacommons.org/licenses/odbl/1-0/",
+        "redistributable": "yes",
+        "share_alike": true,
+        "attribution": "© OpenStreetMap contributors, Microsoft, Esri Community Maps contributors, Google Open Buildings; via Overture Maps Foundation"
+      },
       "resolution": "vector footprints",
-      "access": {"method": "GeoParquet on S3 queried with DuckDB by bbox", "endpoint": "s3://overturemaps-us-west-2/release/2026-10-21.0/theme=buildings/type=building/", "auth": "none", "probe": "S3 listing OK (2026-10-23)"},
-      "citation": {"text": "Overture Maps Foundation (2026). Overture Maps buildings theme, release 2026-10-21.0. https://overturemaps.org",
-        "bibtex": "@misc{overture2026buildings,\n  author = {{Overture Maps Foundation}},\n  title = {Overture Maps Buildings Theme, release 2026-10-21.0},\n  year = {2026},\n  howpublished = {\\url{https://docs.overturemaps.org}}\n}"},
-      "status": "verified", "checked": "2026-10-23", "in_region_pack": true,
+      "access": {
+        "method": "GeoParquet on S3 queried with DuckDB by bbox",
+        "endpoint": "s3://overturemaps-us-west-2/release/2026-10-21.0/theme=buildings/type=building/",
+        "auth": "none",
+        "probe": "S3 listing OK (2026-10-23)"
+      },
+      "citation": {
+        "text": "Overture Maps Foundation (2026). Overture Maps buildings theme, release 2026-10-21.0. https://overturemaps.org",
+        "bibtex": "@misc{overture2026buildings,\n  author = {{Overture Maps Foundation}},\n  title = {Overture Maps Buildings Theme, release 2026-10-21.0},\n  year = {2026},\n  howpublished = {\\url{https://docs.overturemaps.org}}\n}"
+      },
+      "status": "verified",
+      "checked": "2026-10-23",
+      "in_region_pack": true,
       "notes": "Monthly releases; the region pack records the exact release used. Google Open Buildings v3 (Sirko et al. 2021, arXiv:2107.12283) is one of its sources."
     },
     {
       "id": "worldpop-global2",
       "name": "WorldPop Global2 constrained population counts (R2025A v1)",
-      "theme": "population", "role": "primary",
+      "theme": "population",
+      "role": "primary",
       "provider": "WorldPop, University of Southampton",
-      "version": "R2025A v1 (alpha)", "temporal": "2015–2030 annual",
+      "version": "R2025A v1 (alpha)",
+      "temporal": "2015–2030 annual",
       "doi": "10.5258/SOTON/WP00839",
       "url": "https://hub.worldpop.org/geodata/listing?id=135",
-      "licence": {"id": "CC-BY-4.0 (to confirm)", "redistributable": "yes", "attribution": "WorldPop (www.worldpop.org), University of Southampton"},
-      "resolution": "3 arc-second (~100 m)", "crs": "EPSG:4326",
-      "access": {"method": "HTTPS GeoTIFF per country/year", "endpoint": "https://data.worldpop.org/GIS/Population/Global_2015_2030/R2025A/", "auth": "none"},
-      "citation": {"text": "WorldPop (2025). Global2 constrained population counts 2015–2030, R2025A v1. University of Southampton. doi:10.5258/SOTON/WP00839",
-        "bibtex": "@misc{worldpop2025global2,\n  author = {{WorldPop}},\n  title = {Global2 constrained population counts 2015--2030, {R2025A} v1},\n  publisher = {University of Southampton},\n  year = {2025},\n  doi = {10.5258/SOTON/WP00839}\n}"},
-      "status": "single-source", "checked": "2026-10-23", "in_region_pack": true,
+      "licence": {
+        "id": "CC-BY-4.0 (to confirm)",
+        "redistributable": "yes",
+        "attribution": "WorldPop (www.worldpop.org), University of Southampton"
+      },
+      "resolution": "3 arc-second (~100 m)",
+      "crs": "EPSG:4326",
+      "access": {
+        "method": "HTTPS GeoTIFF per country/year",
+        "endpoint": "https://data.worldpop.org/GIS/Population/Global_2015_2030/R2025A/",
+        "auth": "none"
+      },
+      "citation": {
+        "text": "WorldPop (2025). Global2 constrained population counts 2015–2030, R2025A v1. University of Southampton. doi:10.5258/SOTON/WP00839",
+        "bibtex": "@misc{worldpop2025global2,\n  author = {{WorldPop}},\n  title = {Global2 constrained population counts 2015--2030, {R2025A} v1},\n  publisher = {University of Southampton},\n  year = {2025},\n  doi = {10.5258/SOTON/WP00839}\n}"
+      },
+      "status": "single-source",
+      "checked": "2026-10-23",
+      "in_region_pack": true,
       "notes": "Alpha product, may change; exact file checksum recorded."
     },
     {
       "id": "ghsl-pop-r2023a",
       "name": "GHSL GHS-POP R2023A",
-      "theme": "population", "role": "alternative",
+      "theme": "population",
+      "role": "alternative",
       "provider": "European Commission JRC",
-      "version": "R2023A", "temporal": "1975–2030 (5-year steps)",
+      "version": "R2023A",
+      "temporal": "1975–2030 (5-year steps)",
       "doi": "10.2905/2FF68A52-5B5B-4A22-8F40-C41DA8332CFE",
       "url": "https://human-settlement.emergency.copernicus.eu/download.php?ds=pop",
-      "licence": {"id": "CC-BY-4.0", "url": "https://creativecommons.org/licenses/by/4.0/", "redistributable": "yes", "attribution": "© European Union, JRC GHSL"},
-      "resolution": "100 m (Mollweide)", "crs": "ESRI:54009",
-      "access": {"method": "HTTPS zip tiles", "auth": "none"},
-      "citation": {"text": "Schiavina, M., Freire, S., Carioli, A., MacManus, K. (2023). GHS-POP R2023A — GHS population grid multitemporal (1975–2030). European Commission, JRC. doi:10.2905/2FF68A52-5B5B-4A22-8F40-C41DA8332CFE",
-        "bibtex": "@misc{schiavina2023ghspop,\n  author = {Schiavina, Marcello and Freire, Sergio and Carioli, Alessandra and MacManus, Kytt},\n  title = {{GHS-POP R2023A} -- {GHS} population grid multitemporal (1975--2030)},\n  publisher = {European Commission, Joint Research Centre},\n  year = {2023},\n  doi = {10.2905/2FF68A52-5B5B-4A22-8F40-C41DA8332CFE}\n}"},
-      "status": "verified", "checked": "2026-10-23", "in_region_pack": false
+      "licence": {
+        "id": "CC-BY-4.0",
+        "url": "https://creativecommons.org/licenses/by/4.0/",
+        "redistributable": "yes",
+        "attribution": "© European Union, JRC GHSL"
+      },
+      "resolution": "100 m (Mollweide)",
+      "crs": "ESRI:54009",
+      "access": {
+        "method": "HTTPS zip tiles",
+        "auth": "none"
+      },
+      "citation": {
+        "text": "Schiavina, M., Freire, S., Carioli, A., MacManus, K. (2023). GHS-POP R2023A — GHS population grid multitemporal (1975–2030). European Commission, JRC. doi:10.2905/2FF68A52-5B5B-4A22-8F40-C41DA8332CFE",
+        "bibtex": "@misc{schiavina2023ghspop,\n  author = {Schiavina, Marcello and Freire, Sergio and Carioli, Alessandra and MacManus, Kytt},\n  title = {{GHS-POP R2023A} -- {GHS} population grid multitemporal (1975--2030)},\n  publisher = {European Commission, Joint Research Centre},\n  year = {2023},\n  doi = {10.2905/2FF68A52-5B5B-4A22-8F40-C41DA8332CFE}\n}"
+      },
+      "status": "verified",
+      "checked": "2026-10-23",
+      "in_region_pack": false
     },
     {
       "id": "geoboundaries-idn",
       "name": "geoBoundaries Indonesia (ADM1–ADM3; ADM4 if available)",
-      "theme": "admin", "role": "primary",
+      "theme": "admin",
+      "role": "primary",
       "provider": "William & Mary geoLab",
       "version": "gbOpen current (version recorded at run time)",
       "doi": "10.1371/journal.pone.0231866",
       "url": "https://www.geoboundaries.org",
-      "licence": {"id": "CC-BY-3.0-IGO (IDN ADM2, source BPS/WFP/OCHA ROAP 2020); other levels recorded at run time", "redistributable": "yes"},
+      "licence": {
+        "id": "CC-BY-3.0-IGO (IDN ADM2, source BPS/WFP/OCHA ROAP 2020); other levels recorded at run time",
+        "redistributable": "yes"
+      },
       "resolution": "vector",
-      "access": {"method": "geoBoundaries API → GeoJSON", "endpoint": "https://www.geoboundaries.org/api/current/gbOpen/IDN/", "auth": "none"},
-      "citation": {"text": "Runfola, D., et al. (2020). geoBoundaries: A global database of political administrative boundaries. PLoS ONE, 15(4), e0231866. doi:10.1371/journal.pone.0231866",
-        "bibtex": "@article{runfola2020geoboundaries,\n  author = {Runfola, Daniel and Anderson, Austin and Baier, Heather and Crittenden, Matt and Dowker, Elizabeth and Fuhrig, Sydney and Goodman, Seth and Grimsley, Grace and Layko, Rachel and Melville, Graham and others},\n  title = {{geoBoundaries}: A global database of political administrative boundaries},\n  journal = {PLoS ONE},\n  volume = {15},\n  number = {4},\n  pages = {e0231866},\n  year = {2020},\n  doi = {10.1371/journal.pone.0231866}\n}"},
-      "status": "single-source", "checked": "2026-10-23", "in_region_pack": true,
+      "access": {
+        "method": "geoBoundaries API → GeoJSON",
+        "endpoint": "https://www.geoboundaries.org/api/current/gbOpen/IDN/",
+        "auth": "none"
+      },
+      "citation": {
+        "text": "Runfola, D., et al. (2020). geoBoundaries: A global database of political administrative boundaries. PLoS ONE, 15(4), e0231866. doi:10.1371/journal.pone.0231866",
+        "bibtex": "@article{runfola2020geoboundaries,\n  author = {Runfola, Daniel and Anderson, Austin and Baier, Heather and Crittenden, Matt and Dowker, Elizabeth and Fuhrig, Sydney and Goodman, Seth and Grimsley, Grace and Layko, Rachel and Melville, Graham and others},\n  title = {{geoBoundaries}: A global database of political administrative boundaries},\n  journal = {PLoS ONE},\n  volume = {15},\n  number = {4},\n  pages = {e0231866},\n  year = {2020},\n  doi = {10.1371/journal.pone.0231866}\n}"
+      },
+      "status": "single-source",
+      "checked": "2026-10-23",
+      "in_region_pack": true,
       "notes": "Kelurahan (ADM4) level: BIG boundaries are indicative only and an open licence was not found; to be resolved in Phase 5."
     },
     {
       "id": "era5-open-meteo",
       "name": "ERA5 / ERA5-Land hourly precipitation via Open-Meteo Historical Weather API",
-      "theme": "rain", "role": "primary",
+      "theme": "rain",
+      "role": "primary",
       "provider": "ECMWF Copernicus C3S; served by Open-Meteo",
-      "version": "ERA5 (0.25°) and ERA5-Land (0.1°)", "temporal": "1940–present (ERA5), ~5-day lag",
+      "version": "ERA5 (0.25°) and ERA5-Land (0.1°)",
+      "temporal": "1940–present (ERA5), ~5-day lag",
       "doi": "10.1002/qj.3803",
       "url": "https://open-meteo.com/en/docs/historical-weather-api",
-      "licence": {"id": "CC-BY-4.0 (Open-Meteo) + Copernicus licence (ERA5)", "url": "https://open-meteo.com/en/license", "redistributable": "yes", "attribution": "Weather data by Open-Meteo.com (CC BY 4.0); contains modified Copernicus Climate Change Service information"},
+      "licence": {
+        "id": "CC-BY-4.0 (Open-Meteo) + Copernicus licence (ERA5)",
+        "url": "https://open-meteo.com/en/license",
+        "redistributable": "yes",
+        "attribution": "Weather data by Open-Meteo.com (CC BY 4.0); contains modified Copernicus Climate Change Service information"
+      },
       "resolution": "hourly; 0.25° / 0.1°",
-      "access": {"method": "JSON API, no key (non-commercial)", "endpoint": "https://archive-api.open-meteo.com/v1/archive", "auth": "none"},
-      "citation": {"text": "Hersbach, H., et al. (2020). The ERA5 global reanalysis. QJRMS, 146, 1999–2049. doi:10.1002/qj.3803; Zippenfenig, P. (2023). Open-Meteo.com Weather API. Zenodo. doi:10.5281/zenodo.7970649",
-        "bibtex": "@article{hersbach2020era5,\n  author = {Hersbach, Hans and Bell, Bill and Berrisford, Paul and others},\n  title = {The {ERA5} global reanalysis},\n  journal = {Quarterly Journal of the Royal Meteorological Society},\n  volume = {146},\n  number = {730},\n  pages = {1999--2049},\n  year = {2020},\n  doi = {10.1002/qj.3803}\n}\n@misc{zippenfenig2023openmeteo,\n  author = {Zippenfenig, Patrick},\n  title = {{Open-Meteo.com} Weather {API}},\n  publisher = {Zenodo},\n  year = {2023},\n  doi = {10.5281/zenodo.7970649}\n}"},
-      "status": "verified", "checked": "2026-10-23", "in_region_pack": false,
+      "access": {
+        "method": "JSON API, no key (non-commercial)",
+        "endpoint": "https://archive-api.open-meteo.com/v1/archive",
+        "auth": "none"
+      },
+      "citation": {
+        "text": "Hersbach, H., et al. (2020). The ERA5 global reanalysis. QJRMS, 146, 1999–2049. doi:10.1002/qj.3803; Zippenfenig, P. (2023). Open-Meteo.com Weather API. Zenodo. doi:10.5281/zenodo.7970649",
+        "bibtex": "@article{hersbach2020era5,\n  author = {Hersbach, Hans and Bell, Bill and Berrisford, Paul and others},\n  title = {The {ERA5} global reanalysis},\n  journal = {Quarterly Journal of the Royal Meteorological Society},\n  volume = {146},\n  number = {730},\n  pages = {1999--2049},\n  year = {2020},\n  doi = {10.1002/qj.3803}\n}\n@misc{zippenfenig2023openmeteo,\n  author = {Zippenfenig, Patrick},\n  title = {{Open-Meteo.com} Weather {API}},\n  publisher = {Zenodo},\n  year = {2023},\n  doi = {10.5281/zenodo.7970649}\n}"
+      },
+      "status": "verified",
+      "checked": "2026-10-23",
+      "in_region_pack": false,
       "notes": "Fetched per scenario (Phase 2+), not in the static region pack."
     },
     {
       "id": "open-meteo-forecast",
       "name": "Open-Meteo forecast API (live mode)",
-      "theme": "rain", "role": "primary",
+      "theme": "rain",
+      "role": "primary",
       "provider": "Open-Meteo (best-match of national weather models)",
       "version": "live",
       "doi": "10.5281/zenodo.7970649",
       "url": "https://open-meteo.com/en/docs",
-      "licence": {"id": "CC-BY-4.0", "url": "https://open-meteo.com/en/license", "redistributable": "yes", "attribution": "Weather data by Open-Meteo.com"},
+      "licence": {
+        "id": "CC-BY-4.0",
+        "url": "https://open-meteo.com/en/license",
+        "redistributable": "yes",
+        "attribution": "Weather data by Open-Meteo.com"
+      },
       "resolution": "hourly; model-dependent",
-      "access": {"method": "JSON API from the browser (CORS enabled, no key)", "endpoint": "https://api.open-meteo.com/v1/forecast", "auth": "none"},
-      "citation": {"text": "Zippenfenig, P. (2023). Open-Meteo.com Weather API. Zenodo. doi:10.5281/zenodo.7970649",
-        "bibtex": "@misc{zippenfenig2023openmeteo,\n  author = {Zippenfenig, Patrick},\n  title = {{Open-Meteo.com} Weather {API}},\n  publisher = {Zenodo},\n  year = {2023},\n  doi = {10.5281/zenodo.7970649}\n}"},
-      "status": "single-source", "checked": "2026-10-23", "in_region_pack": false,
+      "access": {
+        "method": "JSON API from the browser (CORS enabled, no key)",
+        "endpoint": "https://api.open-meteo.com/v1/forecast",
+        "auth": "none"
+      },
+      "citation": {
+        "text": "Zippenfenig, P. (2023). Open-Meteo.com Weather API. Zenodo. doi:10.5281/zenodo.7970649",
+        "bibtex": "@misc{zippenfenig2023openmeteo,\n  author = {Zippenfenig, Patrick},\n  title = {{Open-Meteo.com} Weather {API}},\n  publisher = {Zenodo},\n  year = {2023},\n  doi = {10.5281/zenodo.7970649}\n}"
+      },
+      "status": "single-source",
+      "checked": "2026-10-23",
+      "in_region_pack": false,
       "notes": "Live results are always labelled 'forecast scenario'."
     },
     {
       "id": "gpm-imerg-v07",
       "name": "GPM IMERG V07 half-hourly precipitation (Final / Late / Early)",
-      "theme": "rain", "role": "alternative",
+      "theme": "rain",
+      "role": "alternative",
       "provider": "NASA GES DISC",
-      "version": "V07", "temporal": "2000–present; Final ~3.5-month latency",
+      "version": "V07",
+      "temporal": "2000–present; Final ~3.5-month latency",
       "doi": "10.5067/GPM/IMERG/3B-HH/07",
       "url": "https://disc.gsfc.nasa.gov/datasets/GPM_3IMERGHH_07/summary",
-      "licence": {"id": "NASA open data (no restrictions; citation requested)", "redistributable": "yes"},
+      "licence": {
+        "id": "NASA open data (no restrictions; citation requested)",
+        "redistributable": "yes"
+      },
       "resolution": "0.1°, 30 min",
-      "access": {"method": "Earthdata login stored only as a GitHub Secret", "auth": "free-account"},
-      "citation": {"text": "Huffman, G. J., Stocker, E. F., Bolvin, D. T., Nelkin, E. J., Tan, J. (2023). GPM IMERG Final Precipitation L3 Half Hourly 0.1° x 0.1° V07. GES DISC. doi:10.5067/GPM/IMERG/3B-HH/07",
-        "bibtex": "@misc{huffman2023imerg,\n  author = {Huffman, George J. and Stocker, Erich F. and Bolvin, David T. and Nelkin, Eric J. and Tan, Jackson},\n  title = {{GPM IMERG} Final Precipitation L3 Half Hourly 0.1 degree x 0.1 degree {V07}},\n  publisher = {Goddard Earth Sciences Data and Information Services Center (GES DISC)},\n  year = {2023},\n  doi = {10.5067/GPM/IMERG/3B-HH/07}\n}"},
-      "status": "single-source", "checked": "2026-10-23", "in_region_pack": false,
+      "access": {
+        "method": "Earthdata login stored only as a GitHub Secret",
+        "auth": "free-account"
+      },
+      "citation": {
+        "text": "Huffman, G. J., Stocker, E. F., Bolvin, D. T., Nelkin, E. J., Tan, J. (2023). GPM IMERG Final Precipitation L3 Half Hourly 0.1° x 0.1° V07. GES DISC. doi:10.5067/GPM/IMERG/3B-HH/07",
+        "bibtex": "@misc{huffman2023imerg,\n  author = {Huffman, George J. and Stocker, Erich F. and Bolvin, David T. and Nelkin, Eric J. and Tan, Jackson},\n  title = {{GPM IMERG} Final Precipitation L3 Half Hourly 0.1 degree x 0.1 degree {V07}},\n  publisher = {Goddard Earth Sciences Data and Information Services Center (GES DISC)},\n  year = {2023},\n  doi = {10.5067/GPM/IMERG/3B-HH/07}\n}"
+      },
+      "status": "single-source",
+      "checked": "2026-10-23",
+      "in_region_pack": false,
       "notes": "Optional; needs the owner to create a free NASA Earthdata account (Phase 4)."
     },
     {
       "id": "sentinel-2-l2a",
       "name": "Sentinel-2 L2A surface reflectance (least-cloudy median composite)",
-      "theme": "imagery", "role": "primary",
+      "theme": "imagery",
+      "role": "primary",
       "provider": "ESA Copernicus; COGs by Element 84 on AWS",
       "version": "L2A, scenes of the last 12 months (scene IDs recorded)",
       "doi": "10.1016/j.rse.2011.11.026",
       "url": "https://registry.opendata.aws/sentinel-2-l2a-cogs/",
-      "licence": {"id": "Copernicus Sentinel data terms (free, attribution)", "redistributable": "yes", "attribution": "Contains modified Copernicus Sentinel data (2025–2026)"},
-      "resolution": "10 m (B02, B03, B04)", "crs": "EPSG:32748",
-      "access": {"method": "Earth Search STAC + S3 COG", "endpoint": "https://earth-search.aws.element84.com/v1", "auth": "none", "probe": "S3 listing of tile 48MYU OK, 2026 scenes present (2026-10-23)"},
-      "citation": {"text": "Drusch, M., et al. (2012). Sentinel-2: ESA's optical high-resolution mission for GMES operational services. Remote Sensing of Environment, 120, 25–36. doi:10.1016/j.rse.2011.11.026",
-        "bibtex": "@article{drusch2012sentinel2,\n  author = {Drusch, M. and Del Bello, U. and Carlier, S. and others},\n  title = {Sentinel-2: {ESA}'s optical high-resolution mission for {GMES} operational services},\n  journal = {Remote Sensing of Environment},\n  volume = {120},\n  pages = {25--36},\n  year = {2012},\n  doi = {10.1016/j.rse.2011.11.026}\n}"},
-      "status": "verified", "checked": "2026-10-23", "in_region_pack": true
+      "licence": {
+        "id": "Copernicus Sentinel data terms (free, attribution)",
+        "redistributable": "yes",
+        "attribution": "Contains modified Copernicus Sentinel data (2025–2026)"
+      },
+      "resolution": "10 m (B02, B03, B04)",
+      "crs": "EPSG:32748",
+      "access": {
+        "method": "Earth Search STAC + S3 COG",
+        "endpoint": "https://earth-search.aws.element84.com/v1",
+        "auth": "none",
+        "probe": "S3 listing of tile 48MYU OK, 2026 scenes present (2026-10-23)"
+      },
+      "citation": {
+        "text": "Drusch, M., et al. (2012). Sentinel-2: ESA's optical high-resolution mission for GMES operational services. Remote Sensing of Environment, 120, 25–36. doi:10.1016/j.rse.2011.11.026",
+        "bibtex": "@article{drusch2012sentinel2,\n  author = {Drusch, M. and Del Bello, U. and Carlier, S. and others},\n  title = {Sentinel-2: {ESA}'s optical high-resolution mission for {GMES} operational services},\n  journal = {Remote Sensing of Environment},\n  volume = {120},\n  pages = {25--36},\n  year = {2012},\n  doi = {10.1016/j.rse.2011.11.026}\n}"
+      },
+      "status": "verified",
+      "checked": "2026-10-23",
+      "in_region_pack": true
     },
     {
       "id": "sentinel-1-flood",
       "name": "Sentinel-1 GRD flood extent (computed by pipeline per event)",
-      "theme": "observed-flood", "role": "validation",
+      "theme": "observed-flood",
+      "role": "validation",
       "provider": "ESA Copernicus",
       "version": "GRD IW, per event",
       "doi": "10.1016/j.rse.2011.05.028",
       "url": "https://registry.opendata.aws/sentinel-1/",
-      "licence": {"id": "Copernicus Sentinel data terms (free, attribution)", "redistributable": "yes", "attribution": "Contains modified Copernicus Sentinel data (event year)"},
+      "licence": {
+        "id": "Copernicus Sentinel data terms (free, attribution)",
+        "redistributable": "yes",
+        "attribution": "Contains modified Copernicus Sentinel data (event year)"
+      },
       "resolution": "10 m",
-      "access": {"method": "Planetary Computer / Earth Search STAC (Phase 4)", "auth": "none"},
-      "citation": {"text": "Torres, R., et al. (2012). GMES Sentinel-1 mission. Remote Sensing of Environment, 120, 9–24. doi:10.1016/j.rse.2011.05.028",
-        "bibtex": "@article{torres2012sentinel1,\n  author = {Torres, Ramon and Snoeij, Paul and Geudtner, Dirk and others},\n  title = {{GMES} {Sentinel-1} mission},\n  journal = {Remote Sensing of Environment},\n  volume = {120},\n  pages = {9--24},\n  year = {2012},\n  doi = {10.1016/j.rse.2011.05.028}\n}"},
-      "status": "single-source", "checked": "2026-10-23", "in_region_pack": false
+      "access": {
+        "method": "Planetary Computer / Earth Search STAC (Phase 4)",
+        "auth": "none"
+      },
+      "citation": {
+        "text": "Torres, R., et al. (2012). GMES Sentinel-1 mission. Remote Sensing of Environment, 120, 9–24. doi:10.1016/j.rse.2011.05.028",
+        "bibtex": "@article{torres2012sentinel1,\n  author = {Torres, Ramon and Snoeij, Paul and Geudtner, Dirk and others},\n  title = {{GMES} {Sentinel-1} mission},\n  journal = {Remote Sensing of Environment},\n  volume = {120},\n  pages = {9--24},\n  year = {2012},\n  doi = {10.1016/j.rse.2011.05.028}\n}"
+      },
+      "status": "single-source",
+      "checked": "2026-10-23",
+      "in_region_pack": false
     },
     {
       "id": "petabencana",
       "name": "PetaBencana.id crowdsourced flood reports and flooded-area archive (Jakarta)",
-      "theme": "observed-flood", "role": "validation",
+      "theme": "observed-flood",
+      "role": "validation",
       "provider": "PetaBencana.id / Yayasan Peta Bencana",
       "version": "API (archive needs key)",
       "doi": null,
       "url": "https://docs.petabencana.id",
-      "licence": {"id": "unknown (check terms)", "redistributable": "unknown"},
+      "licence": {
+        "id": "unknown (check terms)",
+        "redistributable": "unknown"
+      },
       "resolution": "points / RW polygons",
-      "access": {"method": "REST API; archive endpoints need an API key", "endpoint": "https://data.petabencana.id", "auth": "api-key"},
-      "citation": {"text": "PetaBencana.id. Crowdsourced flood reports, Jakarta. https://petabencana.id",
-        "bibtex": "@misc{petabencana,\n  author = {{PetaBencana.id}},\n  title = {Crowdsourced flood reports and flooded areas, Jakarta},\n  howpublished = {\\url{https://petabencana.id}}\n}"},
-      "status": "single-source", "checked": "2026-10-23", "in_region_pack": false,
+      "access": {
+        "method": "REST API; archive endpoints need an API key",
+        "endpoint": "https://data.petabencana.id",
+        "auth": "api-key"
+      },
+      "citation": {
+        "text": "PetaBencana.id. Crowdsourced flood reports, Jakarta. https://petabencana.id",
+        "bibtex": "@misc{petabencana,\n  author = {{PetaBencana.id}},\n  title = {Crowdsourced flood reports and flooded areas, Jakarta},\n  howpublished = {\\url{https://petabencana.id}}\n}"
+      },
+      "status": "single-source",
+      "checked": "2026-10-23",
+      "in_region_pack": false,
       "notes": "Phase 4 validation. API key, if needed, only as GitHub Secret."
     },
     {
       "id": "river-gauges",
       "name": "River water level (Katulampa, Depok, Manggarai)",
-      "theme": "river-inflow", "role": "planned",
+      "theme": "river-inflow",
+      "role": "planned",
       "provider": "BBWS Ciliwung-Cisadane / BPBD DKI",
       "version": "none found",
       "doi": null,
       "url": "https://bpbd.jakarta.go.id",
-      "licence": {"id": "unknown", "redistributable": "unknown"},
+      "licence": {
+        "id": "unknown",
+        "redistributable": "unknown"
+      },
       "resolution": "gauge points",
-      "access": {"method": "No open API found; manual readings published on BPBD DKI pages", "auth": "none"},
-      "citation": {"text": "BPBD DKI Jakarta. Tinggi muka air pintu air. https://bpbd.jakarta.go.id",
-        "bibtex": "@misc{bpbddki,\n  author = {{BPBD Provinsi DKI Jakarta}},\n  title = {Tinggi muka air pintu air},\n  howpublished = {\\url{https://bpbd.jakarta.go.id}}\n}"},
-      "status": "unverified", "checked": "2026-10-23", "in_region_pack": false,
+      "access": {
+        "method": "No open API found; manual readings published on BPBD DKI pages",
+        "auth": "none"
+      },
+      "citation": {
+        "text": "BPBD DKI Jakarta. Tinggi muka air pintu air. https://bpbd.jakarta.go.id",
+        "bibtex": "@misc{bpbddki,\n  author = {{BPBD Provinsi DKI Jakarta}},\n  title = {Tinggi muka air pintu air},\n  howpublished = {\\url{https://bpbd.jakarta.go.id}}\n}"
+      },
+      "status": "unverified",
+      "checked": "2026-10-23",
+      "in_region_pack": false,
       "notes": "Until open data is found, river inflow is a stated scenario assumption (BLUEPRINT §5)."
+    },
+    {
+      "id": "soilgrids-2",
+      "name": "SoilGrids 2.0 (sand and clay, 0-100 cm)",
+      "theme": "soil",
+      "role": "primary",
+      "provider": "ISRIC - World Soil Information",
+      "version": "2.0 (latest)",
+      "doi": "10.5194/soil-7-217-2021",
+      "url": "https://www.isric.org/explore/soilgrids",
+      "licence": {
+        "id": "CC BY 4.0",
+        "url": "https://creativecommons.org/licenses/by/4.0/",
+        "redistributable": "yes",
+        "attribution": "SoilGrids 2.0, ISRIC - World Soil Information"
+      },
+      "resolution": "250 m",
+      "crs": "Interrupted Goode Homolosine",
+      "access": {
+        "method": "Cloud-optimised GeoTIFF/VRT over HTTPS (read in the engine-pack Action)",
+        "endpoint": "https://files.isric.org/soilgrids/latest/data/",
+        "auth": "none"
+      },
+      "citation": {
+        "text": "Poggio, L., de Sousa, L.M., Batjes, N.H., Heuvelink, G.B.M., Kempen, B., Ribeiro, E. and Rossiter, D. (2021) 'SoilGrids 2.0: producing soil information for the globe with quantified spatial uncertainty', SOIL, 7, pp. 217-240. doi:10.5194/soil-7-217-2021",
+        "bibtex": "@article{poggio2021soilgrids,\n  author = {Poggio, Laura and de Sousa, Luis M. and Batjes, Niels H. and Heuvelink, Gerard B. M. and Kempen, Bas and Ribeiro, Eloi and Rossiter, David},\n  title = {{SoilGrids} 2.0: producing soil information for the globe with quantified spatial uncertainty},\n  journal = {SOIL},\n  volume = {7},\n  pages = {217--240},\n  year = {2021},\n  doi = {10.5194/soil-7-217-2021}\n}"
+      },
+      "status": "single-source",
+      "checked": "2026-10-30",
+      "notes": "Used only for the hydrologic soil group (texture rule of NRCS NEH 630 Ch. 7). DOI from the publisher record; landing page not reachable from the build session, read in GitHub Actions."
+    },
+    {
+      "id": "copernicus-glo90",
+      "name": "Copernicus DEM GLO-90 (DSM)",
+      "theme": "terrain",
+      "role": "primary",
+      "provider": "ESA / Airbus (Copernicus)",
+      "version": "2021 release (AWS public copy)",
+      "temporal": "2011-2015 acquisitions",
+      "doi": "10.5270/ESA-c5d3d65",
+      "url": "https://registry.opendata.aws/copernicus-dem/",
+      "licence": {
+        "id": "Copernicus DEM licence (free, attribution)",
+        "url": "https://spacedata.copernicus.eu/documents/20123/121286/CSCDA_ESA_Mission-specific+Annex_31_Oct_22.pdf",
+        "redistributable": "yes",
+        "attribution": "© DLR e.V. 2010-2014 and © Airbus Defence and Space GmbH 2014-2018 provided under COPERNICUS by the European Union and ESA; all rights reserved"
+      },
+      "resolution": "3 arc-second (~90 m)",
+      "crs": "EPSG:4326",
+      "vertical_datum": "EGM2008",
+      "access": {
+        "method": "S3 COG tiles",
+        "endpoint": "https://copernicus-dem-90m.s3.amazonaws.com/",
+        "auth": "none",
+        "probe": "HTTP 200 on Copernicus_DSM_COG_30_S07_00_E106_00_DEM.tif (2026-10-30)"
+      },
+      "citation": {
+        "text": "European Space Agency, Airbus (2022). Copernicus DEM. doi:10.5270/ESA-c5d3d65",
+        "bibtex": "@misc{esa2022copdem,\n  author = {{European Space Agency} and {Airbus}},\n  title = {Copernicus {DEM}},\n  year = {2022},\n  doi = {10.5270/ESA-c5d3d65}\n}"
+      },
+      "status": "verified",
+      "checked": "2026-10-30",
+      "notes": "Upstream catchments outside the region (106.35-107.35 E, 7.0-5.95 S): flow directions, upstream area, slope, flow length."
+    },
+    {
+      "id": "overture-water",
+      "name": "Overture Maps base/water (rivers and streams)",
+      "theme": "water-bodies",
+      "role": "primary",
+      "provider": "Overture Maps Foundation (OpenStreetMap data)",
+      "version": "2026-10-21.0",
+      "url": "https://docs.overturemaps.org/guides/base/",
+      "licence": {
+        "id": "ODbL 1.0",
+        "url": "https://opendatacommons.org/licenses/odbl/1-0/",
+        "redistributable": "yes",
+        "attribution": "© OpenStreetMap contributors, Overture Maps Foundation"
+      },
+      "resolution": "vector",
+      "crs": "EPSG:4326",
+      "access": {
+        "method": "GeoParquet on S3 (anonymous)",
+        "endpoint": "s3://overturemaps-us-west-2/release/2026-10-21.0/theme=base/type=water/",
+        "auth": "none"
+      },
+      "citation": {
+        "text": "Overture Maps Foundation (2026) Overture Maps base theme, release 2026-10-21.0. Data © OpenStreetMap contributors (ODbL).",
+        "bibtex": "@misc{overture2026base,\n  author = {{Overture Maps Foundation}},\n  title = {Overture Maps base theme, release 2026-10-21.0},\n  year = {2026},\n  note = {Data from OpenStreetMap contributors, ODbL}\n}"
+      },
+      "status": "verified",
+      "checked": "2026-10-30",
+      "notes": "Mapped rivers and streams of the whole upstream area, used to steer the flow routing (canals excluded)."
     }
   ]
 }
