@@ -8,8 +8,8 @@ const WG = 256;
 const BU = { MAP_READ: 1, COPY_SRC: 4, COPY_DST: 8, UNIFORM: 64, STORAGE: 128 } as const;
 const COMPUTE_STAGE = 4, MAP_READ_MODE = 1;
 const SHADER = /* wgsl */ `
-struct P { nx: u32, ny: u32, nIn: u32, nBlk: u32, dx: f32, hMin: f32, alpha: f32, dtMax: f32, seaLevel: f32, tEnd: f32, blockS: f32, inDt: f32, nWg: u32, inSteps: u32, inOff: u32, pad1: u32 };
-struct S { dt: f32, t: f32, p0: f32, p1: f32, dmax: atomic<u32>, rain: f32, infil: f32, outflow: f32, sea: f32, inflow: f32, pad0: f32, pad1: f32 };
+struct P { nx: u32, ny: u32, nIn: u32, nBlk: u32, dx: f32, hMin: f32, alpha: f32, dtMax: f32, seaLevel: f32, tEnd: f32, blockS: f32, inDt: f32, nWg: u32, inSteps: u32, inOff: u32, nZ: u32 };
+struct S { dt: f32, t: f32, p0: f32, p1: f32, dmax: atomic<u32>, rain: f32, infil: f32, outflow: f32, sea: f32, inflow: f32, drain: f32, pad1: f32 };
 @group(0) @binding(0) var<uniform> p: P;
 @group(0) @binding(1) var<storage, read_write> st: S;
 @group(0) @binding(2) var<storage, read> cell: array<vec4<f32>>;     // z, Manning n, NRCS retention S (mm, < 0 none), flags (bits)
@@ -17,24 +17,26 @@ struct S { dt: f32, t: f32, p0: f32, p1: f32, dmax: atomic<u32>, rain: f32, infi
 @group(0) @binding(4) var<storage, read> q: array<vec2<f32>>;         // old fluxes: east face, south face (m2/s)
 @group(0) @binding(5) var<storage, read_write> qn: array<vec2<f32>>;  // new fluxes
 @group(0) @binding(6) var<storage, read_write> bs: array<vec2<f32>>;  // open-side outflow (m3/s), limiter scale
-@group(0) @binding(7) var<storage, read_write> aux: array<f32>;       // [rain block depths (mm)] [inflow cells (bits)] [inflow m3/s, nIn x inSteps] [per-workgroup sums x4]
+@group(0) @binding(7) var<storage, read_write> aux: array<f32>;       // [rain block depths (mm), nZ x nBlk] [inflow cells (bits)] [inflow m3/s, nIn x inSteps] [per-workgroup sums x5]
+@group(0) @binding(8) var<storage, read> ex: array<vec2<f32>>;        // rain zone (bits), drainage capacity (m/s)
 const G = 9.81;
 var<workgroup> red: array<vec4<f32>, ${WG}>;
+var<workgroup> red2: array<f32, ${WG}>;
 // flags: bit0 active, bit1 sea, bit2 N open, bit3 S open, bit4 W open, bit5 E open
 fn fl(c: u32) -> u32 { return bitcast<u32>(cell[c].w); }
 fn z(c: u32) -> f32 { return cell[c].x; }
 
-fn cumRain(t: f32) -> f32 {
+fn cumRain(t: f32, zn: u32) -> f32 {
   var s = 0.0;
   for (var k = 0u; k < p.nBlk; k++) {
     let a = f32(k) * p.blockS;
     if (t <= a) { break; }
-    s += aux[k] * min(1.0, (t - a) / p.blockS);
+    s += aux[zn * p.nBlk + k] * min(1.0, (t - a) / p.blockS);
   }
   return s;
 }
 fn scs(pp: f32, s: f32) -> f32 { if (pp > 0.2 * s) { let a = pp - 0.2 * s; return a * a / (pp + 0.8 * s); } return 0.0; }
-fn partBase() -> u32 { return p.inOff + p.nIn + p.nIn * p.inSteps; }
+fn partBase() -> u32 { return p.inOff + p.nIn + p.nIn * p.inSteps; } // inOff = nZ x nBlk
 
 @compute @workgroup_size(1) fn begin() {
   let d = bitcast<f32>(atomicLoad(&st.dmax));
@@ -42,8 +44,8 @@ fn partBase() -> u32 { return p.inOff + p.nIn + p.nIn * p.inSteps; }
   if (d > p.hMin) { dt = min(p.dtMax, p.alpha * p.dx / sqrt(G * d)); }
   if (st.t >= p.tEnd) { dt = 0.0; }
   st.dt = dt;
-  st.p0 = cumRain(st.t);
-  st.p1 = cumRain(st.t + dt);
+  st.p0 = cumRain(st.t, 0u);
+  st.p1 = cumRain(st.t + dt, 0u);
   atomicStore(&st.dmax, 0u);
 }
 
@@ -116,17 +118,22 @@ fn face(c: u32, r: u32, q0: f32, qt: f32, dt: f32) -> f32 {
 @compute @workgroup_size(${WG}) fn depth(@builtin(global_invocation_id) gid: vec3<u32>, @builtin(local_invocation_index) li: u32, @builtin(workgroup_id) wg: vec3<u32>) {
   let c = gid.x;
   var acc = vec4<f32>(0.0);
+  var dr = 0.0;
   if (c < p.nx * p.ny && (fl(c) & 1u) != 0u) {
     let dt = st.dt; let i = c % p.nx; let k = cell[c];
     var div = -qn[c].x - qn[c].y;
     if (i > 0u) { div += qn[c - 1u].x; }
     if (c >= p.nx) { div += qn[c - p.nx].y; }
-    let gross = (st.p1 - st.p0) / 1000.0;
+    var p0 = st.p0; var p1 = st.p1;
+    if (p.nZ > 1u) { let zn = bitcast<u32>(ex[c].x); p0 = cumRain(st.t, zn); p1 = cumRain(st.t + dt, zn); }
+    let gross = (p1 - p0) / 1000.0;
     var eff = gross;
-    if (k.z >= 0.0) { eff = (scs(st.p1, k.z) - scs(st.p0, k.z)) / 1000.0; }
+    if (k.z >= 0.0) { eff = (scs(p1, k.z) - scs(p0, k.z)) / 1000.0; }
     let area = p.dx * p.dx;
     let b = bs[c].x * bs[c].y;
     var hn = max(hh[c].x + dt * div / p.dx - b * dt / area + eff, 0.0);
+    dr = min(hn, ex[c].y * dt);
+    hn -= dr;
     var sv = 0.0;
     if ((fl(c) & 2u) != 0u) { let fix = max(0.0, p.seaLevel - k.x); sv = hn - fix; hn = fix; }
     hh[c] = vec2<f32>(hn, max(hh[c].y, hn));
@@ -134,22 +141,23 @@ fn face(c: u32, r: u32, q0: f32, qt: f32, dt: f32) -> f32 {
     acc = vec4<f32>(gross, eff, b * dt / area, sv);
   }
   red[li] = acc;
+  red2[li] = dr;
   workgroupBarrier();
   for (var s = ${WG / 2}u; s > 0u; s = s >> 1u) {
-    if (li < s) { red[li] = red[li] + red[li + s]; }
+    if (li < s) { red[li] = red[li] + red[li + s]; red2[li] = red2[li] + red2[li + s]; }
     workgroupBarrier();
   }
-  if (li == 0u) { let w = partBase() + wg.x * 4u; aux[w] = red[0].x; aux[w + 1u] = red[0].y; aux[w + 2u] = red[0].z; aux[w + 3u] = red[0].w; }
+  if (li == 0u) { let w = partBase() + wg.x * 5u; aux[w] = red[0].x; aux[w + 1u] = red[0].y; aux[w + 2u] = red[0].z; aux[w + 3u] = red[0].w; aux[w + 4u] = red2[0]; }
 }
 
 @compute @workgroup_size(1) fn finish() {
   let dt = st.dt;
   if (dt <= 0.0) { return; }
   let area = p.dx * p.dx;
-  var r = 0.0; var e = 0.0; var o = 0.0; var s = 0.0;
+  var r = 0.0; var e = 0.0; var o = 0.0; var s = 0.0; var d = 0.0;
   let pb = partBase();
-  for (var w = 0u; w < p.nWg; w++) { r += aux[pb + w * 4u]; e += aux[pb + w * 4u + 1u]; o += aux[pb + w * 4u + 2u]; s += aux[pb + w * 4u + 3u]; }
-  st.rain += r * area; st.infil += (r - e) * area; st.outflow += o * area; st.sea += s * area;
+  for (var w = 0u; w < p.nWg; w++) { let a = pb + w * 5u; r += aux[a]; e += aux[a + 1u]; o += aux[a + 2u]; s += aux[a + 3u]; d += aux[a + 4u]; }
+  st.rain += r * area; st.infil += (r - e) * area; st.outflow += o * area; st.sea += s * area; st.drain += d * area;
   let k = min(p.inSteps - 1u, u32(st.t / p.inDt));
   var vin = 0.0;
   for (var m = 0u; m < p.nIn; m++) {
@@ -170,8 +178,9 @@ fn face(c: u32, r: u32, q0: f32, qt: f32, dt: f32) -> f32 {
 export type GpuInputs = {
   grid: EngineGrid; seaLevel: number; hMin: number; alpha: number; dtMax: number; tEnd: number;
   rain: { blockSeconds: number; mm: number[] }; inflowCells: number[]; inflowQ: Float64Array[]; inflowDt: number;
+  zoneMm?: number[][]; // rain blocks per zone (grid.zone), same blockSeconds; replaces rain.mm when given
 };
-export type GpuState = { t: number; dt: number; totals: { rain: number; infiltration: number; outflow: number; sea: number; inflow: number } };
+export type GpuState = { t: number; dt: number; totals: { rain: number; infiltration: number; outflow: number; sea: number; inflow: number; drain: number } };
 
 export class GpuEngine {
   private constructor(
@@ -209,28 +218,31 @@ export class GpuEngine {
       cellData[c * 4 + 2] = g.cn ? (g.cn[c] >= 100 ? 0 : 25400 / g.cn[c] - 254) : -1;
       cu[c * 4 + 3] = flags[c];
     }
-    const inSteps = Math.max(1, inp.inflowQ[0]?.length ?? 1), nIn = inp.inflowCells.length, nBlk = inp.rain.mm.length;
-    const aux = new Float32Array(nBlk + nIn + nIn * inSteps + nWg * 4), au = new Uint32Array(aux.buffer);
-    aux.set(inp.rain.mm, 0);
-    inp.inflowCells.forEach((c, m) => { au[nBlk + m] = c; });
-    inp.inflowQ.forEach((q, m) => aux.set(Float32Array.from(q), nBlk + nIn + m * inSteps));
+    const zm = inp.zoneMm && g.zone ? inp.zoneMm : [inp.rain.mm], nZ = zm.length, nBlk = Math.max(1, ...zm.map((v) => v.length)), rOff = nZ * nBlk;
+    const exData = new Float32Array(N * 2), eu = new Uint32Array(exData.buffer);
+    for (let c = 0; c < N; c++) { eu[2 * c] = nZ > 1 ? g.zone![c] : 0; exData[2 * c + 1] = g.drain?.[c] ?? 0; }
+    const inSteps = Math.max(1, inp.inflowQ[0]?.length ?? 1), nIn = inp.inflowCells.length;
+    const aux = new Float32Array(rOff + nIn + nIn * inSteps + nWg * 5), au = new Uint32Array(aux.buffer);
+    zm.forEach((v, k) => aux.set(v, k * nBlk));
+    inp.inflowCells.forEach((c, m) => { au[rOff + m] = c; });
+    inp.inflowQ.forEach((q, m) => aux.set(Float32Array.from(q), rOff + nIn + m * inSteps));
     const pb = new ArrayBuffer(64), pu = new Uint32Array(pb), pf = new Float32Array(pb);
     pu[0] = nx; pu[1] = ny; pu[2] = nIn; pu[3] = nBlk;
     pf[4] = g.dx; pf[5] = inp.hMin; pf[6] = inp.alpha; pf[7] = inp.dtMax; pf[8] = inp.seaLevel; pf[9] = inp.tEnd; pf[10] = inp.rain.blockSeconds; pf[11] = inp.inflowDt;
-    pu[12] = nWg; pu[13] = inSteps; pu[14] = nBlk;
+    pu[12] = nWg; pu[13] = inSteps; pu[14] = rOff; pu[15] = nZ;
     const st = new ArrayBuffer(48);
     new Uint32Array(st)[4] = new Uint32Array(Float32Array.of(dmax).buffer)[0];
     const hh = new Float32Array(N * 2);
     for (let c = 0; c < N; c++) { hh[2 * c] = h0[c]; hh[2 * c + 1] = h0[c]; }
     const bufs: Record<string, GPUBuffer> = {
       p: buf(new Uint8Array(pb), BU.UNIFORM | D), st: buf(new Uint8Array(st), S | D | C), cell: buf(cellData),
-      hh: buf(hh, S | D | C), qa: buf(N * 8), qb: buf(N * 8), bs: buf(N * 8), aux: buf(aux),
+      hh: buf(hh, S | D | C), qa: buf(N * 8), qb: buf(N * 8), bs: buf(N * 8), aux: buf(aux), ex: buf(exData),
     };
     const mod = dev.createShaderModule({ code: SHADER });
     const layout = dev.createBindGroupLayout({
-      entries: Array.from({ length: 8 }, (_, b) => ({
+      entries: Array.from({ length: 9 }, (_, b) => ({
         binding: b, visibility: COMPUTE_STAGE,
-        buffer: { type: b === 0 ? "uniform" : b === 2 || b === 4 ? "read-only-storage" : "storage" } as GPUBufferBindingLayout,
+        buffer: { type: b === 0 ? "uniform" : b === 2 || b === 4 || b === 8 ? "read-only-storage" : "storage" } as GPUBufferBindingLayout,
       })),
     });
     const pl = dev.createPipelineLayout({ bindGroupLayouts: [layout] });
@@ -238,7 +250,7 @@ export class GpuEngine {
     for (const e of ["begin", "flux", "limit", "apply", "depth", "finish"]) pipes[e] = await dev.createComputePipelineAsync({ layout: pl, compute: { module: mod, entryPoint: e } });
     // two bind groups swap old and new fluxes on alternate steps
     const group = (qo: string, qn: string) => dev.createBindGroup({
-      layout, entries: ["p", "st", "cell", "hh", qo, qn, "bs", "aux"].map((k, b) => ({ binding: b, resource: { buffer: bufs[k] } })),
+      layout, entries: ["p", "st", "cell", "hh", qo, qn, "bs", "aux", "ex"].map((k, b) => ({ binding: b, resource: { buffer: bufs[k] } })),
     });
     const groups = [group("qa", "qb"), group("qb", "qa")];
     return new GpuEngine(dev, pipes, groups, bufs, N, nWg, vol * g.dx * g.dx, g.dx * g.dx);
@@ -271,7 +283,7 @@ export class GpuEngine {
   }
   async state(): Promise<GpuState> {
     const f = new Float32Array(await this.read("st", 48));
-    return { dt: f[0], t: f[1], totals: { rain: f[5], infiltration: f[6], outflow: f[7], sea: f[8], inflow: f[9] } };
+    return { dt: f[0], t: f[1], totals: { rain: f[5], infiltration: f[6], outflow: f[7], sea: f[8], inflow: f[9], drain: f[10] } };
   }
   /** Depth and max depth, interleaved per cell. */
   depths = async () => new Float32Array(await this.read("hh", this.N * 8));
@@ -281,7 +293,7 @@ export class GpuEngine {
     let v = 0;
     for (let c = 0; c < active.length; c++) if (active[c]) v += h[2 * c];
     const T = s.totals, inn = this.initialVolume + T.rain + T.inflow;
-    return inn > 0 ? (inn - T.infiltration - T.outflow - T.sea - v * this.area) / inn : 0;
+    return inn > 0 ? (inn - T.infiltration - T.outflow - T.sea - T.drain - v * this.area) / inn : 0;
   }
   destroy() { for (const b of Object.values(this.bufs)) b.destroy(); this.dev.destroy(); }
 }

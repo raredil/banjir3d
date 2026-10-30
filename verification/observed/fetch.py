@@ -86,7 +86,7 @@ def stations(evs: list[dict], out: Path):
         if g["lat"][0] <= lat <= g["lat"][1] and g["lon"][0] <= lon <= g["lon"][1] and r["END"] >= "20191201":
             sel.append({"id": r["USAF"] + r["WBAN"], "name": r["STATION NAME"], "lat": lat, "lon": lon, "begin": r["BEGIN"], "end": r["END"]})
     (out / "stations.json").write_text(json.dumps(sel, indent=1))
-    for y in sorted({e["utc"][0][:4] for e in evs}):
+    for y in sorted({e["utc"][0][:4] for e in evs} | {e["utc"][1][:4] for e in evs}):
         for s in sel:
             get(f"https://www.ncei.noaa.gov/data/global-summary-of-the-day/access/{y}/{s['id']}.csv", out / "noaa" / f"gsod_{y}_{s['id']}.csv")
             get(f"https://www.ncei.noaa.gov/data/global-hourly/access/{y}/{s['id']}.csv", out / "noaa" / f"isd_{y}_{s['id']}.csv")
@@ -99,7 +99,14 @@ def petabencana(ev: dict, out: Path):
             q = urllib.parse.urlencode({"start": s, "end": e, **extra})
             name = f"pb_{path.replace('/', '_')}{'_geojson' if extra else ''}.json"
             get(f"https://data.petabencana.id/{path}?{q}", out / name)
-    get("https://data.petabencana.id/floods?city=jbd&geoformat=geojson&minimum_state=1", out / "pb_floods_current_geojson.json")
+
+
+
+def pb_areas(out: Path):
+    # RW polygons for the area_id of the flooded-area archive; parameter names differ between API versions, so try each
+    for name, q in (("admin", "admin=ID-JK&geoformat=geojson"), ("city", "city=jbd&geoformat=geojson"), ("admin_topo", "admin=ID-JK"),
+                    ("states", "admin=ID-JK&minimum_state=0&geoformat=geojson")):
+        get(f"https://data.petabencana.id/floods?{q}", out / f"pb_areas_{name}.json")
 
 
 def terms(out: Path):
@@ -122,6 +129,7 @@ def main():
     out.mkdir(parents=True, exist_ok=True)
     evs = json.loads((HERE / "events.json").read_text())["events"]
     terms(out)
+    pb_areas(out)
     for ev in evs:
         d = out / ev["id"]
         d.mkdir(exist_ok=True)
