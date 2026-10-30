@@ -117,21 +117,29 @@
     {
       "id": "observed-depth",
       "status": "partial",
-      "file": "verification/observed/scores-2021-02-20-imerg.json",
-      "id_txt": "Kedalaman: di titik laporan, genangan model lebih dangkal dari yang dilaporkan warga. Hujan satelit dirata-rata per sel 11 km (Halim: 166 mm dalam 3 hari, alat ukur 377 mm sehari), jadi hujan lokal terlalu kecil.",
-      "en_txt": "Depth: at report points the modelled water is shallower than citizens reported. Satellite rain is averaged over 11 km cells (Halim: 166 mm in 3 days, gauge 377 mm in one day), so local rain is too low.",
+      "file": "verification/observed/scores-2020-01-01-imerg-scaled.json",
+      "id_txt": "Kedalaman: di titik laporan, genangan model lebih dangkal dari yang dilaporkan warga. Uji kepekaan dengan hujan satelit dikali 1,5 dan 2: kedalaman 2020 jadi pas pada ×1,5, tetapi luas genangan Jakarta naik ke 200 km² (laporan 156 km²); 2021 baru pas pada ×2, 2025 sudah terlalu dalam pada ×1,5. Tidak ada satu faktor yang cocok, jadi aplikasi tetap memakai hujan apa adanya.",
+      "en_txt": "Depth: at report points the modelled water is shallower than citizens reported. Sensitivity runs with satellite rain times 1.5 and 2: 2020 depths match at ×1.5, but the flooded area in Jakarta rises to 200 km² (reported 156 km²); 2021 matches only at ×2, 2025 is already too deep at ×1.5. No single factor fits, so the app keeps the rain as observed.",
       "metrics": [
         [
-          "Median depth reports / model, 2020",
-          "0.70 / 0.36 m"
+          "Median depth reports / model, 2020 (×1 / ×1.5 / ×2)",
+          "0.70 / 0.36 · 0.62 · 0.80 m"
         ],
         [
           "2021",
-          "0.65 / 0.25 m"
+          "0.65 / 0.25 · 0.40 · 0.61 m"
         ],
         [
           "2025",
-          "0.55 / 0.27 m"
+          "0.55 / 0.27 · 0.62 · 1.10 m"
+        ],
+        [
+          "Flooded area 2020, Jakarta (×1 / ×1.5 / ×2) vs reported",
+          "143 · 200 · 239 / 156 km²"
+        ],
+        [
+          "Reports hit 2020 (×1 / ×1.5 / ×2)",
+          "80 · 87 · 89 %"
         ]
       ]
     }

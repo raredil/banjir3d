@@ -1,7 +1,8 @@
 # HANDOFF
-Updated: 2026-10-30 | Commit: see `git log -1` on main | Phase: P4 validation (calibration done) | Waiting for owner: no (Esri imagery postponed by owner: "nanti aja")
+Updated: 2026-10-30 | Commit: see `git log -1` on main | Phase: P4 done (validation, observed-flood mode, exposure) | Waiting for owner: no (Esri imagery postponed by owner: "nanti aja")
 
 ## SESSION LOG (newest first). Read this before anything else
+- **2026-10-30 (fourteenth entry), Claude Code, "continue from HANDOFF.md" (owner decision: do 1, 2, 4 in one session).** Done all three (ADR 0011). (1) Observed-flood mode: rain option "Banjir nyata", events 1 Jan 2020 / 20 Feb 2021 / 4 Mar 2025, IMERG hourly per 0.1° point (`data/events/*_imerg.json` from `verification/observed/event_rain.py`), zones per cell + per upstream catchment (`web/src/engine/event-rain.ts`), WIB clock, report count + hit share only; "Pakai kejadian 1 Jan 2020" now opens this mode. Deep link `#/sim?event=2020-01-01`. (2) `validate.yml` takes `scales`; IMERG ×1.5/×2 on all 3 events (releases validation-*-v6..v8, `verification/observed/scores-*-imerg-scaled.json`): 2020 ×1.5 fixes report depth (0.62 vs 0.70 m) but Jakarta area 200 km² > 156 reported; 2021 needs ×2, 2025 too deep at ×1.5 → no single factor, rain kept as observed (Validation card, Methods §9). (3) Exposure: `pipeline/exposure_pack.py` + Action `exposure-pack.yml` (release `region-jakarta-20261030-x*`): buildings (Overture centroid), people (WorldPop 2025 split over 30 m), kecamatan (Overture divisions = OSM; Kota Bekasi/part of Depok per kota). App: KPIs buildings flooded + people affected, top-10 kecamatan table, CSV export (`web/src/sim/exposure.ts`). Methods §10, catalog `overture-divisions`. Browser check: 13×12 km box, 1 Jan 2020, 90 m CPU 58 s, 40 km², 111,663 buildings, 744,035 people. Pages workflow downloads `exposure_*`. Tests: web 49, pipeline 9.
 - **2026-10-30 (thirteenth entry), Claude Code, "continue" / "lanjutkan".** Owner had added `EARTHDATA_TOKEN`. IMERG fixed: Final files are `3B-HHR`, server moved to data.gesdisc.earthdata.nasa.gov; fetch.py now asks CMR for links (no guessing), token only to NASA https hosts, dropped on redirects. Added CHIRPS v3 daily (no login; also misses the 2020 extreme, 65 mm mean). Reported impact checked in page text by the Action (`reported_excerpts.json`): 1 Jan 2020 = 156 km², 390 RW (Antara, Pemprov DKI). compare.py: flooded km² inside the 5 mainland cities. Validation with IMERG (releases validation-jakarta-*-v2..v5): drains 0 best (1,2,3,5,10,20,40 all worse): 2020 hit 80 % of 259, 143 vs 156 km²; tests 2021 78 % of 372, 2025 81 % of 47; depths too shallow (median 0.36 vs 0.70 m). `data/engine/calibration.json` (0 mm/h) wired into the app (`drainOf` in sim/panel.ts), Methods §8/§9 + `huffman2023`, Validation page (2 cards). Previews `previews/phase4/imerg/`. Workflows also trigger on `ccr-**` branches.
 - **2026-10-30 (twelfth entry), Claude Code, continue + "Esri later".** Done: ADR 0010. Action `observed.yml` (fetch.py/publish.py): PetaBencana archive answers WITHOUT a key (264/434/57 reports, 482/159/5 RW records for the 3 events in `verification/observed/events.json`); licence not stated, so raw records never published (scores only). ERA5 hourly via Open-Meteo (ERA5-Land precipitation empty), NOAA GSOD (mostly partial days, Halim missing). Release `observed-jakarta-20261030-o4`. Engine: rain zones + drainage sink (built share x D mm/h) in CPU and WebGPU (parity 1.5e-6 m), `inflowsForSpatial` (each catchment its own rain), engine pack now has `built` (release `region-jakarta-20261030-e2`). Action `validate.yml` (push `verification/observed/request.json`): whole region 90 m, matrix over D, then `compare.py` scores on the runner. First result (ERA5): 259 reports, hit 54 % (D 0) / 5 % (D 20), median depth reports 0.70 m vs model 0.12 m: ERA5 rain far too low (66 mm vs 377 mm Halim) -> calibration needs IMERG. Validation page shows it ("berjalan"). Owner saw run 2/3 failures (HTTP 403 when publishing): stale duplicate runs; now `concurrency cancel-in-progress`. `research/phase4-validation-sources.md`.
 - **2026-10-30 (eleventh entry), Claude Code, owner's 20 points (3D does not work, nothing typed in, data-driven river capacity, real floods, sharp but smooth, export TIFF/HTML, dashboard UI in blue, lag, PhD-grade).** Done: ADR 0009. Engine pack pipeline (`pipeline/engine_pack.py`, Action `engine-pack.yml`, release `region-jakarta-20261030-e1` with SoilGrids, C 17 % D 83 %). Engine v2 `web/src/engine/` (solver CPU, WebGPU `gpu.ts`, `hydrology.ts` upstream inflows, `pack.ts`). GPU = CPU on real terrain (RMSE 5e-5 m, `verification/gpu-parity/`). New UI: rail + full map + floating cards (`style.css`, `map.ts`, `sim/panel.ts`, `sim/flood-layer.ts` water-level downscaling in WebGL, `sim/export.ts` GeoTIFF/HTML/PNG/JSON, GeoTIFF read OK by GDAL). 3D page removed. Data page with "used for" (`data/catalog-use.json`), Validation page (`data/validation.json`), Methods rewritten for v2 (9 sections, refs checked by tests). Owner tools `tools/check.py`, `tools/make_map.py`, `PROJECT_MAP.md`. Owner said mid-session: "tulisan penuh, jangan gaya AI": help moved behind "?" buttons, text trimmed (RULE). Screenshots `previews/phase2/v2/`. `npm run check` 39 tests, build OK.
@@ -17,6 +18,7 @@ Project skill `.claude/skills/visual-check/SKILL.md` (data into `web/public/data
 
 ## What works
 - Validation pipeline: `observed.yml` (ERA5, CHIRPS, IMERG via CMR, PetaBencana counts, reported-impact excerpts) -> `validate.yml` (edit `verification/observed/request.json`: event, drains, rain `era5`|`era5_land`|`chirps`|`imerg`, k; one push = one run, several pushes run in parallel) -> release `validation-jakarta-<event>-v<n>` with hmax/mask/summary per D and `<event>_scores.json` (reports hit, depth error, `dki_flooded_km2`, `reported`). Scores copied to `verification/observed/scores-<event>-imerg.json`.
+- Observed-flood mode (3 events, IMERG per zone) and exposure (buildings, people, per kecamatan, CSV) in the Simulasi panel; previews `previews/phase4/event-exposure/`.
 - Calibrated: drains 0 mm/h with IMERG (`data/engine/calibration.json`); ~80 % of citizen reports hit on 3 floods; 2020 area 143 vs 156 km² reported.
 - Engine pack (30 m UTM 48S, 1718 × 1737): carved OSM channels, n and CN from IO land cover 2024 + SoilGrids, sea mask, GLO-90 stream network (107k cells ≥ 1 km²).
 - Engine v2: local inertial, CN runoff, upstream inflows (NRCS lag + UH, no double counting), sea level, transmissive edges; WebGPU in a worker with CPU fallback (region forced to 90 m without WebGPU).
@@ -27,10 +29,11 @@ Project skill `.claude/skills/visual-check/SKILL.md` (data into `web/public/data
 ## Broken / Known gaps
 - **Modelled depths too shallow at reports** (median 0.25-0.36 m vs 0.55-0.70 m): IMERG 0.1° smooths local peaks (Halim cell 166 mm in 3 days vs gauge 377 mm/day). Drains and rain error cannot be separated with one event (equifinality); written in Methods §9.
 - No RW shapes (PetaBencana `/floods?admin=ID-JK` 500 in all variants; no open RW boundaries found): no place-by-place false-alarm count; only the area check for 2020. 2021 news pages refuse the Action (403).
-- App design storm "1 Jan 2020" preset is uniform 377 mm: wetter than the observed-event runs (IMERG). Event mode (next step 1) fixes this.
+- Exposure counts residents (WorldPop), not people present; at 60/90 m a block holding a channel is not counted (same rule as flooded area). Kota Bekasi has no kecamatan in Overture divisions.
+- Depth shortfall at reports is not a uniform rain error (sensitivity ×1.5/×2): likely sub-cell rain peaks and reports from the deepest spots; open.
 - NOAA ISD hourly URL returns HTML (re-check path).
 - Previously: Results too wet: no city drains/pumps/sea walls (no open data). Whole region 1 Jan 2020 at 90 m: 777 km² > 0.15 m (provisional soil run) — unrealistic.
-- Uniform scenario rain upstream overstates river peaks (Cisadane 8,660 m³/s at 377 mm). Real events need observed/reanalysis rain per catchment.
+- Uniform design rain upstream overstates river peaks (Cisadane 8,660 m³/s at 377 mm); the observed-flood mode uses rain per catchment.
 - D8 on GLO-90 may misroute in flat east (Bekasi/Cikarang entries near 107.06 E); check on a map.
 - SFINCS comparison was on engine v1 (hMin 0.05); re-run with v2. EA benchmarks not done.
 - KPI "deepest" can include permanent water not mapped as channel (situ, ponds).
@@ -38,30 +41,30 @@ Project skill `.claude/skills/visual-check/SKILL.md` (data into `web/public/data
 - Lindsay 2016 and Karra 2021 DOIs unconfirmed: not cited. NEH chapters cited from memory: re-check text in an Action (`research/phase2-engine-v2-sources.md`).
 
 ## Locked decisions (look, mechanics, tech) with links
-ADR 0001 hosting · 0002 DEMNAS private · 0003 web stack · 0004 pipeline · 0005 region · 0006 CPU Explore (superseded by 0009 WebGPU) · 0007 Methods page · 0008 data checks (display rule updated by 0009) · **0009 engine v2, 2D dashboard** · **0010 validation, drains, rain zones**. RULES: no 3D; only external forcing as user input; methods text = code; little text, help behind "?"; blue dashboard, full map.
+ADR 0001 hosting · 0002 DEMNAS private · 0003 web stack · 0004 pipeline · 0005 region · 0006 CPU Explore (superseded by 0009 WebGPU) · 0007 Methods page · 0008 data checks (display rule updated by 0009) · **0009 engine v2, 2D dashboard** · **0010 validation, drains, rain zones** · **0011 observed-flood mode, exposure**. RULES: no 3D; only external forcing as user input; methods text = code; little text, help behind "?"; blue dashboard, full map.
 
 ## Decisions since last handoff (ADR links)
-docs/adr/0010-validation-observed-floods.md (Result section: drains 0 mm/h with IMERG).
+docs/adr/0011-observed-flood-mode-exposure.md (event mode, rain sensitivity not used for calibration, exposure per kecamatan).
 
 ## Owner feedback: applied / in BACKLOG
 2026-10-30, 20 points: see FEEDBACK.md (12 rows). Open: sharper imagery (owner decision), validation (next).
 
 ## Security status (last check date, open items)
+2026-10-30 (14th): no new web dependency. New inputs: `#/sim?event=` (only ids of shipped files), kecamatan names from Overture/OSM shown through `esc()` and CSV-quoted. `exposure-pack.yml`: region input regex-checked, pinned SHAs, `contents: write` only in its job. `validate.yml` `scales`: JSON list checked (0.1–5, ≤ 8 runs) and regex in the run job. Event files hold NASA IMERG (open) and PetaBencana COUNTS only.
 2026-10-30 (13th): no dependency change in the web app; Actions pip adds rasterio 1.5.2 (pinned, already in pipeline/requirements.txt). Token rule tightened (below). News pages fetched only as text excerpts.
 2026-10-30 (12th): no web dependency change. New workflows `observed.yml`, `validate.yml`: inputs validated (event id regex, rain/k allow-list, drains numeric 0-500, max 8), passed via env, pinned action SHAs, `contents: write` only on publishing jobs. Secret `EARTHDATA_TOKEN` only sent as Bearer header to https hosts ending .earthdata.nasa.gov / .eosdis.nasa.gov (fetch.py refuses others), removed on redirects off NASA hosts (signed S3 links), never logged. PetaBencana raw records never published (licence unknown). Actions-only pip: h5py 3.15.1.
 2026-10-30: no new dependencies; CSP unchanged (engine pack same-origin; exported HTML loads Leaflet/OSM from CDN only inside the downloaded file). New inputs: `#/sim?box=` (numbers, clipped to region), hourly rain (existing strict parser). npm audit not re-run this session (no dependency change).
 
 ## Next steps (ordered, specific, file paths)
-OWNER DECISION 2026-10-30: finish in ONE session: do 1, 2 and 4 (4 simple: totals per kecamatan); 3 moved to BACKLOG. Then final HANDOFF, merge to main.
-1. Event mode in the UI: "1 Jan 2020 / 20 Feb 2021 / 4 Mar 2025 as observed" with IMERG hourly rain per 0.1° zone. Ship compact rain files (`data/events/<id>_imerg.json`, from the newest `observed-jakarta-*` release `observed.tar.gz` -> `<id>/rain_imerg.json`; NASA open data) ; worker: `zone` + `rates` like `verification/observed/run_event.ts` (CPU `e.rates`, GPU `zoneMm`), inflows with `inflowsForSpatial`. Show PetaBencana report COUNT only (records not redistributable).
-2. Depth bias: test IMERG rain scaled to the Halim gauge (run_event `--scale`, e.g. 1.5, 2) as a sensitivity run, NOT as calibration; report in Validation.
-3. (postponed to BACKLOG by owner) SFINCS re-run with v2; EA benchmarks.
-4. Exposure: buildings/people flooded per kecamatan (Overture + WorldPop).
-5. NOAA ISD hourly: URL gives the same 36,822-byte page for every station (not data).
+Owner's one-session list (1, 2, 4) is done. Remaining, in order (owner may reprioritise):
+1. BACKLOG: SFINCS re-run with engine v2 (Action) and EA benchmarks 1, 2, 4.
+2. Depth shortfall: test a sub-cell rain correction only if a gauge network becomes available (BMKG data is not open); otherwise leave as a stated limitation.
+3. NOAA ISD hourly: URL gives the same 36,822-byte page for every station (not data); fix path or drop.
+4. Exposure: optional map layer of affected buildings; RW-level counts if open RW boundaries appear.
 Owner actions pending: DEMNAS licence text; imagery choice (later).
 
 ## File map (key files, project skills)
-`PROJECT_MAP.md` (auto, `python3 tools/make_map.py`) · `pipeline/engine_pack.py` · `data/engine/landcover-parameters.json` · `web/src/engine/` · `web/src/sim/` · `web/src/{main,map,catalog,layers,i18n}.ts` · `data/{catalog-use,validation}.json` · `data/methods/` · `verification/{gpu-parity,region-run}/` · `.github/workflows/{engine-pack,observed,validate}.yml` · `verification/observed/` · skill `.claude/skills/visual-check/`.
+`PROJECT_MAP.md` (auto, `python3 tools/make_map.py`) · `pipeline/engine_pack.py` · `data/engine/landcover-parameters.json` · `web/src/engine/` · `web/src/sim/` · `web/src/{main,map,catalog,layers,i18n}.ts` · `data/{catalog-use,validation}.json` · `data/methods/` · `verification/{gpu-parity,region-run}/` · `.github/workflows/{engine-pack,exposure-pack,observed,validate}.yml` · `pipeline/exposure_pack.py` · `web/src/sim/exposure.ts` · `web/src/engine/event-rain.ts` · `data/events/` · `verification/observed/` · skill `.claude/skills/visual-check/`.
 
 ## CODES
 None.
