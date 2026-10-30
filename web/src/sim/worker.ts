@@ -6,6 +6,7 @@ import { rainRate, type Hyetograph } from "../explore/rain";
 export type RunMsg = {
   type: "run"; grid: EngineGrid; seaLevel: number; hours: number; rain: Hyetograph; frameS: number;
   inflowCells: number[]; inflowQ: Float64Array[]; inflowDt: number; floodM: number; count: Uint8Array; preferGpu: boolean;
+  zoneMm?: number[][]; // observed event: rain blocks per zone (grid.zone), same blockSeconds as rain
 };
 export type OutMsg =
   | { type: "engine"; gpu: boolean }
@@ -23,7 +24,7 @@ self.onmessage = async (ev: MessageEvent<RunMsg>) => {
     const flooded = (d: ArrayLike<number>, stride = 1, off = 0) => { let w = 0; for (let c = 0; c < N; c++) if (m.count[c] && d[c * stride + off] > m.floodM) w++; return w * cellKm2; };
     const t0 = performance.now();
     let next = 0;
-    const gpu = m.preferGpu ? await GpuEngine.create({ grid: m.grid, seaLevel: m.seaLevel, hMin: 0.001, alpha: 0.5, dtMax: 15, tEnd: total, rain: m.rain, inflowCells: m.inflowCells, inflowQ: m.inflowQ, inflowDt: m.inflowDt }).catch(() => null) : null;
+    const gpu = m.preferGpu ? await GpuEngine.create({ grid: m.grid, seaLevel: m.seaLevel, hMin: 0.001, alpha: 0.5, dtMax: 15, tEnd: total, rain: m.rain, inflowCells: m.inflowCells, inflowQ: m.inflowQ, inflowDt: m.inflowDt, zoneMm: m.zoneMm }).catch(() => null) : null;
     post({ type: "engine", gpu: !!gpu });
     if (gpu) {
       let st = await gpu.state(), batch = 50;
@@ -52,6 +53,7 @@ self.onmessage = async (ev: MessageEvent<RunMsg>) => {
     let yieldAt = performance.now() + 200;
     while (e.t < total) {
       e.rate = rainRate(m.rain, e.t) * 3.6e6;
+      if (m.zoneMm) e.rates = m.zoneMm.map((mm) => rainRate({ blockSeconds: m.rain.blockSeconds, mm }, e.t) * 3.6e6);
       const k = Math.min((m.inflowQ[0]?.length ?? 1) - 1, Math.floor(e.t / m.inflowDt));
       e.inflows = m.inflowQ.map((q) => q[k]);
       e.step();

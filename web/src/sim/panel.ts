@@ -3,12 +3,13 @@ import type { GeoJSONSource, MapMouseEvent } from "maplibre-gl";
 import { lang, t, type Key } from "../i18n";
 import type { MapPage } from "../map";
 import { buildRun, loadPack, CHANNEL, type Pack, type RunGrid } from "../engine/pack";
-import { DT_S, inflowsFor, type Inflow } from "../engine/hydrology";
+import { DT_S, inflowsFor, inflowsForSpatial, type Inflow } from "../engine/hydrology";
+import { cumAtSteps, meanHyetograph, pointAt, zoneGrid, type EventRain } from "../engine/event-rain";
 import { alternatingBlock, parseHourly, totalMm, type Hyetograph } from "../explore/rain";
 import { CLASSES, CLASS_COLORS, FloodLayer } from "./flood-layer";
 import { colourTiff, depthTiff, htmlMap, mapPng, mercatorPng, save, type Grid } from "./export";
 import type { OutMsg, RunMsg } from "./worker";
-import { esc } from "../util";
+import { esc, fromUtm } from "../util";
 import calibration from "../../../data/engine/calibration.json";
 
 const FLOOD_M = 0.15; // flooded = deeper than the lower bound of the second depth class (BLUEPRINT §8)
@@ -19,7 +20,11 @@ const drainOf = (run: RunGrid): Float64Array | undefined => {
   for (let c = 0; c < d.length; c++) if (!run.channel[c] && !run.sea[c]) d[c] = (calibration.drain_mm_h / 3.6e6) * run.built[c];
   return d;
 };
-type Result = { run: RunGrid; grid: Grid; frames: Uint16Array[]; times: number[]; area: number[]; max: Float32Array | null; inflows: Inflow[]; hy: Hyetograph; scenario: Record<string, unknown>; totals?: Record<string, number>; mass?: number; wall?: number; gpu?: boolean };
+// observed events (IMERG hourly rain per 0.1 degree point, verification/observed/event_rain.py), loaded only when chosen
+const EVENTS = import.meta.glob<EventRain>("../../../data/events/*_imerg.json", { import: "default" });
+const eventIds = Object.keys(EVENTS).map((f) => /([\d-]+)_imerg\.json$/.exec(f)![1]).sort();
+const loadEvent = (id: string) => EVENTS[`../../../data/events/${id}_imerg.json`]();
+type Result = { run: RunGrid; grid: Grid; frames: Uint16Array[]; times: number[]; area: number[]; max: Float32Array | null; inflows: Inflow[]; hy: Hyetograph; scenario: Record<string, unknown>; event: EventRain | null; totals?: Record<string, number>; mass?: number; wall?: number; gpu?: boolean };
 
 export function mountSim(page: MapPage, o: { packUrl: string; regionBbox: number[]; releaseTag: string | null }) {
   const { map } = page;
@@ -36,11 +41,13 @@ export function mountSim(page: MapPage, o: { packUrl: string; regionBbox: number
     </div>
     <div class="sec"><h3>${t("sim.rain")}</h3>
       <div class="row"><button class="btn small" id="s-preset" type="button">${t("sim.preset")}</button>${q("sim.preset")}</div>${tip("sim.preset")}
-      <div class="field"><div class="lbl"><span>${t("sim.mode")}</span></div><select id="s-mode"><option value="design">${t("sim.mode.design")}</option><option value="hourly">${t("sim.mode.hourly")}</option></select></div>
+      <div class="field"><div class="lbl"><span>${t("sim.mode")}</span></div><select id="s-mode"><option value="design">${t("sim.mode.design")}</option><option value="hourly">${t("sim.mode.hourly")}</option><option value="event">${t("sim.mode.event")}</option></select></div>
       <div data-mode="design">${sl("s-r24", "sim.r24", 0, 500, 1, 150, "mm")}${sl("s-dur", "sim.dur", 1, 24, 1, 6, "h")}</div>
       <div data-mode="hourly" hidden><div class="field"><div class="lbl"><span>${t("sim.hourly")}</span></div><textarea id="s-hourly" rows="2" placeholder="5, 20, 60, 35, 10"></textarea></div></div>
+      <div data-mode="event" hidden><div class="field"><div class="lbl"><span>${t("sim.event")} ${q("sim.event")}</span></div>
+        <select id="s-event">${eventIds.map((id) => `<option value="${id}">${new Date(`${id}T12:00:00+07:00`).toLocaleDateString(lang === "id" ? "id-ID" : "en-GB", { day: "numeric", month: "long", year: "numeric" })}</option>`).join("")}</select>${tip("sim.event")}</div></div>
       <p class="help" id="s-rainsum"></p>
-      <label class="layer"><input type="checkbox" id="s-up" checked><span><b>${t("sim.up")}</b></span>${q("sim.up")}</label>${tip("sim.up")}
+      <label class="layer"><input type="checkbox" id="s-up" checked><span><b id="s-up-lbl">${t("sim.up")}</b></span>${q("sim.up")}</label>${tip("sim.up")}
     </div>
     <div class="sec">${sl("s-sea", "sim.sea", 0, 1.5, 0.1, 0, "m")}</div>
     <div class="sec">${sl("s-hours", "sim.hours", 3, 72, 1, 12, "h")}
@@ -57,15 +64,28 @@ export function mountSim(page: MapPage, o: { packUrl: string; regionBbox: number
   const $ = <T extends HTMLElement = HTMLElement>(id: string) => box.querySelector<T>(`#${id}`)!;
   box.querySelectorAll<HTMLButtonElement>("[data-tip]").forEach((b) => b.addEventListener("click", (e) => { e.preventDefault(); const p = box.querySelector<HTMLElement>(`[data-tipfor="${b.dataset.tip}"]`); if (p) p.hidden = !p.hidden; }));
   const num = (id: string) => Number($<HTMLInputElement>(id).value);
+  const fmt = (v: number, d = 0) => v.toLocaleString(lang === "id" ? "id-ID" : "en-GB", { maximumFractionDigits: d, minimumFractionDigits: d });
   let area: "region" | "box" = "region", bbox: number[] | null = null, k = 1, pack: Pack | null = null, worker: Worker | null = null, res: Result | null = null, layer: FloodLayer | null = null;
   let showMax = false, frame = 0, playTimer = 0;
   const gpuAvailable = "gpu" in navigator;
 
   // ---------- inputs ----------
   const hyeto = (): Hyetograph | null => ($<HTMLSelectElement>("s-mode").value === "hourly" ? parseHourly($<HTMLTextAreaElement>("s-hourly").value) : alternatingBlock(num("s-r24"), num("s-dur")));
+  const mode = () => $<HTMLSelectElement>("s-mode").value;
+  let evShown = "";
+  const summarizeEvent = async () => {
+    const id = $<HTMLSelectElement>("s-event").value, ev = await loadEvent(id);
+    if (mode() !== "event" || $<HTMLSelectElement>("s-event").value !== id) return;
+    if (evShown !== id) { evShown = id; setVal("s-hours", ev.hours); } // the observed rain covers the event window
+    const tot = ev.mm.map((v) => v.reduce((a, x) => a + x, 0)), mean = tot.reduce((a, x) => a + x, 0) / tot.length;
+    $("s-rainsum").textContent = t("sim.event.info", { mm: fmt(mean), h: ev.hours, mx: fmt(Math.max(...tot)), n: ev.reports.n, p: Math.round(ev.reports.hit_rate * 100) })
+      + (ev.reported_km2 ? ` ${t("sim.event.rep", { km2: ev.reported_km2, rw: ev.reported_rw ?? "?" })}` : "");
+  };
   const summarize = () => {
-    const mode = $<HTMLSelectElement>("s-mode").value;
-    box.querySelectorAll<HTMLElement>("[data-mode]").forEach((el) => (el.hidden = el.dataset.mode !== mode));
+    box.querySelectorAll<HTMLElement>("[data-mode]").forEach((el) => (el.hidden = el.dataset.mode !== mode()));
+    $("s-up-lbl").textContent = t(mode() === "event" ? "sim.up.ev" : "sim.up");
+    if (mode() === "event") { summarizeEvent().catch((e) => ($("s-rainsum").textContent = t("sim.err", { m: String(e) }))); return; }
+    evShown = "";
     const hy = hyeto();
     if (!hy) { $("s-rainsum").textContent = t("sim.hourly.bad"); return; }
     const peak = Math.max(0, ...hy.mm.map((v) => (v * 3600) / hy.blockSeconds));
@@ -73,9 +93,13 @@ export function mountSim(page: MapPage, o: { packUrl: string; regionBbox: number
   };
   box.querySelectorAll<HTMLInputElement>('input[type="range"]').forEach((el) => el.addEventListener("input", () => { $(`${el.id}-v`).textContent = `${el.value} ${el.dataset.unit}`; summarize(); }));
   $("s-mode").addEventListener("change", summarize);
+  $("s-event").addEventListener("change", summarize);
   $("s-hourly").addEventListener("input", summarize);
   const setVal = (id: string, v: number) => { const el = $<HTMLInputElement>(id); el.value = String(v); el.dispatchEvent(new Event("input")); };
-  $("s-preset").addEventListener("click", () => { $<HTMLSelectElement>("s-mode").value = "design"; setVal("s-r24", 377); setVal("s-dur", 24); setVal("s-hours", 30); setVal("s-sea", 0); summarize(); });
+  $("s-preset").addEventListener("click", () => { $<HTMLSelectElement>("s-mode").value = "event"; $<HTMLSelectElement>("s-event").value = "2020-01-01"; evShown = ""; setVal("s-sea", 0); summarize(); });
+  // deep link: #/sim?event=2020-01-01 opens with that observed flood chosen
+  const qe = new URLSearchParams(location.hash.split("?")[1] ?? "").get("event");
+  if (qe && eventIds.includes(qe)) { $<HTMLSelectElement>("s-mode").value = "event"; $<HTMLSelectElement>("s-event").value = qe; }
   summarize();
   $("s-res").querySelectorAll<HTMLButtonElement>("button").forEach((b) => b.addEventListener("click", () => { k = Number(b.dataset.k); $("s-res").querySelectorAll("button").forEach((x) => x.classList.toggle("on", x === b)); }));
 
@@ -132,7 +156,6 @@ export function mountSim(page: MapPage, o: { packUrl: string; regionBbox: number
 
   // ---------- what the engine derives from data ----------
   const ensurePack = async () => (pack ??= await loadPack(o.packUrl));
-  const fmt = (v: number, d = 0) => v.toLocaleString(lang === "id" ? "id-ID" : "en-GB", { maximumFractionDigits: d, minimumFractionDigits: d });
   async function refreshAuto() {
     try {
       const p = await ensurePack();
@@ -153,7 +176,10 @@ export function mountSim(page: MapPage, o: { packUrl: string; regionBbox: number
   page.onTab = (tab) => { if (tab === "sim") refreshAuto(); };
 
   // ---------- result display ----------
-  const fmtT = (s: number) => `${Math.floor(s / 3600)} h ${String(Math.round((s % 3600) / 60)).padStart(2, "0")} m`;
+  // time since the start; for an observed event the clock time in Jakarta (WIB)
+  const fmtT = (s: number) => res?.event
+    ? new Date(Date.parse(res.event.start_utc) + s * 1000).toLocaleString(lang === "id" ? "id-ID" : "en-GB", { timeZone: "Asia/Jakarta", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" }) + " WIB"
+    : `${Math.floor(s / 3600)} h ${String(Math.round((s % 3600) / 60)).padStart(2, "0")} m`;
   const depthNow = (): Float32Array | null => {
     if (!res) return null;
     if (showMax && res.max) return res.max;
@@ -215,8 +241,8 @@ export function mountSim(page: MapPage, o: { packUrl: string; regionBbox: number
   const sourceLines = () => {
     const sc = res!.scenario;
     return [
-      `${lang === "id" ? "Skenario" : "Scenario"}: ${sc.rainMm} mm / ${sc.rainHours} h, ${lang === "id" ? "laut" : "sea"} +${sc.seaLevel} m, ${sc.cellM} m, ${showMax ? t("sim.show.max") : fmtT(res!.times[frame] ?? 0)}`,
-      `Data: FABDEM V1-2 + OSM (Oct 2026), Esri/IO land cover ${pack?.header.landcover_year}, SoilGrids 2.0, Copernicus GLO-90. Banjir3D engine v2 (local inertial). ${o.releaseTag ?? ""}`,
+      `${sc.event ? `${lang === "id" ? "Banjir nyata" : "Observed flood"} ${sc.event}, ${lang === "id" ? "hujan IMERG rata-rata" : "IMERG rain, mean"}` : lang === "id" ? "Skenario:" : "Scenario:"} ${sc.rainMm} mm / ${sc.rainHours} h, ${lang === "id" ? "laut" : "sea"} +${sc.seaLevel} m, ${sc.cellM} m, ${showMax ? t("sim.show.max") : fmtT(res!.times[frame] ?? 0)}`,
+      `Data: FABDEM V1-2 + OSM (Oct 2026), Esri/IO land cover ${pack?.header.landcover_year}, SoilGrids 2.0, Copernicus GLO-90${sc.event ? ", NASA GPM IMERG Final V07" : ""}. Banjir3D engine v2 (local inertial). ${o.releaseTag ?? ""}`,
       `CRS WGS 84 / UTM 48S (EPSG:32748). ${t("exp.limit")} Licence CC BY-NC-SA 4.0 (FABDEM).`,
     ];
   };
@@ -228,7 +254,7 @@ export function mountSim(page: MapPage, o: { packUrl: string; regionBbox: number
     inflows: res!.inflows.map((f) => ({ catchment_km2: +f.areaKm2.toFixed(2), cn: +f.cn.toFixed(1), lag_h: +f.lagH.toFixed(2), peak_m3s: +Math.max(...f.q).toFixed(1), x_m: f.x, y_m: f.y })),
     totals_m3: res!.totals, mass_error: res!.mass, flooded_km2_series: res!.times.map((tt, i) => [tt, +res!.area[i].toFixed(3)]),
     drain_mm_h: calibration.drain_mm_h,
-    limitations: ["City drains: calibrated capacity " + calibration.drain_mm_h + " mm/h (1 Jan 2020 flood with IMERG rain, Validation page); no pumps or sea walls.", "Below-water channel shape not in the DEM; channels start at their mapped water level.", "Upstream rain is spatially uniform and equal to the scenario rain when switched on.", "Checked on three observed floods at report points (about 80 % hit); modelled depths shallower than reported (Validation page)."],
+    limitations: ["City drains: calibrated capacity " + calibration.drain_mm_h + " mm/h (1 Jan 2020 flood with IMERG rain, Validation page); no pumps or sea walls.", "Below-water channel shape not in the DEM; channels start at their mapped water level.", res!.event ? "Rain: GPM IMERG 0.1 degree hourly per point (nearest point per cell and per upstream catchment); satellites smooth local peaks (Halim gauge 377 mm/day vs 166 mm in its IMERG cell, 1 Jan 2020)." : "Upstream rain is spatially uniform and equal to the scenario rain when switched on.", "Checked on three observed floods at report points (about 80 % hit); modelled depths shallower than reported (Validation page)."],
     licence: "CC BY-NC-SA 4.0 (most restrictive input: FABDEM)",
   });
   menu.querySelectorAll<HTMLButtonElement>("[data-x]").forEach((b) => b.addEventListener("click", async () => {
@@ -257,22 +283,36 @@ export function mountSim(page: MapPage, o: { packUrl: string; regionBbox: number
   const addLayer = () => { if (layer && !map.getLayer("flood")) map.addLayer(layer, map.getStyle().layers.find((l) => l.type === "symbol")?.id); };
   page.onOverlays(addLayer);
   $("s-run").addEventListener("click", async () => {
-    const hy = hyeto();
-    if (!hy) { $("s-status").textContent = t("sim.hourly.bad"); return; }
+    const isEv = mode() === "event", hyIn = isEv ? null : hyeto();
+    if (!isEv && !hyIn) { $("s-status").textContent = t("sim.hourly.bad"); return; }
     clear(); setRunning(true); $("s-status").textContent = t("sim.loading");
-    let p: Pack;
-    try { p = await ensurePack(); } catch (e) { setRunning(false); $("s-status").textContent = t("sim.err", { m: String(e) }); return; }
+    let p: Pack, ev: EventRain | null;
+    try { [p, ev] = await Promise.all([ensurePack(), isEv ? loadEvent($<HTMLSelectElement>("s-event").value) : null]); } catch (e) { setRunning(false); $("s-status").textContent = t("sim.err", { m: String(e) }); return; }
     const kk = !gpuAvailable && area === "region" ? Math.max(3, k) : k;
     $("s-cpuwarn").innerHTML = gpuAvailable ? "" : `<div class="note warn">${t("sim.cpuwarn")}</div>`;
     const run = buildRun(p, area === "box" ? bbox : null, kk);
-    const hours = num("s-hours"), steps = Math.ceil((hours * 3600) / DT_S), cum = new Float64Array(steps + 1);
-    for (let s = 1; s <= steps; s++) { const t1 = s * DT_S, kb = Math.min(hy.mm.length, Math.floor(t1 / hy.blockSeconds)); let v = 0; for (let b2 = 0; b2 < kb; b2++) v += hy.mm[b2]; if (kb < hy.mm.length) v += (hy.mm[kb] * (t1 - kb * hy.blockSeconds)) / hy.blockSeconds; cum[s] = v; }
-    const inflows = $<HTMLInputElement>("s-up").checked ? inflowsFor(p.streams, run.isIn, cum, steps).map((f) => ({ ...f, cell: run.cellAt(f.x, f.y) })).filter((f) => f.cell >= 0) : [];
     const N = run.nx * run.ny, count = new Uint8Array(N), mask = new Uint8Array(N);
     for (let c = 0; c < N; c++) { mask[c] = +(run.active[c] && !run.sea[c]); count[c] = +(mask[c] && !run.channel[c]); }
+    const hours = num("s-hours"), steps = Math.ceil((hours * 3600) / DT_S), up = $<HTMLInputElement>("s-up").checked;
+    // observed event: rain zone per cell, area-mean hyetograph for the chart and KPIs, each upstream catchment with the rain of its own points
+    const zone = ev ? zoneGrid(ev, run) : undefined, hy = ev ? meanHyetograph(ev, zone!, mask) : hyIn!;
+    let raw: Inflow[] = [];
+    if (up && ev) {
+      const cumZ = new Map<number, Float64Array>();
+      const cumOf = (m: number) => { const g = fromUtm(p.ox + p.streams.x[m], p.oy - p.streams.y[m], p.zone, true), z = pointAt(ev!, g.lon, g.lat); if (!cumZ.has(z)) cumZ.set(z, cumAtSteps(ev!.mm[z], steps)); return cumZ.get(z)!; };
+      raw = inflowsForSpatial(p.streams, run.isIn, cumOf, steps);
+    } else if (up) {
+      const cum = new Float64Array(steps + 1);
+      for (let s = 1; s <= steps; s++) { const t1 = s * DT_S, kb = Math.min(hy.mm.length, Math.floor(t1 / hy.blockSeconds)); let v = 0; for (let b2 = 0; b2 < kb; b2++) v += hy.mm[b2]; if (kb < hy.mm.length) v += (hy.mm[kb] * (t1 - kb * hy.blockSeconds)) / hy.blockSeconds; cum[s] = v; }
+      raw = inflowsFor(p.streams, run.isIn, cum, steps);
+    }
+    const inflows = raw.map((f) => ({ ...f, cell: run.cellAt(f.x, f.y) })).filter((f) => f.cell >= 0);
     const grid: Grid = { nx: run.nx, ny: run.ny, dx: run.dx, zone: run.utm.zone, x0: run.utm.x0, y0: run.utm.y0, z: Float32Array.from(run.z), mask };
-    const scenario = { area: area === "box" ? { box: bbox } : "region", rainMode: $<HTMLSelectElement>("s-mode").value, rainMm: +totalMm(hy).toFixed(1), rainHours: (hy.mm.length * hy.blockSeconds) / 3600, upstreamRain: $<HTMLInputElement>("s-up").checked, seaLevel: num("s-sea"), hours, cellM: run.dx };
-    res = { run, grid, frames: [], times: [], area: [], max: null, inflows, hy, scenario };
+    const scenario = {
+      area: area === "box" ? { box: bbox } : "region", rainMode: mode(), rainMm: +totalMm(hy).toFixed(1), rainHours: (hy.mm.length * hy.blockSeconds) / 3600, upstreamRain: up, seaLevel: num("s-sea"), hours, cellM: run.dx,
+      ...(ev ? { event: ev.id, eventStartUtc: ev.start_utc, rainSource: ev.source, rainPoints: ev.mm.length } : {}),
+    };
+    res = { run, grid, frames: [], times: [], area: [], max: null, inflows, hy, scenario, event: ev };
     layer = new FloodLayer(grid); addLayer();
     page.legend.hidden = false; page.timeline.hidden = false;
     // frames kept in memory as uint16 cm: about 150 MB at most, between 12 and 144 frames, at least 10 min apart
@@ -306,7 +346,7 @@ export function mountSim(page: MapPage, o: { packUrl: string; regionBbox: number
     };
     worker.onerror = (e) => { setRunning(false); $("s-status").textContent = t("sim.err", { m: e.message }); };
     const msg: RunMsg = {
-      type: "run", grid: { nx: run.nx, ny: run.ny, dx: run.dx, z: run.z, n: run.n, cn: run.cn, active: run.active, sea: run.sea, drain: drainOf(run) }, seaLevel: num("s-sea"), hours, rain: hy, frameS,
+      type: "run", grid: { nx: run.nx, ny: run.ny, dx: run.dx, z: run.z, n: run.n, cn: run.cn, active: run.active, sea: run.sea, drain: drainOf(run), zone }, zoneMm: ev?.mm, seaLevel: num("s-sea"), hours, rain: hy, frameS,
       inflowCells: inflows.map((f) => f.cell), inflowQ: inflows.map((f) => f.q), inflowDt: DT_S, floodM: FLOOD_M, count, preferGpu: gpuAvailable,
     };
     worker.postMessage(msg);
