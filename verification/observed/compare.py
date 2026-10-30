@@ -112,7 +112,7 @@ def main():
     arch = arch if isinstance(arch, list) else [f.get("properties", f) for f in features(arch)]
     flooded = {str(a["area_id"]) for a in arch if (a.get("max_state") or 0) >= 1}
     areas = []
-    for name in ("admin", "city", "states"):
+    for name in ("admin", "admin_json"):  # all RW of Jakarta (minimum_state answers hold only areas flooded now)
         p = obs / f"pb_areas_{name}.json"
         if p.exists():
             try:

@@ -7,11 +7,12 @@ Per event in events.json:
   - ERA5 and ERA5-Land hourly rain (Open-Meteo archive API) on a 0.1 degree grid over the region and its upstream catchments,
   - NOAA ISD hourly and GSOD daily station records for the stations inside that grid (public domain),
   - GPM IMERG Final V07 half-hourly rain (NASA GES DISC) on its own 0.1 degree cells, only when EARTHDATA_TOKEN is set
-    (free NASA Earthdata login; NASA data are open, the login is only for access).
+    (free NASA Earthdata login; NASA data are open, the login is only for access),
+  - CHIRPS daily rain (satellite + stations, 0.05 degree, no login), spread over the hours with the ERA5 hourly pattern.
 Also the PetaBencana terms pages, so the licence decision (publish or not) is made from their own text.
-manifest.json lists every request, its status, size and sha256. Stdlib only.
+manifest.json lists every request, its status, size and sha256. Stdlib only, except IMERG (h5py) and CHIRPS (rasterio).
 """
-import csv, hashlib, io, json, os, re, sys, time, urllib.error, urllib.parse, urllib.request
+import csv, hashlib, io, json, os, re, sys, tempfile, time, urllib.error, urllib.parse, urllib.request
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
@@ -115,6 +116,111 @@ def imerg(ev: dict, out: Path, token: str):
                                                      "source": "GPM IMERG Final V07 half-hourly, NASA GES DISC, doi:10.5067/GPM/IMERG/3B-HH/07", "points": pts}))
 
 
+CHIRPS = "https://data.chc.ucsb.edu/products/"
+
+
+def chirps_file(day: datetime, tmp: Path) -> tuple[Path, str] | None:
+    """CHIRPS v2.0 daily global GeoTIFF of that day; if it is not there, the v3.0 daily tree is searched (links followed only
+    inside it, names with the date). Returns the local file and its URL."""
+    y, md = f"{day:%Y}", f"{day:%Y.%m.%d}"
+    for url in (f"{CHIRPS}CHIRPS-2.0/global_daily/tifs/p05/{y}/chirps-v2.0.{md}.tif.gz", f"{CHIRPS}CHIRPS-2.0/global_daily/tifs/p05/{y}/chirps-v2.0.{md}.tif"):
+        b = get(url, None)
+        if b:
+            f = tmp / url.rsplit("/", 1)[1]
+            f.write_bytes(b)
+            return f, url
+    todo, seen = [f"{CHIRPS}CHIRPS/v3.0/daily/"], set()
+    while todo and len(seen) < 40:
+        d = todo.pop(0)
+        seen.add(d)
+        b = get(d, None)
+        if not b:
+            continue
+        for href in re.findall(r'href="([^"?#]+)"', b.decode("utf-8", "replace")):
+            u = urllib.parse.urljoin(d, href)
+            if not u.startswith(f"{CHIRPS}CHIRPS/v3.0/daily/") or u in seen:
+                continue
+            if u.endswith("/"):
+                yr = re.search(r"/(\d{4})/$", u)
+                if (not yr or yr.group(1) == y) and "prelim" not in u:  # other years and preliminary products skipped
+                    todo.append(u)
+            elif md in u and re.search(r"\.tif(\.gz)?$", u):
+                b2 = get(u, None)
+                if b2:
+                    f = tmp / u.rsplit("/", 1)[1]
+                    f.write_bytes(b2)
+                    return f, u
+    return None
+
+
+def chirps(ev: dict, out: Path):
+    """Daily CHIRPS totals on the 0.1 degree points of GRID (mean of the 2 x 2 CHIRPS cells inside each 0.1 degree cell), spread over
+    the hours of the day with the ERA5 hourly pattern at the same point (or the region pattern when ERA5 has < 0.5 mm there that
+    day, or evenly when ERA5 is dry everywhere). Assumption: a CHIRPS day is the UTC calendar day."""
+    import gzip
+    import numpy as np
+    import rasterio
+    from rasterio.windows import from_bounds
+
+    era = out / "rain_era5.json"
+    if not era.exists():
+        return
+    ep = json.loads(era.read_text())["points"]
+    if not ep:
+        return
+    times = ep[0]["time"]
+    days = sorted({t[:10] for t in times})
+    tmp = Path(tempfile.mkdtemp())  # global daily files are only read here, never published
+    g, half = GRID, GRID["step"] / 2
+    daily, used = {}, []
+    for dstr in days:
+        r = chirps_file(datetime.fromisoformat(dstr), tmp)
+        if r is None:
+            continue
+        f, url = r
+        if f.suffix == ".gz":
+            f2 = f.with_suffix("")
+            f2.write_bytes(gzip.decompress(f.read_bytes()))
+            f.unlink()
+            f = f2
+        with rasterio.open(f) as src:
+            win = from_bounds(g["lon"][0] - half, g["lat"][0] - half, g["lon"][1] + half, g["lat"][1] + half, src.transform).round_offsets().round_lengths()
+            a = src.read(1, window=win).astype(float)
+            tr = src.window_transform(win)
+            if src.nodata is not None:
+                a[a == src.nodata] = np.nan
+        a[a < 0] = np.nan
+        vals = []
+        for p in ep:
+            c0, r0 = ~tr * (p["lon"] - half + 1e-6, p["lat"] + half - 1e-6)
+            c1, r1 = ~tr * (p["lon"] + half - 1e-6, p["lat"] - half + 1e-6)
+            blk = a[int(r0):int(r1) + 1, int(c0):int(c1) + 1]
+            vals.append(None if blk.size == 0 or np.all(np.isnan(blk)) else round(float(np.nanmean(blk)), 2))
+        daily[dstr] = vals
+        used.append(url)
+        f.unlink()
+    if not daily:
+        return
+    E = np.array([[v or 0.0 for v in p["mm"]] for p in ep])  # points x hours
+    region = E.mean(axis=0)
+    pts = []
+    for k, p in enumerate(ep):
+        mm = [None] * len(times)
+        for dstr, vals in daily.items():
+            hrs = [m for m, t in enumerate(times) if t[:10] == dstr]
+            tot = vals[k]
+            if tot is None or not hrs:
+                continue
+            w = E[k, hrs] if E[k, hrs].sum() >= 0.5 else region[hrs]
+            w = w / w.sum() if w.sum() > 0 else np.full(len(hrs), 1 / len(hrs))
+            for m, x in zip(hrs, w):
+                mm[m] = round(float(tot * x), 3)
+        pts.append({"lon": p["lon"], "lat": p["lat"], "time": times, "mm": mm, "daily_mm": {d: daily[d][k] for d in daily}})
+    (out / "rain_chirps.json").write_text(json.dumps({"model": "chirps_daily_era5_hourly_pattern", "units": "mm per hour ending at time (UTC)",
+                                                      "source": "CHIRPS daily (Funk et al. 2015, doi:10.1038/sdata.2015.66), Climate Hazards Center UCSB; hourly pattern from ERA5 (Open-Meteo)",
+                                                      "files": used, "day_assumed": "UTC calendar day", "points": pts}))
+
+
 def stations(evs: list[dict], out: Path):
     b = get("https://www.ncei.noaa.gov/pub/data/noaa/isd-history.csv", None)
     if b is None:
@@ -146,9 +252,10 @@ def petabencana(ev: dict, out: Path):
 
 def pb_areas(out: Path):
     # RW polygons for the area_id of the flooded-area archive; parameter names differ between API versions, so try each
-    for name, q in (("admin", "admin=ID-JK&geoformat=geojson"), ("city", "city=jbd&geoformat=geojson"), ("admin_topo", "admin=ID-JK"),
-                    ("states", "admin=ID-JK&minimum_state=0&geoformat=geojson")):
-        get(f"https://data.petabencana.id/floods?{q}", out / f"pb_areas_{name}.json")
+    for name, q in (("admin", "floods?admin=ID-JK&geoformat=geojson"), ("admin_topo", "floods?admin=ID-JK"),
+                    ("admin_json", "floods?admin=ID-JK&format=json&geoformat=geojson"), ("states", "floods?admin=ID-JK&minimum_state=1&geoformat=geojson"),
+                    ("flood_states", "floods/states?admin=ID-JK&format=json"), ("cities", "cities?format=json&geoformat=geojson")):
+        get(f"https://data.petabencana.id/{q}", out / f"pb_areas_{name}.json")
 
 
 def terms(out: Path):
@@ -183,8 +290,11 @@ def main():
         d.mkdir(exist_ok=True)
         petabencana(ev, d)
         era5(ev, d)
+        chirps(ev, d)
         if os.environ.get("EARTHDATA_TOKEN"):
             imerg(ev, d, os.environ["EARTHDATA_TOKEN"])
+        else:
+            manifest.append({"url": "imerg", "status": "skipped: EARTHDATA_TOKEN not set"})
     stations(evs, out)
     (out / "manifest.json").write_text(json.dumps({"grid": GRID, "events": evs, "requests": manifest}, indent=1))
 
