@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { esc, fmtBytes, safeUrl, toUtm } from "./util";
+import { SHARP_IMAGERY_Z, esc, fmtBytes, rasterResampling, safeUrl, toUtm } from "./util";
 
 describe("util", () => {
   it("escapes html", () => {
@@ -19,5 +19,10 @@ describe("util", () => {
     expect(u.hemisphere).toBe("S");
     expect(Math.abs(u.easting - 702183.322)).toBeLessThan(0.01);
     expect(Math.abs(u.northing - 9317059.383)).toBeLessThan(0.01);
+  });
+  it("never smooths data grids, and shows imagery pixels sharp once zoomed past their resolution", () => {
+    expect(rasterResampling(false, 8)).toBe("nearest");
+    expect(rasterResampling(true, 12)).toBe("linear");
+    expect(rasterResampling(true, SHARP_IMAGERY_Z)).toBe("nearest");
   });
 });

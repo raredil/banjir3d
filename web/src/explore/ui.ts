@@ -2,7 +2,7 @@ import type { CanvasSource, Map as MlMap } from "maplibre-gl";
 import { t, type Key } from "../i18n";
 import { aggregationFor, gridWindow, loadDem, loadLandCover, type GridWindow } from "./dem-grid";
 import { nFieldFromCodes, type RoughMode } from "./roughness";
-import { paintDepth } from "./palette";
+import { overlayScale, paintDepth } from "./palette";
 import { parseHourly, totalMm } from "./rain";
 import { DEFAULT_SCENARIO, clampScenario, hyetographOf, type RainMode, type Scenario } from "./scenario";
 import type { OutMsg, RunMsg } from "./sim.worker";
@@ -96,19 +96,28 @@ export function mountExplore(map: MlMap, box: HTMLElement, o: Opts) {
     }));
   summarize();
 
-  // overlay: the simulation grid drawn as an image draped on the terrain
+  // overlay: the simulation grid drawn as an image draped on the terrain. Every model cell is drawn as a sharp square of
+  // px x px canvas pixels (no smoothing), so the map shows exactly the computed depths, never values blurred between cells.
+  const cells = document.createElement("canvas");
+  cells.width = win.nx; cells.height = win.ny;
+  const cctx = cells.getContext("2d")!;
+  const img = cctx.createImageData(win.nx, win.ny);
+  const px = overlayScale(win.nx, win.ny);
   const canvas = document.createElement("canvas");
-  canvas.width = win.nx; canvas.height = win.ny;
+  canvas.width = win.nx * px; canvas.height = win.ny * px;
   const ctx2 = canvas.getContext("2d")!;
-  const img = ctx2.createImageData(win.nx, win.ny);
   // A canvas source needs no network request, so it works under the app's strict CSP (no data: or blob: fetches).
   canvas.id = "flood-canvas";
   map.addSource("flood", { type: "canvas", canvas, coordinates: win.corners as [[number, number], [number, number], [number, number], [number, number]], animate: false });
-  map.addLayer({ id: "flood", type: "raster", source: "flood", paint: { "raster-opacity": 1, "raster-fade-duration": 0, "raster-resampling": "linear" } }, "wfill");
+  map.addLayer({ id: "flood", type: "raster", source: "flood", paint: { "raster-opacity": 1, "raster-fade-duration": 0, "raster-resampling": "nearest" } }, "wfill");
   let flip = false;
   const draw = (depth: Float32Array | null) => {
-    if (!depth) ctx2.clearRect(0, 0, win.nx, win.ny);
-    else { paintDepth(depth, img.data); ctx2.putImageData(img, 0, 0); }
+    ctx2.clearRect(0, 0, canvas.width, canvas.height);
+    if (depth) {
+      paintDepth(depth, img.data); cctx.putImageData(img, 0, 0);
+      ctx2.imageSmoothingEnabled = false;
+      ctx2.drawImage(cells, 0, 0, canvas.width, canvas.height);
+    }
     // upload the new pixels on the next render, then stop animating again
     const src = map.getSource("flood") as CanvasSource | undefined;
     if (!src) return;

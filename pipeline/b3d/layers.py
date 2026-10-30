@@ -602,10 +602,19 @@ def sentinel2_composite(region: dict, out: Path, months_back: int = 12, per_tile
     cog = write_cog(out / "imagery_s2_rgb.tif", rgb, transform=grid.transform, crs=grid.crs, nodata=0,
                     compress="JPEG", quality=88, overview_resampling="average")
     rec["outputs"].append(output_record(cog, bands="RGB (B04,B03,B02) 8-bit visual"))
-    pm = render_pmtiles(cog, out / "imagery_s2.pmtiles", bbox=region["bbox"], minzoom=7, maxzoom=14,
-                        render=rgb_render, fmt="webp", resampling=Resampling.average)
-    rec["display"].append(output_record(pm, kind="raster", format="webp"))
+    imagery_display(rec, cog, out, region)
     return rec
+
+
+def imagery_display(rec: dict, cog: Path, out: Path, region: dict) -> None:
+    """Sentinel-2 display tiles. z14 pixels (9.5 m) are finer than the 10 m source: Lanczos there keeps the detail an
+    averaging kernel blurs away (verification/data-checks: local contrast kept 0.83 with average/WebP 82, 1.00 with
+    Lanczos/WebP 92). Lower zooms are downsampled and keep the averaging kernel."""
+    pm = render_pmtiles(cog, out / "imagery_s2.pmtiles", bbox=region["bbox"], minzoom=7, maxzoom=14,
+                        render=rgb_render, fmt="webp", resampling=Resampling.average,
+                        max_resampling=Resampling.lanczos, quality=92)
+    rec["display"] = [r for r in rec.get("display", []) if r.get("file") != pm.name]
+    rec["display"].append(output_record(pm, kind="raster", format="webp", resampling="average; lanczos at z14", webp_quality=92))
 
 
 LAYERS = {

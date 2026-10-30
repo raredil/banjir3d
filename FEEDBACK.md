@@ -8,3 +8,4 @@
 | 2026-10-29 | Draw my own bounding box | NOW | Draw tool on `#/sample`, deep link `?box=` |
 | 2026-10-29 | Others bring their own DEMNAS, easy UI, no GitHub | LATER | BACKLOG, Phase 7 |
 | 2026-10-29 | Check other guidance files for token saving | NOW | Checked; new project skill `.claude/skills/visual-check/` |
+| 2026-10-30 | Nothing blurry, map or flood simulation; data must be validated | NOW + RULE | Flood cells sharp (no interpolation), imagery re-tiled (99.7 % of source detail, was 82.5 %), real pixels above z15, automatic data checks in every pack build (ADR 0008). RULE: every display layer is checked against its source; results are never smoothed |

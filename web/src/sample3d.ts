@@ -7,7 +7,7 @@ import {
   DEFAULTS, LOOKS, LOOK_ONLY_LAYERS, LOOK_PARAMS, SAMPLE_VIEW, boxFromCorners, boxKm, depthColorExpr, parseBox, parseLook, sampleCenter, sampleOutline, zoomForWidth, type Look,
 } from "./sample-look";
 import type { Catalog, Manifest } from "./types";
-import { esc } from "./util";
+import { MAX_ZOOM, esc, rasterResampling } from "./util";
 
 type Ctx = { manifest: Manifest | null; catalog: Catalog; dataBase: string; sample?: number[] | null; region?: number[] | null; look?: string | null; box?: string | null };
 
@@ -50,7 +50,7 @@ export async function renderSample(root: HTMLElement, ctx: Ctx) {
     layers: [
       { id: "bg", type: "background", paint: { "background-color": LOOK_PARAMS[look].bg } },
       { id: "tint", type: "color-relief", source: "demcr", layout: { visibility: "none" }, paint: { "color-relief-opacity": 1, "color-relief-color": ["interpolate", ["linear"], ["elevation"], 0, "#f3f4f6", 12, "#e0e3e8", 30, "#c4c9d1", 60, "#a2a9b4"] } },
-      { id: "s2", type: "raster", source: "s2", layout: { visibility: "none" } },
+      { id: "s2", type: "raster", source: "s2", layout: { visibility: "none" }, paint: { "raster-resampling": rasterResampling(true, 0) } },
       { id: "lc", type: "raster", source: "lc", layout: { visibility: "none" }, paint: { "raster-resampling": "nearest" } },
       { id: "hs", type: "hillshade", source: "demhs", paint: { "hillshade-exaggeration": 0.5, "hillshade-shadow-color": "#1f2933", "hillshade-highlight-color": "#ffffff", "hillshade-accent-color": "#5b6573", "hillshade-illumination-direction": 315 } },
       { id: "hs2", type: "hillshade", source: "demhs", layout: { visibility: "none" }, paint: { "hillshade-exaggeration": 1, "hillshade-shadow-color": "#2f3542", "hillshade-highlight-color": "#ffffff", "hillshade-accent-color": "#5b6573", "hillshade-illumination-direction": 315 } },
@@ -95,7 +95,11 @@ export async function renderSample(root: HTMLElement, ctx: Ctx) {
   const startZoom = zoomForWidth(root.querySelector<HTMLElement>("#map")!.clientWidth);
   const map = new MlMap({
     container: "map", style, center, zoom: startZoom, pitch: SAMPLE_VIEW.pitch, bearing: SAMPLE_VIEW.bearing,
-    maxPitch: 75, attributionControl: false,
+    maxPitch: 75, maxZoom: MAX_ZOOM, attributionControl: false,
+  });
+  map.on("zoom", () => {
+    const r = rasterResampling(true, map.getZoom());
+    if (map.getLayer("s2") && map.getPaintProperty("s2", "raster-resampling") !== r) map.setPaintProperty("s2", "raster-resampling", r);
   });
   map.addControl(new NavigationControl({ visualizePitch: true }), "top-right");
   map.addControl(new ScaleControl({ unit: "metric", maxWidth: 160 }), "bottom-right");
