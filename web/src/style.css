@@ -165,3 +165,8 @@ body[data-page="doc"] #app { overflow-y: auto; }
 .qm:hover { color: var(--accent); border-color: var(--accent); }
 details.sec summary, details > summary { cursor: pointer; color: var(--muted); font-size: 13px; }
 .layer .qm { align-self: center; }
+.tbl { width: 100%; border-collapse: collapse; font-size: 12.5px; margin-top: 6px; font-variant-numeric: tabular-nums; }
+.tbl th { text-align: right; font-weight: 500; color: var(--muted); font-size: 11.5px; padding: 4px 0 4px 8px; border-bottom: 1px solid var(--border); }
+.tbl td { text-align: right; padding: 5px 0 5px 8px; border-bottom: 1px solid var(--border); white-space: nowrap; }
+.tbl th:first-child, .tbl td:first-child { text-align: left; padding-left: 0; white-space: normal; }
+.tbl td small { display: block; color: var(--faint); font-size: 11px; }

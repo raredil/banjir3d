@@ -1,0 +1,61 @@
+{
+ "event": "2025-03-04",
+ "source": "PetaBencana.id flood reports and flooded-area archive (aggregate scores only)",
+ "reported": {
+  "_about": "Impact the city reported; figures are used only after reported_excerpts.json (fetched by the Action) shows them in the page text.",
+  "pages": [
+   "https://kabar24.bisnis.com/read/20250304/15/1845118/bpbd-jakarta-117-rt-masih-terendam-banjir-hingga-selasa-malam",
+   "https://www.akurat.co/megapolitan/1305720822/banjir-di-jakarta-meluas-121-rt-dan-lima-ruas-jalan-tergenang"
+  ],
+  "flooded_km2": null,
+  "flooded_rw": null,
+  "status": "checked in page text 2026-10-30: 121 RT and 5 roads at 15:00 WIB 4 Mar 2025 (BPBD via akurat.co); no area figure",
+  "flooded_rt": 121
+ },
+ "n_flooded_area_records": 5,
+ "rw_shapes": 0,
+ "results": [
+  {
+   "run": "2025-03-04_imerg_k3_d0_s1.5",
+   "drain_mm_h": 0,
+   "rain": "rain_imerg.json",
+   "rain_scale": 1.5,
+   "mean_rain_mm": 148.62464284246246,
+   "flooded_km2": 425.9385,
+   "mass_error": 5.327107226183188e-15,
+   "reports": {
+    "n_reports": 47,
+    "hit_rate": 0.8297872340425532,
+    "n_with_depth": 45,
+    "depth_bias_m": 0.3798334533257616,
+    "depth_mae_m": 0.8736865013556347,
+    "depth_rmse_m": 1.146366809712632,
+    "observed_median_m": 0.55,
+    "model_median_m": 0.6166918277740479
+   },
+   "dki_flooded_km2": 163.0854,
+   "dki_land_km2": 561.7431
+  },
+  {
+   "run": "2025-03-04_imerg_k3_d0_s2",
+   "drain_mm_h": 0,
+   "rain": "rain_imerg.json",
+   "rain_scale": 2,
+   "mean_rain_mm": 198.1661904568966,
+   "flooded_km2": 524.8881,
+   "mass_error": 2.2294600439872325e-16,
+   "reports": {
+    "n_reports": 47,
+    "hit_rate": 0.8723404255319149,
+    "n_with_depth": 45,
+    "depth_bias_m": 0.7476055306394894,
+    "depth_mae_m": 1.1028321727050674,
+    "depth_rmse_m": 1.479147782483991,
+    "observed_median_m": 0.55,
+    "model_median_m": 1.1001662015914917
+   },
+   "dki_flooded_km2": 209.5308,
+   "dki_land_km2": 561.7431
+  }
+ ]
+}

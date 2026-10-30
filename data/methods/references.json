@@ -268,6 +268,19 @@
    "publisher": "United States Department of Agriculture"
   },
   {
+   "key": "overture2026",
+   "type": "dataset",
+   "authors": [
+    "Overture Maps Foundation"
+   ],
+   "org": true,
+   "short": "Overture Maps Foundation",
+   "year": 2026,
+   "title": "Overture Maps buildings and divisions themes, release 2026-10-21.0 (data © OpenStreetMap contributors, ODbL)",
+   "url": "https://docs.overturemaps.org",
+   "accessed": "30 October 2026"
+  },
+  {
    "key": "poggio2021",
    "type": "article",
    "authors": [
@@ -321,6 +334,19 @@
    "volume": "18",
    "pages": "843–861",
    "doi": "10.5194/gmd-18-843-2025"
+  },
+  {
+   "key": "worldpop2025",
+   "type": "dataset",
+   "authors": [
+    "WorldPop"
+   ],
+   "org": true,
+   "short": "WorldPop",
+   "year": 2025,
+   "title": "Global2 constrained population counts 2015–2030, R2025A v1",
+   "publisher": "University of Southampton",
+   "doi": "10.5258/SOTON/WP00839"
   }
  ]
 }

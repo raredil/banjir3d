@@ -1,5 +1,5 @@
 # ROADMAP
-**Current position: Phase 2 engine v2 done (data-driven inputs, upstream inflows, WebGPU, 2D dashboard, exports; ADR 0009). Next: Phase 4 validation against observed floods and drainage calibration, then SFINCS re-run with v2. Owner decision open: sharper imagery.**
+**Current position: Phase 4 validation done for three observed floods (IMERG, drains 0 mm/h, ADR 0010); observed-flood mode, rain sensitivity and exposure per kecamatan in the app (ADR 0011). Next: BACKLOG (SFINCS re-run with v2, EA benchmarks). Owner decision open: sharper imagery.**
 
 | Phase | Work | Gate (owner sees) | Status |
 |---|---|---|---|

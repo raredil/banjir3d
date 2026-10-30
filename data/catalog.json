@@ -407,6 +407,38 @@
       "notes": "Kelurahan (ADM4) level: BIG boundaries are indicative only and an open licence was not found; to be resolved in Phase 5."
     },
     {
+      "id": "overture-divisions",
+      "name": "Overture Maps divisions (kecamatan and kota/kabupaten boundaries)",
+      "theme": "admin",
+      "role": "primary",
+      "provider": "Overture Maps Foundation (OpenStreetMap data)",
+      "version": "2026-10-21.0",
+      "doi": null,
+      "url": "https://docs.overturemaps.org/guides/divisions/",
+      "licence": {
+        "id": "ODbL-1.0",
+        "url": "https://opendatacommons.org/licenses/odbl/1-0/",
+        "redistributable": "yes",
+        "share_alike": true,
+        "attribution": "© OpenStreetMap contributors, Overture Maps Foundation"
+      },
+      "resolution": "vector",
+      "crs": "EPSG:4326",
+      "access": {
+        "method": "GeoParquet on S3 (anonymous), division_area subtype localadmin and county",
+        "endpoint": "s3://overturemaps-us-west-2/release/2026-10-21.0/theme=divisions/type=division_area/",
+        "auth": "none",
+        "probe": "S3 read OK from the cloud session (2026-10-30): 43 Jakarta kecamatan (all mainland 42 + Kepulauan Seribu Selatan), none for Kota Bekasi"
+      },
+      "citation": {
+        "text": "Overture Maps Foundation (2026). Overture Maps divisions theme, release 2026-10-21.0. Data © OpenStreetMap contributors (ODbL).",
+        "bibtex": "@misc{overture2026divisions,\n  author = {{Overture Maps Foundation}},\n  title = {Overture Maps divisions theme, release 2026-10-21.0},\n  year = {2026},\n  note = {Data from OpenStreetMap contributors, ODbL}\n}"
+      },
+      "status": "verified",
+      "checked": "2026-10-30",
+      "notes": "Kecamatan per model cell in the exposure pack (pipeline/exposure_pack.py). Kota Bekasi and part of Depok have no kecamatan polygons in this release; their land is counted per kota."
+    },
+    {
       "id": "era5-open-meteo",
       "name": "ERA5 / ERA5-Land hourly precipitation via Open-Meteo Historical Weather API",
       "theme": "rain",

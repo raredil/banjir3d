@@ -1,0 +1,77 @@
+{
+ "event": "2020-01-01",
+ "source": "PetaBencana.id flood reports and flooded-area archive (aggregate scores only)",
+ "reported": {
+  "_about": "Impact the city reported; figures are used only after reported_excerpts.json (fetched by the Action) shows them in the page text.",
+  "pages": [
+   "https://sumut.antaranews.com/berita/270492/banjir-tahun-baru-2020-adalah-yang-terbaik-selama-siklus-banjir-besar-jakarta",
+   "https://www.antaranews.com/berita/1921596/banjir-dan-kenangan",
+   "https://www.mobil123.com/berita/pemprov-dki-jakarta-klaim-banjir-kali-ini-tidak-seluas-tahun-lalu/62890/amp/"
+  ],
+  "flooded_km2": 156,
+  "flooded_rw": 390,
+  "status": "checked in page text 2026-10-30 (reported_excerpts.json in release observed-jakarta-20261030-o8)",
+  "quote": "luas area tergenang 156 km persegi dengan jumlah RW tergenang sebanyak 390 (Antara, data Pemprov DKI, rapat koordinasi 7 Jan 2020)",
+  "context": {
+   "2007": {
+    "km2": 455,
+    "rw": 955,
+    "rain_mm_day": 340
+   },
+   "2013": {
+    "km2": 240,
+    "rw": 599
+   },
+   "2015": {
+    "km2": 281,
+    "rw": 702
+   }
+  }
+ },
+ "n_flooded_area_records": 482,
+ "rw_shapes": 0,
+ "results": [
+  {
+   "run": "2020-01-01_imerg_k3_d0_s1.5",
+   "drain_mm_h": 0,
+   "rain": "rain_imerg.json",
+   "rain_scale": 1.5,
+   "mean_rain_mm": 214.30735661914827,
+   "flooded_km2": 475.9155,
+   "mass_error": 6.660035474818075e-15,
+   "reports": {
+    "n_reports": 259,
+    "hit_rate": 0.8687258687258688,
+    "n_with_depth": 211,
+    "depth_bias_m": 0.0033400310535354684,
+    "depth_mae_m": 0.549372286126194,
+    "depth_rmse_m": 0.7091071198699976,
+    "observed_median_m": 0.7,
+    "model_median_m": 0.6192904114723206
+   },
+   "dki_flooded_km2": 200.4993,
+   "dki_land_km2": 561.7431
+  },
+  {
+   "run": "2020-01-01_imerg_k3_d0_s2",
+   "drain_mm_h": 0,
+   "rain": "rain_imerg.json",
+   "rain_scale": 2,
+   "mean_rain_mm": 285.743142158838,
+   "flooded_km2": 560.4471,
+   "mass_error": -4.393051353946294e-15,
+   "reports": {
+    "n_reports": 259,
+    "hit_rate": 0.8918918918918919,
+    "n_with_depth": 211,
+    "depth_bias_m": 0.18320371341013234,
+    "depth_mae_m": 0.6214627751729217,
+    "depth_rmse_m": 0.8096207810348062,
+    "observed_median_m": 0.7,
+    "model_median_m": 0.7980150580406189
+   },
+   "dki_flooded_km2": 238.9581,
+   "dki_land_km2": 561.7431
+  }
+ ]
+}

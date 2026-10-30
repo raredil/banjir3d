@@ -1,0 +1,61 @@
+{
+ "event": "2021-02-20",
+ "source": "PetaBencana.id flood reports and flooded-area archive (aggregate scores only)",
+ "reported": {
+  "_about": "Impact the city reported; figures are used only after reported_excerpts.json (fetched by the Action) shows them in the page text.",
+  "pages": [
+   "https://rmol.id/nusantara/read/2021/02/21/476030/banjir-jakarta-dalam-angka-sejak-era-sutiyoso-hingga-anies-baswedan",
+   "https://www.cnnindonesia.com/nasional/20210221075059-20-608918/banjir-jakarta-33-rw-masih-tergenang",
+   "https://www.merahputih.com/post/read/75-rw-di-jakarta-tergenang-banjir-akibat-hujan-deras-sejak-jumat-malam"
+  ],
+  "flooded_km2": null,
+  "flooded_rw": null,
+  "status": "pages refused the Action (HTTP 403); search results only: 113 RW / 342 RT on 20 Feb 2021"
+ },
+ "n_flooded_area_records": 159,
+ "rw_shapes": 0,
+ "results": [
+  {
+   "run": "2021-02-20_imerg_k3_d0_s1.5",
+   "drain_mm_h": 0,
+   "rain": "rain_imerg.json",
+   "rain_scale": 1.5,
+   "mean_rain_mm": 76.31164560793167,
+   "flooded_km2": 200.7342,
+   "mass_error": 2.8453709851447593e-15,
+   "reports": {
+    "n_reports": 372,
+    "hit_rate": 0.8548387096774194,
+    "n_with_depth": 325,
+    "depth_bias_m": -0.2256313409274587,
+    "depth_mae_m": 0.4013007007801761,
+    "depth_rmse_m": 0.5267781648921043,
+    "observed_median_m": 0.65,
+    "model_median_m": 0.4031924605369568
+   },
+   "dki_flooded_km2": 57.2994,
+   "dki_land_km2": 561.7431
+  },
+  {
+   "run": "2021-02-20_imerg_k3_d0_s2",
+   "drain_mm_h": 0,
+   "rain": "rain_imerg.json",
+   "rain_scale": 2,
+   "mean_rain_mm": 101.74886081072744,
+   "flooded_km2": 268.7661,
+   "mass_error": -1.9444427319351457e-14,
+   "reports": {
+    "n_reports": 372,
+    "hit_rate": 0.9086021505376344,
+    "n_with_depth": 325,
+    "depth_bias_m": -0.03961289651600213,
+    "depth_mae_m": 0.4121105959729506,
+    "depth_rmse_m": 0.5387484636283203,
+    "observed_median_m": 0.65,
+    "model_median_m": 0.6116942763328552
+   },
+   "dki_flooded_km2": 84.4911,
+   "dki_land_km2": 561.7431
+  }
+ ]
+}

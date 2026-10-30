@@ -23,3 +23,4 @@
 | 2026-10-30 | UI like reference image, blue, full map, less text, no AI style | RULE | New design system (style.css), rail + floating cards, text trimmed |
 | 2026-10-30 | Sharper imagery (Esri): later | LATER | Owner: "nanti aja"; Sentinel-2 stays; BACKLOG |
 | 2026-10-30 | "gagal hasilnya" (Observed data run failed, screenshot) | NOW | Runs 2 and 3 were stale duplicates (HTTP 403 on publish); runs 1 and 4 hold all data; newer push now cancels a running fetch |
+| 2026-10-30 | Finish in one session: event mode, depth check, exposure per kecamatan | NOW | ADR 0011: observed-flood mode, rain ×1.5/×2 sensitivity (not used), buildings/people per kecamatan + CSV |
