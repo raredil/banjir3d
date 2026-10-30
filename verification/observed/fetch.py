@@ -23,10 +23,35 @@ GRID = {"lon": (106.4, 107.2), "lat": (-6.85, -5.9), "step": 0.1}
 manifest: list[dict] = []
 
 
+NASA_HOSTS = (".earthdata.nasa.gov", ".eosdis.nasa.gov")  # the only hosts that ever see EARTHDATA_TOKEN
+
+
+def nasa_host(url: str) -> bool:
+    h = urllib.parse.urlparse(url).hostname or ""
+    return urllib.parse.urlparse(url).scheme == "https" and h.endswith(NASA_HOSTS)
+
+
+class _NasaRedirect(urllib.request.HTTPRedirectHandler):
+    """Earthdata Cloud answers with a redirect to a signed S3 / CloudFront address: the token is dropped when leaving NASA hosts
+    (it must not leak, and S3 refuses a request that carries two kinds of authorisation)."""
+
+    def redirect_request(self, req, fp, code, msg, headers, newurl):
+        new = super().redirect_request(req, fp, code, msg, headers, newurl)
+        if new is not None and not nasa_host(newurl):
+            new.remove_header("Authorization")
+        return new
+
+
+NASA_OPENER = urllib.request.build_opener(_NasaRedirect, urllib.request.HTTPCookieProcessor())
+
+
 def get(url: str, out: Path | None, tries: int = 3, headers: dict | None = None, log: bool = True) -> bytes | None:
+    if headers and "Authorization" in headers and not nasa_host(url):
+        raise ValueError("token only for NASA hosts")
+    opener = NASA_OPENER if headers and "Authorization" in headers else urllib.request.build_opener()
     for k in range(tries):
         try:
-            with urllib.request.urlopen(urllib.request.Request(url, headers={**UA, **(headers or {})}), timeout=120) as r:
+            with opener.open(urllib.request.Request(url, headers={**UA, **(headers or {})}), timeout=120) as r:
                 body = r.read()
                 status = r.status
             break
@@ -77,6 +102,24 @@ def era5(ev: dict, out: Path):
                                                              "source": "Open-Meteo archive API", "points": series}))
 
 
+def imerg_granules(ev: dict) -> list[tuple[datetime, str]]:
+    """Half-hourly IMERG Final files of the event window from NASA's open catalogue (CMR), with their HTTPS download links,
+    so file names and server paths are never guessed (they changed when GES DISC moved to Earthdata Cloud)."""
+    t0, t1 = ev["utc"]
+    q = urllib.parse.urlencode({"short_name": "GPM_3IMERGHH", "version": "07", "temporal": f"{t0},{t1}", "page_size": 500, "sort_key": "start_date"})
+    b = get(f"https://cmr.earthdata.nasa.gov/search/granules.json?{q}", None)
+    if b is None:
+        return []
+    out = []
+    for e in json.loads(b)["feed"]["entry"]:
+        ts = datetime.fromisoformat(e["time_start"].replace("Z", "+00:00"))
+        links = [l["href"] for l in e.get("links", []) if l.get("rel", "").endswith("/data#") and l["href"].startswith("https://")
+                 and re.search(r"\.(HDF5|h5)$", l["href"], re.I) and "opendap" not in l["href"]]
+        if links and t0 <= ts.strftime("%Y-%m-%dT%H:%M:%SZ") < t1:
+            out.append((ts, links[0]))
+    return sorted(out)
+
+
 def imerg(ev: dict, out: Path, token: str):
     """Half-hourly files of the event window; cells whose centre is inside GRID (plus half a step). Stored as hourly sums (mm),
     the value at time T being the rain of the hour ending at T, like the Open-Meteo files."""
@@ -84,28 +127,25 @@ def imerg(ev: dict, out: Path, token: str):
     import numpy as np
 
     g, half = GRID, GRID["step"] / 2
-    t, t1 = datetime.fromisoformat(ev["utc"][0].replace("Z", "+00:00")), datetime.fromisoformat(ev["utc"][1].replace("Z", "+00:00"))
     hours: dict[str, np.ndarray] = {}
     lon = lat = sel = None
     n = 0
-    while t < t1:
-        mins = t.hour * 60 + t.minute
-        e = t + timedelta(minutes=29, seconds=59)
-        name = f"3B-HH.MS.MRG.3IMERG.{t:%Y%m%d}-S{t:%H%M%S}-E{e:%H%M%S}.{mins:04d}.V07B.HDF5"
-        url = f"https://gpm1.gesdisc.eosdis.nasa.gov/data/GPM_L3/GPM_3IMERGHH.07/{t:%Y}/{t.timetuple().tm_yday:03d}/{name}"
+    for t, url in imerg_granules(ev):
         b = get(url, None, headers={"Authorization": f"Bearer {token}"}, log=False)
         manifest.append({"url": url, "status": 200 if b else "failed", "bytes": len(b or b"")})
-        if b:
-            with h5py.File(io.BytesIO(b), "r") as f:
-                if sel is None:
-                    lon, lat = f["Grid/lon"][:], f["Grid/lat"][:]
-                    sel = (np.nonzero((lon >= g["lon"][0] - half) & (lon <= g["lon"][1] + half))[0], np.nonzero((lat >= g["lat"][0] - half) & (lat <= g["lat"][1] + half))[0])
-                pr = f["Grid/precipitation"][0][np.ix_(sel[0], sel[1])].astype(float)  # mm/h, (lon, lat)
-            pr[pr < 0] = np.nan
-            key = (t.replace(minute=0) + timedelta(hours=1)).strftime("%Y-%m-%dT%H:%M")
-            hours[key] = hours.get(key, 0) + pr * 0.5  # half an hour at the half-hourly rate
-            n += 1
-        t += timedelta(minutes=30)
+        if not b:
+            if n == 0 and sum(r.get("status") == "failed" for r in manifest[-3:]) == 3:
+                return  # first three files refused: stop (status codes are in the job log)
+            continue
+        with h5py.File(io.BytesIO(b), "r") as f:
+            if sel is None:
+                lon, lat = f["Grid/lon"][:], f["Grid/lat"][:]
+                sel = (np.nonzero((lon >= g["lon"][0] - half) & (lon <= g["lon"][1] + half))[0], np.nonzero((lat >= g["lat"][0] - half) & (lat <= g["lat"][1] + half))[0])
+            pr = f["Grid/precipitation"][0][np.ix_(sel[0], sel[1])].astype(float)  # mm/h, (lon, lat)
+        pr[pr < 0] = np.nan
+        key = (t.replace(minute=0) + timedelta(hours=1)).strftime("%Y-%m-%dT%H:%M")
+        hours[key] = hours.get(key, 0) + pr * 0.5  # half an hour at the half-hourly rate
+        n += 1
     if sel is None:
         return
     times = sorted(hours)
