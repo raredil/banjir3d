@@ -203,7 +203,7 @@ def upstream(crs, soil: str, io_year: int, res: float = 90.0) -> tuple[dict, dic
             dem = np.where(np.isnan(dem), out, dem)
     dem = np.where(np.isfinite(dem), dem, 0.0)  # sea
     # Stream burning for routing only (Saunders 1999; Lindsay 2016): mapped rivers, streams and canals (Overture base/water,
-    # from OSM) are lowered by ROUTE_BURN_M so D8 follows the mapped network in flat land where a DSM alone misroutes water.
+    # from OSM; canals excluded because they cross divides) are lowered by ROUTE_BURN_M so D8 follows the mapped network in flat land where a DSM alone misroutes water.
     lines, wsrc = overture_waterways(UPSTREAM_BOX)
     burn = features.rasterize(((g, 1) for g in lines.to_crs(crs).geometry), out_shape=dem.shape, transform=tr, all_touched=True, dtype="uint8") > 0
     dem_route = np.where(burn, dem - ROUTE_BURN_M, dem)
@@ -234,7 +234,7 @@ def upstream(crs, soil: str, io_year: int, res: float = 90.0) -> tuple[dict, dic
 
 
 def overture_waterways(box):
-    """Rivers, streams and canals (not drains or ditches) from the Overture Maps base/water theme (OpenStreetMap data)."""
+    """Rivers and streams (not canals, drains or ditches) from the Overture Maps base/water theme (OpenStreetMap data)."""
     import geopandas as gpd
     import pyarrow.compute as pc
     import pyarrow.dataset as ds
@@ -245,11 +245,11 @@ def overture_waterways(box):
     d = ds.dataset(path, filesystem=pafs.S3FileSystem(anonymous=True, region="us-west-2"), format="parquet")
     W, S, E, N = box
     f = (pc.field("bbox", "xmin") < E) & (pc.field("bbox", "xmax") > W) & (pc.field("bbox", "ymin") < N) & (pc.field("bbox", "ymax") > S)
-    tb = d.to_table(columns=["id", "class", "geometry"], filter=f & pc.field("class").isin(["river", "stream", "canal"]))
+    tb = d.to_table(columns=["id", "class", "geometry"], filter=f & pc.field("class").isin(["river", "stream"]))
     geom = shapely.from_wkb(tb.column("geometry").to_numpy(zero_copy_only=False))
     gdf = gpd.GeoDataFrame({"class": tb.column("class").to_pylist()}, geometry=geom, crs="EPSG:4326")
     gdf = gdf[gdf.geom_type.isin(["LineString", "MultiLineString"])]
-    return gdf, {"dataset": "Overture Maps base/water", "release": OVERTURE_RELEASE, "s3": "s3://" + path, "classes": ["river", "stream", "canal"]}
+    return gdf, {"dataset": "Overture Maps base/water", "release": OVERTURE_RELEASE, "s3": "s3://" + path, "classes": ["river", "stream"], "excluded": "canals (irrigation and flood canals cross catchment divides; they would merge basins in D8 routing)"}
 
 
 def d8_accumulate(fdir: np.ndarray, dirmap, res: float, cn: np.ndarray, slope: np.ndarray):
