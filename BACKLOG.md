@@ -24,3 +24,8 @@
 | EA 2D benchmarks (Neelz and Pender 2013): tests 1, 2, 4, 8A in verification/ | 2 |
 | Indonesian translation of the Methods page (text stays English for papers) | 8 |
 | Map page: attribution box starts expanded and covers the map (fixed on 3D page only) | 8 |
+| 2026-10-30 | Sharper basemap (Esri World Imagery free tier, owner account needed) | Owner decision | display only |
+| 2026-10-30 | Validation vs observed floods + drainage calibration | Phase 4 (next) | HANDOFF Next steps 1-3 |
+| 2026-10-30 | Event mode with observed rain per catchment | Phase 4 | |
+| 2026-10-30 | SFINCS comparison with engine v2, EA benchmarks | Phase 2 | |
+| 2026-10-30 | Buildings / people flooded per kecamatan | Phase 3 | Overture + WorldPop |

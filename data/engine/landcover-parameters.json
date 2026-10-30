@@ -1,0 +1,30 @@
+{
+  "id": "landcover-parameters",
+  "version": "1.0.0",
+  "landcover_dataset": "io-lulc-annual (newest year, 2024 at build time)",
+  "how_used": {
+    "manning_n": "Cell n = area-weighted mean of the class n over the 10 m pixels inside the 30 m model cell. Face n = mean of its two cells (as SFINCS).",
+    "curve_number": "Cell CN = area-weighted mean of the class CN for the cell's hydrologic soil group (NRCS TR-55 composite CN; built-area pixels count as directly connected impervious surface, CN 98). Antecedent runoff condition II (average)."
+  },
+  "sources": {
+    "n": "HEC-RAS 2D land-classification table after Chow (1959); see data/roughness/worldcover-manning.json for the per-class reasoning (same physical classes).",
+    "cn": "USDA NRCS (1986) Urban Hydrology for Small Watersheds, TR-55, Tables 2-2a to 2-2c.",
+    "hsg": "Hydrologic soil group from SoilGrids 2.0 sand and clay (0-100 cm, depth-weighted) with the texture criteria of USDA NRCS (2009) NEH Part 630 Chapter 7, as used for HYSOGs250m (Ross et al. 2018)."
+  },
+  "classes": {
+    "1":  { "label": "Water", "n": 0.035, "cn": { "A": 100, "B": 100, "C": 100, "D": 100 }, "cn_basis": "Open water: all rain becomes runoff (no infiltration)." },
+    "2":  { "label": "Trees", "n": 0.094, "cn": { "A": 30, "B": 55, "C": 70, "D": 77 }, "cn_basis": "TR-55 Table 2-2c, woods, good hydrologic condition." },
+    "4":  { "label": "Flooded vegetation", "n": 0.09, "cn": { "A": 98, "B": 98, "C": 98, "D": 98 }, "cn_basis": "Saturated surface: treated like an impervious surface (TR-55 CN 98)." },
+    "5":  { "label": "Crops", "n": 0.035, "cn": { "A": 67, "B": 78, "C": 85, "D": 89 }, "cn_basis": "TR-55 Table 2-2b, row crops, straight row, good condition." },
+    "7":  { "label": "Built area", "n": 0.15, "cn": { "A": 98, "B": 98, "C": 98, "D": 98 }, "cn_basis": "IO defines built area as human-made structures, roads and impervious surfaces: TR-55 Table 2-2a impervious areas (roofs, paved), CN 98." },
+    "8":  { "label": "Bare ground", "n": 0.0225, "cn": { "A": 77, "B": 86, "C": 91, "D": 94 }, "cn_basis": "TR-55 Table 2-2a, newly graded areas (pervious, no vegetation)." },
+    "11": { "label": "Rangeland", "n": 0.033, "cn": { "A": 49, "B": 69, "C": 79, "D": 84 }, "cn_basis": "TR-55 Table 2-2c, pasture, grassland or range, fair condition." }
+  },
+  "unclassified_rule": "Pixels with no class or class 10 (clouds) take the mean of the classified pixels in the same cell; a cell with none takes built area (the dominant class of the region).",
+  "hsg_rule": {
+    "A": "clay < 10 % and sand > 90 %",
+    "B": "clay 10-20 % and sand 50-90 %, or clay < 10 % and sand <= 90 % with sand >= 50 %",
+    "C": "clay 20-40 %, or clay < 20 % and sand < 50 % (loam, silt loam, silt)",
+    "D": "clay >= 40 %"
+  }
+}

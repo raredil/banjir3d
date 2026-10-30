@@ -1,0 +1,25 @@
+{
+  "_about": "Shown on the Validation page. Every number is copied from a result file in verification/ (named in 'file'); update together.",
+  "tests": [
+    { "id": "gpu-parity", "status": "pass", "file": "verification/gpu-parity/results.json",
+      "id_txt": "GPU vs CPU: hasil mesin kartu grafis sama dengan mesin acuan di prosesor pada medan asli (kotak Manggarai, 2 jam hujan 1 Jan 2020).",
+      "en_txt": "GPU vs CPU: the graphics-card engine gives the same result as the processor reference on real terrain (Manggarai box, first 2 h of the 1 Jan 2020 storm).",
+      "metrics": [["RMSE max depth", "0.00005 m"], ["Largest difference", "0.003 m"], ["CSI (> 0.15 m)", "1.00"], ["Mass error GPU", "6e-8"]] },
+    { "id": "mass", "status": "pass", "file": "web/src/engine/engine.test.ts",
+      "id_txt": "Neraca air: hujan + air hulu = resapan + keluar + ke laut + tersimpan. Diuji otomatis dan dilaporkan di setiap simulasi.",
+      "en_txt": "Water balance: rain + upstream inflow = infiltration + outflow + sea + storage. Tested automatically and reported with every run.",
+      "metrics": [["Mass error (tests, CPU)", "< 1e-9"], ["Mass error, whole region 30 h (90 m)", "5e-15"]] },
+    { "id": "analytical", "status": "pass", "file": "verification/analytical-wave/results.json",
+      "id_txt": "Uji analitik gelombang banjir di dataran datar (Hunter dkk. 2005): skema numerik yang sama dengan mesin v2.",
+      "en_txt": "Analytical flood-wave test on a flat plane (Hunter et al. 2005): same numerical scheme as engine v2.",
+      "metrics": [["RMSE / inflow depth (n 0.03, 100 m)", "2.9 %"], ["Front position error", "100 m of 3,600 m"]] },
+    { "id": "sfincs", "status": "pass", "file": "verification/explore-vs-sfincs/comparison-spatial-n.json",
+      "id_txt": "Dibanding model terbitan SFINCS 2.4.0 (Deltares) pada medan, hujan dan kekasaran yang sama (mesin v1, skema sama; v2 akan diuji ulang).",
+      "en_txt": "Against the published SFINCS 2.4.0 model (Deltares) on the same terrain, rain and roughness (engine v1, same scheme; v2 re-run pending).",
+      "metrics": [["RMSE max depth", "0.056 m"], ["Pearson r", "0.995"], ["Volume ratio", "1.0004"]] },
+    { "id": "observed", "status": "todo", "file": "",
+      "id_txt": "Dibanding banjir teramati (1 Jan 2020 dan satu kejadian lain: laporan PetaBencana, citra radar Sentinel-1). Belum dilakukan: ini langkah berikutnya, termasuk kalibrasi kapasitas drainase kota dari data teramati.",
+      "en_txt": "Against observed floods (1 Jan 2020 and one more event: PetaBencana reports, Sentinel-1 radar). Not done yet: next step, including calibrating the city drainage capacity on observed data.",
+      "metrics": [] }
+  ]
+}

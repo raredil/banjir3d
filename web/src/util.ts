@@ -70,3 +70,23 @@ export const MAX_ZOOM = 18; // beyond this no layer holds more detail (buildings
 export function rasterResampling(imagery: boolean, zoom: number): "linear" | "nearest" {
   return imagery && zoom < SHARP_IMAGERY_Z ? "linear" : "nearest";
 }
+
+/** UTM → WGS84 (Krüger series, inverse of toUtm). */
+export function fromUtm(easting: number, northing: number, zone: number, south: boolean) {
+  const a = 6378137, f = 1 / 298.257223563, k0 = 0.9996;
+  const n = f / (2 - f);
+  const A = (a / (1 + n)) * (1 + n * n / 4 + n ** 4 / 64);
+  const be = [n / 2 - (2 / 3) * n * n + (37 / 96) * n ** 3, (1 / 48) * n * n + (1 / 15) * n ** 3, (17 / 480) * n ** 3];
+  const de = [2 * n - (2 / 3) * n * n - 2 * n ** 3, (7 / 3) * n * n - (8 / 5) * n ** 3, (56 / 15) * n ** 3];
+  const xi = (northing - (south ? 10000000 : 0)) / (k0 * A), eta = (easting - 500000) / (k0 * A);
+  let xp = xi, ep = eta;
+  for (let j = 1; j <= 3; j++) {
+    xp -= be[j - 1] * Math.sin(2 * j * xi) * Math.cosh(2 * j * eta);
+    ep -= be[j - 1] * Math.cos(2 * j * xi) * Math.sinh(2 * j * eta);
+  }
+  const chi = Math.asin(Math.sin(xp) / Math.cosh(ep));
+  let phi = chi;
+  for (let j = 1; j <= 3; j++) phi += de[j - 1] * Math.sin(2 * j * chi);
+  const lam = Math.atan2(Math.sinh(ep), Math.cos(xp));
+  return { lon: zone * 6 - 183 + (lam * 180) / Math.PI, lat: (phi * 180) / Math.PI };
+}

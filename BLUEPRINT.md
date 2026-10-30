@@ -22,7 +22,8 @@
 - MUST-10 "harus bisa diakui ... ada pencatatan pengolahan dan lain2nya juga, sitasi dan sebagainya" (full provenance, citations, reproducibility).
 - MUST-11 "aku gatau gimana standard orang bikin peta": the app must apply cartographic standards by default.
 - MUST-12 "simulasi lintas waktu juga ... pake range": simulate over a chosen date/time range and compare different years (see §9a).
-- MUST-13 "visual 3d modern tapi tetap standard peta research", "bukan kotak2 SVG": GPU-rendered 3D, smooth and realistic, while research exports stay cartographically correct (see §10).
+- MUST-13 "visual 3d modern tapi tetap standard peta research", "bukan kotak2 SVG". **Owner update 2026-10-30 (RULE):** "konsep 3d ini kayanya ga works ... mending gausah maen 3d": the app is a flat 2D map; results must be "tajam tapi tetap smooth" (GPU water-level downscaling), never square cells, exports cartographically correct.
+- MUST-14 (2026-10-30) inputs are only external forcing (rain, storm, sea level); everything else (rivers, capacity, infiltration, roughness, buildings) comes from mapped data; methods shown are the methods used; export as GeoTIFF and HTML; dashboard UI in blue with a full-screen map; little text, no "AI style".
 
 ## 2. Assumptions (owner replies "ok" or corrects)
 - A1 Non-commercial academic use. Output licence is set automatically to the most restrictive input licence (likely CC BY-NC-SA 4.0 because of FABDEM).

@@ -9,3 +9,15 @@
 | 2026-10-29 | Others bring their own DEMNAS, easy UI, no GitHub | LATER | BACKLOG, Phase 7 |
 | 2026-10-29 | Check other guidance files for token saving | NOW | Checked; new project skill `.claude/skills/visual-check/` |
 | 2026-10-30 | Nothing blurry, map or flood simulation; data must be validated | NOW + RULE | Flood cells sharp (no interpolation), imagery re-tiled (99.7 % of source detail, was 82.5 %), real pixels above z15, automatic data checks in every pack build (ADR 0008). RULE: every display layer is checked against its source; results are never smoothed |
+| 2026-10-30 | Satellite sharper for free | NOW (research) + owner decision | Free open imagery stops at 10 m (Sentinel-2). Sharper free options need an account/licence (Esri World Imagery free tier, display only). Asked owner. |
+| 2026-10-30 | Drop 3D | RULE | 3D removed, flat north-up map (ADR 0009, BLUEPRINT MUST-13 note) |
+| 2026-10-30 | River capacity etc. must come from the map, not typed numbers; only external variables | RULE | Engine v2: channels from OSM in DEM, CN from land cover + SoilGrids, n from land cover, upstream inflow from catchments; sliders only for rain, sea level, time |
+| 2026-10-30 | Methods shown must be the ones used; Methods page shorter | RULE | methods.md rewritten for v2 (9 short sections) |
+| 2026-10-30 | Data page: what each dataset is for | NOW | data/catalog-use.json shown on cards, filter by use |
+| 2026-10-30 | Flood off the river line; nothing in my box; floods from several sources | NOW | Channels carved, upstream inflows, rain-on-grid with infiltration, sea level; box runs get river inflow |
+| 2026-10-30 | Not tested against real data | LATER (Phase 4, next) | Validation page states it; PetaBencana archive + Sentinel-1 + drainage calibration next session |
+| 2026-10-30 | Sharp but smooth | RULE | Water-level downscaling on GPU; ADR 0008 'never smooth' replaced: depth classes stay sharp, edges follow terrain |
+| 2026-10-30 | Explain each slider | NOW | Help behind '?' buttons |
+| 2026-10-30 | Export map; also HTML or TIFF | NOW | GeoTIFF (m), coloured GeoTIFF, HTML map, PNG figure, JSON record |
+| 2026-10-30 | Lag | NOW | 3D terrain removed; engine in a worker; WebGPU solver |
+| 2026-10-30 | UI like reference image, blue, full map, less text, no AI style | RULE | New design system (style.css), rail + floating cards, text trimmed |

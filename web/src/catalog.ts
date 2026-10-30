@@ -1,98 +1,71 @@
-import { t } from "./i18n";
-import type { Catalog, DataCheck, Dataset, Manifest, VerifyReport } from "./types";
-import { esc, fmtBytes, safeUrl } from "./util";
+import use from "../../data/catalog-use.json";
+import { lang, t, type Key } from "./i18n";
+import type { Catalog, DataCheck, Dataset, Manifest } from "./types";
+import { esc, safeUrl } from "./util";
 
 const REPO = "https://github.com/raredil/banjir3d";
-const THEMES = ["terrain", "subsidence", "bathymetry", "land-cover", "water-bodies", "buildings", "population", "admin", "rain", "imagery", "observed-flood", "river-inflow", "sea-level"];
-
-type Ctx = { catalog: Catalog; manifest: Manifest | null; verify: VerifyReport | null; dataCheck?: DataCheck | null; releaseTag: string | null; focus?: string };
-
-function badge(cls: string, text: string) {
-  return `<span class="badge ${esc(cls)}">${esc(text)}</span>`;
-}
+type Use = { use: string[]; id: string; en: string };
+const USE = use as unknown as Record<string, Use>;
+const ORDER = ["engine", "map", "validation", "planned"];
+type Ctx = { catalog: Catalog; manifest: Manifest | null; dataCheck?: DataCheck | null; releaseTag: string | null; engine?: Record<string, unknown> | null; focus?: string };
 
 function card(d: Dataset, ctx: Ctx): string {
+  const u = USE[d.id] ?? { use: ["planned"], id: "", en: "" };
   const rec = ctx.manifest?.layers.find((l) => l.dataset === d.id);
-  const v = ctx.verify?.datasets.find((x) => x.id === d.id);
   const lic = d.licence;
-  const flags = [lic.non_commercial ? "NC" : "", lic.share_alike ? "SA" : "", lic.redistributable === "no" ? "no redistribution" : lic.redistributable === "unknown" ? "redistribution unknown" : ""].filter(Boolean);
-  const files = [...(rec?.outputs ?? []), ...(rec?.display ?? [])];
-  const dl = (f: string) => (ctx.releaseTag ? `${REPO}/releases/download/${encodeURIComponent(ctx.releaseTag)}/${encodeURIComponent(f)}` : "#");
-  return `
-  <article class="ds-card" id="ds-${esc(d.id)}">
-    <header>
-      <h3>${esc(d.name)}</h3>
-      <div class="badges">${badge(`role-${d.role}`, d.role)}${badge(`st-${d.status}`, d.status)}${rec ? badge(`pack-${rec.status}`, `${t("pack.built")}: ${rec.status === "ok" ? t("status.ok") : t("status.failed")}`) : ""}</div>
-    </header>
-    <dl class="facts">
-      <dt>Provider</dt><dd>${esc(d.provider)}</dd>
-      <dt>Version</dt><dd>${esc(rec?.version ?? d.version)}${d.temporal ? ` · ${esc(d.temporal)}` : ""}</dd>
-      <dt>Resolution</dt><dd>${esc(d.resolution)}${d.vertical_datum ? ` · ${esc(d.vertical_datum)}` : ""}${d.crs ? ` · ${esc(d.crs)}` : ""}</dd>
-      <dt>Licence</dt><dd>${lic.url ? `<a href="${safeUrl(lic.url)}" target="_blank" rel="noopener noreferrer">${esc(lic.id)}</a>` : esc(lic.id)}${flags.length ? ` ${flags.map((f) => badge("flag", f)).join("")}` : ""}</dd>
-      <dt>DOI</dt><dd>${d.doi ? `<a class="mono" href="https://doi.org/${esc(d.doi)}" target="_blank" rel="noopener noreferrer">${esc(d.doi)}</a>${v?.doi_registered === false ? ` ${badge("warn", "DOI not resolved")}` : v?.doi_registered ? ` ${badge("ok", "DOI ✓")}` : ""}` : "–"}</dd>
-      <dt>Access</dt><dd>${esc(d.access.method)}${d.access.endpoint ? `<br><span class="mono small">${esc(d.access.endpoint)}</span>` : ""}</dd>
-      <dt>Landing page</dt><dd><a href="${safeUrl(d.url)}" target="_blank" rel="noopener noreferrer">${esc(d.url)}</a>${v ? ` ${badge(v.url_status === 200 ? "ok" : "warn", `HTTP ${v.url_status}`)}` : ""}</dd>
-      <dt>Checked</dt><dd>${esc(d.checked)}${d.access.probe ? ` · ${esc(d.access.probe)}` : ""}</dd>
+  return `<article class="ds card" id="ds-${esc(d.id)}" data-use="${u.use.join(" ")}">
+    <div class="ds-top"><div><h2>${esc(d.name)}</h2><div class="prov">${esc(d.provider)}</div></div>
+      <div class="row">${u.use.map((x) => `<span class="pill ${x === "engine" ? "blue" : x === "planned" ? "" : "ok"}">${t(`data.use.${x}` as Key)}</span>`).join("")}</div></div>
+    <p class="use">${esc(u[lang])}</p>
+    <dl>
+      <dt>${t("data.version")}</dt><dd>${esc(rec?.version ?? d.version)}${d.temporal ? ` · ${esc(d.temporal)}` : ""}</dd>
+      <dt>${t("data.res")}</dt><dd>${esc(d.resolution)}</dd>
+      <dt>${t("data.licence")}</dt><dd>${lic.url ? `<a href="${safeUrl(lic.url)}" target="_blank" rel="noopener noreferrer">${esc(lic.id)}</a>` : esc(lic.id)}</dd>
+      ${d.doi ? `<dt>DOI</dt><dd><a class="mono" href="https://doi.org/${esc(d.doi)}" target="_blank" rel="noopener noreferrer">${esc(d.doi)}</a></dd>` : ""}
     </dl>
-    ${d.notes ? `<p class="notes">${esc(d.notes)}</p>` : ""}
-    ${rec?.status === "failed" ? `<p class="notes warn">Region pack error: ${esc(rec.error)}</p>` : ""}
-    ${files.length ? `<details class="files"><summary>${t("cat.files")} (${files.length})</summary><table><thead><tr><th>File</th><th>Size</th><th>SHA-256</th></tr></thead><tbody>
-      ${files.map((f) => `<tr><td><a href="${esc(dl(f.file))}">${esc(f.file)}</a></td><td>${fmtBytes(f.bytes)}</td><td class="mono small" title="${esc(f.sha256)}">${esc(f.sha256.slice(0, 16))}…</td></tr>`).join("")}
-      </tbody></table></details>` : ""}
-    <div class="cite">
+    <details><summary>${t("data.more")}</summary>
       <p>${esc(d.citation.text)}</p>
-      <button class="chip copy" type="button" data-bib="${esc(d.id)}">${t("cat.copy")}</button>
-    </div>
+      ${d.notes ? `<p>${esc(d.notes)}</p>` : ""}
+      <p>Access: ${esc(d.access.method)}${d.access.endpoint ? ` · <span class="mono">${esc(d.access.endpoint)}</span>` : ""} · checked ${esc(d.checked)} · <a href="${safeUrl(d.url)}" target="_blank" rel="noopener noreferrer">${t("source")}</a></p>
+      <button class="btn small" type="button" data-bib="${esc(d.id)}">${t("data.copy")}</button>
+    </details>
   </article>`;
 }
 
 export function renderCatalog(root: HTMLElement, ctx: Ctx) {
-  const ds = ctx.catalog.datasets;
-  const count = (s: string) => ds.filter((d) => d.status === s).length;
-  const m = ctx.manifest;
-  root.innerHTML = `
-  <section class="catalog-page">
-    <div class="cat-head">
-      <div>
-        <h1>${t("cat.title")}</h1>
-        <p class="lead">${t("cat.lead")}</p>
-      </div>
-      <div class="stats">
-        <div class="stat"><b>${ds.length}</b><span>${t("cat.datasets")}</span></div>
-        <div class="stat st-verified"><b>${count("verified")}</b><span>verified</span></div>
-        <div class="stat st-single-source"><b>${count("single-source")}</b><span>single-source</span></div>
-        <div class="stat st-unverified"><b>${count("unverified")}</b><span>unverified</span></div>
-      </div>
+  const ds = [...ctx.catalog.datasets].sort((a, b) => ORDER.indexOf((USE[a.id]?.use ?? ["planned"])[0]) - ORDER.indexOf((USE[b.id]?.use ?? ["planned"])[0]));
+  const eng = ctx.engine as { created?: string; output?: { sha256?: string }; soil?: { source?: string } } | null | undefined;
+  root.innerHTML = `<div class="doc">
+    <div class="doc-head"><h1>${t("data.title")}</h1><p>${t("data.lead")}</p></div>
+    <div class="card" style="padding:14px 16px;margin-bottom:16px">
+      <dl class="stat-list">
+        <dt>${t("data.pack")}</dt><dd>${ctx.releaseTag ? `<a href="${REPO}/releases/tag/${encodeURIComponent(ctx.releaseTag)}">${esc(ctx.releaseTag)}</a>` : "–"} · ${esc(ctx.manifest?.created.slice(0, 10) ?? "")}</dd>
+        <dt>${t("data.engine")}</dt><dd>${eng ? `${esc(eng.created ?? "")} · ${esc(eng.soil?.source ?? "")} · sha256 ${esc((eng.output?.sha256 ?? "").slice(0, 12))}…` : "–"}</dd>
+        ${ctx.manifest ? `<dt>Output licence</dt><dd>${esc(ctx.manifest.output_licence)}</dd>` : ""}
+      </dl>
+      ${ctx.dataCheck?.checks?.length ? `<details><summary>${t("data.checks")}: ${ctx.dataCheck.checks.filter((c) => c.pass).length}/${ctx.dataCheck.checks.length} ${t("data.pass")}</summary><ul class="legend">${ctx.dataCheck.checks.map((c) => `<li><span class="pill ${c.pass ? "ok" : "warn"}">${t(c.pass ? "data.pass" : "data.fail")}</span> ${esc(c.what)}: <span class="mono">${esc(c.value)}</span></li>`).join("")}</ul></details>` : ""}
+      <p><a class="btn small" href="meta/REFERENCES.bib" download>${t("data.bib")}</a></p>
     </div>
-    <div class="cat-meta">
-      <div><span class="k">Catalog</span> <span class="mono">v${esc(ctx.catalog.catalog_version)} · ${esc(ctx.catalog.updated)}</span></div>
-      ${m ? `<div><span class="k">${t("pack.built")}</span> <a class="mono" href="${REPO}/releases/tag/${encodeURIComponent(ctx.releaseTag ?? "")}">${esc(ctx.releaseTag ?? "")}</a> · <span class="mono">${esc(m.created)}</span>${m.software.action_run ? ` · <a href="${safeUrl(m.software.action_run)}">Action run</a>` : ""}</div>
-      <div><span class="k">${t("cat.outlicence")}</span> <b>${esc(m.output_licence)}</b> <span class="small">(${m.licences.map(esc).join(" · ")})</span></div>` : `<div class="warn">${t("cat.nopack")}</div>`}
-      ${ctx.verify ? `<div><span class="k">${t("cat.auto")}</span> <span class="mono">${esc(ctx.verify.checked)}</span></div>` : ""}
-      ${ctx.dataCheck?.checks?.length ? `<div class="data-checks"><span class="k">${t("cat.checks")}</span><ul>${ctx.dataCheck.checks.map((c) =>
-        `<li>${badge(c.pass ? "ok" : "pack-failed", t(c.pass ? "cat.checks.pass" : "cat.checks.fail"))} ${esc(c.what)}: <span class="mono">${esc(c.value)}</span>${c.limit ? ` <span class="small">(${esc(c.limit)})</span>` : ""}</li>`).join("")}</ul></div>` : ""}
-      <div><a class="chip" href="meta/REFERENCES.bib" download>${t("cat.bib")}</a></div>
-    </div>
-    ${THEMES.filter((th) => ds.some((d) => d.theme === th)).map((th) => `
-      <h2 class="theme">${esc(th.replace("-", " "))}</h2>
-      <div class="cards">${ds.filter((d) => d.theme === th).map((d) => card(d, ctx)).join("")}</div>`).join("")}
-  </section>`;
+    <div class="filters seg" style="display:inline-flex">${["all", ...ORDER].map((f, i) => `<button type="button" data-f="${f}" class="${i ? "" : "on"}">${f === "all" ? t("data.all") : t(`data.use.${f}` as Key)}</button>`).join("")}</div>
+    <div class="grid-cards">${ds.map((d) => card(d, ctx)).join("")}</div>
+  </div>`;
+  root.querySelectorAll<HTMLButtonElement>("[data-f]").forEach((b) => b.addEventListener("click", () => {
+    root.querySelectorAll("[data-f]").forEach((x) => x.classList.toggle("on", x === b));
+    root.querySelectorAll<HTMLElement>(".ds").forEach((c) => (c.hidden = b.dataset.f !== "all" && !(c.dataset.use ?? "").split(" ").includes(b.dataset.f!)));
+  }));
+  root.querySelectorAll<HTMLButtonElement>("[data-bib]").forEach((b) => b.addEventListener("click", async () => {
+    const d = ds.find((x) => x.id === b.dataset.bib);
+    if (!d) return;
+    try { await navigator.clipboard.writeText(d.citation.bibtex); b.textContent = t("data.copied"); setTimeout(() => (b.textContent = t("data.copy")), 1500); } catch { /* blocked */ }
+  }));
+  if (ctx.focus) { const el = root.querySelector<HTMLDetailsElement>(`#ds-${CSS.escape(ctx.focus)}`); el?.scrollIntoView({ block: "start" }); el?.querySelector("details")?.setAttribute("open", ""); }
+}
 
-  root.querySelectorAll<HTMLButtonElement>("[data-bib]").forEach((b) =>
-    b.addEventListener("click", async () => {
-      const d = ds.find((x) => x.id === b.dataset.bib);
-      if (!d) return;
-      try {
-        await navigator.clipboard.writeText(d.citation.bibtex);
-        b.textContent = t("cat.copied");
-        setTimeout(() => (b.textContent = t("cat.copy")), 1500);
-      } catch {
-        /* clipboard blocked */
-      }
-    }));
-  if (ctx.focus) {
-    const el = root.querySelector(`#ds-${CSS.escape(ctx.focus)}`);
-    el?.classList.add("focus");
-    el?.scrollIntoView({ block: "start" });
-  }
+export function renderValidation(root: HTMLElement, v: { tests: { id: string; status: string; file: string; id_txt: string; en_txt: string; metrics: string[][] }[] }) {
+  root.innerHTML = `<div class="doc"><div class="doc-head"><h1>${t("va.title")}</h1><p>${t("va.lead")}</p></div>
+    <div class="grid-cards">${v.tests.map((x) => `<article class="ds card"><div class="ds-top"><h2>${esc((lang === "id" ? x.id_txt : x.en_txt).split(":")[0])}</h2>
+      <span class="pill ${x.status === "pass" ? "ok" : "warn"}">${x.status === "pass" ? (lang === "id" ? "lolos" : "pass") : (lang === "id" ? "belum" : "to do")}</span></div>
+      <p class="use">${esc((lang === "id" ? x.id_txt : x.en_txt).split(":").slice(1).join(":").trim())}</p>
+      ${x.metrics.length ? `<dl>${x.metrics.map(([a, b]) => `<dt>${esc(a)}</dt><dd class="mono">${esc(b)}</dd>`).join("")}</dl>` : ""}
+      ${x.file ? `<p class="prov"><a href="${REPO}/blob/main/${esc(x.file)}" target="_blank" rel="noopener noreferrer">${esc(x.file)}</a></p>` : ""}</article>`).join("")}</div></div>`;
 }

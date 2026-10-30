@@ -1,0 +1,359 @@
+{
+ "id": "B3D-20261030T0759",
+ "created": "2026-10-30T07:59:05.585Z",
+ "app": "Banjir3D",
+ "data_release": "region-jakarta-20261030-t1",
+ "engine": {
+  "name": "Banjir3D flood engine v2 (local inertial, Bates et al. 2010; NRCS CN; NRCS unit hydrograph inflows)",
+  "device": "CPU float64",
+  "wall_s": 39.323
+ },
+ "engine_pack": {
+  "created": "2026-10-30T07:43:17Z",
+  "inputs_sha256": {
+   "dem_fabdem.tif": "140ca7ca0211693ea8bbf971fb97cb32e27f6ce0b73645edd67df4908e0d9f85",
+   "lulc_io_2024.tif": "a98228a1e601acb4c215c1b2f1fde8918342241e00c4a1fe77d7360d215ba971",
+   "water_osm.gpkg": "7aaf5b47bc395d65a200cd9d796cb97c9ff965494110d04c81cece577029cfb7"
+  },
+  "landcover_year": 2024,
+  "soil": {
+   "source": "SoilGrids 2.0 (Poggio et al. 2021)",
+   "urls": [
+    "https://files.isric.org/soilgrids/latest/data/sand/sand_0-5cm_mean.vrt",
+    "https://files.isric.org/soilgrids/latest/data/sand/sand_5-15cm_mean.vrt",
+    "https://files.isric.org/soilgrids/latest/data/sand/sand_15-30cm_mean.vrt",
+    "https://files.isric.org/soilgrids/latest/data/sand/sand_30-60cm_mean.vrt",
+    "https://files.isric.org/soilgrids/latest/data/sand/sand_60-100cm_mean.vrt",
+    "https://files.isric.org/soilgrids/latest/data/clay/clay_0-5cm_mean.vrt",
+    "https://files.isric.org/soilgrids/latest/data/clay/clay_5-15cm_mean.vrt",
+    "https://files.isric.org/soilgrids/latest/data/clay/clay_15-30cm_mean.vrt",
+    "https://files.isric.org/soilgrids/latest/data/clay/clay_30-60cm_mean.vrt",
+    "https://files.isric.org/soilgrids/latest/data/clay/clay_60-100cm_mean.vrt"
+   ],
+   "depth_weighting": "0-100 cm, by layer thickness",
+   "share": {
+    "A": 0,
+    "B": 0,
+    "C": 0.1719,
+    "D": 0.8281
+   }
+  },
+  "channels": {
+   "channel_cells": 71360,
+   "polygons": 482,
+   "lines": 2170,
+   "cells_opened": 15563,
+   "opening_window_cells": 5,
+   "mean_lowering_m": 0.487,
+   "max_lowering_m": 18.83
+  }
+ },
+ "scenario": {
+  "area": {
+   "box": [
+    106.835,
+    -6.245,
+    106.875,
+    -6.205
+   ]
+  },
+  "rainMode": "design",
+  "rainMm": 75,
+  "rainHours": 3,
+  "upstreamRain": true,
+  "seaLevel": 0,
+  "hours": 8,
+  "cellM": 30
+ },
+ "rain_mm_per_block": {
+  "blockSeconds": 3600,
+  "mm": [
+   9.481465144777587,
+   52.0020955762976,
+   13.516439278924814
+  ]
+ },
+ "grid": {
+  "nx": 149,
+  "ny": 149,
+  "cell_m": 30,
+  "utm": {
+   "zone": 48,
+   "x0": 703020,
+   "y0": 9313800
+  },
+  "corners_lonlat": [
+   [
+    106.83486043475023,
+    -6.204843985901174
+   ],
+   [
+    106.87524500843111,
+    -6.204702507684065
+   ],
+   [
+    106.87538838986384,
+    -6.245117425122163
+   ],
+   [
+    106.8350007326445,
+    -6.245259831897022
+   ]
+  ]
+ },
+ "inflows": [
+  {
+   "catchment_km2": 337.88,
+   "cn": 92,
+   "lag_h": 5.58,
+   "peak_m3s": 662.9,
+   "x_m": 29667.365234375,
+   "y_m": 27444.978515625
+  },
+  {
+   "catchment_km2": 6.89,
+   "cn": 97.5,
+   "lag_h": 1.66,
+   "peak_m3s": 47.4,
+   "x_m": 26697.365234375,
+   "y_m": 23034.978515625
+  },
+  {
+   "catchment_km2": 2.45,
+   "cn": 98,
+   "lag_h": 0.79,
+   "peak_m3s": 26.3,
+   "x_m": 28857.365234375,
+   "y_m": 27444.978515625
+  },
+  {
+   "catchment_km2": 2.26,
+   "cn": 98,
+   "lag_h": 0.59,
+   "peak_m3s": 27.4,
+   "x_m": 26697.365234375,
+   "y_m": 27444.978515625
+  },
+  {
+   "catchment_km2": 1.08,
+   "cn": 97.9,
+   "lag_h": 0.75,
+   "peak_m3s": 11.8,
+   "x_m": 26697.365234375,
+   "y_m": 26634.978515625
+  }
+ ],
+ "totals_m3": {
+  "rain": 1498394.619040584,
+  "infiltration": 121672.18912429309,
+  "inflow": 9229933.393872011,
+  "outflow": 2087243.0639695092,
+  "sea": 0
+ },
+ "mass_error": 8.680966628672617e-15,
+ "flooded_km2_series": [
+  [
+   15,
+   0
+  ],
+  [
+   600,
+   0
+  ],
+  [
+   1200,
+   0
+  ],
+  [
+   1800,
+   0
+  ],
+  [
+   2408.183820098362,
+   0
+  ],
+  [
+   3001.211248006931,
+   0
+  ],
+  [
+   3602.1305035577775,
+   0
+  ],
+  [
+   4202.769615929101,
+   0.002
+  ],
+  [
+   4801.826114415599,
+   0.013
+  ],
+  [
+   5400.666982708631,
+   0.059
+  ],
+  [
+   6000.080944368648,
+   0.162
+  ],
+  [
+   6601.744457971879,
+   0.394
+  ],
+  [
+   7201.019160018252,
+   0.856
+  ],
+  [
+   7800.960484228898,
+   1.199
+  ],
+  [
+   8401.87270183109,
+   1.473
+  ],
+  [
+   9001.875084001618,
+   1.684
+  ],
+  [
+   9601.721099852724,
+   1.856
+  ],
+  [
+   10201.135192675978,
+   1.999
+  ],
+  [
+   10801.49588160672,
+   2.114
+  ],
+  [
+   11400.246413060104,
+   2.209
+  ],
+  [
+   12002.000302231558,
+   2.326
+  ],
+  [
+   12600.275945064313,
+   2.458
+  ],
+  [
+   13201.067241346842,
+   2.522
+  ],
+  [
+   13802.424017359284,
+   2.594
+  ],
+  [
+   14401.91244979417,
+   2.651
+  ],
+  [
+   15001.142695088829,
+   2.678
+  ],
+  [
+   15601.99927815006,
+   2.729
+  ],
+  [
+   16201.868204624476,
+   2.801
+  ],
+  [
+   16801.086527397154,
+   2.917
+  ],
+  [
+   17402.265452809683,
+   3.039
+  ],
+  [
+   18001.13007448883,
+   3.142
+  ],
+  [
+   18600.54113562115,
+   3.24
+  ],
+  [
+   19201.010698194637,
+   3.333
+  ],
+  [
+   19800.795149866615,
+   3.42
+  ],
+  [
+   20400.366466780135,
+   3.503
+  ],
+  [
+   21000.233249646546,
+   3.615
+  ],
+  [
+   21600.918932590095,
+   3.728
+  ],
+  [
+   22200.705974774963,
+   3.83
+  ],
+  [
+   22800.055026733593,
+   4
+  ],
+  [
+   23401.601453697127,
+   4.176
+  ],
+  [
+   24001.443926538584,
+   4.372
+  ],
+  [
+   24602.091746085953,
+   4.601
+  ],
+  [
+   25201.744592803927,
+   4.776
+  ],
+  [
+   25800.73147611933,
+   4.944
+  ],
+  [
+   26401.450620825828,
+   5.071
+  ],
+  [
+   27002.02811182255,
+   5.204
+  ],
+  [
+   27600.619333456943,
+   5.304
+  ],
+  [
+   28201.791615651116,
+   5.389
+  ],
+  [
+   28801.520003571834,
+   5.482
+  ]
+ ],
+ "limitations": [
+  "No city drains, pumps or sea walls (no open data).",
+  "Below-water channel shape not in the DEM; channels start at their mapped water level.",
+  "Upstream rain is spatially uniform and equal to the scenario rain when switched on.",
+  "Not validated against observed floods yet (Validation page)."
+ ],
+ "licence": "CC BY-NC-SA 4.0 (most restrictive input: FABDEM)"
+}
