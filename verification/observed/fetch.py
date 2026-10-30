@@ -1,16 +1,18 @@
 """Fetch observed data for validation (runs in GitHub Actions: these hosts are not reachable from the cloud session).
 
-  python verification/observed/fetch.py <outdir>
+  python verification/observed/fetch.py <outdir> [--petabencana-only]
 
 Per event in events.json:
   - PetaBencana.id flood reports and flooded-area archive (raw API answers, HTTP status kept),
   - ERA5 and ERA5-Land hourly rain (Open-Meteo archive API) on a 0.1 degree grid over the region and its upstream catchments,
-  - NOAA ISD hourly and GSOD daily station records for the stations inside that grid (public domain).
+  - NOAA ISD hourly and GSOD daily station records for the stations inside that grid (public domain),
+  - GPM IMERG Final V07 half-hourly rain (NASA GES DISC) on its own 0.1 degree cells, only when EARTHDATA_TOKEN is set
+    (free NASA Earthdata login; NASA data are open, the login is only for access).
 Also the PetaBencana terms pages, so the licence decision (publish or not) is made from their own text.
 manifest.json lists every request, its status, size and sha256. Stdlib only.
 """
-import csv, hashlib, io, json, re, sys, time, urllib.error, urllib.parse, urllib.request
-from datetime import datetime, timezone
+import csv, hashlib, io, json, os, re, sys, time, urllib.error, urllib.parse, urllib.request
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 HERE = Path(__file__).parent
@@ -20,10 +22,10 @@ GRID = {"lon": (106.4, 107.2), "lat": (-6.85, -5.9), "step": 0.1}
 manifest: list[dict] = []
 
 
-def get(url: str, out: Path | None, tries: int = 3) -> bytes | None:
+def get(url: str, out: Path | None, tries: int = 3, headers: dict | None = None, log: bool = True) -> bytes | None:
     for k in range(tries):
         try:
-            with urllib.request.urlopen(urllib.request.Request(url, headers=UA), timeout=120) as r:
+            with urllib.request.urlopen(urllib.request.Request(url, headers={**UA, **(headers or {})}), timeout=120) as r:
                 body = r.read()
                 status = r.status
             break
@@ -40,7 +42,8 @@ def get(url: str, out: Path | None, tries: int = 3) -> bytes | None:
         out.parent.mkdir(parents=True, exist_ok=True)
         out.write_bytes(body)
         rec["file"] = out.name
-    manifest.append(rec)
+    if log:
+        manifest.append(rec)
     print(status, len(body), url, flush=True)
     return body if status == 200 else None
 
@@ -71,6 +74,45 @@ def era5(ev: dict, out: Path):
             time.sleep(2)
         (out / f"rain_{model}.json").write_text(json.dumps({"model": model, "units": "mm per hour ending at time (UTC)",
                                                              "source": "Open-Meteo archive API", "points": series}))
+
+
+def imerg(ev: dict, out: Path, token: str):
+    """Half-hourly files of the event window; cells whose centre is inside GRID (plus half a step). Stored as hourly sums (mm),
+    the value at time T being the rain of the hour ending at T, like the Open-Meteo files."""
+    import h5py
+    import numpy as np
+
+    g, half = GRID, GRID["step"] / 2
+    t, t1 = datetime.fromisoformat(ev["utc"][0].replace("Z", "+00:00")), datetime.fromisoformat(ev["utc"][1].replace("Z", "+00:00"))
+    hours: dict[str, np.ndarray] = {}
+    lon = lat = sel = None
+    n = 0
+    while t < t1:
+        mins = t.hour * 60 + t.minute
+        e = t + timedelta(minutes=29, seconds=59)
+        name = f"3B-HH.MS.MRG.3IMERG.{t:%Y%m%d}-S{t:%H%M%S}-E{e:%H%M%S}.{mins:04d}.V07B.HDF5"
+        url = f"https://gpm1.gesdisc.eosdis.nasa.gov/data/GPM_L3/GPM_3IMERGHH.07/{t:%Y}/{t.timetuple().tm_yday:03d}/{name}"
+        b = get(url, None, headers={"Authorization": f"Bearer {token}"}, log=False)
+        manifest.append({"url": url, "status": 200 if b else "failed", "bytes": len(b or b"")})
+        if b:
+            with h5py.File(io.BytesIO(b), "r") as f:
+                if sel is None:
+                    lon, lat = f["Grid/lon"][:], f["Grid/lat"][:]
+                    sel = (np.nonzero((lon >= g["lon"][0] - half) & (lon <= g["lon"][1] + half))[0], np.nonzero((lat >= g["lat"][0] - half) & (lat <= g["lat"][1] + half))[0])
+                pr = f["Grid/precipitation"][0][np.ix_(sel[0], sel[1])].astype(float)  # mm/h, (lon, lat)
+            pr[pr < 0] = np.nan
+            key = (t.replace(minute=0) + timedelta(hours=1)).strftime("%Y-%m-%dT%H:%M")
+            hours[key] = hours.get(key, 0) + pr * 0.5  # half an hour at the half-hourly rate
+            n += 1
+        t += timedelta(minutes=30)
+    if sel is None:
+        return
+    times = sorted(hours)
+    pts = [{"lon": round(float(lon[i]), 3), "lat": round(float(lat[j]), 3), "time": times,
+            "mm": [None if np.isnan(hours[k][a, b]) else round(float(hours[k][a, b]), 3) for k in times]}
+           for b, j in enumerate(sel[1]) for a, i in enumerate(sel[0])]
+    (out / "rain_imerg.json").write_text(json.dumps({"model": "imerg_final_v07", "units": "mm per hour ending at time (UTC)", "files": n,
+                                                     "source": "GPM IMERG Final V07 half-hourly, NASA GES DISC, doi:10.5067/GPM/IMERG/3B-HH/07", "points": pts}))
 
 
 def stations(evs: list[dict], out: Path):
@@ -128,6 +170,12 @@ def main():
     out = Path(sys.argv[1])
     out.mkdir(parents=True, exist_ok=True)
     evs = json.loads((HERE / "events.json").read_text())["events"]
+    if "--petabencana-only" in sys.argv:  # validation workflow: raw answers for scoring, never published
+        pb_areas(out)
+        for ev in evs:
+            (out / ev["id"]).mkdir(exist_ok=True)
+            petabencana(ev, out / ev["id"])
+        return
     terms(out)
     pb_areas(out)
     for ev in evs:
@@ -135,6 +183,8 @@ def main():
         d.mkdir(exist_ok=True)
         petabencana(ev, d)
         era5(ev, d)
+        if os.environ.get("EARTHDATA_TOKEN"):
+            imerg(ev, d, os.environ["EARTHDATA_TOKEN"])
     stations(evs, out)
     (out / "manifest.json").write_text(json.dumps({"grid": GRID, "events": evs, "requests": manifest}, indent=1))
 

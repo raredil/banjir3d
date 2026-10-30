@@ -3,7 +3,7 @@
 //   npx vite-node ../verification/observed/run_event.ts <engine.bin.gz> <rain_era5_land.json> <start UTC> <hours> <outdir>
 //       [--k 3] [--drain 0] [--scale 1] [--box W,S,E,N]
 // --drain: drainage capacity (mm/h) on a fully built cell, scaled by the built-area share; 0 on channels and sea.
-// --scale: rain multiplier (1 = reanalysis as it is). Writes hmax.f32 (row-major, run grid) and summary.json.
+// --scale: rain multiplier (1 = reanalysis as it is). Writes hmax.f32 (row-major, run grid), mask.u8 and summary.json.
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { gunzipSync } from "node:zlib";
 import { buildRun, parsePack } from "../../web/src/engine/pack";
@@ -65,6 +65,7 @@ while (e.t < hours * 3600) {
   if (nsteps % 4000 === 0) console.log(`t=${(e.t / 3600).toFixed(2)} h  dt=${e.dtNow().toFixed(2)}  wall=${((Date.now() - w0) / 1000).toFixed(0)} s`);
 }
 writeFileSync(`${out}/hmax.f32`, Buffer.from(Float32Array.from(e.hMax).buffer));
+writeFileSync(`${out}/mask.u8`, Uint8Array.from({ length: N }, (_, c) => run.active[c] | (run.sea[c] << 1) | (run.channel[c] << 2))); // bit0 active, bit1 sea, bit2 channel
 let wet = 0, cnt = 0, rainSum = 0;
 for (let c = 0; c < N; c++) if (run.active[c] && !run.sea[c]) { cnt++; rainSum += cumOf[zone[c]][steps]; if (!run.channel[c] && e.hMax[c] > 0.15) wet++; }
 const summary = {
