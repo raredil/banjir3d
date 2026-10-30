@@ -13,3 +13,12 @@
 
 Reference value for the 1 Jan 2020 storm: 377 mm/day at Halim Perdanakusuma (Lubis et al. 2022, research/phase2-methods-sources.md).
 Reading: ERA5 has about a quarter of that over the whole window, so it cannot drive calibration of this event.
+
+## Added 2026-10-30 (13th session)
+| Source | Status |
+|---|---|
+| CHIRPS v2.0 daily p05 GeoTIFF (data.chc.ucsb.edu, no login; Funk et al. 2015 doi:10.1038/sdata.2015.66) | added to fetch.py as `rain_chirps.json`: daily totals per 0.1° point, hours shaped by ERA5. Assumption: CHIRPS day = UTC day (not confirmed). v3.0 tree searched when a v2.0 file is missing |
+| Reported impact, 1 Jan 2020 (search results, NOT yet read in page text) | Antara (sumut.antaranews.com/berita/270492, citing the DKI coordination meeting of 7 Jan 2020): 390 RW, flooded area 156 km². Antara (antaranews.com/berita/1921596): 157 kelurahan (60 %) on 1 Jan, 390 RW (14.2 %) still flooded on 2 Jan. Pages fetched by the Action into `reported_excerpts.json` before any figure is used |
+| Reported impact, 20 Feb 2021 (search results) | 113 RW / 342 RT on the day; 75 RW at 07:00 WIB (JAKI); 33 RW on 21 Feb (CNN Indonesia) |
+| Reported impact, 4 Mar 2025 (search results) | only RT counts: 121 RT at 15:00 WIB, 117 RT at 22:00 WIB (Bisnis.com) |
+| RW boundaries (open) | none found: PetaBencana `/floods?admin=ID-JK` 500; GADM/geoBoundaries stop at kelurahan; Jakarta GIS (gis-dpmptsp.jakarta.go.id) ArcGIS layers are per-RW samples, copyright Dinas Cipta Karya, no licence. Over-prediction check therefore uses flooded AREA inside the five mainland cities (compare.py `dki_flooded_km2`) |

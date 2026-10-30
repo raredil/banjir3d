@@ -258,6 +258,22 @@ def pb_areas(out: Path):
         get(f"https://data.petabencana.id/{q}", out / f"pb_areas_{name}.json")
 
 
+def reported(ev: dict, out: Path):
+    """Pages that report the event's impact (events.json 'reported.pages'): sentences with a number and an impact word are kept
+    with their URL, so a reported figure is taken from the page text, not from a summary."""
+    lines = []
+    for url in (ev.get("reported") or {}).get("pages", []):
+        b = get(url, None)
+        if b is None:
+            continue
+        text = re.sub(r"<script.*?</script>|<style.*?</style>", " ", b.decode("utf-8", "replace"), flags=re.S | re.I)
+        text = " ".join(re.sub(r"<[^>]+>", " ", text).split())
+        for sent in re.split(r"(?<=[.!?])\s+", text):
+            if re.search(r"\d", sent) and re.search(r"\bRW\b|km2|km²|kilometer persegi|hektare|hektar|kelurahan|luas genangan|tergenang|terdampak|flooded", sent, re.I):
+                lines.append({"url": url, "text": sent[:500]})
+    (out / "reported_excerpts.json").write_text(json.dumps(lines[:200], indent=1, ensure_ascii=False))
+
+
 def terms(out: Path):
     lines = []
     for url in ("https://docs.petabencana.id/", "https://docs.petabencana.id/routes/reports", "https://docs.petabencana.id/routes/floods",
@@ -289,6 +305,7 @@ def main():
         d = out / ev["id"]
         d.mkdir(exist_ok=True)
         petabencana(ev, d)
+        reported(ev, d)
         era5(ev, d)
         chirps(ev, d)
         if os.environ.get("EARTHDATA_TOKEN"):
