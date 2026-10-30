@@ -1,8 +1,44 @@
 {
-  "_about": "Flood events used for validation. Windows cover the rain and the flood peak; wib = Western Indonesia Time (UTC+7). Event 1 calibrates, events 2 and 3 validate.",
+  "_about": "Flood events used for validation. Windows cover the rain and the flood peak; wib = Western Indonesia Time (UTC+7). Event 1 calibrates, events 2 and 3 validate. run_hours: model run length from the window start (UTC).",
   "events": [
-    { "id": "2020-01-01", "role": "calibration", "wib": ["2019-12-31T12:00:00+0700", "2020-01-03T12:00:00+0700"], "utc": ["2019-12-31T05:00:00Z", "2020-01-03T05:00:00Z"] },
-    { "id": "2021-02-20", "role": "validation", "wib": ["2021-02-19T12:00:00+0700", "2021-02-21T12:00:00+0700"], "utc": ["2021-02-19T05:00:00Z", "2021-02-21T05:00:00Z"] },
-    { "id": "2025-03-04", "role": "validation", "wib": ["2025-03-03T00:00:00+0700", "2025-03-05T12:00:00+0700"], "utc": ["2025-03-02T17:00:00Z", "2025-03-05T05:00:00Z"] }
+    {
+      "id": "2020-01-01",
+      "role": "calibration",
+      "wib": [
+        "2019-12-31T12:00:00+0700",
+        "2020-01-03T12:00:00+0700"
+      ],
+      "utc": [
+        "2019-12-31T05:00:00Z",
+        "2020-01-03T05:00:00Z"
+      ],
+      "run_hours": 48
+    },
+    {
+      "id": "2021-02-20",
+      "role": "validation",
+      "wib": [
+        "2021-02-19T12:00:00+0700",
+        "2021-02-21T12:00:00+0700"
+      ],
+      "utc": [
+        "2021-02-19T05:00:00Z",
+        "2021-02-21T05:00:00Z"
+      ],
+      "run_hours": 48
+    },
+    {
+      "id": "2025-03-04",
+      "role": "validation",
+      "wib": [
+        "2025-03-03T00:00:00+0700",
+        "2025-03-05T12:00:00+0700"
+      ],
+      "utc": [
+        "2025-03-02T17:00:00Z",
+        "2025-03-05T05:00:00Z"
+      ],
+      "run_hours": 48
+    }
   ]
 }

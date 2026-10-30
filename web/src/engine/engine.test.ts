@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { FloodEngine, retention, scsRunoff, type EngineGrid } from "./solver";
-import { DT_S, catchmentHydrograph, findEntries, nrcsLagHours, uhRatio, type Streams } from "./hydrology";
+import { DT_S, catchmentHydrograph, entryMembers, findEntries, inflowsForSpatial, nrcsLagHours, uhRatio, type Streams } from "./hydrology";
 import { fromUtm, toUtm } from "../util";
 
 function grid(nx: number, ny: number, dx: number, zf: (i: number, j: number) => number, extra: Partial<EngineGrid> = {}): EngineGrid {
@@ -100,6 +100,20 @@ describe("upstream hydrology", () => {
     };
     const e = findEntries(st, (x) => x === 1 || x === 3);
     expect(e.map((v) => [v.stream, v.effKm2])).toEqual([[2, 20], [0, 10]]);
+  });
+  it("gives each entry the rain of its own catchment", () => {
+    // two tributaries 0 -> 1 and 2 -> 3 enter at 1 and 3 (cells 4 and 5 are inside)
+    const st: Streams = {
+      x: Float32Array.from([0, 1, 10, 11, 2, 12]), y: new Float32Array(6), down: Int32Array.from([1, 4, 3, 5, -1, -1]),
+      area: Float32Array.from([5, 6, 5, 6, 7, 7]), cn: new Float32Array(6).fill(90), slope: new Float32Array(6).fill(5), len: new Float32Array(6).fill(2000),
+    };
+    const isIn = (x: number) => x === 2 || x === 12;
+    expect(Array.from(entryMembers(st, isIn, [1, 3]))).toEqual([0, 0, 1, 1, -1, -1]);
+    const steps = 24, wet = Float64Array.from({ length: steps + 1 }, (_, s) => 4 * s), dry = new Float64Array(steps + 1);
+    const f = inflowsForSpatial(st, isIn, (k) => (st.x[k] < 5 ? wet : dry), steps);
+    expect(f.find((v) => v.stream === 1)!.rainMm).toBe(96);
+    expect(f.find((v) => v.stream === 3)!.rainMm).toBe(0);
+    expect(Math.max(...f.find((v) => v.stream === 3)!.q)).toBe(0);
   });
   it("inverts UTM", () => {
     const u = toUtm(106.8456, -6.2088, 48);
