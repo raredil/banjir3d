@@ -3,7 +3,7 @@
 > The AUTO part is rebuilt by `python3 tools/make_map.py`. Write by hand only below it.
 
 <!-- AUTO:START -->
-Files: 85 | Lines: 8650 | Fingerprint: 2440e87e24c5b4b0 | Generated: 2026-10-30
+Files: 88 | Lines: 9547 | Fingerprint: 63d1a21be6f4ee78 | Generated: 2026-10-30
 
 ### Files
 - `pipeline/catalog_tools.py` (67 lines): load, bib_entries, check, write_bib
@@ -61,7 +61,7 @@ Files: 85 | Lines: 8650 | Fingerprint: 2440e87e24c5b4b0 | Generated: 2026-10-30
   - data objects: CLASSES, CLASS_COLORS
 - `web/src/sim/panel.ts` (307 lines): mountSim, refreshAuto, q, tip, sl, num, summarize, setVal (+19 more)
 - `web/src/sim/worker.ts` (71 lines): post, flooded
-- Not listed one by one (35 files): data/ (5), data/demnas/ (1), data/engine/ (1), data/methods/ (1), data/roughness/ (1), verification/analytical-wave/ (2), verification/data-checks/ (2), verification/explore-vs-sfincs/ (3), verification/gpu-parity/ (2), verification/observed/ (2), web/ (5), web/scripts/ (1), web/src/ (5), web/src/explore/ (2), web/src/methods/ (1), web/src/sim/ (1)
+- Not listed one by one (38 files): data/ (5), data/demnas/ (1), data/engine/ (1), data/methods/ (1), data/roughness/ (1), verification/analytical-wave/ (2), verification/data-checks/ (2), verification/explore-vs-sfincs/ (3), verification/gpu-parity/ (2), verification/observed/ (3), web/ (5), web/public/meta/ (2), web/scripts/ (1), web/src/ (5), web/src/explore/ (2), web/src/methods/ (1), web/src/sim/ (1)
 
 ### Links (A -> B means A loads or uses B)
 - `pipeline/catalog_tools.py` -> pipeline/engine_pack.py, web/src/engine/gpu.ts

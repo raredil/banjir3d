@@ -21,3 +21,5 @@
 | 2026-10-30 | Export map; also HTML or TIFF | NOW | GeoTIFF (m), coloured GeoTIFF, HTML map, PNG figure, JSON record |
 | 2026-10-30 | Lag | NOW | 3D terrain removed; engine in a worker; WebGPU solver |
 | 2026-10-30 | UI like reference image, blue, full map, less text, no AI style | RULE | New design system (style.css), rail + floating cards, text trimmed |
+| 2026-10-30 | Sharper imagery (Esri): later | LATER | Owner: "nanti aja"; Sentinel-2 stays; BACKLOG |
+| 2026-10-30 | "gagal hasilnya" (Observed data run failed, screenshot) | NOW | Runs 2 and 3 were stale duplicates (HTTP 403 on publish); runs 1 and 4 hold all data; newer push now cancels a running fetch |
