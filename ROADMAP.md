@@ -1,5 +1,5 @@
 # ROADMAP
-**Current position: Phase 2 in progress. Explore engine v1 live on the 3D sample page (documented rain inputs, own area box, analytical and SFINCS checks, Methods page with references); exploratory, not validated against observed floods. Next: EA benchmarks, canal burning, SFINCS Research Run in an Action. Phase 0 still open: DEMNAS licence text.**
+**Current position: Phase 2 engine v2 done (data-driven inputs, upstream inflows, WebGPU, 2D dashboard, exports; ADR 0009). Next: Phase 4 validation against observed floods and drainage calibration, then SFINCS re-run with v2. Owner decision open: sharper imagery.**
 
 | Phase | Work | Gate (owner sees) | Status |
 |---|---|---|---|

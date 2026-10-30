@@ -1,0 +1,9 @@
+# Engine v2 sources and checks (2026-10-30)
+- NRCS TR-55 (1986) CN tables 2-2a/b/c values used: impervious 98; newly graded 77/86/91/94; row crops SR good 67/78/85/89; pasture fair 49/69/79/84; woods good 30/55/70/77. Runoff eq. Q=(P-0.2S)^2/(P+0.8S), S=25400/CN-254 mm. Checked against the TR-55 worked numbers in tests (P 100 mm, CN 80 -> 50.5 mm).
+- NEH 630 Ch. 7 (2009) texture criteria for HSG (A: clay<10 % and sand>90 %; B: clay 10-20 %, sand 50-90 %; C: clay 20-40 %, sand<50 %; D: clay>40 %). From memory of the chapter and HYSOGs250m (Ross et al. 2018, Sci Data 5:180091, doi:10.1038/sdata.2018.91); text itself not read in this session (no network to nrcs.usda.gov). Re-check in an Action.
+- NEH 630 Ch. 15 (2010) lag L = l^0.8 (S+1)^0.7 / (1900 Y^0.5); Ch. 16 (2007) dimensionless UH table (t/Tp, q/qp) as in hydrology.ts. Same caveat.
+- SoilGrids 2.0: Poggio et al. 2021, SOIL 7:217-240, doi:10.5194/soil-7-217-2021. Read in engine-pack Action run 41021358076: HSG share C 17 %, D 83 %.
+- BMKG daily rain classes (heavy 50-100, very heavy 100-150, extreme >150 mm/day): used only in a UI help text.
+- Not cited (unconfirmed DOI in web search): Lindsay 2016 breaching (Hydrol. Process. 30(6):846-857), Karra et al. 2021 IO land cover (IGARSS). Land cover is cited through the Data catalog record instead.
+- Inflow sanity (provisional soil): Cisadane entry 1,122 km² (lag 6.3 h), Ciliwung at Depok 218 km², Cikeas 207 km²; 40 entries, 3,256 km² in total. Uniform 377 mm upstream gives Cisadane 8,660 m3/s, far above any observed flow: upstream rain for real events must come from observed/reanalysis rain (next step).
+- Whole region, 1 Jan 2020 design storm, 90 m, CPU: mass error 5e-15, 777 km² > 0.15 m (too wet: no drains). Pattern follows valleys and rivers; northern lowlands and Bekasi coast deepest.

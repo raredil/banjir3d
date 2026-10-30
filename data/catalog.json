@@ -697,7 +697,8 @@
       },
       "status": "verified",
       "checked": "2026-10-30",
-      "notes": "Mapped rivers and streams of the whole upstream area, used to steer the flow routing (canals excluded)."
+      "notes": "Mapped rivers and streams of the whole upstream area, used to steer the flow routing (canals excluded).",
+      "doi": null
     }
   ]
 }

@@ -1,63 +1,57 @@
 # HANDOFF
-Updated: 2026-10-30 | Commit: see `git log -1` on main | Phase: P2 in progress (Explore engine v1) | Waiting for owner: no (DEMNAS licence text still welcome, not blocking)
+Updated: 2026-10-30 | Commit: see `git log -1` on main | Phase: P2 engine v2 done, P4 validation next | Waiting for owner: yes (sharper imagery choice, see Next steps 0)
 
 ## SESSION LOG (newest first). Read this before anything else
-Each entry says WHERE the work was done. **claude.ai chat** entries were not visually verified unless stated; a Claude Code session audits them.
-- **2026-10-30 (tenth entry), Claude Code, owner: "nothing blurry (map, flood); data must be validated".** Flood overlay now draws every 38 m cell as a sharp square, no interpolation (`explore/ui.ts`, `palette.ts overlayScale`). Measured imagery blur: old Sentinel-2 z14 tiles kept 82.5 % of source detail (average kernel + WebP 82); new `imagery_display` (Lanczos at z14, WebP 92) keeps 99.7 % (pytest `test_tiles.py`). Map: data grids nearest, Sentinel-2 nearest from z15 (real 10 m pixels), max zoom 18 (`util.ts rasterResampling`). New `verification/data-checks/check_pack.py` (checksums; terrain the engine reads = FABDEM within 0.0039 m over the region; land cover 100 %; imagery detail ≥ 95 %), runs in `region-pack.yml` and new `retile.yml`, result `data-check.json` shown on the Data catalog page. Methods section 5 paragraph added. ADR 0008. `npm run check` 46 tests, pytest 9, build OK, npm audit 0, no console errors. Previews `previews/phase2/sharp-*`, `data-checks-catalog.png`. Merged (PR #13); `retile.yml` run 1 published `region-jakarta-20261030-t1` (data checks 4 × pass, 35 files checksum ok) and Pages redeployed. FABDEM landing page still times out in `verify_sources` (DOI registered).
-- **2026-10-29 (ninth entry), Claude Code, audit of all chat work + Explore v1.** Audit: `npm run check` (24 tests) and build OK, pytest 8 OK; screenshots OK. Code review found and fixed: open north edge used an arbitrary slope 0.0005 and uniform n even with the n field (now transmissive edges, no parameter); wrong theta attribution in a comment (theta is de Almeida et al. 2012); rain presets and 20 mm/h drainage arbitrary (replaced); built-up low/high n "assumed" (now HEC-RAS range 0.12–0.20). New (ADR 0007): rain = design storm (R24, Mononobe, alternating block) / typed hourly / constant; default = 1 Jan 2020 event (377 mm/day Halim, Lubis et al. 2022); presets only this event and the SFINCS check case; edges open/closed; analytical wave test (Hunter et al. 2005), 1–6 % of boundary depth; draw-your-own box on `#/sample` (deep link `?box=W,S,E,N`, block-averaged grid above 160k cells); flooded area now > 0.15 m; **Methods page `#/methods`** (2,500 words, 19 verified references, Harvard, DOI links, METHODS.md and .bib downloads; tests enforce citations and whole paragraphs); mobile nav scrolls; project skill `.claude/skills/visual-check/`. `npm run check` 44 tests, build OK, npm audit 0, no console errors. Screenshots `previews/phase2/explore-v1-*`. Run in a drawn 2.4 × 1.9 km box with the default event: peak 1.27 m, 1.71 km² > 0.15 m, mass error 1.5e-14, 6 s (software GL).
-- Earlier entries (all 2026-10-29, claude.ai chat, now audited): WorldCover roughness in the browser (PR #11); Explore vs SFINCS 2.4.0 on the sample, RMSE 0.04–0.06 m, CSI 0.92–0.96, solver defaults theta 1.0 / alpha 0.5 / hMin 0.05 (PR #10, `verification/explore-vs-sfincs/`); Explore engine v0 (PR #9, ADR 0006); three looks on `#/sample` (PR #8); outline toggles; CORE §9 layer review (all layers and dark mode OK); FABDEM landing page timeout once (recheck with `pipeline/verify_sources.py` in an Action).
-- Owner answers 2026-10-29: DEMNAS licence "aman dipakai" (no text yet, so ADR 0002 keeps DEMNAS private); Gate 0 accepted; Phase 1: keep all three looks.
+- **2026-10-30 (eleventh entry), Claude Code, owner's 20 points (3D does not work, nothing typed in, data-driven river capacity, real floods, sharp but smooth, export TIFF/HTML, dashboard UI in blue, lag, PhD-grade).** Done: ADR 0009. Engine pack pipeline (`pipeline/engine_pack.py`, Action `engine-pack.yml`, release `region-jakarta-20261030-e1` with SoilGrids, C 17 % D 83 %). Engine v2 `web/src/engine/` (solver CPU, WebGPU `gpu.ts`, `hydrology.ts` upstream inflows, `pack.ts`). GPU = CPU on real terrain (RMSE 5e-5 m, `verification/gpu-parity/`). New UI: rail + full map + floating cards (`style.css`, `map.ts`, `sim/panel.ts`, `sim/flood-layer.ts` water-level downscaling in WebGL, `sim/export.ts` GeoTIFF/HTML/PNG/JSON, GeoTIFF read OK by GDAL). 3D page removed. Data page with "used for" (`data/catalog-use.json`), Validation page (`data/validation.json`), Methods rewritten for v2 (9 sections, refs checked by tests). Owner tools `tools/check.py`, `tools/make_map.py`, `PROJECT_MAP.md`. Owner said mid-session: "tulisan penuh, jangan gaya AI": help moved behind "?" buttons, text trimmed (RULE). Screenshots `previews/phase2/v2/`. `npm run check` 39 tests, build OK.
+- Earlier entries (PR #9 to #14): Explore v0/v1, SFINCS comparison, Methods page, sharp display, data checks. Details in git history and ADR 0006 to 0008.
 
 ## Browser for visual tests (works in cloud sessions)
-Use the project skill `.claude/skills/visual-check/SKILL.md` (data download, build, preview server and screenshots in one call). Chromium `/opt/pw-browsers/chromium-*/chrome-linux64/chrome`; `require("playwright")` works globally. Never run `playwright install`. github.io, doi.org, crossref, arxiv and publisher sites are NOT reachable from the cloud session; github.com release downloads and WebSearch are.
+Project skill `.claude/skills/visual-check/SKILL.md` (data into `web/public/data/jakarta/`, build, `shoot2.cjs`, GPU parity). Chromium `/opt/pw-browsers/...`; `require("playwright")` works. WebGPU works headless with `--enable-unsafe-webgpu --use-webgpu-adapter=swiftshader` (slow). Reachable from the session: github.com, AWS S3 (Copernicus DEM, WorldCover, IO LULC, Overture, Sentinel-2 COGs), pypi, npm. NOT reachable: isric, geofabrik, overpass, data.jakarta, petabencana, arcgis, zenodo: use Actions for those.
 
 ## How to open the current build
-1. https://raredil.github.io/banjir3d/ (Pages deploys from `main`).
-2. Tabs: Map (all layers), 3D sample (looks + flood simulation + draw your own area), Data catalog, Methods (full methods text with references).
-3. Local: `cd web && npm run build && npx vite preview` with the release PMTiles in `web/dist/data/jakarta/`.
+1. https://raredil.github.io/banjir3d/ (Pages deploys from `main`, data from the newest `region-jakarta-*` release).
+2. Menu: Peta (layers), Simulasi (run, timeline, Ekspor), Data, Metode, Validasi.
+3. Local: copy release files into `web/public/data/jakarta/`, `cd web && npm run build && npx vite preview`.
 
 ## What works
-- Region = mainland DKI Jakarta + 10 km buffer (ADR 0005); region pack release `region-jakarta-20261030-t1` (= `20261024-r2` with sharper imagery tiles), all 10 datasets ok, data checks pass. DEMNAS ingest in the private draft release (ADR 0002).
-- Explore engine v1 (`web/src/explore/`): local-inertial solver (`local-inertial.ts`), rain (`rain.ts`), scenario (`scenario.ts`), worker, UI; per-cell WorldCover n (`data/roughness/worldcover-manning.json` v0.2.0); open/closed edges; own area box (`sample3d.ts`, helpers in `sample-look.ts`).
-- Verification: unit tests (rest, mass, dam break, inflow, open edges, analytical wave); `verification/analytical-wave/`; `verification/explore-vs-sfincs/`.
-- Methods page: `data/methods/methods.md` + `references.json`, renderer `web/src/methods/cite.ts`, page `web/src/methods/page.ts`. Sources and checks: `research/phase2-methods-sources.md`.
-- Tests: `cd pipeline && python -m pytest -q` (9), `cd web && npm run check && npm run build` (46). Data checks: `python -I verification/data-checks/check_pack.py <pack dir> out.json`.
+- Engine pack (30 m UTM 48S, 1718 × 1737): carved OSM channels, n and CN from IO land cover 2024 + SoilGrids, sea mask, GLO-90 stream network (107k cells ≥ 1 km²).
+- Engine v2: local inertial, CN runoff, upstream inflows (NRCS lag + UH, no double counting), sea level, transmissive edges; WebGPU in a worker with CPU fallback (region forced to 90 m without WebGPU).
+- Whole-region run, 1 Jan 2020 storm, 90 m CPU (Node): 13.5 min, mass error 5e-15; water follows valleys/rivers. 4.4 km box at 30 m in the browser: 39 s CPU, flood along Ciliwung (Kampung Melayu–Bukit Duri).
+- Exports: depth GeoTIFF (EPSG:32748, float32, nodata -9999), coloured GeoTIFF, HTML map (Leaflet + OSM from CDN), PNG figure (title, legend, scale, north, sources), JSON provenance.
+- Tests: `cd web && npm run check` (39), `cd pipeline && python -m pytest -q` (9). `python3 tools/check.py` (2 warnings: IDEAS.md, MUST IDs format).
 
 ## Broken / Known gaps
-- Explore is not validated against observed floods; no infiltration, sewers, tide, canal burning; inflow only at the lowest south-edge cell; hourly shape of the 1 Jan 2020 preset is a design shape, not observed.
-- An open box gets no runoff from outside it (stated in the Methods text).
-- SNI 2415:2016 text itself not read (web search only); Methods text words it carefully.
-- geoBoundaries ADM2 only (no kecamatan/kelurahan); buildings PMTiles may drop features in dense z14 tiles; DEMNAS licence unknown.
-- Map page attribution box starts expanded (LATER).
-- Imagery is 10 m (free Sentinel-2): houses are not visible; sharper imagery needs a licensed source (owner decision: cost/licence). Terrain display tiles stop at z12 (38 m): hillshade softens past z13.
+- **Not validated against observed floods.** Results too wet: no city drains/pumps/sea walls (no open data). Whole region 1 Jan 2020 at 90 m: 777 km² > 0.15 m (provisional soil run) — unrealistic.
+- Uniform scenario rain upstream overstates river peaks (Cisadane 8,660 m³/s at 377 mm). Real events need observed/reanalysis rain per catchment.
+- D8 on GLO-90 may misroute in flat east (Bekasi/Cikarang entries near 107.06 E); check on a map.
+- SFINCS comparison was on engine v1 (hMin 0.05); re-run with v2. EA benchmarks not done.
+- KPI "deepest" can include permanent water not mapped as channel (situ, ponds).
+- Real GPU speed unmeasured (cloud has no GPU). Imagery 10 m only (see Next steps 0).
+- Lindsay 2016 and Karra 2021 DOIs unconfirmed: not cited. NEH chapters cited from memory: re-check text in an Action (`research/phase2-engine-v2-sources.md`).
 
 ## Locked decisions (look, mechanics, tech) with links
-ADR 0001 data hosting · 0002 DEMNAS private · 0003 web stack · 0004 pipeline libs · 0005 region · 0006 Explore on CPU · 0007 Explore v1 inputs and Methods page · 0008 sharp display + data checks (RULE: never smooth results; every display layer checked against its source). Look: all three looks kept (owner). UI: neutral research style, IBM Plex.
+ADR 0001 hosting · 0002 DEMNAS private · 0003 web stack · 0004 pipeline · 0005 region · 0006 CPU Explore (superseded by 0009 WebGPU) · 0007 Methods page · 0008 data checks (display rule updated by 0009) · **0009 engine v2, 2D dashboard**. RULES: no 3D; only external forcing as user input; methods text = code; little text, help behind "?"; blue dashboard, full map.
 
 ## Decisions since last handoff (ADR links)
-docs/adr/0007-explore-methods-upgrade.md, docs/adr/0008-sharp-display-data-checks.md.
+docs/adr/0009-engine-v2-data-driven.md.
 
 ## Owner feedback: applied / in BACKLOG
-2026-10-29 (FEEDBACK.md): audit (done), Methods page with Harvard citations (RULE, done), whole paragraphs (RULE, test), method upgrades (done), own bounding box (done), others use their own DEMNAS without GitHub (LATER, BACKLOG Phase 7, plan written), guidance files check (done).
+2026-10-30, 20 points: see FEEDBACK.md (12 rows). Open: sharper imagery (owner decision), validation (next).
 
 ## Security status (last check date, open items)
-2026-10-29: npm audit 0. New inputs: typed hourly rain (strict number regex, 0–500 mm, ≤ 72 values), `?box=` deep link (regex + clipped to region), Methods text escaped before citation links are added; downloads via Blob, no new dependency, CSP unchanged. Open: DEMNAS licence. docs/SECURITY_LOG.md.
+2026-10-30: no new dependencies; CSP unchanged (engine pack same-origin; exported HTML loads Leaflet/OSM from CDN only inside the downloaded file). New inputs: `#/sim?box=` (numbers, clipped to region), hourly rain (existing strict parser). npm audit not re-run this session (no dependency change).
 
 ## Next steps (ordered, specific, file paths)
-1. Phase 2 continues in this order: (a) EA 2D benchmarks (Neelz and Pender 2013) tests that need no external data first (test 1, 2, 4) in `verification/ea-benchmarks/`; (b) burn rivers and canals from `water_osm` lines into the grid (`dem-grid.ts`), document in Methods section 5; (c) clickable inflow point + hydrograph; (d) infiltration with an open soil map (check sources, then Methods section 7); (e) Research Run: HydroMT-SFINCS in a GitHub Action, then the Phase 2 gate "same scenario in both engines". Technology choices in (e) and the WebGPU port go to the owner as 2–3 options.
-2. Every method change: update `data/methods/methods.md` (+ `references.json`, only verified sources, record in `research/`), keep tests green.
-3. Phase 4: validation against observed events (needs network in an Action: IMERG/ERA5 rain, Sentinel-1 or reported extents).
-4. Phase 7 (owner wish): own-DEM upload and sharing without GitHub (BACKLOG plan).
-Owner actions pending: DEMNAS licence screenshot or text.
-
-## Token-saving rules
-- Hand off at ~half context or at every gate/merge. Use the visual-check skill, do not re-derive the browser setup.
-- Never read full Action logs (`tail_lines` ≤ 60). No repeated web research: facts live in `research/phase0-datasets.md` and `research/phase2-methods-sources.md`.
-- Force-push is blocked: update branches with merges.
-- Guidance files present: CLAUDE.md, CORE.md, SECURITY.md, TOOLS.md, BLUEPRINT.md, HANDOFF.md. `START.md` and `MODULE_*.md` named in CLAUDE.md do not exist in this repo (not needed: BLUEPRINT exists; the app module is covered by BLUEPRINT §9–11).
+0. Owner decision (asked in chat): sharper basemap. Free open data stops at 10 m (Sentinel-2). Option: Esri World Imagery free tier (owner makes a free ArcGIS Location Platform account and API key; display only, not in exports). Until then keep Sentinel-2.
+1. Validation (Phase 4 now): Action that fetches PetaBencana `/reports/archive` (open, no key) for 31 Dec 2019–3 Jan 2020 and one recent event (Feb 2021 or Mar 2025), plus ERA5-Land / IMERG hourly rain per catchment (Open-Meteo archive). Script `verification/observed/`, metrics hit rate / CSI / depth RMSE at report points, shown on `#/validation` (`data/validation.json`).
+2. Calibrate one effective drainage capacity (mm/h, built-up cells) on event 1, validate on event 2; add it to `engine/solver.ts` + `gpu.ts` (sink term), Methods §9, as a calibrated (not typed) parameter.
+3. Event mode in the UI: "1 Jan 2020 as observed" using the fetched rain per catchment instead of uniform 377 mm.
+4. Re-run SFINCS comparison with v2 (`verification/explore-vs-sfincs/`), then EA benchmarks 1, 2, 4.
+5. Exposure: buildings/people flooded per kecamatan from Overture + WorldPop.
+Owner actions pending: imagery choice; DEMNAS licence text.
 
 ## File map (key files, project skills)
-`data/` catalog, regions, roughness, methods · `pipeline/` (Python region pack, DEMNAS) · `web/src/{main,map,catalog,layers,i18n,util,sample3d,sample-look}.ts` · `web/src/explore/` · `web/src/methods/` · `verification/` · `.github/workflows/{ci,region-pack,pages,demnas}.yml` · project skill `.claude/skills/visual-check/` (screenshots).
+`PROJECT_MAP.md` (auto, `python3 tools/make_map.py`) · `pipeline/engine_pack.py` · `data/engine/landcover-parameters.json` · `web/src/engine/` · `web/src/sim/` · `web/src/{main,map,catalog,layers,i18n}.ts` · `data/{catalog-use,validation}.json` · `data/methods/` · `verification/{gpu-parity,region-run}/` · `.github/workflows/engine-pack.yml` · skill `.claude/skills/visual-check/`.
 
 ## CODES
 None.

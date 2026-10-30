@@ -22,20 +22,6 @@
    "doi": "10.1007/s11069-011-9866-9"
   },
   {
-   "key": "arcement1989",
-   "type": "report",
-   "authors": [
-    "Arcement, G.J.",
-    "Schneider, V.R."
-   ],
-   "year": 1989,
-   "title": "Guide for selecting Manning's roughness coefficients for natural channels and flood plains",
-   "series": "U.S. Geological Survey Water-Supply Paper 2339",
-   "place": "Denver",
-   "publisher": "U.S. Geological Survey",
-   "url": "https://pubs.usgs.gov/wsp/2339/report.pdf"
-  },
-  {
    "key": "bates2010",
    "type": "article",
    "authors": [
@@ -69,19 +55,6 @@
    "doi": "10.3390/geosciences8020077"
   },
   {
-   "key": "bsn2016",
-   "type": "standard",
-   "authors": [
-    "Badan Standardisasi Nasional"
-   ],
-   "org": true,
-   "short": "BSN",
-   "year": 2016,
-   "title": "SNI 2415:2016 Tata cara perhitungan debit banjir rencana",
-   "place": "Jakarta",
-   "publisher": "Badan Standardisasi Nasional"
-  },
-  {
    "key": "chow1959",
    "type": "book",
    "authors": [
@@ -105,22 +78,6 @@
    "place": "New York",
    "publisher": "McGraw-Hill",
    "isbn": "0-07-010810-2"
-  },
-  {
-   "key": "dealmeida2012",
-   "type": "article",
-   "authors": [
-    "de Almeida, G.A.M.",
-    "Bates, P.",
-    "Freer, J.E.",
-    "Souvignet, M."
-   ],
-   "year": 2012,
-   "title": "Improving the stability of a simple formulation of the shallow water equations for 2-D flood modeling",
-   "journal": "Water Resources Research",
-   "volume": "48",
-   "pages": "W05528",
-   "doi": "10.1029/2011WR011570"
   },
   {
    "key": "dealmeida2013",
@@ -243,34 +200,94 @@
    "doi": "10.5614/jts.2021.28.2.5"
   },
   {
-   "key": "neelz2013",
-   "type": "report",
+   "key": "nrcs1986",
+   "type": "standard",
    "authors": [
-    "Néelz, S.",
-    "Pender, G."
+    "USDA Natural Resources Conservation Service"
    ],
-   "year": 2013,
-   "title": "Benchmarking the latest generation of 2D hydraulic modelling packages",
-   "series": "Report SC120002",
-   "place": "Bristol",
-   "publisher": "Environment Agency",
-   "url": "https://www.gov.uk/government/publications/benchmarking-the-latest-generation-of-2d-hydraulic-flood-modelling-packages"
+   "org": true,
+   "short": "USDA NRCS",
+   "year": 1986,
+   "title": "Urban hydrology for small watersheds, Technical Release 55 (TR-55), 2nd edn",
+   "place": "Washington, DC",
+   "publisher": "United States Department of Agriculture"
   },
   {
-   "key": "stephens2014",
+   "key": "nrcs2007",
+   "type": "standard",
+   "authors": [
+    "USDA Natural Resources Conservation Service"
+   ],
+   "org": true,
+   "short": "USDA NRCS",
+   "year": 2007,
+   "title": "National Engineering Handbook, Part 630 Hydrology, Chapter 16: Hydrographs",
+   "place": "Washington, DC",
+   "publisher": "United States Department of Agriculture"
+  },
+  {
+   "key": "nrcs2009",
+   "type": "standard",
+   "authors": [
+    "USDA Natural Resources Conservation Service"
+   ],
+   "org": true,
+   "short": "USDA NRCS",
+   "year": 2009,
+   "title": "National Engineering Handbook, Part 630 Hydrology, Chapter 7: Hydrologic soil groups",
+   "place": "Washington, DC",
+   "publisher": "United States Department of Agriculture"
+  },
+  {
+   "key": "nrcs2010",
+   "type": "standard",
+   "authors": [
+    "USDA Natural Resources Conservation Service"
+   ],
+   "org": true,
+   "short": "USDA NRCS",
+   "year": 2010,
+   "title": "National Engineering Handbook, Part 630 Hydrology, Chapter 15: Time of concentration",
+   "place": "Washington, DC",
+   "publisher": "United States Department of Agriculture"
+  },
+  {
+   "key": "poggio2021",
    "type": "article",
    "authors": [
-    "Stephens, E.",
-    "Schumann, G.",
-    "Bates, P."
+    "Poggio, L.",
+    "de Sousa, L.M.",
+    "Batjes, N.H.",
+    "Heuvelink, G.B.M.",
+    "Kempen, B.",
+    "Ribeiro, E.",
+    "Rossiter, D."
    ],
-   "year": 2014,
-   "title": "Problems with binary pattern measures for flood model evaluation",
-   "journal": "Hydrological Processes",
-   "volume": "28",
-   "issue": "18",
-   "pages": "4928–4937",
-   "doi": "10.1002/hyp.9979"
+   "year": 2021,
+   "title": "SoilGrids 2.0: producing soil information for the globe with quantified spatial uncertainty",
+   "journal": "SOIL",
+   "volume": "7",
+   "issue": "1",
+   "pages": "217–240",
+   "doi": "10.5194/soil-7-217-2021"
+  },
+  {
+   "key": "ross2018",
+   "type": "article",
+   "authors": [
+    "Ross, C.W.",
+    "Prihodko, L.",
+    "Anchang, J.",
+    "Kumar, S.",
+    "Ji, W.",
+    "Hanan, N.P."
+   ],
+   "year": 2018,
+   "title": "HYSOGs250m, global gridded hydrologic soil groups for curve-number-based runoff modeling",
+   "journal": "Scientific Data",
+   "volume": "5",
+   "pages": "180091",
+   "doi": "10.1038/sdata.2018.91"
   },
   {
    "key": "vanormondt2025",
@@ -288,27 +305,6 @@
    "volume": "18",
    "pages": "843–861",
    "doi": "10.5194/gmd-18-843-2025"
-  },
-  {
-   "key": "zanaga2022",
-   "type": "dataset",
-   "authors": [
-    "Zanaga, D.",
-    "Van De Kerchove, R.",
-    "Daems, D.",
-    "De Keersmaecker, W.",
-    "Brockmann, C.",
-    "Kirches, G.",
-    "Wevers, J.",
-    "Cartus, O.",
-    "Santoro, M.",
-    "Fritz, S."
-   ],
-   "etal": true,
-   "year": 2022,
-   "title": "ESA WorldCover 10 m 2021 v200",
-   "publisher": "Zenodo",
-   "doi": "10.5281/zenodo.7254221"
   }
  ]
 }
