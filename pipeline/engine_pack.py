@@ -42,6 +42,8 @@ IO_URL = "https://io-10m-annual-lulc.s3.amazonaws.com/48M_{y}.tif"
 SOILGRIDS = "/vsicurl/https://files.isric.org/soilgrids/latest/data/{p}/{p}_{d}_mean.vrt"
 SOIL_DEPTHS = [("0-5cm", 5), ("5-15cm", 10), ("15-30cm", 15), ("30-60cm", 30), ("60-100cm", 40)]
 HSG = ["A", "B", "C", "D"]
+OVERTURE_RELEASE = "2026-10-21.0"  # same release as the buildings layer
+ROUTE_BURN_M = 20.0  # routing-only burn depth; larger than GLO-90 noise in flat land, never used for hydraulics
 STREAM_KM2 = 1.0  # D8 cells draining at least this area form the stream network used for inflows
 OPEN_CELLS = 5  # 150 m: wider humps on a channel are treated as real terrain
 Z_OFFSET = 20.0  # stored elevation = (z + 20 m) in cm as uint16 (range -20 m to 635 m)
@@ -200,13 +202,18 @@ def upstream(crs, soil: str, io_year: int, res: float = 90.0) -> tuple[dict, dic
             reproject(rasterio.band(src, 1), out, dst_transform=tr, dst_crs=crs, resampling=Resampling.bilinear, src_nodata=src.nodata, dst_nodata=np.nan)
             dem = np.where(np.isnan(dem), out, dem)
     dem = np.where(np.isfinite(dem), dem, 0.0)  # sea
+    # Stream burning for routing only (Saunders 1999; Lindsay 2016): mapped rivers, streams and canals (Overture base/water,
+    # from OSM) are lowered by ROUTE_BURN_M so D8 follows the mapped network in flat land where a DSM alone misroutes water.
+    lines, wsrc = overture_waterways(UPSTREAM_BOX)
+    burn = features.rasterize(((g, 1) for g in lines.to_crs(crs).geometry), out_shape=dem.shape, transform=tr, all_touched=True, dtype="uint8") > 0
+    dem_route = np.where(burn, dem - ROUTE_BURN_M, dem)
     import pyproj
 
     if not hasattr(np, "in1d"):  # pysheds 0.4 still calls the numpy < 2.4 name
         np.in1d = np.isin
     vf = ViewFinder(affine=tr, shape=dem.shape, crs=pyproj.Proj(str(crs)), nodata=np.float64(-9999.0))
     grid = Grid(viewfinder=vf)
-    rdem = Raster(dem.astype(np.float64), viewfinder=vf)
+    rdem = Raster(dem_route.astype(np.float64), viewfinder=vf)
     filled = grid.resolve_flats(grid.fill_depressions(grid.fill_pits(rdem)))
     dirmap = (64, 128, 1, 2, 4, 8, 16, 32)
     fdir = grid.flowdir(filled, dirmap=dirmap)
@@ -220,9 +227,29 @@ def upstream(crs, soil: str, io_year: int, res: float = 90.0) -> tuple[dict, dic
     cell_km2 = res * res / 1e6
     props = {"down": down, "transform": tr, "acc": acc, "area_km2": acc * cell_km2, "cn": acc_cn / acc, "slope_pct": acc_sl / acc, "length_m": length, "dem": dem}
     info = {"dem": "Copernicus GLO-90 (AWS public copy)", "tiles": [GLO90.format(t=x) for x in tiles], "box_lonlat": UPSTREAM_BOX, "res_m": res,
+            "routing_burn": {"source": wsrc, "lines": int(len(lines)), "cells": int(burn.sum()), "depth_m": ROUTE_BURN_M},
             "method": "pysheds: fill pits, fill depressions, resolve flats, D8 directions; own topological pass: upstream area, area-mean CN and slope, longest flow path",
             "landcover": IO_URL.format(y=io_year), "soil": soil_info}
     return props, info
+
+
+def overture_waterways(box):
+    """Rivers, streams and canals (not drains or ditches) from the Overture Maps base/water theme (OpenStreetMap data)."""
+    import geopandas as gpd
+    import pyarrow.compute as pc
+    import pyarrow.dataset as ds
+    import pyarrow.fs as pafs
+    import shapely
+
+    path = f"overturemaps-us-west-2/release/{OVERTURE_RELEASE}/theme=base/type=water/"
+    d = ds.dataset(path, filesystem=pafs.S3FileSystem(anonymous=True, region="us-west-2"), format="parquet")
+    W, S, E, N = box
+    f = (pc.field("bbox", "xmin") < E) & (pc.field("bbox", "xmax") > W) & (pc.field("bbox", "ymin") < N) & (pc.field("bbox", "ymax") > S)
+    tb = d.to_table(columns=["id", "class", "geometry"], filter=f & pc.field("class").isin(["river", "stream", "canal"]))
+    geom = shapely.from_wkb(tb.column("geometry").to_numpy(zero_copy_only=False))
+    gdf = gpd.GeoDataFrame({"class": tb.column("class").to_pylist()}, geometry=geom, crs="EPSG:4326")
+    gdf = gdf[gdf.geom_type.isin(["LineString", "MultiLineString"])]
+    return gdf, {"dataset": "Overture Maps base/water", "release": OVERTURE_RELEASE, "s3": "s3://" + path, "classes": ["river", "stream", "canal"]}
 
 
 def d8_accumulate(fdir: np.ndarray, dirmap, res: float, cn: np.ndarray, slope: np.ndarray):
