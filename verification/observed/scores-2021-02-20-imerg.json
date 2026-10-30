@@ -1,0 +1,64 @@
+{
+ "event": "2021-02-20",
+ "source": "PetaBencana.id flood reports and flooded-area archive (aggregate scores only)",
+ "reported": {
+  "_about": "Impact the city reported; figures are used only after reported_excerpts.json (fetched by the Action) shows them in the page text.",
+  "pages": [
+   "https://rmol.id/nusantara/read/2021/02/21/476030/banjir-jakarta-dalam-angka-sejak-era-sutiyoso-hingga-anies-baswedan",
+   "https://www.cnnindonesia.com/nasional/20210221075059-20-608918/banjir-jakarta-33-rw-masih-tergenang",
+   "https://www.merahputih.com/post/read/75-rw-di-jakarta-tergenang-banjir-akibat-hujan-deras-sejak-jumat-malam"
+  ],
+  "flooded_km2": null,
+  "flooded_rw": null,
+  "status": "pages refused the Action (HTTP 403); search results only: 113 RW / 342 RT on 20 Feb 2021"
+ },
+ "n_flooded_area_records": 159,
+ "rw_shapes": 0,
+ "results": [
+  {
+   "run": "2021-02-20_imerg_k3_d0",
+   "drain_mm_h": 0,
+   "rain": "rain_imerg.json",
+   "rain_scale": 1,
+   "mean_rain_mm": 50.87443040536372,
+   "flooded_km2": 127.6317,
+   "mass_error": -6.160713425894904e-15,
+   "reports": {
+    "n_reports": 372,
+    "hit_rate": 0.782258064516129,
+    "n_with_depth": 325,
+    "depth_bias_m": -0.4184107766090677,
+    "depth_mae_m": 0.47139915074694616,
+    "depth_rmse_m": 0.6040953217699564,
+    "observed_median_m": 0.65,
+    "model_median_m": 0.24609246850013733
+   },
+   "dki_flooded_km2": 31.9626,
+   "dki_land_km2": 561.7431
+  },
+  {
+   "run": "2021-02-20_imerg_k3_d2",
+   "drain_mm_h": 2,
+   "rain": "rain_imerg.json",
+   "rain_scale": 1,
+   "mean_rain_mm": 50.87443040536372,
+   "flooded_km2": 73.2078,
+   "mass_error": -1.1843631277792508e-13,
+   "reports": {
+    "n_reports": 372,
+    "hit_rate": 0.4327956989247312,
+    "n_with_depth": 325,
+    "depth_bias_m": -0.596546493395246,
+    "depth_mae_m": 0.6021069214277542,
+    "depth_rmse_m": 0.729314324718523,
+    "observed_median_m": 0.65,
+    "model_median_m": 0.08775494992733002
+   },
+   "dki_flooded_km2": 8.6913,
+   "dki_land_km2": 561.7431
+  }
+ ],
+ "runs": [
+  "validation-jakarta-2021-02-20-v4"
+ ]
+}

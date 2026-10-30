@@ -53,6 +53,90 @@
    "dki_land_km2": 561.7431
   },
   {
+   "run": "2020-01-01_imerg_k3_d1",
+   "drain_mm_h": 1,
+   "rain": "rain_imerg.json",
+   "rain_scale": 1,
+   "mean_rain_mm": 142.871571079419,
+   "flooded_km2": 320.2335,
+   "mass_error": 0,
+   "reports": {
+    "n_reports": 259,
+    "hit_rate": 0.752895752895753,
+    "n_with_depth": 211,
+    "depth_bias_m": -0.33764348734576266,
+    "depth_mae_m": 0.5238621929976471,
+    "depth_rmse_m": 0.6508412977651431,
+    "observed_median_m": 0.7,
+    "model_median_m": 0.2966354489326477
+   },
+   "dki_flooded_km2": 120.2607,
+   "dki_land_km2": 561.7431
+  },
+  {
+   "run": "2020-01-01_imerg_k3_d2",
+   "drain_mm_h": 2,
+   "rain": "rain_imerg.json",
+   "rain_scale": 1,
+   "mean_rain_mm": 142.871571079419,
+   "flooded_km2": 279.6444,
+   "mass_error": -1.6962314826889534e-15,
+   "reports": {
+    "n_reports": 259,
+    "hit_rate": 0.694980694980695,
+    "n_with_depth": 211,
+    "depth_bias_m": -0.4137553126435567,
+    "depth_mae_m": 0.5390365564424138,
+    "depth_rmse_m": 0.6593458220311736,
+    "observed_median_m": 0.7,
+    "model_median_m": 0.2427224963903427
+   },
+   "dki_flooded_km2": 97.5321,
+   "dki_land_km2": 561.7431
+  },
+  {
+   "run": "2020-01-01_imerg_k3_d3",
+   "drain_mm_h": 3,
+   "rain": "rain_imerg.json",
+   "rain_scale": 1,
+   "mean_rain_mm": 142.871571079419,
+   "flooded_km2": 238.8285,
+   "mass_error": 1.5400137740041724e-14,
+   "reports": {
+    "n_reports": 259,
+    "hit_rate": 0.6177606177606177,
+    "n_with_depth": 211,
+    "depth_bias_m": -0.498394025712499,
+    "depth_mae_m": 0.5688942567276728,
+    "depth_rmse_m": 0.6859140120636398,
+    "observed_median_m": 0.7,
+    "model_median_m": 0.18802553415298462
+   },
+   "dki_flooded_km2": 75.7269,
+   "dki_land_km2": 561.7431
+  },
+  {
+   "run": "2020-01-01_imerg_k3_d5",
+   "drain_mm_h": 5,
+   "rain": "rain_imerg.json",
+   "rain_scale": 1,
+   "mean_rain_mm": 142.871571079419,
+   "flooded_km2": 166.9734,
+   "mass_error": 6.249413261015262e-16,
+   "reports": {
+    "n_reports": 259,
+    "hit_rate": 0.4594594594594595,
+    "n_with_depth": 211,
+    "depth_bias_m": -0.6328464236806953,
+    "depth_mae_m": 0.6643597447865982,
+    "depth_rmse_m": 0.775594777259934,
+    "observed_median_m": 0.7,
+    "model_median_m": 0.07255888730287552
+   },
+   "dki_flooded_km2": 41.5692,
+   "dki_land_km2": 561.7431
+  },
+  {
    "run": "2020-01-01_imerg_k3_d10",
    "drain_mm_h": 10,
    "rain": "rain_imerg.json",
@@ -114,27 +198,10 @@
    },
    "dki_flooded_km2": 3.8475,
    "dki_land_km2": 561.7431
-  },
-  {
-   "run": "2020-01-01_imerg_k3_d5",
-   "drain_mm_h": 5,
-   "rain": "rain_imerg.json",
-   "rain_scale": 1,
-   "mean_rain_mm": 142.871571079419,
-   "flooded_km2": 166.9734,
-   "mass_error": 6.249413261015262e-16,
-   "reports": {
-    "n_reports": 259,
-    "hit_rate": 0.4594594594594595,
-    "n_with_depth": 211,
-    "depth_bias_m": -0.6328464236806953,
-    "depth_mae_m": 0.6643597447865982,
-    "depth_rmse_m": 0.775594777259934,
-    "observed_median_m": 0.7,
-    "model_median_m": 0.07255888730287552
-   },
-   "dki_flooded_km2": 41.5692,
-   "dki_land_km2": 561.7431
   }
+ ],
+ "runs": [
+  "validation-jakarta-2020-01-01-v2",
+  "validation-jakarta-2020-01-01-v3"
  ]
 }
