@@ -9,8 +9,16 @@ import { CLASSES, CLASS_COLORS, FloodLayer } from "./flood-layer";
 import { colourTiff, depthTiff, htmlMap, mapPng, mercatorPng, save, type Grid } from "./export";
 import type { OutMsg, RunMsg } from "./worker";
 import { esc } from "../util";
+import calibration from "../../../data/engine/calibration.json";
 
 const FLOOD_M = 0.15; // flooded = deeper than the lower bound of the second depth class (BLUEPRINT §8)
+// city-drain sink (m/s) per cell: calibrated capacity x built share, none on channels and sea; undefined when the capacity is 0
+const drainOf = (run: RunGrid): Float64Array | undefined => {
+  if (!(calibration.drain_mm_h > 0)) return undefined;
+  const d = new Float64Array(run.nx * run.ny);
+  for (let c = 0; c < d.length; c++) if (!run.channel[c] && !run.sea[c]) d[c] = (calibration.drain_mm_h / 3.6e6) * run.built[c];
+  return d;
+};
 type Result = { run: RunGrid; grid: Grid; frames: Uint16Array[]; times: number[]; area: number[]; max: Float32Array | null; inflows: Inflow[]; hy: Hyetograph; scenario: Record<string, unknown>; totals?: Record<string, number>; mass?: number; wall?: number; gpu?: boolean };
 
 export function mountSim(page: MapPage, o: { packUrl: string; regionBbox: number[]; releaseTag: string | null }) {
@@ -219,7 +227,8 @@ export function mountSim(page: MapPage, o: { packUrl: string; regionBbox: number
     scenario: res!.scenario, rain_mm_per_block: res!.hy, grid: { nx: res!.run.nx, ny: res!.run.ny, cell_m: res!.run.dx, utm: res!.run.utm, corners_lonlat: res!.run.corners },
     inflows: res!.inflows.map((f) => ({ catchment_km2: +f.areaKm2.toFixed(2), cn: +f.cn.toFixed(1), lag_h: +f.lagH.toFixed(2), peak_m3s: +Math.max(...f.q).toFixed(1), x_m: f.x, y_m: f.y })),
     totals_m3: res!.totals, mass_error: res!.mass, flooded_km2_series: res!.times.map((tt, i) => [tt, +res!.area[i].toFixed(3)]),
-    limitations: ["No city drains, pumps or sea walls (no open data).", "Below-water channel shape not in the DEM; channels start at their mapped water level.", "Upstream rain is spatially uniform and equal to the scenario rain when switched on.", "Not validated against observed floods yet (Validation page)."],
+    drain_mm_h: calibration.drain_mm_h,
+    limitations: ["City drains: calibrated capacity " + calibration.drain_mm_h + " mm/h (1 Jan 2020 flood with IMERG rain, Validation page); no pumps or sea walls.", "Below-water channel shape not in the DEM; channels start at their mapped water level.", "Upstream rain is spatially uniform and equal to the scenario rain when switched on.", "Checked on three observed floods at report points (about 80 % hit); modelled depths shallower than reported (Validation page)."],
     licence: "CC BY-NC-SA 4.0 (most restrictive input: FABDEM)",
   });
   menu.querySelectorAll<HTMLButtonElement>("[data-x]").forEach((b) => b.addEventListener("click", async () => {
@@ -297,7 +306,7 @@ export function mountSim(page: MapPage, o: { packUrl: string; regionBbox: number
     };
     worker.onerror = (e) => { setRunning(false); $("s-status").textContent = t("sim.err", { m: e.message }); };
     const msg: RunMsg = {
-      type: "run", grid: { nx: run.nx, ny: run.ny, dx: run.dx, z: run.z, n: run.n, cn: run.cn, active: run.active, sea: run.sea }, seaLevel: num("s-sea"), hours, rain: hy, frameS,
+      type: "run", grid: { nx: run.nx, ny: run.ny, dx: run.dx, z: run.z, n: run.n, cn: run.cn, active: run.active, sea: run.sea, drain: drainOf(run) }, seaLevel: num("s-sea"), hours, rain: hy, frameS,
       inflowCells: inflows.map((f) => f.cell), inflowQ: inflows.map((f) => f.q), inflowDt: DT_S, floodM: FLOOD_M, count, preferGpu: gpuAvailable,
     };
     worker.postMessage(msg);

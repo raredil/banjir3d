@@ -87,26 +87,51 @@
     },
     {
       "id": "observed",
-      "status": "partial",
-      "file": "verification/observed/scores-2020-01-01-era5.json",
-      "id_txt": "Dibanding banjir teramati 1 Jan 2020: 259 laporan warga PetaBencana di wilayah model. Dengan hujan ERA5 (rata-rata 66 mm, padahal Halim mencatat 377 mm sehari) model terlalu kering: ini kesalahan data hujan, bukan mesin. Kalibrasi saluran kota menunggu hujan satelit GPM IMERG.",
-      "en_txt": "Against the observed flood of 1 Jan 2020: 259 PetaBencana reports inside the model area. With ERA5 rain (mean 66 mm, while Halim recorded 377 mm in one day) the model is too dry: an error of the rain input, not the engine. Drain calibration waits for GPM IMERG satellite rain.",
+      "status": "pass",
+      "file": "verification/observed/scores-2020-01-01-imerg.json",
+      "id_txt": "Banjir nyata: dengan hujan satelit GPM IMERG, model mengenai sekitar 80 % laporan warga PetaBencana pada tiga banjir (2020 untuk kalibrasi, 2021 dan 2025 untuk uji). Luas genangan 1 Jan 2020 di Jakarta: model 143 km², laporan Pemprov DKI 156 km².",
+      "en_txt": "Observed floods: with GPM IMERG satellite rain the model hits about 80 % of PetaBencana citizen reports in three floods (2020 calibration, 2021 and 2025 tests). Flooded area in Jakarta on 1 Jan 2020: model 143 km², city government report 156 km².",
       "metrics": [
         [
-          "Reports hit (≥ 0.10 m), no drains",
-          "54 %"
+          "Reports hit (≥ 0.10 m), 1 Jan 2020",
+          "80 % of 259"
         ],
         [
-          "Reports hit, drains 20 mm/h",
-          "5 %"
+          "20 Feb 2021 (test)",
+          "78 % of 372"
         ],
         [
-          "Median depth: reports / model",
-          "0.70 / 0.12 m"
+          "4 Mar 2025 (test)",
+          "81 % of 47"
         ],
         [
-          "Mass error",
-          "< 4e-15"
+          "Flooded area > 0.15 m, 2020: model / reported",
+          "143 / 156 km²"
+        ],
+        [
+          "Drain capacity chosen (1–40 mm/h tested)",
+          "0 mm/h"
+        ]
+      ]
+    },
+    {
+      "id": "observed-depth",
+      "status": "partial",
+      "file": "verification/observed/scores-2021-02-20-imerg.json",
+      "id_txt": "Kedalaman: di titik laporan, genangan model lebih dangkal dari yang dilaporkan warga. Hujan satelit dirata-rata per sel 11 km (Halim: 166 mm dalam 3 hari, alat ukur 377 mm sehari), jadi hujan lokal terlalu kecil.",
+      "en_txt": "Depth: at report points the modelled water is shallower than citizens reported. Satellite rain is averaged over 11 km cells (Halim: 166 mm in 3 days, gauge 377 mm in one day), so local rain is too low.",
+      "metrics": [
+        [
+          "Median depth reports / model, 2020",
+          "0.70 / 0.36 m"
+        ],
+        [
+          "2021",
+          "0.65 / 0.25 m"
+        ],
+        [
+          "2025",
+          "0.55 / 0.27 m"
         ]
       ]
     }

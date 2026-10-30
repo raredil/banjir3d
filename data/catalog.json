@@ -496,6 +496,35 @@
       "notes": "Optional; needs the owner to create a free NASA Earthdata account (Phase 4)."
     },
     {
+      "id": "chirps-v3-daily",
+      "name": "CHIRPS v3.0 daily precipitation (satellite + stations)",
+      "theme": "rain",
+      "role": "alternative",
+      "provider": "Climate Hazards Center, UC Santa Barbara",
+      "version": "3.0, final, rnl",
+      "temporal": "1981–present, daily",
+      "doi": "10.15780/G2JQ0P",
+      "url": "https://www.chc.ucsb.edu/data/chirps3",
+      "licence": {
+        "id": "Public domain (copyright waived by the Climate Hazards Center; text to re-read on the CHC page)",
+        "redistributable": "yes"
+      },
+      "resolution": "0.05°, daily",
+      "access": {
+        "method": "GeoTIFF per day over HTTPS, read in GitHub Actions (host not reachable from the cloud session)",
+        "endpoint": "https://data.chc.ucsb.edu/products/CHIRPS/v3.0/daily/final/rnl/",
+        "auth": "none"
+      },
+      "citation": {
+        "text": "Climate Hazards Center (2025). Climate Hazards Center Infrared Precipitation with Stations version 3 (CHIRPS3) data repository. UC Santa Barbara. doi:10.15780/G2JQ0P",
+        "bibtex": "@misc{chc2025chirps3,\n  author = {{Climate Hazards Center}},\n  title = {Climate Hazards Center Infrared Precipitation with Stations version 3 ({CHIRPS3}) data repository},\n  publisher = {UC Santa Barbara},\n  year = {2025},\n  doi = {10.15780/G2JQ0P}\n}"
+      },
+      "status": "single-source",
+      "checked": "2026-10-30",
+      "in_region_pack": false,
+      "notes": "Daily totals only; spread over the hours with the ERA5 pattern for validation runs. v2.0 daily files are no longer on the server for these dates (404)."
+    },
+    {
       "id": "sentinel-2-l2a",
       "name": "Sentinel-2 L2A surface reflectance (least-cloudy median composite)",
       "theme": "imagery",

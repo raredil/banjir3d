@@ -12,7 +12,34 @@
         "2019-12-31T05:00:00Z",
         "2020-01-03T05:00:00Z"
       ],
-      "run_hours": 48
+      "run_hours": 48,
+      "reported": {
+        "_about": "Impact the city reported; figures are used only after reported_excerpts.json (fetched by the Action) shows them in the page text.",
+        "pages": [
+          "https://sumut.antaranews.com/berita/270492/banjir-tahun-baru-2020-adalah-yang-terbaik-selama-siklus-banjir-besar-jakarta",
+          "https://www.antaranews.com/berita/1921596/banjir-dan-kenangan",
+          "https://www.mobil123.com/berita/pemprov-dki-jakarta-klaim-banjir-kali-ini-tidak-seluas-tahun-lalu/62890/amp/"
+        ],
+        "flooded_km2": 156,
+        "flooded_rw": 390,
+        "status": "checked in page text 2026-10-30 (reported_excerpts.json in release observed-jakarta-20261030-o8)",
+        "quote": "luas area tergenang 156 km persegi dengan jumlah RW tergenang sebanyak 390 (Antara, data Pemprov DKI, rapat koordinasi 7 Jan 2020)",
+        "context": {
+          "2007": {
+            "km2": 455,
+            "rw": 955,
+            "rain_mm_day": 340
+          },
+          "2013": {
+            "km2": 240,
+            "rw": 599
+          },
+          "2015": {
+            "km2": 281,
+            "rw": 702
+          }
+        }
+      }
     },
     {
       "id": "2021-02-20",
@@ -25,7 +52,18 @@
         "2021-02-19T05:00:00Z",
         "2021-02-21T05:00:00Z"
       ],
-      "run_hours": 48
+      "run_hours": 48,
+      "reported": {
+        "_about": "Impact the city reported; figures are used only after reported_excerpts.json (fetched by the Action) shows them in the page text.",
+        "pages": [
+          "https://rmol.id/nusantara/read/2021/02/21/476030/banjir-jakarta-dalam-angka-sejak-era-sutiyoso-hingga-anies-baswedan",
+          "https://www.cnnindonesia.com/nasional/20210221075059-20-608918/banjir-jakarta-33-rw-masih-tergenang",
+          "https://www.merahputih.com/post/read/75-rw-di-jakarta-tergenang-banjir-akibat-hujan-deras-sejak-jumat-malam"
+        ],
+        "flooded_km2": null,
+        "flooded_rw": null,
+        "status": "pages refused the Action (HTTP 403); search results only: 113 RW / 342 RT on 20 Feb 2021"
+      }
     },
     {
       "id": "2025-03-04",
@@ -38,7 +76,18 @@
         "2025-03-02T17:00:00Z",
         "2025-03-05T05:00:00Z"
       ],
-      "run_hours": 48
+      "run_hours": 48,
+      "reported": {
+        "_about": "Impact the city reported; figures are used only after reported_excerpts.json (fetched by the Action) shows them in the page text.",
+        "pages": [
+          "https://kabar24.bisnis.com/read/20250304/15/1845118/bpbd-jakarta-117-rt-masih-terendam-banjir-hingga-selasa-malam",
+          "https://www.akurat.co/megapolitan/1305720822/banjir-di-jakarta-meluas-121-rt-dan-lima-ruas-jalan-tergenang"
+        ],
+        "flooded_km2": null,
+        "flooded_rw": null,
+        "status": "checked in page text 2026-10-30: 121 RT and 5 roads at 15:00 WIB 4 Mar 2025 (BPBD via akurat.co); no area figure",
+        "flooded_rt": 121
+      }
     }
   ]
 }

@@ -3,7 +3,7 @@
 > The AUTO part is rebuilt by `python3 tools/make_map.py`. Write by hand only below it.
 
 <!-- AUTO:START -->
-Files: 88 | Lines: 9547 | Fingerprint: 63d1a21be6f4ee78 | Generated: 2026-10-30
+Files: 97 | Lines: 12082 | Fingerprint: 817ea776265ab4eb | Generated: 2026-10-30
 
 ### Files
 - `pipeline/catalog_tools.py` (67 lines): load, bib_entries, check, write_bib
@@ -29,8 +29,8 @@ Files: 88 | Lines: 9547 | Fingerprint: 63d1a21be6f4ee78 | Generated: 2026-10-30
 - `verification/explore-vs-sfincs/compare.py` (64 lines): csi, stats
 - `verification/explore-vs-sfincs/make_inputs.py` (87 lines): lon_px, lat_py, load_dem
 - `verification/explore-vs-sfincs/run_explore.ts` (36 lines): opt
-- `verification/observed/compare.py` (145 lines): load_json, features, auc, grid_of, report_scores, rw_scores, main
-- `verification/observed/fetch.py` (194 lines): get, grid_points, era5, imerg, stations, petabencana, pb_areas, terms (+1 more)
+- `verification/observed/compare.py` (163 lines): load_json, features, auc, grid_of, report_scores, rw_scores, dki_flooded_km2, main
+- `verification/observed/fetch.py` (361 lines): _NasaRedirect, nasa_host, redirect_request, get, grid_points, era5, imerg_granules, imerg (+8 more)
 - `verification/observed/publish.py` (87 lines): features, structure, main
 - `verification/observed/run_event.ts` (79 lines): opt, near, pointAt
 - `verification/region-run/run.ts` (42 lines): opt
@@ -59,9 +59,9 @@ Files: 88 | Lines: 9547 | Fingerprint: 63d1a21be6f4ee78 | Generated: 2026-10-30
 - `web/src/sim/export.ts` (173 lines): save, geotiff, classColor, depthTiff, colourTiff, mercatorPng, htmlMap, mapPng (+6 more)
 - `web/src/sim/flood-layer.ts` (146 lines): downscale, FloodLayer, hex, sh, mk
   - data objects: CLASSES, CLASS_COLORS
-- `web/src/sim/panel.ts` (307 lines): mountSim, refreshAuto, q, tip, sl, num, summarize, setVal (+19 more)
+- `web/src/sim/panel.ts` (316 lines): mountSim, refreshAuto, q, tip, sl, num, summarize, setVal (+19 more)
 - `web/src/sim/worker.ts` (71 lines): post, flooded
-- Not listed one by one (38 files): data/ (5), data/demnas/ (1), data/engine/ (1), data/methods/ (1), data/roughness/ (1), verification/analytical-wave/ (2), verification/data-checks/ (2), verification/explore-vs-sfincs/ (3), verification/gpu-parity/ (2), verification/observed/ (3), web/ (5), web/public/meta/ (2), web/scripts/ (1), web/src/ (5), web/src/explore/ (2), web/src/methods/ (1), web/src/sim/ (1)
+- Not listed one by one (47 files): data/ (5), data/demnas/ (1), data/engine/ (2), data/methods/ (1), data/roughness/ (1), verification/analytical-wave/ (2), verification/data-checks/ (2), verification/explore-vs-sfincs/ (3), verification/gpu-parity/ (2), verification/observed/ (6), web/ (5), web/public/data/jakarta/ (5), web/public/meta/ (2), web/scripts/ (1), web/src/ (5), web/src/explore/ (2), web/src/methods/ (1), web/src/sim/ (1)
 
 ### Links (A -> B means A loads or uses B)
 - `pipeline/catalog_tools.py` -> pipeline/engine_pack.py, web/src/engine/gpu.ts
@@ -87,8 +87,8 @@ Files: 88 | Lines: 9547 | Fingerprint: 63d1a21be6f4ee78 | Generated: 2026-10-30
 - `verification/explore-vs-sfincs/compare.py` -> pipeline/catalog_tools.py, verification/data-checks/check_pack.py, web/src/engine/engine.test.ts, web/src/engine/pack.ts
 - `verification/explore-vs-sfincs/make_inputs.py` -> pipeline/b3d/grid.py, web/src/engine/engine.test.ts, web/src/engine/pack.ts
 - `verification/explore-vs-sfincs/run_explore.ts` -> node:fs, ../../web/src/explore/local-inertial, web/src/engine/engine.test.ts, web/src/explore/local-inertial.ts
-- `verification/observed/compare.py` -> pipeline/b3d/grid.py, pipeline/demnas_ingest.py, verification/data-checks/check_pack.py, web/src/engine/engine.test.ts, web/src/engine/pack.ts, web/src/sim/worker.ts
-- `verification/observed/fetch.py` -> pipeline/b3d/grid.py, pipeline/demnas_ingest.py, pipeline/engine_pack.py, pipeline/verify_sources.py, verification/data-checks/check_pack.py, verification/observed/run_event.ts (+3 more)
+- `verification/observed/compare.py` -> pipeline/b3d/grid.py, pipeline/catalog_tools.py, pipeline/demnas_ingest.py, verification/data-checks/check_pack.py, verification/observed/fetch.py, web/src/engine/engine.test.ts (+2 more)
+- `verification/observed/fetch.py` -> pipeline/b3d/grid.py, pipeline/b3d/util.py, pipeline/demnas_ingest.py, pipeline/engine_pack.py, pipeline/verify_sources.py, verification/data-checks/check_pack.py (+6 more)
 - `verification/observed/publish.py` -> pipeline/demnas_ingest.py, pipeline/verify_sources.py, verification/data-checks/check_pack.py, verification/observed/compare.py, verification/observed/fetch.py, web/src/main.ts
 - `verification/observed/run_event.ts` -> node:fs, node:zlib, ../../web/src/engine/pack, ../../web/src/engine/solver, ../../web/src/engine/hydrology, ../../web/src/util (+6 more)
 - `verification/region-run/run.ts` -> node:fs, node:zlib, ../../web/src/engine/pack, ../../web/src/engine/solver, ../../web/src/engine/hydrology, ../../web/src/explore/rain (+6 more)
@@ -111,7 +111,7 @@ Files: 88 | Lines: 9547 | Fingerprint: 63d1a21be6f4ee78 | Generated: 2026-10-30
 - `web/src/methods/page.ts` -> ../../../data/methods/methods.md?raw, ../../../data/methods/references.json, ../i18n, ./cite, pipeline/b3d/util.py, web/src/catalog.ts (+1 more)
 - `web/src/sim/export.ts` -> maplibre-gl, ./flood-layer, ../util, https://unpkg.com/leaflet@1.9.4/dist/leaflet.js, https://unpkg.com/leaflet@1.9.4/dist/leaflet.css, pipeline/b3d/grid.py (+8 more)
 - `web/src/sim/flood-layer.ts` -> maplibre-gl, ../util, pipeline/b3d/grid.py, pipeline/b3d/tiles.py, pipeline/demnas_ingest.py, web/src/engine/engine.test.ts (+2 more)
-- `web/src/sim/panel.ts` -> maplibre-gl, ../i18n, ../map, ../engine/pack, ../engine/hydrology, ../explore/rain (+20 more)
+- `web/src/sim/panel.ts` -> maplibre-gl, ../i18n, ../map, ../engine/pack, ../engine/hydrology, ../explore/rain (+22 more)
 - `web/src/sim/worker.ts` -> ../engine/solver, ../engine/gpu, ../explore/rain, pipeline/demnas_ingest.py, web/src/engine/engine.test.ts, web/src/engine/gpu.ts (+3 more)
 
 ### Saved data keys (browser storage)

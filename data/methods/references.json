@@ -127,6 +127,22 @@
    "accessed": "29 October 2026"
   },
   {
+   "key": "huffman2023",
+   "type": "dataset",
+   "authors": [
+    "Huffman, G.J.",
+    "Stocker, E.F.",
+    "Bolvin, D.T.",
+    "Nelkin, E.J.",
+    "Tan, J."
+   ],
+   "year": 2023,
+   "title": "GPM IMERG Final Precipitation L3 Half Hourly 0.1 degree x 0.1 degree V07",
+   "place": "Greenbelt, MD",
+   "publisher": "Goddard Earth Sciences Data and Information Services Center (GES DISC)",
+   "doi": "10.5067/GPM/IMERG/3B-HH/07"
+  },
+  {
    "key": "hunter2005",
    "type": "article",
    "authors": [

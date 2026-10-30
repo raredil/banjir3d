@@ -1,13 +1,13 @@
 name: Observed data
 
 # Fetches the observed data used for validation (verification/observed/fetch.py): PetaBencana.id flood reports, ERA5 / ERA5-Land
-# hourly rain (Open-Meteo), NOAA station records and, with the EARTHDATA_TOKEN secret, GPM IMERG half-hourly rain. These hosts are not reachable from the cloud session, so this runs here.
+# hourly rain (Open-Meteo), NOAA station records, CHIRPS daily rain and, with the EARTHDATA_TOKEN secret, GPM IMERG half-hourly rain. These hosts are not reachable from the cloud session, so this runs here.
 # Rain and station data are open (CC BY 4.0 / public domain) and go into a public release. PetaBencana answers go into the
 # public release only when their own terms page names an open licence (checked by publish.py); otherwise only counts are published.
 on:
   workflow_dispatch:
   push:
-    branches: ["claude/**"]
+    branches: ["claude/**", "ccr-**"]
     paths: ["verification/observed/fetch.py", "verification/observed/publish.py", "verification/observed/events.json", ".github/workflows/observed.yml"]
 
 permissions:
@@ -31,7 +31,7 @@ jobs:
       - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
         with:
           python-version: "3.13"
-      - run: pip install h5py==3.15.1 numpy==2.5.4
+      - run: pip install h5py==3.15.1 numpy==2.5.4 rasterio==1.5.2
       - run: python verification/observed/fetch.py "$RUNNER_TEMP/obs"
         env:
           EARTHDATA_TOKEN: ${{ secrets.EARTHDATA_TOKEN }}

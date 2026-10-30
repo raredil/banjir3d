@@ -7,6 +7,8 @@ Reports (points): flood reports inside the run area. Model depth = largest max d
 approximate). Hit = model >= 0.10 m. Depth error where the report gives a depth.
 RW areas: an RW counts as observed flooded when the flooded-area archive lists it with max_state >= 1. Model score per RW = share of
 its land cells (not channel or sea) with max depth > 0.15 m. AUC (no threshold) and CSI with RW flooded when the share >= 10 %.
+Area: modelled flooded land (> 0.15 m, not channel or sea) inside the five mainland Jakarta cities (data/regions/jakarta_domain.geojson,
+admin feature), to set against the flooded area the city reported for the event ('reported' in events.json): the over-prediction check.
 """
 import gzip, json, sys
 from pathlib import Path
@@ -105,6 +107,20 @@ def rw_scores(areas, flooded_ids, h, summary, land):
             "rw_share_threshold": RW_SHARE}
 
 
+def dki_flooded_km2(h, summary, land):
+    from rasterio import features as rf
+    from rasterio.transform import from_origin
+    import shapely
+    from shapely.geometry import shape
+
+    x0, y0, dx, nx, ny, tr = grid_of(summary)
+    dom = json.loads((Path(__file__).parents[2] / "data/regions/jakarta_domain.geojson").read_text())
+    adm = [f for f in dom["features"] if f["properties"].get("role") == "admin"][0]
+    g = shapely.transform(shape(adm["geometry"]), lambda xy: np.column_stack(tr.transform(xy[:, 0], xy[:, 1])))
+    inside = rf.rasterize([(g, 1)], out_shape=(ny, nx), transform=from_origin(x0, y0, dx, dx), dtype="uint8").astype(bool)
+    return float(((h > WET_M) & land & inside).sum() * dx * dx / 1e6), float((inside & land).sum() * dx * dx / 1e6)
+
+
 def main():
     obs, ev, rundir, outp = Path(sys.argv[1]), sys.argv[2], Path(sys.argv[3]), Path(sys.argv[4])
     rep = features(load_json(obs / ev / "pb_reports_archive_geojson.json"))
@@ -112,7 +128,7 @@ def main():
     arch = arch if isinstance(arch, list) else [f.get("properties", f) for f in features(arch)]
     flooded = {str(a["area_id"]) for a in arch if (a.get("max_state") or 0) >= 1}
     areas = []
-    for name in ("admin", "city", "states"):
+    for name in ("admin", "admin_json"):  # all RW of Jakarta (minimum_state answers hold only areas flooded now)
         p = obs / f"pb_areas_{name}.json"
         if p.exists():
             try:
@@ -133,8 +149,10 @@ def main():
              "reports": report_scores(rep, h, s, inside)}
         if areas:
             r["rw"] = rw_scores(areas, flooded, h, s, land)
+        r["dki_flooded_km2"], r["dki_land_km2"] = dki_flooded_km2(h, s, land)
         results.append(r)
-    out = {"event": ev, "source": "PetaBencana.id flood reports and flooded-area archive (aggregate scores only)",
+    reported = next((e.get("reported") for e in json.loads((Path(__file__).parent / "events.json").read_text())["events"] if e["id"] == ev), None)
+    out = {"event": ev, "source": "PetaBencana.id flood reports and flooded-area archive (aggregate scores only)", "reported": reported,
            "n_flooded_area_records": len(flooded), "rw_shapes": len(areas), "results": results}
     outp.write_text(json.dumps(out, indent=1))
     print(json.dumps(out, indent=1))

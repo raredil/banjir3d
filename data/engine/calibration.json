@@ -1,0 +1,17 @@
+{
+ "_about": "Effective city-drain capacity used by the app (mm/h on a fully built cell, scaled by the built share). Calibrated on the 1 Jan 2020 flood, checked on 20 Feb 2021 and 4 Mar 2025 (verification/observed/scores-*-imerg.json).",
+ "drain_mm_h": 0,
+ "rain_used": "GPM IMERG Final V07 half-hourly",
+ "tested_mm_h": [
+  0,
+  1,
+  2,
+  3,
+  5,
+  10,
+  20,
+  40
+ ],
+ "result": "every value above 0 lowered the share of reports hit and the flooded area fell below the reported 156 km2; 0 is used",
+ "caveat": "IMERG averages rain over 0.1 degree cells (166 mm at the Halim cell vs 377 mm at the gauge): missing drains and smoothed rain can offset each other, one event cannot separate them"
+}

@@ -13,3 +13,15 @@
 
 Reference value for the 1 Jan 2020 storm: 377 mm/day at Halim Perdanakusuma (Lubis et al. 2022, research/phase2-methods-sources.md).
 Reading: ERA5 has about a quarter of that over the whole window, so it cannot drive calibration of this event.
+
+## Added 2026-10-30 (13th session)
+| Source | Status |
+|---|---|
+| CHIRPS daily (data.chc.ucsb.edu, no login) | v2.0 daily files 404 for these dates; v3.0 `daily/final/rnl/<year>/chirps-v3.0.rnl.<date>.tif` used (doi:10.15780/G2JQ0P, public domain per CHC). Event mean over the 0.1° grid: 2020-01-01 65 mm (ERA5 79), 2021-02-20 60 (37), 2025-03-04 64 (56): CHIRPS also misses the 2020 extreme. Assumption: CHIRPS day = UTC day (not confirmed) |
+| GPM IMERG Final V07 | old guessed path (gpm1.gesdisc, `3B-HH.`) 404. Working: CMR `granules.json?short_name=GPM_3IMERGHH&version=07` → `https://data.gesdisc.earthdata.nasa.gov/data/GPM_L3/GPM_3IMERGHH.07/<yyyy>/<doy>/3B-HHR.MS.MRG.3IMERG.<date>-S..-E...<min>.V07B.HDF5` (~7.5 MB each) with Bearer token. 2020-01-01 window: 144 files, mean 119 mm, max 200 mm, cell at 106.85 E 6.25 S 166 mm (gauge Halim 377 mm/day: 0.1° average smooths the peak). 2021-02-20: mean 43; 2025-03-04: mean 86 |
+| Reported impact, 1 Jan 2020 (CHECKED in page text, release o8 `reported_excerpts.json`) | Antara (sumut.antaranews.com/berita/270492, citing the DKI coordination meeting of 7 Jan 2020): 390 RW, flooded area 156 km². Antara (antaranews.com/berita/1921596): 157 kelurahan (60 %) on 1 Jan, 390 RW (14.2 %) still flooded on 2 Jan. Pages fetched by the Action into `reported_excerpts.json` before any figure is used |
+| Reported impact, 20 Feb 2021 (search results) | 113 RW / 342 RT on the day; 75 RW at 07:00 WIB (JAKI); 33 RW on 21 Feb (CNN Indonesia) |
+| Reported impact, 4 Mar 2025 (search results) | only RT counts: 121 RT at 15:00 WIB, 117 RT at 22:00 WIB (Bisnis.com) |
+| RW boundaries (open) | none found: PetaBencana `/floods?admin=ID-JK` 500; GADM/geoBoundaries stop at kelurahan; Jakarta GIS (gis-dpmptsp.jakarta.go.id) ArcGIS layers are per-RW samples, copyright Dinas Cipta Karya, no licence. Over-prediction check therefore uses flooded AREA inside the five mainland cities (compare.py `dki_flooded_km2`) |
+
+Page text, sumut.antaranews.com/berita/270492: 2020 156 km², 390 RW; 2007 455 km², 955 RW, 340 mm/day; 2013 240 km, 599 RW; 2015 281 km, 702 RW (the article writes "km" for 2013/2015). News sites rmol, cnnindonesia, merahputih, bisnis, mobil123 answer 403 to the Action.

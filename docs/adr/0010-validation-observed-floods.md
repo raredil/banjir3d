@@ -12,3 +12,6 @@ Engine v2 was never compared with a real flood and has no city drains, so result
 
 ## Consequences
 Until IMERG (or another gauge-quality rain) is available, scores with ERA5 show the rain input error, not the model error. The drain removes water from the model (no routing through pipes to rivers or pumps), a simplification of the real system.
+
+## Result (2026-10-30, 13th session)
+Calibrated with GPM IMERG Final V07 rain on 1 Jan 2020: drain capacity 0 mm/h (1, 2, 3, 5, 10, 20, 40 tested; each lowered the reports hit and the flooded area fell below the reported 156 km²). Tests with the same setting: 2021-02-20 78 % of 372 reports hit, 2025-03-04 81 % of 47. Model depths at reports are shallower than reported. Value in `data/engine/calibration.json`; scores in `verification/observed/scores-*-imerg.json`.

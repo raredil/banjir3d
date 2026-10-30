@@ -1,0 +1,207 @@
+{
+ "event": "2020-01-01",
+ "source": "PetaBencana.id flood reports and flooded-area archive (aggregate scores only)",
+ "reported": {
+  "_about": "Impact the city reported; figures are used only after reported_excerpts.json (fetched by the Action) shows them in the page text.",
+  "pages": [
+   "https://sumut.antaranews.com/berita/270492/banjir-tahun-baru-2020-adalah-yang-terbaik-selama-siklus-banjir-besar-jakarta",
+   "https://www.antaranews.com/berita/1921596/banjir-dan-kenangan",
+   "https://www.mobil123.com/berita/pemprov-dki-jakarta-klaim-banjir-kali-ini-tidak-seluas-tahun-lalu/62890/amp/"
+  ],
+  "flooded_km2": 156,
+  "flooded_rw": 390,
+  "status": "checked in page text 2026-10-30 (reported_excerpts.json in release observed-jakarta-20261030-o8)",
+  "quote": "luas area tergenang 156 km persegi dengan jumlah RW tergenang sebanyak 390 (Antara, data Pemprov DKI, rapat koordinasi 7 Jan 2020)",
+  "context": {
+   "2007": {
+    "km2": 455,
+    "rw": 955,
+    "rain_mm_day": 340
+   },
+   "2013": {
+    "km2": 240,
+    "rw": 599
+   },
+   "2015": {
+    "km2": 281,
+    "rw": 702
+   }
+  }
+ },
+ "n_flooded_area_records": 482,
+ "rw_shapes": 0,
+ "results": [
+  {
+   "run": "2020-01-01_imerg_k3_d0",
+   "drain_mm_h": 0,
+   "rain": "rain_imerg.json",
+   "rain_scale": 1,
+   "mean_rain_mm": 142.871571079419,
+   "flooded_km2": 358.7733,
+   "mass_error": 1.964117945157554e-15,
+   "reports": {
+    "n_reports": 259,
+    "hit_rate": 0.7953667953667953,
+    "n_with_depth": 211,
+    "depth_bias_m": -0.25212649070379717,
+    "depth_mae_m": 0.5195100537364447,
+    "depth_rmse_m": 0.647382343151907,
+    "observed_median_m": 0.7,
+    "model_median_m": 0.357978880405426
+   },
+   "dki_flooded_km2": 142.641,
+   "dki_land_km2": 561.7431
+  },
+  {
+   "run": "2020-01-01_imerg_k3_d1",
+   "drain_mm_h": 1,
+   "rain": "rain_imerg.json",
+   "rain_scale": 1,
+   "mean_rain_mm": 142.871571079419,
+   "flooded_km2": 320.2335,
+   "mass_error": 0,
+   "reports": {
+    "n_reports": 259,
+    "hit_rate": 0.752895752895753,
+    "n_with_depth": 211,
+    "depth_bias_m": -0.33764348734576266,
+    "depth_mae_m": 0.5238621929976471,
+    "depth_rmse_m": 0.6508412977651431,
+    "observed_median_m": 0.7,
+    "model_median_m": 0.2966354489326477
+   },
+   "dki_flooded_km2": 120.2607,
+   "dki_land_km2": 561.7431
+  },
+  {
+   "run": "2020-01-01_imerg_k3_d2",
+   "drain_mm_h": 2,
+   "rain": "rain_imerg.json",
+   "rain_scale": 1,
+   "mean_rain_mm": 142.871571079419,
+   "flooded_km2": 279.6444,
+   "mass_error": -1.6962314826889534e-15,
+   "reports": {
+    "n_reports": 259,
+    "hit_rate": 0.694980694980695,
+    "n_with_depth": 211,
+    "depth_bias_m": -0.4137553126435567,
+    "depth_mae_m": 0.5390365564424138,
+    "depth_rmse_m": 0.6593458220311736,
+    "observed_median_m": 0.7,
+    "model_median_m": 0.2427224963903427
+   },
+   "dki_flooded_km2": 97.5321,
+   "dki_land_km2": 561.7431
+  },
+  {
+   "run": "2020-01-01_imerg_k3_d3",
+   "drain_mm_h": 3,
+   "rain": "rain_imerg.json",
+   "rain_scale": 1,
+   "mean_rain_mm": 142.871571079419,
+   "flooded_km2": 238.8285,
+   "mass_error": 1.5400137740041724e-14,
+   "reports": {
+    "n_reports": 259,
+    "hit_rate": 0.6177606177606177,
+    "n_with_depth": 211,
+    "depth_bias_m": -0.498394025712499,
+    "depth_mae_m": 0.5688942567276728,
+    "depth_rmse_m": 0.6859140120636398,
+    "observed_median_m": 0.7,
+    "model_median_m": 0.18802553415298462
+   },
+   "dki_flooded_km2": 75.7269,
+   "dki_land_km2": 561.7431
+  },
+  {
+   "run": "2020-01-01_imerg_k3_d5",
+   "drain_mm_h": 5,
+   "rain": "rain_imerg.json",
+   "rain_scale": 1,
+   "mean_rain_mm": 142.871571079419,
+   "flooded_km2": 166.9734,
+   "mass_error": 6.249413261015262e-16,
+   "reports": {
+    "n_reports": 259,
+    "hit_rate": 0.4594594594594595,
+    "n_with_depth": 211,
+    "depth_bias_m": -0.6328464236806953,
+    "depth_mae_m": 0.6643597447865982,
+    "depth_rmse_m": 0.775594777259934,
+    "observed_median_m": 0.7,
+    "model_median_m": 0.07255888730287552
+   },
+   "dki_flooded_km2": 41.5692,
+   "dki_land_km2": 561.7431
+  },
+  {
+   "run": "2020-01-01_imerg_k3_d10",
+   "drain_mm_h": 10,
+   "rain": "rain_imerg.json",
+   "rain_scale": 1,
+   "mean_rain_mm": 142.871571079419,
+   "flooded_km2": 104.2794,
+   "mass_error": -4.6646639847863374e-15,
+   "reports": {
+    "n_reports": 259,
+    "hit_rate": 0.21621621621621623,
+    "n_with_depth": 211,
+    "depth_bias_m": -0.7109479886173686,
+    "depth_mae_m": 0.7281793809297573,
+    "depth_rmse_m": 0.8350310468020791,
+    "observed_median_m": 0.7,
+    "model_median_m": 0.029568493366241455
+   },
+   "dki_flooded_km2": 12.7251,
+   "dki_land_km2": 561.7431
+  },
+  {
+   "run": "2020-01-01_imerg_k3_d20",
+   "drain_mm_h": 20,
+   "rain": "rain_imerg.json",
+   "rain_scale": 1,
+   "mean_rain_mm": 142.871571079419,
+   "flooded_km2": 87.3342,
+   "mass_error": 4.530804630213008e-15,
+   "reports": {
+    "n_reports": 259,
+    "hit_rate": 0.15444015444015444,
+    "n_with_depth": 211,
+    "depth_bias_m": -0.7356217320758179,
+    "depth_mae_m": 0.7477606752197483,
+    "depth_rmse_m": 0.8535772149694885,
+    "observed_median_m": 0.7,
+    "model_median_m": 0.0187971293926239
+   },
+   "dki_flooded_km2": 6.0507,
+   "dki_land_km2": 561.7431
+  },
+  {
+   "run": "2020-01-01_imerg_k3_d40",
+   "drain_mm_h": 40,
+   "rain": "rain_imerg.json",
+   "rain_scale": 1,
+   "mean_rain_mm": 142.871571079419,
+   "flooded_km2": 78.732,
+   "mass_error": 1.3570306865789176e-14,
+   "reports": {
+    "n_reports": 259,
+    "hit_rate": 0.10810810810810811,
+    "n_with_depth": 211,
+    "depth_bias_m": -0.7445760962289816,
+    "depth_mae_m": 0.7551947159500643,
+    "depth_rmse_m": 0.859346758989813,
+    "observed_median_m": 0.7,
+    "model_median_m": 0.017513016238808632
+   },
+   "dki_flooded_km2": 3.8475,
+   "dki_land_km2": 561.7431
+  }
+ ],
+ "runs": [
+  "validation-jakarta-2020-01-01-v2",
+  "validation-jakarta-2020-01-01-v3"
+ ]
+}

@@ -1,0 +1,64 @@
+{
+ "event": "2025-03-04",
+ "source": "PetaBencana.id flood reports and flooded-area archive (aggregate scores only)",
+ "reported": {
+  "_about": "Impact the city reported; figures are used only after reported_excerpts.json (fetched by the Action) shows them in the page text.",
+  "pages": [
+   "https://kabar24.bisnis.com/read/20250304/15/1845118/bpbd-jakarta-117-rt-masih-terendam-banjir-hingga-selasa-malam",
+   "https://www.akurat.co/megapolitan/1305720822/banjir-di-jakarta-meluas-121-rt-dan-lima-ruas-jalan-tergenang"
+  ],
+  "flooded_km2": null,
+  "flooded_rw": null,
+  "status": "checked in page text 2026-10-30: 121 RT and 5 roads at 15:00 WIB 4 Mar 2025 (BPBD via akurat.co); no area figure",
+  "flooded_rt": 121
+ },
+ "n_flooded_area_records": 5,
+ "rw_shapes": 0,
+ "results": [
+  {
+   "run": "2025-03-04_imerg_k3_d0",
+   "drain_mm_h": 0,
+   "rain": "rain_imerg.json",
+   "rain_scale": 1,
+   "mean_rain_mm": 99.0830952284483,
+   "flooded_km2": 303.588,
+   "mass_error": -7.931955808229342e-15,
+   "reports": {
+    "n_reports": 47,
+    "hit_rate": 0.8085106382978723,
+    "n_with_depth": 45,
+    "depth_bias_m": -0.06027937439249623,
+    "depth_mae_m": 0.6099545664836963,
+    "depth_rmse_m": 0.7976823659234628,
+    "observed_median_m": 0.55,
+    "model_median_m": 0.2700941562652588
+   },
+   "dki_flooded_km2": 103.2426,
+   "dki_land_km2": 561.7431
+  },
+  {
+   "run": "2025-03-04_imerg_k3_d2",
+   "drain_mm_h": 2,
+   "rain": "rain_imerg.json",
+   "rain_scale": 1,
+   "mean_rain_mm": 99.0830952284483,
+   "flooded_km2": 250.6707,
+   "mass_error": 1.4910949328337188e-15,
+   "reports": {
+    "n_reports": 47,
+    "hit_rate": 0.7872340425531915,
+    "n_with_depth": 45,
+    "depth_bias_m": -0.2068381905025906,
+    "depth_mae_m": 0.5681274205843608,
+    "depth_rmse_m": 0.753132257735928,
+    "observed_median_m": 0.55,
+    "model_median_m": 0.22940029203891754
+   },
+   "dki_flooded_km2": 77.4117,
+   "dki_land_km2": 561.7431
+  }
+ ],
+ "runs": [
+  "validation-jakarta-2025-03-04-v5"
+ ]
+}
