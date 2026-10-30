@@ -43,7 +43,7 @@ docs/adr/0009-engine-v2-data-driven.md, docs/adr/0010-validation-observed-floods
 2026-10-30, 20 points: see FEEDBACK.md (12 rows). Open: sharper imagery (owner decision), validation (next).
 
 ## Security status (last check date, open items)
-2026-10-30 (12th): no web dependency change. New workflows `observed.yml`, `validate.yml`: inputs validated (event id regex, rain/k allow-list, drains numeric 0-500, max 8), passed via env, pinned action SHAs, `contents: write` only on publishing jobs. Secret `EARTHDATA_TOKEN` only sent as Bearer header to gpm1.gesdisc.eosdis.nasa.gov, never logged. PetaBencana raw records never published (licence unknown). Actions-only pip: h5py 3.15.1.
+2026-10-30 (12th): no web dependency change. New workflows `observed.yml`, `validate.yml`: inputs validated (event id regex, rain/k allow-list, drains numeric 0-500, max 8), passed via env, pinned action SHAs, `contents: write` only on publishing jobs. Secret `EARTHDATA_TOKEN` only sent as Bearer header to https hosts ending .earthdata.nasa.gov / .eosdis.nasa.gov (fetch.py refuses others), removed on redirects off NASA hosts (signed S3 links), never logged. PetaBencana raw records never published (licence unknown). Actions-only pip: h5py 3.15.1.
 2026-10-30: no new dependencies; CSP unchanged (engine pack same-origin; exported HTML loads Leaflet/OSM from CDN only inside the downloaded file). New inputs: `#/sim?box=` (numbers, clipped to region), hourly rain (existing strict parser). npm audit not re-run this session (no dependency change).
 
 ## Next steps (ordered, specific, file paths)
