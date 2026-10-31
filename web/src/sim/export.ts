@@ -158,10 +158,13 @@ export function mapPng(map: MlMap, title: string, sub: string, lines: string[], 
         c.fillStyle = "rgba(255,255,255,.9)"; c.fillRect(bx - 6 * dpr, by - 16 * dpr, bw + 12 * dpr, 28 * dpr);
         c.fillStyle = "#111"; c.fillRect(bx, by, bw, 4 * dpr);
         c.font = `${11 * dpr}px "IBM Plex Sans", sans-serif`; c.fillText(nice >= 1000 ? `${nice / 1000} km` : `${nice} m`, bx, by - 4 * dpr);
-        // north arrow (the map is drawn north-up: bearing 0 is enforced)
-        const nx = pad + src.width - 28 * dpr, ny = head + 16 * dpr;
-        c.fillStyle = "#111"; c.beginPath(); c.moveTo(nx, ny); c.lineTo(nx - 8 * dpr, ny + 22 * dpr); c.lineTo(nx, ny + 17 * dpr); c.lineTo(nx + 8 * dpr, ny + 22 * dpr); c.closePath(); c.fill();
-        c.font = `600 ${11 * dpr}px "IBM Plex Sans", sans-serif`; c.fillText("U/N", nx - 11 * dpr, ny + 36 * dpr);
+        // north arrow, turned by the map bearing (the user can rotate the map)
+        const nx = pad + src.width - 28 * dpr, ny = head + 30 * dpr;
+        c.fillStyle = "rgba(255,255,255,.9)"; c.beginPath(); c.arc(nx, ny, 22 * dpr, 0, 2 * Math.PI); c.fill();
+        c.save(); c.translate(nx, ny); c.rotate((-map.getBearing() * Math.PI) / 180);
+        c.fillStyle = "#111"; c.beginPath(); c.moveTo(0, -16 * dpr); c.lineTo(-8 * dpr, 6 * dpr); c.lineTo(0, 1 * dpr); c.lineTo(8 * dpr, 6 * dpr); c.closePath(); c.fill();
+        c.font = `600 ${10 * dpr}px "IBM Plex Sans", sans-serif`; c.textAlign = "center"; c.fillText("U/N", 0, 17 * dpr);
+        c.restore();
         c.fillStyle = "#444"; c.font = `${10.5 * dpr}px "IBM Plex Sans", sans-serif`;
         lines.forEach((l, i) => c.fillText(l, pad, head + src.height + (18 + i * 15) * dpr));
         cv.toBlob((b) => (b ? resolve(b) : reject(new Error("png"))), "image/png");

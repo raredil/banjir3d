@@ -9,6 +9,9 @@ import { MAX_ZOOM, esc, rasterResampling, toUtm } from "./util";
 const BASEMAP = "https://tiles.openfreemap.org/styles/positron";
 const GLYPHS = "https://tiles.openfreemap.org/fonts/{fontstack}/{range}.pbf";
 const FONT = ["Noto Sans Regular"];
+// Esri World Imagery (owner's choice, 2026-10-31) with Esri's place-name overlay; attribution as Esri requires.
+const ESRI = "https://server.arcgisonline.com/ArcGIS/rest/services";
+const ESRI_ATTR = 'Powered by <a href="https://www.esri.com">Esri</a> | Esri, Maxar, Earthstar Geographics, and the GIS User Community';
 
 export type MapCtx = { regionId: string; region: { bbox: number[]; name: string; domain?: string }; manifest: Manifest | null; catalog: Catalog; dataBase: string; at?: string | null };
 export type MapPage = { el: HTMLElement; map: MlMap; dockBody: HTMLElement; kpis: HTMLElement; timeline: HTMLElement; legend: HTMLElement; tools: HTMLElement; setTab(tab: "layers" | "sim"): void; onOverlays(f: () => void): void; onTab?: (tab: "layers" | "sim") => void };
@@ -17,6 +20,14 @@ const displayFiles = (m: Manifest | null) => { const r = new Map<string, Record<
 const emptyStyle = (): StyleSpecification => ({ version: 8, glyphs: GLYPHS, sources: {}, layers: [{ id: "bg", type: "background", paint: { "background-color": "#eef1f4" } }] });
 async function loadBasemap(kind: string): Promise<StyleSpecification> {
   if (kind === "none") return emptyStyle();
+  if (kind === "sat") return {
+    version: 8, glyphs: GLYPHS,
+    sources: {
+      esri: { type: "raster", tiles: [`${ESRI}/World_Imagery/MapServer/tile/{z}/{y}/{x}`], tileSize: 256, maxzoom: 19, attribution: ESRI_ATTR },
+      esriLabels: { type: "raster", tiles: [`${ESRI}/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}`], tileSize: 256, maxzoom: 19 },
+    },
+    layers: [{ id: "bg", type: "background", paint: { "background-color": "#1b2430" } }, { id: "esri", type: "raster", source: "esri" }, { id: "esri-labels", type: "raster", source: "esriLabels" }],
+  };
   try { const r = await fetch(BASEMAP); if (!r.ok) throw new Error(String(r.status)); return (await r.json()) as StyleSpecification; } catch { return emptyStyle(); }
 }
 
@@ -81,7 +92,7 @@ export async function createMapPage(root: HTMLElement, ctx: MapCtx): Promise<Map
       </div>
       <div class="dock-body" id="dock-layers">
         ${ctx.manifest ? "" : `<div class="note warn">${t("nopack")}</div>`}
-        <div class="sec"><h3>${t("basemap")}</h3><select id="basemap"><option value="light">${t("basemap.light")}</option><option value="none">${t("basemap.none")}</option></select></div>
+        <div class="sec"><h3>${t("basemap")}</h3><select id="basemap"><option value="sat">${t("basemap.sat")}</option><option value="light">${t("basemap.light")}</option><option value="none">${t("basemap.none")}</option></select></div>
         ${groups.map((g) => `<div class="sec"><h3>${t(g as Key)}</h3>${LAYERS.filter((l) => l.group === g).map((l) => `
           <div class="layer ${available(l) ? "" : "missing"}">
             <input type="checkbox" ${l.visible && available(l) ? "checked" : ""} ${available(l) ? "" : "disabled"} data-toggle="${l.id}" aria-label="${esc(l.name[lang])}">
@@ -102,9 +113,19 @@ export async function createMapPage(root: HTMLElement, ctx: MapCtx): Promise<Map
   const [w, s, e, n] = ctx.region.bbox;
   const at = (ctx.at ?? "").split(",").map(Number);
   const view = at.length === 3 && at.every(Number.isFinite) ? { center: [at[0], at[1]] as [number, number], zoom: at[2] } : { bounds: [[w, s], [e, n]] as [[number, number], [number, number]], fitBoundsOptions: { padding: { left: 400, right: 60, top: 40, bottom: 40 } } };
-  const map = new MlMap({ container: el.querySelector<HTMLElement>("#map")!, style: await loadBasemap("light"), ...view, attributionControl: false, maxPitch: 0, pitchWithRotate: false, dragRotate: false, maxZoom: MAX_ZOOM });
-  map.touchZoomRotate.disableRotation(); // maps stay north-up (exports state "north up")
-  map.addControl(new NavigationControl({ showCompass: false }), "top-right");
+  const map = new MlMap({ container: el.querySelector<HTMLElement>("#map")!, style: await loadBasemap("sat"), ...view, attributionControl: false, maxPitch: 0, pitchWithRotate: false, maxZoom: MAX_ZOOM });
+  // rotation: right-click drag, two fingers, the compass (click = north up) or the 15° buttons; the PNG export turns its north arrow with the map
+  map.addControl(new NavigationControl({ showCompass: true, visualizePitch: false }), "top-right");
+  map.addControl({
+    onAdd() {
+      const c = document.createElement("div");
+      c.className = "maplibregl-ctrl maplibregl-ctrl-group";
+      c.innerHTML = `<button type="button" data-r="-15" title="${t("rotate.h")}" aria-label="-15°">⟲</button><button type="button" data-r="15" title="${t("rotate.h")}" aria-label="+15°">⟳</button>`;
+      c.querySelectorAll<HTMLButtonElement>("button").forEach((b) => b.addEventListener("click", () => map.rotateTo(map.getBearing() + Number(b.dataset.r), { duration: 250 })));
+      return c;
+    },
+    onRemove() {},
+  }, "top-right");
   map.addControl(new ScaleControl({ unit: "metric", maxWidth: 140 }), "bottom-right");
   map.addControl(new AttributionControl({ compact: true }), "bottom-right");
 

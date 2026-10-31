@@ -3,7 +3,7 @@
 > The AUTO part is rebuilt by `python3 tools/make_map.py`. Write by hand only below it.
 
 <!-- AUTO:START -->
-Files: 110 | Lines: 13771 | Fingerprint: 98e70c0be22b0bf4 | Generated: 2026-10-30
+Files: 111 | Lines: 14043 | Fingerprint: 2f089bd9c34e2009 | Generated: 2026-10-31
 
 ### Files
 - `pipeline/catalog_tools.py` (67 lines): load, bib_entries, check, write_bib
@@ -38,10 +38,10 @@ Files: 110 | Lines: 13771 | Fingerprint: 98e70c0be22b0bf4 | Generated: 2026-10-3
 - `verification/region-run/run.ts` (42 lines): opt
 - `web/src/catalog.ts` (73 lines): card, renderCatalog, renderValidation
   - data objects: ORDER
-- `web/src/i18n.ts` (168 lines): initial, setLang, t, applyStatic
+- `web/src/i18n.ts` (172 lines): initial, setLang, t, applyStatic
   - data objects: STR
 - `web/src/main.ts` (88 lines): ensureMap, route, applyTheme, state
-- `web/src/map.ts` (178 lines): loadBasemap, mlLayers, legendHtml, createMapPage, displayFiles, available, attr, addOverlays (+1 more)
+- `web/src/map.ts` (199 lines): loadBasemap, mlLayers, legendHtml, createMapPage, displayFiles, available, attr, addOverlays (+1 more)
   - data objects: FONT
 - `web/src/pmtiles-init.ts` (14 lines): ensurePmtiles
 - `web/src/util.ts` (93 lines): esc, safeUrl, fmtBytes, toUtm, rasterResampling, fromUtm
@@ -59,13 +59,14 @@ Files: 110 | Lines: 13771 | Fingerprint: 98e70c0be22b0bf4 | Generated: 2026-10-3
 - `web/src/explore/roughness.ts` (56 lines): classify, nOfClass, nFieldFromCodes, classFractions, hex
 - `web/src/methods/cite.ts` (121 lines): citeAuthors, refEntry, citedKeys, cite, parseBlocks, renderHtml, renderMarkdown, toBibtex (+9 more)
 - `web/src/methods/page.ts` (34 lines): renderMethods, download
-- `web/src/sim/export.ts` (173 lines): save, geotiff, classColor, depthTiff, colourTiff, mercatorPng, htmlMap, mapPng (+6 more)
+- `web/src/sim/conclusion.ts` (121 lines): buildConclusion, round3, cite, citeN, n, pct, deg, when (+1 more)
+- `web/src/sim/export.ts` (176 lines): save, geotiff, classColor, depthTiff, colourTiff, mercatorPng, htmlMap, mapPng (+6 more)
 - `web/src/sim/exposure.ts` (36 lines): loadExposure, exposureCells, exposureSums
 - `web/src/sim/flood-layer.ts` (146 lines): downscale, FloodLayer, hex, sh, mk
   - data objects: CLASSES, CLASS_COLORS
-- `web/src/sim/panel.ts` (384 lines): mountSim, refreshAuto, loadEvent, q, tip, sl, num, fmt (+29 more)
+- `web/src/sim/panel.ts` (454 lines): mountSim, refreshAuto, loadEvent, q, tip, sl, num, fmt (+31 more)
 - `web/src/sim/worker.ts` (73 lines): post, flooded
-- Not listed one by one (56 files): data/ (5), data/demnas/ (1), data/engine/ (2), data/events/ (3), data/methods/ (1), data/roughness/ (1), verification/analytical-wave/ (2), verification/data-checks/ (2), verification/explore-vs-sfincs/ (3), verification/gpu-parity/ (2), verification/observed/ (9), web/ (5), web/public/data/jakarta/ (6), web/public/meta/ (2), web/scripts/ (1), web/src/ (5), web/src/engine/ (1), web/src/explore/ (2), web/src/methods/ (1), web/src/sim/ (2)
+- Not listed one by one (56 files): data/ (5), data/demnas/ (1), data/engine/ (2), data/events/ (3), data/methods/ (1), data/roughness/ (1), verification/analytical-wave/ (2), verification/data-checks/ (2), verification/explore-vs-sfincs/ (3), verification/gpu-parity/ (2), verification/observed/ (9), web/ (5), web/public/data/jakarta/ (5), web/public/meta/ (2), web/scripts/ (1), web/src/ (5), web/src/engine/ (1), web/src/explore/ (2), web/src/methods/ (1), web/src/sim/ (3)
 
 ### Links (A -> B means A loads or uses B)
 - `pipeline/catalog_tools.py` -> pipeline/engine_pack.py, web/src/engine/gpu.ts
@@ -76,12 +77,12 @@ Files: 110 | Lines: 13771 | Fingerprint: 98e70c0be22b0bf4 | Generated: 2026-10-3
 - `pipeline/make_domain.py` -> pipeline/b3d/__init__.py, pipeline/b3d/grid.py, pipeline/b3d/layers.py, pipeline/b3d/util.py, pipeline/demnas_ingest.py, pipeline/engine_pack.py (+1 more)
 - `pipeline/region_pack.py` -> pipeline/b3d/__init__.py, pipeline/b3d/layers.py, pipeline/b3d/tiles.py, pipeline/b3d/util.py, pipeline/engine_pack.py, pipeline/verify_sources.py (+3 more)
 - `pipeline/verify_sources.py` -> pipeline/b3d/layers.py, pipeline/b3d/util.py, pipeline/catalog_tools.py, pipeline/demnas_ingest.py
-- `pipeline/b3d/__init__.py` -> pipeline/b3d/grid.py, verification/observed/compare.py
+- `pipeline/b3d/__init__.py` -> pipeline/b3d/grid.py, verification/observed/compare.py, web/src/sim/conclusion.ts
 - `pipeline/b3d/grid.py` -> verification/data-checks/check_pack.py, web/src/engine/engine.test.ts
 - `pipeline/b3d/layers.py` -> ., .grid, .tiles, .util, pipeline/b3d/__init__.py, pipeline/b3d/grid.py (+11 more)
 - `pipeline/b3d/rbi.py` -> pipeline/b3d/grid.py, web/src/sim/export.ts
-- `pipeline/b3d/tiles.py` -> pipeline/b3d/grid.py, verification/data-checks/check_pack.py, web/src/sim/export.ts
-- `pipeline/b3d/util.py` -> pipeline/b3d/grid.py, pipeline/engine_pack.py, verification/data-checks/check_pack.py, web/src/engine/event-rain.ts, web/src/sim/panel.ts, web/src/sim/worker.ts
+- `pipeline/b3d/tiles.py` -> pipeline/b3d/grid.py, verification/data-checks/check_pack.py, web/src/sim/conclusion.ts, web/src/sim/export.ts
+- `pipeline/b3d/util.py` -> pipeline/b3d/grid.py, pipeline/engine_pack.py, verification/data-checks/check_pack.py, web/src/engine/event-rain.ts, web/src/sim/conclusion.ts, web/src/sim/panel.ts (+1 more)
 - `pipeline/tests/test_catalog.py` -> pipeline/catalog_tools.py
 - `pipeline/tests/test_domain.py` -> pipeline/b3d/__init__.py, pipeline/b3d/grid.py
 - `pipeline/tests/test_grid.py` -> pipeline/b3d/grid.py, web/src/engine/engine.test.ts
@@ -92,35 +93,36 @@ Files: 110 | Lines: 13771 | Fingerprint: 98e70c0be22b0bf4 | Generated: 2026-10-3
 - `verification/explore-vs-sfincs/compare.py` -> pipeline/catalog_tools.py, verification/data-checks/check_pack.py, web/src/engine/engine.test.ts, web/src/engine/pack.ts
 - `verification/explore-vs-sfincs/make_inputs.py` -> pipeline/b3d/grid.py, web/src/engine/engine.test.ts, web/src/engine/pack.ts
 - `verification/explore-vs-sfincs/run_explore.ts` -> node:fs, ../../web/src/explore/local-inertial, web/src/engine/engine.test.ts, web/src/explore/local-inertial.ts
-- `verification/observed/compare.py` -> pipeline/b3d/grid.py, pipeline/catalog_tools.py, pipeline/demnas_ingest.py, verification/data-checks/check_pack.py, verification/observed/fetch.py, web/src/engine/engine.test.ts (+2 more)
+- `verification/observed/compare.py` -> pipeline/b3d/grid.py, pipeline/catalog_tools.py, pipeline/demnas_ingest.py, verification/data-checks/check_pack.py, verification/observed/fetch.py, web/src/engine/engine.test.ts (+3 more)
 - `verification/observed/event_rain.py` -> pipeline/demnas_ingest.py, verification/observed/fetch.py, web/src/engine/engine.test.ts, web/src/sim/panel.ts
-- `verification/observed/fetch.py` -> pipeline/b3d/grid.py, pipeline/b3d/util.py, pipeline/demnas_ingest.py, pipeline/engine_pack.py, pipeline/verify_sources.py, verification/data-checks/check_pack.py (+6 more)
+- `verification/observed/fetch.py` -> pipeline/b3d/grid.py, pipeline/b3d/util.py, pipeline/demnas_ingest.py, pipeline/engine_pack.py, pipeline/verify_sources.py, verification/data-checks/check_pack.py (+7 more)
 - `verification/observed/publish.py` -> pipeline/demnas_ingest.py, pipeline/verify_sources.py, verification/data-checks/check_pack.py, verification/observed/compare.py, verification/observed/fetch.py, web/src/main.ts
 - `verification/observed/run_event.ts` -> node:fs, node:zlib, ../../web/src/engine/pack, ../../web/src/engine/solver, ../../web/src/engine/hydrology, ../../web/src/util (+8 more)
 - `verification/region-run/run.ts` -> node:fs, node:zlib, ../../web/src/engine/pack, ../../web/src/engine/solver, ../../web/src/engine/hydrology, ../../web/src/explore/rain (+6 more)
 - `web/src/catalog.ts` -> ../../data/catalog-use.json, ./i18n, ./types, ./util, pipeline/b3d/util.py, pipeline/demnas_ingest.py (+6 more)
 - `web/src/i18n.ts` -> pipeline/b3d/grid.py, pipeline/catalog_tools.py, pipeline/engine_pack.py, verification/data-checks/check_pack.py, verification/observed/fetch.py, web/src/engine/pack.ts (+4 more)
-- `web/src/main.ts` -> ../../data/validation.json, ./catalog, ./i18n, ./map, ./types, ./util (+9 more)
-- `web/src/map.ts` -> maplibre-gl, ./pmtiles-init, ./i18n, ./layers, ./types, ./util (+12 more)
+- `web/src/main.ts` -> ../../data/validation.json, ./catalog, ./i18n, ./map, ./types, ./util (+10 more)
+- `web/src/map.ts` -> maplibre-gl, ./pmtiles-init, ./i18n, ./layers, ./types, ./util (+11 more)
 - `web/src/pmtiles-init.ts` -> maplibre-gl, maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url, pmtiles
 - `web/src/util.ts` -> verification/data-checks/check_pack.py, web/src/engine/event-rain.ts
-- `web/src/engine/engine.test.ts` -> vitest, ./solver, ./hydrology, ../util, pipeline/demnas_ingest.py, pipeline/engine_pack.py (+4 more)
+- `web/src/engine/engine.test.ts` -> vitest, ./solver, ./hydrology, ../util, pipeline/demnas_ingest.py, pipeline/engine_pack.py (+5 more)
 - `web/src/engine/event-rain.ts` -> ../util, ./hydrology, ../explore/rain, pipeline/engine_pack.py, verification/data-checks/check_pack.py, verification/observed/run_event.ts (+3 more)
-- `web/src/engine/gpu.ts` -> ./solver, web/src/engine/engine.test.ts, web/src/engine/pack.ts, web/src/engine/solver.ts, web/src/main.ts, web/src/sim/export.ts
-- `web/src/engine/hydrology.ts` -> ./solver, pipeline/engine_pack.py, web/src/engine/engine.test.ts, web/src/engine/pack.ts, web/src/engine/solver.ts
+- `web/src/engine/gpu.ts` -> ./solver, web/src/engine/engine.test.ts, web/src/engine/pack.ts, web/src/engine/solver.ts, web/src/main.ts, web/src/sim/conclusion.ts (+1 more)
+- `web/src/engine/hydrology.ts` -> ./solver, pipeline/engine_pack.py, web/src/engine/engine.test.ts, web/src/engine/pack.ts, web/src/engine/solver.ts, web/src/sim/conclusion.ts
 - `web/src/engine/pack.ts` -> ../util, ./hydrology, pipeline/engine_pack.py, pipeline/verify_sources.py, web/src/engine/engine.test.ts, web/src/util.ts
-- `web/src/engine/solver.ts` -> pipeline/engine_pack.py, web/src/engine/engine.test.ts, web/src/engine/pack.ts, web/src/i18n.ts
+- `web/src/engine/solver.ts` -> pipeline/engine_pack.py, web/src/engine/engine.test.ts, web/src/engine/pack.ts, web/src/i18n.ts, web/src/sim/conclusion.ts
 - `web/src/explore/analytical.ts` -> ./local-inertial, pipeline/catalog_tools.py, verification/observed/run_event.ts, web/src/explore/local-inertial.ts
 - `web/src/explore/local-inertial.test.ts` -> vitest, ./local-inertial, ./analytical, pipeline/b3d/grid.py, pipeline/demnas_ingest.py, web/src/explore/analytical.ts (+2 more)
-- `web/src/explore/local-inertial.ts` -> pipeline/b3d/grid.py, web/src/engine/engine.test.ts, web/src/engine/pack.ts, web/src/engine/solver.ts, web/src/i18n.ts
+- `web/src/explore/local-inertial.ts` -> pipeline/b3d/grid.py, web/src/engine/engine.test.ts, web/src/engine/pack.ts, web/src/engine/solver.ts, web/src/i18n.ts, web/src/sim/conclusion.ts
 - `web/src/explore/roughness.ts` -> ../../../data/roughness/worldcover-manning.json, pipeline/b3d/layers.py, web/src/engine/event-rain.ts, web/src/engine/pack.ts, web/src/sim/panel.ts
 - `web/src/methods/cite.ts` -> ../util, pipeline/b3d/util.py, web/src/engine/gpu.ts
 - `web/src/methods/page.ts` -> ../../../data/methods/methods.md?raw, ../../../data/methods/references.json, ../i18n, ./cite, pipeline/b3d/util.py, web/src/catalog.ts (+1 more)
+- `web/src/sim/conclusion.ts` -> ../../../data/methods/references.json, ../methods/cite, pipeline/engine_pack.py, verification/data-checks/check_pack.py, verification/observed/fetch.py, web/src/engine/engine.test.ts (+5 more)
 - `web/src/sim/export.ts` -> maplibre-gl, ./flood-layer, ../util, https://unpkg.com/leaflet@1.9.4/dist/leaflet.js, https://unpkg.com/leaflet@1.9.4/dist/leaflet.css, pipeline/b3d/grid.py (+8 more)
 - `web/src/sim/exposure.ts` -> ../engine/pack, web/src/engine/engine.test.ts, web/src/engine/pack.ts, web/src/sim/worker.ts
 - `web/src/sim/flood-layer.ts` -> maplibre-gl, ../util, pipeline/b3d/grid.py, pipeline/b3d/tiles.py, pipeline/demnas_ingest.py, web/src/engine/engine.test.ts (+2 more)
-- `web/src/sim/panel.ts` -> maplibre-gl, ../i18n, ../map, ../engine/pack, ../engine/hydrology, ../engine/event-rain (+28 more)
-- `web/src/sim/worker.ts` -> ../engine/solver, ../engine/gpu, ../explore/rain, pipeline/demnas_ingest.py, web/src/engine/engine.test.ts, web/src/engine/gpu.ts (+3 more)
+- `web/src/sim/panel.ts` -> maplibre-gl, ../i18n, ../map, ../engine/pack, ../engine/hydrology, ../engine/event-rain (+30 more)
+- `web/src/sim/worker.ts` -> ../engine/solver, ../engine/gpu, ../explore/rain, pipeline/demnas_ingest.py, web/src/engine/engine.test.ts, web/src/engine/gpu.ts (+4 more)
 
 ### Saved data keys (browser storage)
 - b3d.lang, b3d.theme

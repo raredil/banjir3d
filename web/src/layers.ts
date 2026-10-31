@@ -25,7 +25,7 @@ export const ELEVATION_RAMP: [number, string][] = [
 ];
 
 export const LAYERS: LayerDef[] = [
-  { id: "s2", group: "g.imagery", name: { id: "Citra satelit Sentinel-2", en: "Sentinel-2 satellite image" }, title: "Sentinel-2 L2A cloud-free composite (10 m)", catalogId: "sentinel-2-l2a", file: "imagery_s2.pmtiles", kind: "raster", visible: true, opacity: 1 },
+  { id: "s2", group: "g.imagery", name: { id: "Citra satelit Sentinel-2", en: "Sentinel-2 satellite image" }, title: "Sentinel-2 L2A cloud-free composite (10 m)", catalogId: "sentinel-2-l2a", file: "imagery_s2.pmtiles", kind: "raster", visible: false, opacity: 1 },
   { id: "relief-glo30", group: "g.terrain", name: { id: "Ketinggian permukaan (GLO-30)", en: "Surface elevation (GLO-30)" }, title: "Elevation, Copernicus GLO-30 DSM (m, EGM2008)", catalogId: "copernicus-glo30", file: "dem_glo30.pmtiles", kind: "relief", visible: false, opacity: 0.75,
     ramp: { label: "Elevation", unit: "m", stops: ELEVATION_RAMP } },
   { id: "hs-glo30", group: "g.terrain", name: { id: "Bayangan relief permukaan (GLO-30)", en: "Surface hillshade (GLO-30)" }, title: "Hillshade, Copernicus GLO-30 (surface model)", catalogId: "copernicus-glo30", file: "dem_glo30.pmtiles", kind: "hillshade", visible: false, opacity: 0.55 },
