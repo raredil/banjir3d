@@ -211,6 +211,7 @@ export class GpuEngine {
       if (!active[c]) continue;
       flags[c] = 1 | (sea?.[c] ? 2 : 0) | (off(i, j - 1) ? 4 : 0) | (off(i, j + 1) ? 8 : 0) | (off(i - 1, j) ? 16 : 0) | (off(i + 1, j) ? 32 : 0);
       if (sea?.[c]) { h0[c] = Math.max(0, inp.seaLevel - g.z[c]); dmax = Math.max(dmax, h0[c]); vol += h0[c]; }
+      else if (g.h0 && g.h0[c] > 0) { h0[c] = g.h0[c]; dmax = Math.max(dmax, h0[c]); vol += h0[c]; }
     }
     const cellData = new Float32Array(N * 4), cu = new Uint32Array(cellData.buffer);
     for (let c = 0; c < N; c++) {

@@ -11,6 +11,12 @@ const base: Facts = {
 };
 
 describe("buildConclusion", () => {
+  it("names the subsidence shift with its year and sources", () => {
+    const c = buildConclusion({ ...base, terrainYear: 2020.0, subEpoch: 2013 }, "id", "2019-12-31T05:00:00Z");
+    expect(c.text).toContain("dari tahun 2013 ke tahun 2020,0");
+    expect(c.text).toContain("Shabrina");
+    expect(c.text).toContain("Morishita");
+  });
   it("states the run numbers and cites every method it names", () => {
     const c = buildConclusion(base, "id", "2019-12-31T05:00:00Z");
     const all = c.paragraphs.join(" ");

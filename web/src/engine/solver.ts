@@ -15,6 +15,7 @@ export type EngineGrid = {
   sea?: Uint8Array; // 1 = sea cell, held at the sea level
   zone?: Uint16Array; // rain zone per cell (rates set per zone in FloodEngine.rates); absent = one rate everywhere
   drain?: Float64Array; // drainage capacity per cell (m/s): surface water up to this rate leaves through the city drains
+  h0?: Float64Array; // initial depth (m): base flow in carved channels up to the water surface the DEM recorded
 };
 // hMin: depth below which a face carries no flow; 0.001 m is the LISFLOOD-FP default, so thin runoff sheets still drain
 export type EngineOptions = { alpha?: number; dtMax?: number; hMin?: number; seaLevel?: number; inflowCells?: number[] };
@@ -75,6 +76,7 @@ export class FloodEngine {
       this.open[2][c] = +isOpen(i - 1, j); this.open[3][c] = +isOpen(i + 1, j);
     }
     if (g.sea) for (let c = 0; c < N; c++) if (g.sea[c] && active[c]) this.h[c] = Math.max(0, this.seaLevel - g.z[c]);
+    if (g.h0) for (let c = 0; c < N; c++) if (active[c] && !g.sea?.[c]) this.h[c] = Math.max(this.h[c], g.h0[c]);
     this.initial = this.volume();
     for (let c = 0; c < N; c++) if (this.h[c] > this.depthMax) this.depthMax = this.h[c];
   }

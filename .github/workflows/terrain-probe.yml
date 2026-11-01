@@ -1,0 +1,45 @@
+name: Terrain probe
+
+# Facts the cloud session cannot fetch: Jakarta Satu ArcGIS services (drains, AWLR, DAS), the Zenodo subsidence record,
+# and DEMNAS (private draft) against FABDEM / GLO-30. Only statistics and service listings are printed to the log.
+on:
+  workflow_dispatch:
+  push:
+    branches: ["claude/**", "ccr-**"]
+    paths: ["verification/terrain/probe.py", ".github/workflows/terrain-probe.yml"]
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    strategy:
+      fail-fast: false
+      matrix:
+        part: [js_targets]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    permissions:
+      contents: write   # listing draft releases (DEMNAS) needs push-level access; nothing is written
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: "3.13"
+          cache: pip
+          cache-dependency-path: pipeline/requirements.txt
+      - run: pip install -r pipeline/requirements.txt
+      - name: Download terrain + land cover from the newest region pack
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          tag=$(gh release list --repo "$GITHUB_REPOSITORY" --limit 100 --json tagName,isDraft,createdAt \
+            --jq '[.[] | select(.isDraft | not) | select(.tagName | startswith("region-jakarta-"))] | sort_by(.createdAt) | last | .tagName // empty')
+          mkdir -p "$RUNNER_TEMP/pack"
+          gh release download "$tag" --repo "$GITHUB_REPOSITORY" -D "$RUNNER_TEMP/pack" -p 'dem_*.tif' -p 'lulc_io_*.tif'
+      - name: Probe
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: python verification/terrain/probe.py "$RUNNER_TEMP/work" "$RUNNER_TEMP/pack" "${{ matrix.part }}"

@@ -160,6 +160,35 @@
    "doi": "10.1016/j.advwatres.2005.03.007"
   },
   {
+   "key": "lazecky2020",
+   "type": "article",
+   "authors": [
+    "Lazecky, M.",
+    "Spaans, K.",
+    "Gonzalez, P.J.",
+    "Maghsoudi, Y.",
+    "Morishita, Y.",
+    "Albino, F.",
+    "Elliott, J.",
+    "Greenall, N.",
+    "Hatton, E.",
+    "Hooper, A.",
+    "Juncu, D.",
+    "McDougall, A.",
+    "Walters, R.J.",
+    "Watson, C.S.",
+    "Weiss, J.R.",
+    "Wright, T.J."
+   ],
+   "year": 2020,
+   "title": "LiCSAR: an automatic InSAR tool for measuring and monitoring tectonic and volcanic activity",
+   "journal": "Remote Sensing",
+   "volume": "12",
+   "issue": "15",
+   "pages": "2430",
+   "doi": "10.3390/rs12152430"
+  },
+  {
    "key": "leijnse2021",
    "type": "article",
    "authors": [
@@ -214,6 +243,25 @@
    "issue": "2",
    "pages": "163–172",
    "doi": "10.5614/jts.2021.28.2.5"
+  },
+  {
+   "key": "morishita2020",
+   "type": "article",
+   "authors": [
+    "Morishita, Y.",
+    "Lazecky, M.",
+    "Wright, T.J.",
+    "Weiss, J.R.",
+    "Elliott, J.R.",
+    "Hooper, A."
+   ],
+   "year": 2020,
+   "title": "LiCSBAS: an open-source InSAR time series analysis package integrated with the LiCSAR automated Sentinel-1 InSAR processor",
+   "journal": "Remote Sensing",
+   "volume": "12",
+   "issue": "3",
+   "pages": "424",
+   "doi": "10.3390/rs12030424"
   },
   {
    "key": "nrcs1986",
@@ -317,6 +365,22 @@
    "volume": "5",
    "pages": "180091",
    "doi": "10.1038/sdata.2018.91"
+  },
+  {
+   "key": "shabrina2026",
+   "type": "dataset",
+   "authors": [
+    "Shabrina, Z.",
+    "Muharram, F.W.",
+    "Asa, M.",
+    "Dhirgantara Putra, D.",
+    "Rui, J."
+   ],
+   "year": 2026,
+   "title": "Sinking City: multidimensional datasets for modelling the sinking Jakarta",
+   "version": "v1",
+   "publisher": "Zenodo",
+   "doi": "10.5281/zenodo.19456870"
   },
   {
    "key": "vanormondt2025",

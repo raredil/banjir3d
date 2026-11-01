@@ -12,8 +12,8 @@
       "doi": null,
       "url": "https://tanahair.indonesia.go.id",
       "licence": {
-        "id": "BIG terms (not yet read)",
-        "redistributable": "unknown",
+        "id": "BIG download, no licence text (owner check 2026-11-01)",
+        "redistributable": "yes",
         "attribution": "DEMNAS © Badan Informasi Geospasial"
       },
       "resolution": "0.27 arc-second (~8 m)",
@@ -28,9 +28,9 @@
         "bibtex": "@misc{big_demnas,\n  author = {{Badan Informasi Geospasial}},\n  title = {{DEMNAS}: Seamless Digital Elevation Model Nasional},\n  version = {1.0},\n  howpublished = {\\url{https://tanahair.indonesia.go.id}},\n  note = {Built from IFSAR (5 m), TerraSAR-X (5 m), ALOS PALSAR (11.25 m) and stereo mass points; EGM2008 datum}\n}"
       },
       "status": "verified",
-      "checked": "2026-10-24",
-      "in_region_pack": false,
-      "notes": "Format verified 2026-10-24 from BIG's own DEMNAS description (sent by the owner: 0.27 arc-second, EGM2008, geographic, GeoTIFF float32; files DEMNAS_xxxx-yy-v1.0.tif per RBI 1:50k sheet, xxxx-yyy for 1:25k) and from the owner's upload (25 sheets; 6 inside the Jakarta domain, mosaicked by demnas.yml). Licence still unverified: kept out of the public site. DSM/DTM behaviour in dense urban areas to be compared with FABDEM in Phase 2. Tile list: data/demnas/jakarta_tiles.json."
+      "checked": "2026-11-01",
+      "in_region_pack": true,
+      "notes": "Format verified 2026-10-24 from BIG's own DEMNAS description (sent by the owner: 0.27 arc-second, EGM2008, geographic, GeoTIFF float32; files DEMNAS_xxxx-yy-v1.0.tif per RBI 1:50k sheet, xxxx-yyy for 1:25k) and from the owner's upload (25 sheets; 6 inside the Jakarta domain, mosaicked by demnas.yml). Licence: the owner found no licence or use restriction on the download page (2026-11-01) and decided DEMNAS may be used and published with attribution to BIG (ADR 0013, replaces ADR 0002). DSM/DTM behaviour in dense urban areas to be compared with FABDEM in Phase 2. Tile list: data/demnas/jakarta_tiles.json. Compared with FABDEM on the 30 m grid (verification/terrain/probe.py, 2026-11-01): built cells median +0.79 m, regression on the GLO-30 surface excess slope 0.62 (keeps ~60 % of building/tree height); sea and inland water filled at a constant ~-3.26 m (18.6 % of cells below 0 m vs 0.1 % in FABDEM). Kept as a map layer; FABDEM stays the model terrain."
     },
     {
       "id": "fabdem",
@@ -103,31 +103,34 @@
     },
     {
       "id": "jakarta-subsidence-sinking-city",
-      "name": "Sinking City: multidimensional datasets for modelling the sinking Jakarta (land subsidence raster 2016–2024)",
+      "name": "Sinking City: land subsidence of DKI Jakarta from Sentinel-1 InSAR (annual velocities 2016–2024)",
       "theme": "subsidence",
-      "role": "planned",
-      "provider": "Zenodo (authors of record 19456870)",
+      "role": "primary",
+      "provider": "Shabrina, Muharram, Asa, Dhirgantara Putra, Rui (Zenodo record 19456870)",
       "version": "v1 (2026-04-07)",
       "temporal": "2016–2024",
       "doi": "10.5281/zenodo.19456870",
       "url": "https://zenodo.org/records/19456870",
       "licence": {
-        "id": "unknown (check Zenodo record)",
-        "redistributable": "unknown"
+        "id": "CC-BY-4.0",
+        "url": "https://creativecommons.org/licenses/by/4.0/",
+        "redistributable": "yes",
+        "attribution": "Land subsidence: Shabrina et al. (2026), Sinking City dataset, Zenodo doi:10.5281/zenodo.19456870 (CC BY 4.0); contains modified Copernicus Sentinel-1 data processed by COMET-LiCSAR"
       },
-      "resolution": "raster (to be checked)",
+      "resolution": "30 m (kriged from ~100 m LiCSBAS velocities)",
       "access": {
-        "method": "Zenodo zip '01 Land subsidence.zip' (~68 MB)",
+        "method": "Zenodo zip '01 Land subsidence.zip' (67.7 MB, md5 checked) + LiCSAR frame 098A_09673_121312 metadata (geo.U.tif)",
         "auth": "none"
       },
       "citation": {
-        "text": "Sinking City: Multidimensional Datasets for Modelling the Sinking Jakarta (2026). Zenodo. doi:10.5281/zenodo.19456870",
-        "bibtex": "@dataset{sinkingcity2026,\n  title = {Sinking City: Multidimensional Datasets for Modelling the Sinking Jakarta},\n  publisher = {Zenodo},\n  year = {2026},\n  version = {v1},\n  doi = {10.5281/zenodo.19456870}\n}"
+        "text": "Shabrina, Z., Muharram, F. W., Asa, M., Dhirgantara Putra, D., Rui, J. (2026). Sinking City: Multidimensional Datasets for Modelling the Sinking Jakarta (v1). Zenodo. doi:10.5281/zenodo.19456870",
+        "bibtex": "@dataset{shabrina2026sinking,\n  author = {Shabrina, Zahratu and Muharram, Fajrun Wahidil and Asa, Muhammad and Dhirgantara Putra, Dekka and Rui, Jin},\n  title = {Sinking City: Multidimensional Datasets for Modelling the Sinking Jakarta},\n  publisher = {Zenodo},\n  year = {2026},\n  version = {v1},\n  doi = {10.5281/zenodo.19456870}\n}"
       },
       "status": "single-source",
-      "checked": "2026-10-23",
-      "in_region_pack": false,
-      "notes": "Covers DKI Jakarta only (not all of Jabodetabek). Candidate for the DEM-epoch shift (BLUEPRINT §9a). Licence and units to be confirmed before use; authors to be filled from the record."
+      "checked": "2026-11-01",
+      "in_region_pack": true,
+      "notes": "Checked by the terrain probe Action 2026-11-01: licence cc-by-4.0 on the Zenodo record; landsub_<year>_int_value.tif = kriged annual LOS velocity (mm/yr, + towards the satellite, LiCSBAS), int_sd = kriging SD; ascending frame 098A_09673_121312, LOS up component U 0.766-0.792 over Jakarta (LiCSAR metadata). Covers DKI Jakarta only (rate 0 elsewhere). Single years are noisy (each year's p99 shows +17 to +46 mm/yr 'uplift'); the engine uses the 9-year mean, vertical, uplift capped at 0 (pipeline/subsidence.py). The same record holds RW boundaries with residential-morphology attributes (05, 2,728 RW polygons, EPSG:32748).",
+      "crs": "EPSG:32748"
     },
     {
       "id": "batnas",
@@ -760,6 +763,36 @@
       "checked": "2026-10-30",
       "notes": "Mapped rivers and streams of the whole upstream area, used to steer the flow routing (canals excluded).",
       "doi": null
+    },
+    {
+      "id": "jakartasatu-dsda",
+      "name": "Jakarta Satu — Dinas Sumber Daya Air DKI: drainage channels, pumps, polders, walls, flood records (Genangan)",
+      "theme": "water-bodies",
+      "role": "primary",
+      "provider": "Pemerintah Provinsi DKI Jakarta, Dinas Sumber Daya Air (Jakarta Satu geoportal)",
+      "version": "live ArcGIS services (accessed at build time)",
+      "doi": null,
+      "url": "https://jakartasatu.jakarta.go.id",
+      "licence": {
+        "id": "not stated",
+        "redistributable": "unknown",
+        "attribution": "Jakarta Satu, Dinas Sumber Daya Air Provinsi DKI Jakarta"
+      },
+      "resolution": "vector (lines, polygons, points)",
+      "crs": "EPSG:32748 (requested)",
+      "access": {
+        "method": "ArcGIS REST query (f=geojson, paged), pipeline/jakartasatu.py, only from GitHub Actions",
+        "endpoint": "https://jakartasatu.jakarta.go.id/server/rest/services/DSDA/",
+        "auth": "none"
+      },
+      "citation": {
+        "text": "Dinas Sumber Daya Air Provinsi DKI Jakarta (2026). Saluran Drainase, Genangan, Pompa, Polder, Tanggul. Jakarta Satu geoportal. https://jakartasatu.jakarta.go.id (accessed 1 November 2026)",
+        "bibtex": "@misc{dsda2026jakartasatu,\n  author = {{Dinas Sumber Daya Air Provinsi DKI Jakarta}},\n  title = {Saluran Drainase, Genangan, Pompa, Polder dan Tanggul},\n  howpublished = {Jakarta Satu geoportal, \\url{https://jakartasatu.jakarta.go.id}},\n  year = {2026},\n  note = {Accessed 1 November 2026}\n}"
+      },
+      "status": "single-source",
+      "checked": "2026-11-01",
+      "in_region_pack": false,
+      "notes": "Probed 2026-11-01 (verification/terrain/probe.py): copyrightText empty on all services, so raw vectors are not published; the engine pack holds only carved channel cells and initial channel depth, validation publishes aggregate scores. Primary drains 42 lines (390 km, depth median 5.6 m, width median 19 m), secondary 36 (159 km, 3.3 m, 10.8 m), tertiary 1,211, micro 60,718 (size mostly missing), pumps 263, polders 65, NCICD walls 41, river walls 172, Genangan 4,280 RT polygons with date and depth, AWLR 28 and TMA 61 stations (thresholds only)."
     }
   ]
 }

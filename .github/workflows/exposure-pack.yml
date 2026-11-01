@@ -62,10 +62,9 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           tag="region-${REGION}-$(date -u +%Y%m%d)-x${GITHUB_RUN_NUMBER}"
-          gh release create "$tag" "$RUNNER_TEMP"/pack/* \
-            --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" \
-            --title "Region pack: ${REGION} ($(date -u +%Y-%m-%d), with exposure pack)" \
-            --notes "Copy of ${SRC_TAG} plus buildings, people and kecamatan per model cell (exposure_${REGION}.bin.gz, provenance and checks in exposure_${REGION}.json). Run: ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
+          "$GITHUB_WORKSPACE/.github/scripts/release.sh" create "$tag" "$GITHUB_SHA" "Region pack: ${REGION} ($(date -u +%Y-%m-%d), with exposure pack)" \
+            "Copy of ${SRC_TAG} plus buildings, people and kecamatan per model cell (exposure_${REGION}.bin.gz, provenance and checks in exposure_${REGION}.json). Run: ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}" \
+            "$RUNNER_TEMP"/pack/*
       - name: Redeploy website with the new data
         env:
           GH_TOKEN: ${{ github.token }}

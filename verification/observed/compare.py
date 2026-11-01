@@ -1,7 +1,7 @@
 """Compare engine results with PetaBencana.id observations (runs in the validation workflow, next to the raw answers, which are not
 redistributed: their licence is not stated). Writes aggregate scores only.
 
-  python verification/observed/compare.py <obsdir> <event id> <run dir with *_summary.json + *_hmax.f32.gz> <out.json>
+  python verification/observed/compare.py <obsdir> <event id> <run dir with *_summary.json + *_hmax.f32.gz> <out.json> [jakartasatu.gpkg]
 
 Reports (points): flood reports inside the run area. Model depth = largest max depth within one cell (location of a phone report is
 approximate). Hit = model >= 0.10 m. Depth error where the report gives a depth.
@@ -121,6 +121,48 @@ def dki_flooded_km2(h, summary, land):
     return float(((h > WET_M) & land & inside).sum() * dx * dx / 1e6), float((inside & land).sum() * dx * dx / 1e6)
 
 
+def genangan_scores(gpkg: Path, ev: str, h, summary, land):
+    """Official flood polygons of Dinas SDA DKI (Jakarta Satu 'Genangan', one record per RT and date, observed depth in cm) dated
+    within the event window +- 1 day. Model depth per polygon = largest max depth over the land cells it touches.
+    Raw polygons stay on the runner (licence not stated); only these aggregates are written."""
+    import geopandas as gpd
+    import pandas as pd
+    from rasterio import features as rf
+    from rasterio.transform import from_origin
+
+    e = next(e for e in json.loads((Path(__file__).parent / "events.json").read_text())["events"] if e["id"] == ev)
+    t0 = pd.Timestamp(e["utc"][0], tz="UTC") - pd.Timedelta(days=1)
+    t1 = pd.Timestamp(e["utc"][1], tz="UTC") + pd.Timedelta(days=1)
+    g = gpd.read_file(gpkg, layer="genangan")
+    tg = pd.to_datetime(g["TGL"], unit="ms", utc=True)
+    g = g[(tg >= t0) & (tg <= t1)].copy()
+    if g.empty:
+        return {"n_polygons": 0, "window_utc": [str(t0), str(t1)]}
+    x0, y0, dx, nx, ny, _ = grid_of(summary)
+    trf = from_origin(x0, y0, dx, dx)
+    g = g.to_crs("EPSG:32748")
+    obs_cm = pd.to_numeric(g.get("TGIMAX"), errors="coerce").where(lambda v: v > 0, pd.to_numeric(g.get("TGIGNGN"), errors="coerce"))
+    model, observed = [], []
+    for geom, o in zip(g.geometry, obs_cm):
+        m = rf.rasterize([(geom, 1)], out_shape=(ny, nx), transform=trf, all_touched=True, dtype="uint8").astype(bool) & land
+        if not m.any():
+            continue
+        model.append(float(h[m].max()))
+        observed.append(float(o) / 100 if o == o and o > 0 else np.nan)
+    model, observed = np.array(model), np.array(observed)
+    hit = model >= HIT_M
+    both = np.isfinite(observed)
+    out = {"source": "Jakarta Satu, Dinas SDA DKI, layer Genangan (aggregates only)", "window_utc": [str(t0), str(t1)],
+           "n_polygons": int(len(model)), "hit_rate": float(hit.mean()) if len(model) else None,
+           "median_model_depth_m": float(np.median(model)) if len(model) else None}
+    if both.any():
+        out.update({"n_with_depth": int(both.sum()), "median_observed_depth_m": float(np.median(observed[both])),
+                    "median_model_depth_at_observed_m": float(np.median(model[both])),
+                    "mean_error_m": float(np.mean(model[both] - observed[both])),
+                    "share_model_ge_half_observed": float(np.mean(model[both] >= 0.5 * observed[both]))})
+    return out
+
+
 def main():
     obs, ev, rundir, outp = Path(sys.argv[1]), sys.argv[2], Path(sys.argv[3]), Path(sys.argv[4])
     rep = features(load_json(obs / ev / "pb_reports_archive_geojson.json"))
@@ -144,12 +186,17 @@ def main():
         m = np.frombuffer(gzip.decompress((rundir / sp.name.replace("_summary.json", "_mask.u8.gz")).read_bytes()), np.uint8).reshape(s["ny"], s["nx"])
         inside = (m & 1).astype(bool) & ~(m & 2).astype(bool)  # active, not sea
         land = inside & ~(m & 4).astype(bool)  # and not a mapped channel
-        r = {"run": sp.name.replace("_summary.json", ""), "drain_mm_h": s["drain_mm_h"], "rain": s["rain"], "rain_scale": s.get("rain_scale", 1),
+        r = {"run": sp.name.replace("_summary.json", ""), "drain_mm_h": s["drain_mm_h"], "rain": s["rain"], "rain_scale": s.get("rain_scale", 1), "terrain_year": s.get("terrain_year"),
              "mean_rain_mm": s["mean_rain_mm"], "flooded_km2": s["flooded_km2_gt015_outside_channels"], "mass_error": s["massError"],
              "reports": report_scores(rep, h, s, inside)}
         if areas:
             r["rw"] = rw_scores(areas, flooded, h, s, land)
         r["dki_flooded_km2"], r["dki_land_km2"] = dki_flooded_km2(h, s, land)
+        if len(sys.argv) > 5 and Path(sys.argv[5]).exists():
+            try:
+                r["genangan_dsda"] = genangan_scores(Path(sys.argv[5]), ev, h, s, land)
+            except Exception as ex:  # a missing layer must not lose the other scores
+                r["genangan_dsda"] = {"error": f"{type(ex).__name__}: {ex}"[:200]}
         results.append(r)
     reported = next((e.get("reported") for e in json.loads((Path(__file__).parent / "events.json").read_text())["events"] if e["id"] == ev), None)
     out = {"event": ev, "source": "PetaBencana.id flood reports and flooded-area archive (aggregate scores only)", "reported": reported,
