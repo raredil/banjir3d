@@ -56,12 +56,12 @@ export function buildConclusion(f: Facts, lang: "id" | "en", startUtc: string | 
   if (id) {
     if (f.dsdaDrains) dr.push(`Sistem drainase kota masuk ke model melalui ${n(f.dsdaDrains)} ruas saluran primer dan sekunder dari data Jakarta Satu ${cite("dsda2026")}, yang ditoreh ke medan sesuai lebar dan kedalaman tercatat; bagian saluran di bawah muka air awal sudah berisi air saat simulasi dimulai.`);
     if (f.pumpsM3s) dr.push(`Pompa polder berkapasitas total ${n(f.pumpsM3s)} m³/detik${f.pumpPolders ? ` di ${n(f.pumpPolders)} polder` : ""} menguras air dari daratan polder masing-masing; kapasitasnya dibagi rata ke seluruh daratan polder, sehingga bila hanya sebagian polder tergenang, air yang dipompa lebih sedikit dari kapasitasnya.`);
-    else if (f.pumpsOff) dr.push("Dalam skenario ini pompa polder dimatikan.");
+    else if (f.pumpsOff) dr.push("Pompa polder tidak dinyalakan dalam simulasi ini, sesuai hasil uji tiga banjir: menyalakannya membuat model makin kering dibanding laporan warga.");
     dr.push(`Saluran tersier dan mikro tidak memiliki data ukuran, sehingga tidak dimodelkan satu per satu. Uji kalibrasi pada banjir 1 Januari 2020 menunjukkan bahwa penyerapan tambahan oleh saluran kota di lahan terbangun (1–40 mm/jam) justru menjauhkan hasil dari laporan warga, sehingga penyerapan tambahan ini ditetapkan ${n(f.drainMmH)} mm/jam.`);
   } else {
     if (f.dsdaDrains) dr.push(`City drainage enters the model through ${n(f.dsdaDrains)} primary and secondary drain sections from the Jakarta Satu records ${cite("dsda2026")}, carved into the terrain with their recorded width and depth; the part of each drain below the initial water surface is full when the run starts.`);
     if (f.pumpsM3s) dr.push(`Polder pumps with a total capacity of ${n(f.pumpsM3s)} m³/s${f.pumpPolders ? ` in ${n(f.pumpPolders)} polders` : ""} drain the land of their polder; the capacity is spread evenly over the polder, so a partly flooded polder pumps less than its capacity.`);
-    else if (f.pumpsOff) dr.push("In this scenario the polder pumps are switched off.");
+    else if (f.pumpsOff) dr.push("The polder pumps are not switched on in this run, following the three-flood test: switching them on made the model even drier than the citizen reports.");
     dr.push(`Tertiary and micro drains have no recorded size and are not modelled one by one. Calibration on the 1 January 2020 flood showed that an extra drain sink on built-up land (1–40 mm/h) moved the results away from the citizen reports, so this extra sink is set to ${n(f.drainMmH)} mm/h.`);
   }
   p.push(dr.join(" "));

@@ -154,6 +154,35 @@
      "80 · 87 · 89 %"
     ]
    ]
+  },
+  {
+   "id": "observed-pumps-rw",
+   "status": "partial",
+   "file": "verification/observed/scores-2020-01-01-imerg-v4.json",
+   "id_txt": "Pompa dan per-RW: menyalakan pompa polder Jakarta Satu (665 m³/detik) membuat model lebih kering dan menurunkan kecocokan, jadi aplikasi memulai dengan pompa mati (bisa dinyalakan). Per RW (2.610 RW, peta RW Sinking City): model menandai banjir di 26–44 % RW yang punya laporan warga atau catatan genangan resmi. Banyak RW yang ditandai model tidak punya catatan; karena catatan tidak lengkap, angka salah tanda ini adalah batas atas.",
+   "en_txt": "Pumps and RW places: switching on the Jakarta Satu polder pumps (665 m³/s) makes the model drier and lowers the agreement, so the app starts with the pumps off (they can be switched on). Per RW (2,610 RW, Sinking City RW map): the model flags flooding in 26–44 % of the RW with a citizen report or an official flood record. Many RW flagged by the model have no record; records are incomplete, so this false-alarm figure is an upper bound.",
+   "metrics": [
+    [
+     "Reports hit, pumps off / on (2020 · 2021 · 2025)",
+     "72/65 · 78/77 · 81/81 %"
+    ],
+    [
+     "Flooded area 2020, pumps off / on vs reported",
+     "87 / 68 vs 156 km²"
+    ],
+    [
+     "RW hit rate, pumps off (2020 · 2021 · 2025)",
+     "44 · 26 · 44 %"
+    ],
+    [
+     "RW false-alarm ratio (upper bound)",
+     "82 · 86 · 91 %"
+    ],
+    [
+     "RW AUC (0.5 = chance)",
+     "0.57 · 0.61 · 0.60"
+    ]
+   ]
   }
  ]
 }
