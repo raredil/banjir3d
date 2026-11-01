@@ -1,5 +1,5 @@
 # ROADMAP
-**Current position: Phase 4 validation done for three observed floods (IMERG, drains 0 mm/h, ADR 0010); observed-flood mode, rain sensitivity and exposure per kecamatan in the app (ADR 0011). Next: BACKLOG (SFINCS re-run with v2, EA benchmarks). Owner decision open: sharper imagery.**
+**Current position: Phase 4 validation done for three observed floods (ADR 0010/0011). 2026-11-01: terrain upgrade (ADR 0013): InSAR land subsidence shifts the terrain to the run date, Jakarta Satu (DSDA) drains carved with width/depth, DEMNAS 8 m public as map layer. Next: validate the new pack on the 3 floods incl. DSDA flood polygons per RT, then pumps/polders. Owner options open: C (Sentinel-1 flood extent), D (terrain-edit scenarios).**
 
 | Phase | Work | Gate (owner sees) | Status |
 |---|---|---|---|
