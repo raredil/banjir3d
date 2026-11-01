@@ -32,15 +32,34 @@ PLACE = re.compile(r"^(NAMA|NAMOBJ|LOKASI|ALAMAT|KEL|KEC|KOTA|KAB|WIL|RW|RT|SUNG
 MAX_FIELDS = 6
 
 
-def describe(g: pd.DataFrame) -> tuple[pd.Series, list[str]]:
-    """'Key: value · Key: value' text from the name and place fields of a layer (the field names used are returned)."""
-    cols = [c for c in g.columns if c != "geometry" and PLACE.match(str(c)) and (pd.api.types.is_string_dtype(g[c]) or g[c].dtype == object)][:MAX_FIELDS]
-    if not cols:
+# popup fields per layer type, as named in the Jakarta Satu services (field lists recorded in map_layers.json 'all_fields')
+LABELS = {
+    "drain": [("TOPONIMI", "Nama"), ("JENIS", "Jenis"), ("KONDISI", "Kondisi"), ("KNDS", "Kondisi")],
+    "pump": [("LOKPOMPA", "Lokasi"), ("WADMKD", "Kelurahan"), ("WADMKC", "Kecamatan"), ("JMLPOMPA", "Jumlah pompa"), ("KONDISI", "Kondisi")],
+    "polder": [("NAMOBJ", "Nama")],
+    "wall": [("LOKASI", "Lokasi"), ("TIPE", "Tipe"), ("STATUS", "Status"), ("TAHUN", "Tahun")],
+    "genangan": [("WADMRT", "RT"), ("WADMRW", "RW"), ("WADMKD", "Kelurahan"), ("WADMKC", "Kecamatan"), ("DRSGNGN", "Lama (DRSGNGN)"), ("KTGPNYB", "Penyebab")],
+}
+
+
+def describe(g: pd.DataFrame, kind: str = "") -> tuple[pd.Series, list[str]]:
+    """'Label: value · Label: value' text from the known fields of the layer type, else from name/place-like fields."""
+    known = [(c, lbl) for c, lbl in LABELS.get(kind, []) if c in g.columns]
+    if not known:
+        known = [(c, str(c).replace("_", " ").title()) for c in g.columns
+                 if c != "geometry" and PLACE.match(str(c)) and (pd.api.types.is_string_dtype(g[c]) or g[c].dtype == object)][:MAX_FIELDS]
+    if not known:
         return pd.Series([""] * len(g), index=g.index), []
+    def val(v):
+        if v is None or (isinstance(v, float) and v != v):
+            return ""
+        if isinstance(v, float) and v.is_integer():
+            v = int(v)
+        v = str(v).strip()
+        return "" if v in ("", "None", "nan", "-", "0") else v[:80]
     def one(r):
-        parts = [f"{c.replace('_', ' ').title()}: {str(r[c]).strip()[:80]}" for c in cols if r[c] is not None and str(r[c]).strip() not in ("", "None", "nan", "-")]
-        return " · ".join(parts)
-    return g.apply(one, axis=1), cols
+        return " · ".join(f"{lbl}: {val(r[c])}" for c, lbl in known if val(r[c]))
+    return g.apply(one, axis=1), [c for c, _ in known]
 
 
 def num(s) -> pd.Series:
@@ -57,7 +76,7 @@ def jakartasatu(gpkg: Path) -> tuple[gpd.GeoDataFrame, dict]:
             continue
         g = gpd.read_file(gpkg, layer=layer).to_crs("EPSG:4326")
         out = gpd.GeoDataFrame({"t": t}, index=g.index, geometry=g.geometry, crs="EPSG:4326")
-        out["info"], used = describe(g)
+        out["info"], used = describe(g, "drain" if t.startswith("drain") else t)
         if t.startswith("drain"):
             out["width_m"] = num(g.get("width_m")).round(1)
             out["depth_m"] = num(g.get("depth_m")).round(2)

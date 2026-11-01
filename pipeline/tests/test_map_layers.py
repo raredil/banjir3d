@@ -12,8 +12,8 @@ def test_map_layers(tmp_path):
     pack.mkdir()
     crs = "EPSG:32748"
     gpd.GeoDataFrame({"NAMA_SALURAN": ["Kali A"], "width_m": [12.0], "depth_m": [3.5]}, geometry=[LineString([(700000, 9310000), (701000, 9310000)])], crs=crs).to_file(gp, layer="drain_primary_line")
-    gpd.GeoDataFrame({"NAMA_POMPA": ["Pompa B"], "TTLKPSTS": [4.5], "SECRET_NOTE": ["x"]}, geometry=[Point(700500, 9310500)], crs=crs).to_file(gp, layer="pumps")
-    gpd.GeoDataFrame({"TGL": [1577836800000], "TGIMAX": [80], "TGIGNGN": [50], "KELURAHAN": ["Kampung Melayu"]}, geometry=[box(700000, 9309000, 700300, 9309300)], crs=crs).to_file(gp, layer="genangan")
+    gpd.GeoDataFrame({"LOKPOMPA": ["Pompa B"], "TTLKPSTS": [4.5], "JMLPOMPA": [3.0], "SECRET_NOTE": ["x"]}, geometry=[Point(700500, 9310500)], crs=crs).to_file(gp, layer="pumps")
+    gpd.GeoDataFrame({"TGL": [1577836800000], "TGIMAX": [80], "TGIGNGN": [50], "WADMKD": ["Kampung Melayu"], "WADMRW": ["RW 04"]}, geometry=[box(700000, 9309000, 700300, 9309300)], crs=crs).to_file(gp, layer="genangan")
     (pb / "2020-01-01").mkdir(parents=True)
     (pb / "2020-01-01" / "pb_reports_archive_geojson.json").write_text(json.dumps({"result": {"features": [
         {"type": "Feature", "geometry": {"type": "Point", "coordinates": [106.86, -6.22]},
@@ -23,8 +23,8 @@ def test_map_layers(tmp_path):
     js = gpd.read_file(pack / "jakartasatu.gpkg")
     assert sorted(js["t"]) == ["drain1", "genangan", "pump"]
     g = js[js.t == "genangan"].iloc[0]
-    assert g["date"] == "2020-01-01" and g["depth_cm"] == 80 and "Kampung Melayu" in g["info"]
-    assert js[js.t == "pump"].iloc[0]["cap_m3s"] == 4.5 and "SECRET" not in js[js.t == "pump"].iloc[0]["info"]
+    assert g["date"] == "2020-01-01" and g["depth_cm"] == 80 and g["info"] == "RW: RW 04 · Kelurahan: Kampung Melayu"
+    assert js[js.t == "pump"].iloc[0]["cap_m3s"] == 4.5 and js[js.t == "pump"].iloc[0]["info"] == "Lokasi: Pompa B · Jumlah pompa: 3"
     rep = gpd.read_file(pack / "reports_petabencana.geojson")
     assert str(rep["time_wib"][0])[:16] == "2020-01-01 08:00" and "text" not in rep.columns and rep["depth_cm"][0] == 70
     m = json.loads((pack / "manifest.json").read_text())
