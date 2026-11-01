@@ -161,6 +161,23 @@ def zenodo(work: Path):
                        "related": md.get("related_identifiers"), "description": re.sub(r"<[^>]+>", " ", md.get("description") or "")[:3000],
                        "files": [{"key": f["key"], "size": f["size"], "link": f["links"].get("self")} for f in j.get("files", [])]})
     for f in j.get("files", []):
+        if f["key"].startswith("05"):
+            dst = work / "res.zip"
+            dst.write_bytes(session.get(f["links"]["self"], timeout=600).content)
+            z = zipfile.ZipFile(dst)
+            out("zen.zip", {"file": f["key"], "members": [(i.filename, i.file_size) for i in z.infolist()][:100]})
+            z.extractall(work / "res")
+            for p in sorted((work / "res").rglob("*")):
+                if p.suffix.lower() in (".shp", ".gpkg", ".geojson"):
+                    try:
+                        import geopandas as gpd
+                        g = gpd.read_file(p)
+                        out("zen.vector", {"file": str(p.relative_to(work)), "crs": str(g.crs), "n": len(g), "cols": list(g.columns)[:30],
+                                           "head": g.drop(columns="geometry").head(3).to_dict("records"), "bounds": list(g.total_bounds)})
+                    except Exception as e:
+                        out("zen.vector", {"file": str(p), "error": str(e)[:200]})
+                if p.suffix.lower() in (".txt", ".md", ".csv") and p.stat().st_size < 50000:
+                    out("zen.text", {"file": str(p.relative_to(work)), "text": p.read_text(errors="replace")[:800]})
         if "subsid" not in f["key"].lower() or f["size"] > 400e6:
             continue
         dst = work / "subsidence.zip"
@@ -171,6 +188,28 @@ def zenodo(work: Path):
         out("zen.zip", {"file": f["key"], "members": [(i.filename, i.file_size) for i in z.infolist()][:200]})
         z.extractall(work / "subs")
         raster_facts(sorted(p for p in (work / "subs").rglob("*") if p.suffix.lower() in (".tif", ".tiff", ".asc", ".img", ".nc")))
+        for p in sorted((work / "subs").rglob("*.docx")):
+            xml = zipfile.ZipFile(p).read("word/document.xml").decode("utf8", "replace")
+            txt = re.sub(r"\s+", " ", re.sub(r"<[^>]+>", " ", xml.replace("</w:p>", "\n")))
+            for i in range(0, min(len(txt), 12000), 3000):
+                out("zen.docx", {"file": p.name, "part": i // 3000, "text": txt[i:i + 3000]})
+        licsar = "https://gws-access.jasmin.ac.uk/public/nceo_geohazards/LiCSAR_products/98/098A_09673_121312/metadata/"
+        idx = get(licsar)
+        out("licsar.index", {"status": getattr(idx, "status_code", str(idx)[:100]),
+                             "files": re.findall(r'href="([^"?/]+)"', idx.text)[:60] if not isinstance(idx, Exception) else None})
+        for name in ("098A_09673_121312.geo.U.tif", "098A_09673_121312.geo.E.tif", "098A_09673_121312.geo.N.tif"):
+            r2 = get(licsar + name, timeout=(10, 120))
+            if isinstance(r2, Exception) or r2.status_code != 200:
+                out("licsar.file", {"file": name, "status": getattr(r2, "status_code", str(r2)[:100])})
+                continue
+            (work / name).write_bytes(r2.content)
+            import numpy as np
+            import rasterio
+            from rasterio.windows import from_bounds
+            with rasterio.open(work / name) as src:
+                w = from_bounds(106.68, -6.38, 106.98, -6.07, src.transform)
+                a = src.read(1, window=w, masked=True).compressed()
+                out("licsar.file", {"file": name, "crs": str(src.crs), "jakarta_min_mean_max": [round(float(a.min()), 4), round(float(a.mean()), 4), round(float(a.max()), 4)] if a.size else None})
         for p in sorted((work / "subs").rglob("*")):
             if p.suffix.lower() in (".txt", ".md", ".csv", ".xml", ".json", ".prj") and p.stat().st_size < 20000:
                 out("zen.text", {"file": str(p.relative_to(work)), "text": p.read_text(errors="replace")[:1500]})
@@ -192,9 +231,11 @@ def raster_facts(paths):
             with rasterio.open(p) as s:
                 a = s.read(1, masked=True)
                 v = a.compressed()
+                v = v[np.isfinite(v)]
                 out("zen.raster", {"file": p.name, "crs": str(s.crs), "bounds": list(s.bounds), "res": s.res, "size": [s.width, s.height],
                                    "dtype": s.dtypes[0], "nodata": s.nodata, "tags": s.tags(), "band_desc": s.descriptions,
                                    "units": s.units, "count": s.count, "valid": int(v.size),
+                                   "band2_p50": (lambda b: float(np.nanmedian(b)) if b.size else None)(s.read(2, masked=True).compressed()) if s.count > 1 else None,
                                    "p0_1_5_50_95_99_100": np.percentile(v, [0, 1, 5, 50, 95, 99, 100]).round(4).tolist() if v.size else None})
         except Exception as e:
             out("zen.raster", {"file": str(p), "error": str(e)[:200]})
