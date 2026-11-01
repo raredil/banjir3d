@@ -309,7 +309,7 @@ export function mountSim(page: MapPage, o: { packUrl: string; regionBbox: number
   page.tools.innerHTML = `<div style="position:relative"><button class="btn" id="x-btn" type="button"><svg viewBox="0 0 24 24"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg>${t("exp.btn")}</button>
     <div class="menu card" id="x-menu" hidden>${(["tif", "ctif", "html", "png", "csv", "json"] as const).map((x) => `<button type="button" data-x="${x}"><b>${t(`exp.${x}` as Key)}</b><small>${t(`exp.${x}.h` as Key)}</small></button>`).join("")}<p class="help" id="x-which" style="padding:4px 10px"></p>
       <div class="x-data"><b>${t("xd.title")}</b>
-        <select id="xd-layer" aria-label="${t("xd.layer")}">${exportable().map((l) => `<option value="${esc(l.id)}">${esc(l.name[lang])}${l.dl!.file ? " (GeoTIFF/file)" : ""}</option>`).join("")}</select>
+        <select id="xd-layer" aria-label="${t("xd.layer")}">${exportable().map((l) => `<option value="${esc(l.id)}">${esc(l.name[lang])}${l.dl!.file ? ` (${t("xd.whole")})` : ""}</option>`).join("")}</select>
         <div class="seg" id="xd-scope"><button type="button" data-s="all" class="on">${t("xd.all")}</button><button type="button" data-s="view">${t("xd.view")}</button><button type="button" data-s="box">${t("xd.box")}</button></div>
         <div class="row"><button type="button" class="btn small primary" id="xd-go">${t("xd.go")}</button><button type="button" class="btn small" id="xd-png">${t("xd.png")}</button></div>
         <p class="help" id="xd-msg"></p></div></div></div>`;
