@@ -226,6 +226,50 @@ def carve_drains(z0: np.ndarray, zc: np.ndarray, chan: np.ndarray, transform, gp
     return out, chan | mask, h0, info
 
 
+PUMP_SNAP_M = 500.0  # a pump outside every polder serves the nearest polder within this distance (stations sit on the polder edge)
+
+
+def pump_rates(chan: np.ndarray, sea: np.ndarray, transform, gpkg: Path | None) -> tuple[np.ndarray | None, dict]:
+    """Jakarta Satu pump stations (capacity m3/s) and polders: the summed capacity of the pumps serving a polder, spread evenly
+    over its land cells that are not channels or sea, as a sink rate (m/s). With all cells wet the polder loses exactly its pump
+    capacity; with part of it wet less (lower bound). Pumped water leaves the model (it goes to rivers or the sea in reality)."""
+    if gpkg is None:
+        return None, {}
+    import geopandas as gpd
+    import pandas as pd
+
+    try:
+        pol = gpd.read_file(gpkg, layer="polders").to_crs("EPSG:32748")
+        pumps = gpd.read_file(gpkg, layer="pumps").to_crs("EPSG:32748")
+    except Exception as e:
+        return None, {"error": f"{type(e).__name__}: {e}"[:160]}
+    pumps["cap"] = pd.to_numeric(pumps.get("TTLKPSTS"), errors="coerce").fillna(0)
+    pumps = pumps[pumps["cap"] > 0]
+    pol = pol[pol.geometry.notna() & ~pol.geometry.is_empty].reset_index(drop=True)
+    pol["pid"] = np.arange(len(pol))
+    j = gpd.sjoin_nearest(pumps[["cap", "geometry"]], pol[["pid", "geometry"]], how="left", max_distance=PUMP_SNAP_M, distance_col="dist")
+    j = j[~j.index.duplicated()]  # a pump touching two polders counts once
+    cap = j.dropna(subset=["pid"]).groupby("pid")["cap"].sum()
+    shape = chan.shape
+    rate = np.zeros(shape, np.float64)
+    land = ~chan & ~sea
+    served = 0
+    for pid, q in cap.items():
+        m = features.rasterize([(pol.geometry[int(pid)], 1)], out_shape=shape, transform=transform, dtype="uint8").astype(bool) & land
+        if not m.any():
+            continue
+        rate[m] += q / (m.sum() * transform.a * transform.a)
+        served += 1
+    mm_h = rate[rate > 0] * 3.6e6
+    info = {"source": "Jakarta Satu, Dinas SDA DKI: pumps (capacity TTLKPSTS, m3/s) and polders", "pumps_with_capacity": int(len(pumps)),
+            "pumps_in_polders": int(j["pid"].notna().sum()), "capacity_total_m3s": round(float(pumps["cap"].sum()), 1),
+            "capacity_in_polders_m3s": round(float(cap.sum()), 1), "polders": int(len(pol)), "polders_served": served,
+            "area_km2": round(float((rate > 0).sum() * transform.a ** 2 / 1e6), 1),
+            "rate_mm_h_p10_50_90": [round(float(x), 1) for x in np.percentile(mm_h, [10, 50, 90])] if mm_h.size else None,
+            "rule": f"polder sink = sum of pump capacities (pumps inside or within {PUMP_SNAP_M:.0f} m) / polder land area (no channels, sea)"}
+    return rate, info
+
+
 def pd_full(n: int, v: float):
     import pandas as pd
     return pd.Series([v] * n)
@@ -416,6 +460,7 @@ def build(pack: Path, out: Path, region: str, soil: str, terrain_src: str = "fab
     zc, chan, h0, drain_info = carve_drains(z, zc, chan, tr, drains)
     sea = sea_mask(zc, water_cell)
     chan &= ~sea
+    pump, pump_info = pump_rates(chan, sea, tr, drains)
     # Stream network: GLO-90 D8 cells with at least STREAM_KM2 upstream, with their downstream cell (index into the same list).
     acc_km2 = up["area_km2"]
     Hs, Ws = acc_km2.shape
@@ -448,6 +493,8 @@ def build(pack: Path, out: Path, region: str, soil: str, terrain_src: str = "fab
         arrays.append(("sub", "int16", sub))
     if h0 is not None:
         arrays.append(("h0", "uint16", np.clip(np.round(np.where(sea, 0, h0) * 100), 0, 65535).astype(np.uint16)))
+    if pump is not None:
+        arrays.append(("pump", "uint16", np.clip(np.round(pump * 3.6e6 * 100), 0, 65535).astype(np.uint16)))
     inputs = {p: sha256(pack / p) for p in ["dem_fabdem.tif", f"lulc_io_{io_year}.tif", "water_osm.gpkg"]}
     if terrain_src != "fabdem":
         inputs[terrain_info["file"]] = sha256(pack / terrain_info["file"])
@@ -459,10 +506,10 @@ def build(pack: Path, out: Path, region: str, soil: str, terrain_src: str = "fab
     header = {
         "type": "banjir3d-engine-pack", "version": 1, "region": region, "created": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
         "grid": {"crs": str(crs), "nx": W_, "ny": H_, "dx": tr.a, "dy": -tr.e, "origin": [tr.c, tr.f], "corners_lonlat": corners},
-        "encoding": {"z": f"(z + {Z_OFFSET} m) in cm", "n": "n x 1000", "cn": "curve number", "flags": "bit0 channel, bit1 sea, bit2 inside the region domain polygon", "sub": "land subsidence rate, mm/year, positive = sinking (optional)", "h0": "initial water depth in carved drains, cm (optional)", "built": "built-area share of the cell (%), IO land cover class 7", "st_*": "GLO-90 D8 stream cells (>= 1 km2 upstream): centre in metres east/south of the model origin, downstream index (-1 none), upstream area, area-mean CN, mean slope (%), longest flow path (m)"},
+        "encoding": {"z": f"(z + {Z_OFFSET} m) in cm", "n": "n x 1000", "cn": "curve number", "flags": "bit0 channel, bit1 sea, bit2 inside the region domain polygon", "sub": "land subsidence rate, mm/year, positive = sinking (optional)", "h0": "initial water depth in carved drains, cm (optional)", "pump": "polder pump sink, 0.01 mm/h (optional)", "built": "built-area share of the cell (%), IO land cover class 7", "st_*": "GLO-90 D8 stream cells (>= 1 km2 upstream): centre in metres east/south of the model origin, downstream index (-1 none), upstream area, area-mean CN, mean slope (%), longest flow path (m)"},
         "arrays": [], "inputs_sha256": inputs, "landcover_year": io_year, "landcover_share": share,
         "parameters": PARAMS, "channels": chan_info, "sea": {"cells": int(sea.sum()), "rule": "IO water, z <= 0.5 m, connected to the north edge"},
-        "soil": soil_info, "upstream": up_info, "terrain": terrain_info, **({"drains": drain_info} if drain_info else {}),
+        "soil": soil_info, "upstream": up_info, "terrain": terrain_info, **({"drains": drain_info} if drain_info else {}), **({"pumps": pump_info} if pump_info else {}),
         **({"subsidence": sub_info} if sub is not None else {}),
         "checks": {
             "dem_min_m": round(float(zc.min()), 2), "dem_max_m": round(float(zc.max()), 2),
@@ -503,4 +550,4 @@ if __name__ == "__main__":
     ap.add_argument("--drains", type=Path, default=None, help="jakartasatu.gpkg from pipeline/jakartasatu.py")
     a = ap.parse_args()
     h = build(a.pack, a.out, a.region, a.soil, a.terrain, a.subsidence, a.sub_units, a.sub_epoch, a.drains)
-    print(json.dumps({k: h.get(k) for k in ("grid", "channels", "drains", "sea", "checks", "terrain", "subsidence", "output")}, indent=1))
+    print(json.dumps({k: h.get(k) for k in ("grid", "channels", "drains", "pumps", "sea", "checks", "terrain", "subsidence", "output")}, indent=1))

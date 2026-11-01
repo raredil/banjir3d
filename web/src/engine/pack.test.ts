@@ -5,7 +5,7 @@ import { buildRun, sinkM, DOMAIN, type Pack } from "./pack";
 const pack = (sub: Int16Array | null): Pack => ({
   header: {} as Pack["header"], nx: 2, ny: 1, dx: 30, ox: 700000, oy: 9300000, zone: 48,
   z: Float32Array.from([2, 2]), n: Float32Array.from([0.03, 0.03]), cn: Uint8Array.from([80, 80]), flags: Uint8Array.from([DOMAIN, DOMAIN]),
-  built: null, sub, subEpoch: 2013, h0: null,
+  built: null, sub, subEpoch: 2013, h0: null, pump: null,
   streams: { x: new Float32Array(), y: new Float32Array(), down: new Int32Array(), area: new Float32Array(), cn: new Float32Array(), slope: new Float32Array(), len: new Float32Array() },
 });
 
@@ -21,6 +21,11 @@ describe("land subsidence shift", () => {
     const p = { ...pack(null), h0: Float32Array.from([0.5, 0]) };
     expect(Array.from(buildRun(p, null, 1).h0!)).toEqual([0.5, 0]);
     expect(buildRun(pack(null), null, 1).h0).toBeNull();
+  });
+  it("averages the pump sink over a merged block (same m3/s on a full block)", () => {
+    const p = { ...pack(null), pump: Float32Array.from([2e-6, 0]) };
+    expect(buildRun(p, null, 2).pump![0]).toBeCloseTo(1e-6, 12);
+    expect(buildRun(pack(null), null, 1).pump).toBeNull();
   });
   it("leaves the terrain unchanged without a rate map or a year", () => {
     expect(buildRun(pack(null), null, 1, 2025).z[0]).toBeCloseTo(2, 5);

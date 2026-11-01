@@ -411,6 +411,18 @@
    "title": "Global2 constrained population counts 2015–2030, R2025A v1",
    "publisher": "University of Southampton",
    "doi": "10.5258/SOTON/WP00839"
+  },
+  {
+   "key": "dsda2026",
+   "type": "dataset",
+   "authors": [
+    "Dinas Sumber Daya Air Provinsi DKI Jakarta"
+   ],
+   "year": 2026,
+   "title": "Saluran Drainase, Pompa, Polder, Tanggul dan Genangan",
+   "publisher": "Jakarta Satu geoportal",
+   "url": "https://jakartasatu.jakarta.go.id",
+   "accessed": "2026-11-01"
   }
  ]
 }

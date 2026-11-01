@@ -15,6 +15,7 @@ export type Pack = {
   sub: Int16Array | null; // land subsidence rate (mm/year, positive = sinking) per cell; packs before 2026-11-01 do not have it
   subEpoch: number; // decimal year the terrain was measured (subsidence is counted from here)
   h0: Float32Array | null; // initial depth (m) in carved drains; packs before 2026-11-01 do not have it
+  pump: Float32Array | null; // polder pump sink (m/s) per cell; packs before 2026-11-02 do not have it
 };
 export const CHANNEL = 1, SEA = 2, DOMAIN = 4;
 
@@ -42,7 +43,8 @@ export function parsePack(buf: ArrayBuffer): Pack {
   const n = Float32Array.from(a.n as Uint8Array, (v) => v / 1000);
   return {
     header, nx, ny, dx, ox: origin[0], oy: origin[1], zone, z, n, cn: a.cn as Uint8Array, flags: a.flags as Uint8Array, built: (a.built as Uint8Array) ?? null,
-    sub: (a.sub as Int16Array) ?? null, h0: a.h0 ? Float32Array.from(a.h0 as Uint16Array, (v) => v / 100) : null, subEpoch: Number((header.subsidence as { epoch?: number } | undefined)?.epoch ?? 0),
+    sub: (a.sub as Int16Array) ?? null, h0: a.h0 ? Float32Array.from(a.h0 as Uint16Array, (v) => v / 100) : null,
+    pump: a.pump ? Float32Array.from(a.pump as Uint16Array, (v) => v / 100 / 3.6e6) : null, subEpoch: Number((header.subsidence as { epoch?: number } | undefined)?.epoch ?? 0),
     streams: { x: a.st_x as Float32Array, y: a.st_y as Float32Array, down: a.st_down as Int32Array, area: a.st_area_km2 as Float32Array, cn: a.st_cn as Float32Array, slope: a.st_slope_pct as Float32Array, len: a.st_length_m as Float32Array },
   };
 }
@@ -63,6 +65,7 @@ export type RunGrid = {
   z: Float64Array; n: Float64Array; cn: Float64Array; active: Uint8Array; sea: Uint8Array; channel: Uint8Array;
   built: Float64Array; // built-area share 0..1 (0 where the pack has no share: no drains)
   h0: Float64Array | null; // initial depth (m), mean over the block (channel cells only in a block holding a channel)
+  pump: Float64Array | null; // polder pump sink (m/s), mean over the block, so a coarse cell removes the same volume
   corners: [number, number][]; // lon/lat of the outer grid corners NW, NE, SE, SW
   utm: { zone: number; x0: number; y0: number }; // UTM of the NW corner
   isIn: (x: number, y: number) => boolean; // pack metres (east, south of the pack origin) inside the active area
@@ -87,16 +90,16 @@ export function buildRun(p: Pack, box: number[] | null, k: number, year?: number
   const nx = Math.max(1, Math.ceil((i1 - i0) / k)), ny = Math.max(1, Math.ceil((j1 - j0) / k)), N = nx * ny;
   const z = new Float64Array(N), n = new Float64Array(N), cn = new Float64Array(N);
   const active = new Uint8Array(N), sea = new Uint8Array(N), channel = new Uint8Array(N), built = new Float64Array(N);
-  const h0 = p.h0 ? new Float64Array(N) : null;
+  const h0 = p.h0 ? new Float64Array(N) : null, pump = p.pump ? new Float64Array(N) : null;
   for (let J = 0; J < ny; J++) for (let I = 0; I < nx; I++) {
-    let cnt = 0, inDom = 0, nSea = 0, nCh = 0, zs = 0, zch = 0, ns = 0, cs = 0, bs = 0, hs = 0, hch = 0;
+    let cnt = 0, inDom = 0, nSea = 0, nCh = 0, zs = 0, zch = 0, ns = 0, cs = 0, bs = 0, hs = 0, hch = 0, ps = 0;
     for (let dj = 0; dj < k; dj++) for (let di = 0; di < k; di++) {
       const i = i0 + I * k + di, j = j0 + J * k + dj;
       if (i >= i1 || j >= j1) continue;
       const c = j * p.nx + i, f = p.flags[c];
       const zc = p.z[c] - sinkM(p, c, year);
       const hc = p.h0 ? p.h0[c] : 0;
-      cnt++; zs += zc; hs += hc; ns += p.n[c]; cs += p.cn[c]; bs += p.built ? p.built[c] / 100 : 0;
+      cnt++; zs += zc; hs += hc; ps += p.pump ? p.pump[c] : 0; ns += p.n[c]; cs += p.cn[c]; bs += p.built ? p.built[c] / 100 : 0;
       if (box || f & DOMAIN) inDom++;
       if (f & SEA) nSea++;
       if (f & CHANNEL) { nCh++; zch += zc; hch += hc; }
@@ -104,7 +107,7 @@ export function buildRun(p: Pack, box: number[] | null, k: number, year?: number
     const C = J * nx + I;
     if (!cnt) continue;
     // a block holding a mapped channel keeps the channel level so the river stays connected at coarse resolution
-    z[C] = nCh ? zch / nCh : zs / cnt; if (h0) h0[C] = nCh ? hch / nCh : hs / cnt; n[C] = ns / cnt; cn[C] = cs / cnt; built[C] = bs / cnt;
+    z[C] = nCh ? zch / nCh : zs / cnt; if (h0) h0[C] = nCh ? hch / nCh : hs / cnt; n[C] = ns / cnt; cn[C] = cs / cnt; built[C] = bs / cnt; if (pump) pump[C] = ps / cnt;
     active[C] = +(inDom * 2 > cnt); sea[C] = +(nSea * 2 > cnt); channel[C] = +(nCh > 0);
   }
   const dx = p.dx * k, x0 = p.ox + i0 * p.dx, y0 = p.oy - j0 * p.dx;
@@ -114,7 +117,7 @@ export function buildRun(p: Pack, box: number[] | null, k: number, year?: number
     return I >= 0 && J >= 0 && I < nx && J < ny ? J * nx + I : -1;
   };
   return {
-    nx, ny, dx, k, i0, j0, z, n, cn, active, sea, channel, built, h0,
+    nx, ny, dx, k, i0, j0, z, n, cn, active, sea, channel, built, h0, pump,
     corners: [ll(x0, y0), ll(x0 + nx * dx, y0), ll(x0 + nx * dx, y0 - ny * dx), ll(x0, y0 - ny * dx)],
     utm: { zone: p.zone, x0, y0 },
     isIn: (x, y) => { const c = cell(x, y); return c >= 0 && active[c] === 1 && !sea[c]; },
