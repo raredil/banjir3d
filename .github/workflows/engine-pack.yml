@@ -75,10 +75,9 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           tag="region-${REGION}-$(date -u +%Y%m%d)-e${GITHUB_RUN_NUMBER}"
-          gh release create "$tag" "$RUNNER_TEMP"/pack/* \
-            --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" \
-            --title "Region pack: ${REGION} ($(date -u +%Y-%m-%d), with engine pack, subsidence, DEMNAS)" \
-            --notes "Copy of ${SRC_TAG} plus the flood-engine inputs (engine_${REGION}.bin.gz with land subsidence rates, provenance and checks in engine_${REGION}.json), subsidence_insar.* (Shabrina et al. 2026, CC BY 4.0) and dem_demnas.* (DEMNAS © Badan Informasi Geospasial). Run: ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
+          "$GITHUB_WORKSPACE/.github/scripts/release.sh" create "$tag" "$GITHUB_SHA" "Region pack: ${REGION} ($(date -u +%Y-%m-%d), with engine pack, subsidence, DEMNAS)" \
+            "Copy of ${SRC_TAG} plus the flood-engine inputs (engine_${REGION}.bin.gz with land subsidence rates, provenance and checks in engine_${REGION}.json), subsidence_insar.* (Shabrina et al. 2026, CC BY 4.0) and dem_demnas.* (DEMNAS © Badan Informasi Geospasial). Run: ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}" \
+            "$RUNNER_TEMP"/pack/*
       - name: Redeploy website with the new data
         env:
           GH_TOKEN: ${{ github.token }}

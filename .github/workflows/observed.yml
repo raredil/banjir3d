@@ -42,7 +42,6 @@ jobs:
         run: |
           tag="observed-jakarta-$(date -u +%Y%m%d)-o${GITHUB_RUN_NUMBER}"
           cd "$RUNNER_TEMP/pub" && sha256sum -- * > SHA256SUMS && ls -la
-          gh release create "$tag" "$RUNNER_TEMP"/pub/* \
-            --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" \
-            --title "Observed data: jakarta ($(date -u +%Y-%m-%d))" \
-            --notes "Validation inputs fetched by verification/observed/fetch.py. Licences and per-request status in manifest.json. Run: ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
+          "$GITHUB_WORKSPACE/.github/scripts/release.sh" create "$tag" "$GITHUB_SHA" "Observed data: jakarta ($(date -u +%Y-%m-%d))" \
+            "Validation inputs fetched by verification/observed/fetch.py. Licences and per-request status in manifest.json. Run: ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}" \
+            "$RUNNER_TEMP"/pub/*

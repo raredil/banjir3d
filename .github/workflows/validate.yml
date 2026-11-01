@@ -80,8 +80,8 @@ jobs:
           EVENT=$(grep '^event=' "$GITHUB_OUTPUT" | tail -1 | cut -d= -f2)
           case "$EVENT" in [0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]) ;; *) echo "::error::bad event id"; exit 1 ;; esac
           tag="validation-jakarta-${EVENT}-v${GITHUB_RUN_NUMBER}"
-          gh release create "$tag" --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" --title "Validation run: ${EVENT}" \
-            --notes "Engine v2 on the observed event ${EVENT}; one result per drainage capacity. Run: ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
+          "$GITHUB_WORKSPACE/.github/scripts/release.sh" create "$tag" "$GITHUB_SHA" "Validation run: ${EVENT}" \
+            "Engine v2 on the observed event ${EVENT}; one result per drainage capacity. Run: ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
           echo "tag=$tag" >> "$GITHUB_OUTPUT"
   run:
     needs: prep
@@ -147,7 +147,7 @@ jobs:
           python3 -c "import json,os; s=json.load(open('summary.json')); s['sources']=os.environ['SRC']; json.dump(s,open('summary.json','w'),indent=1)"
           n="${EVENT}_${RAIN}_k${K}_d${DRAIN}"; [ "$SCALE" = "1" ] || n="${n}_s${SCALE}"; [ "$TY" = "auto" ] || n="${n}_t${TY}"
           gzip -c hmax.f32 > "${n}_hmax.f32.gz" && gzip -c mask.u8 > "${n}_mask.u8.gz" && cp summary.json "${n}_summary.json"
-          gh release upload "$TAG" "${n}_hmax.f32.gz" "${n}_mask.u8.gz" "${n}_summary.json" --repo "$GITHUB_REPOSITORY"
+          "$GITHUB_WORKSPACE/.github/scripts/release.sh" upload "$TAG" "${n}_hmax.f32.gz" "${n}_mask.u8.gz" "${n}_summary.json"
   score:
     needs: [prep, run]
     if: ${{ always() && needs.prep.result == 'success' }}
@@ -176,4 +176,4 @@ jobs:
           python verification/observed/fetch.py "$RUNNER_TEMP/pb" --petabencana-only
           (cd pipeline && python jakartasatu.py "$RUNNER_TEMP/js") || echo "::warning::Jakarta Satu not reachable; scoring without DSDA flood polygons"
           python verification/observed/compare.py "$RUNNER_TEMP/pb" "$EVENT" "$RUNNER_TEMP/res" "$RUNNER_TEMP/${EVENT}_scores.json" "$RUNNER_TEMP/js/jakartasatu.gpkg"
-          gh release upload "$TAG" "$RUNNER_TEMP/${EVENT}_scores.json" --repo "$GITHUB_REPOSITORY" --clobber
+          "$GITHUB_WORKSPACE/.github/scripts/release.sh" upload "$TAG" "$RUNNER_TEMP/${EVENT}_scores.json"
