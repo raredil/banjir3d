@@ -12,7 +12,7 @@ on:
         required: true
   push:
     branches: ["claude/**"]
-    paths: ["pipeline/engine_pack.py", "pipeline/subsidence.py", "pipeline/demnas_public.py", "data/engine/**", ".github/workflows/engine-pack.yml"]
+    paths: ["pipeline/engine_pack.py", "pipeline/subsidence.py", "pipeline/jakartasatu.py", "pipeline/demnas_public.py", "data/engine/**", ".github/workflows/engine-pack.yml"]
 
 permissions:
   contents: read
@@ -58,13 +58,16 @@ jobs:
         run: |
           python demnas_public.py "$RUNNER_TEMP/extra" --region "$REGION"
           python subsidence.py "$RUNNER_TEMP/extra" --region "$REGION"
+          python jakartasatu.py "$RUNNER_TEMP/js"   # drains with width/depth (raw vectors stay on the runner)
+          cp "$RUNNER_TEMP/js/jakartasatu.json" "$RUNNER_TEMP/extra/"
           rm -rf "$RUNNER_TEMP/extra/_work"
           cp "$RUNNER_TEMP"/extra/* "$RUNNER_TEMP/pack/"
       - name: Build engine pack (SoilGrids over HTTPS)
         run: |
           # terrain epoch: Copernicus DEM (FABDEM base) TanDEM-X acquisitions 2011-2015, mid-point 2013.0
           python pipeline/engine_pack.py "$RUNNER_TEMP/pack" "$RUNNER_TEMP/engine" --region "$REGION" --soil soilgrids \
-            --subsidence "$RUNNER_TEMP/pack/subsidence_insar.tif" --sub-units mm/yr --sub-epoch 2013.0
+            --subsidence "$RUNNER_TEMP/pack/subsidence_insar.tif" --sub-units mm/yr --sub-epoch 2013.0 \
+            --drains "$RUNNER_TEMP/js/jakartasatu.gpkg"
           cp "$RUNNER_TEMP"/engine/engine_* "$RUNNER_TEMP/pack/"
           cd "$RUNNER_TEMP/pack" && rm -f SHA256SUMS && sha256sum -- * > SHA256SUMS && ls -la
       - name: Publish release
