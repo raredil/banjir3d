@@ -26,3 +26,9 @@
 | 2026-10-30 | Finish in one session: event mode, depth check, exposure per kecamatan | NOW | ADR 0011: observed-flood mode, rain ×1.5/×2 sensitivity (not used), buildings/people per kecamatan + CSV |
 | 2026-10-31 | Kesimpulan otomatis bergaya riset dengan sitasi, akurat | NOW | ADR 0012: card "Kesimpulan" after each run, Harvard citations, copy/.md |
 | 2026-10-31 | Pakai satelit Esri, tombol mata angin untuk memutar peta | NOW | ADR 0012: Esri World Imagery default, compass + ⟲/⟳, PNG north arrow follows bearing |
+| 2026-11-01 | Jakarta Satu sudah izin lisan; peta lain yang terhambat izin boleh dipakai sampai tuntas | NOW | ADR 0014: Jakarta Satu + PetaBencana published as map layers, RW places (Sinking City, CC BY) in scoring, pumps in the model |
+| 2026-11-01 | Hasil simulasi harus bisa dimatikan/dihapus | NOW | Result listed in "Lapisan aktif" (hide ✕ remove), replaced by each run |
+| 2026-11-01 | Menu kiri makan tempat; panel kiri kelebaran; popup simulasi bisa disembunyikan | NOW / RULE | Rail hides at the left edge (hover opens), dock 306 px with smaller type, "Fokus peta" hides all floating cards |
+| 2026-11-01 | Panel kanan kecil: lapisan aktif saja, urutan atas/bawah, centang sembunyi, bisa diciutkan; hasil simulasi masuk ke sana | NOW | `map.ts` active-layers card; order = drawing order (moveLayer); left checkbox stays on |
+| 2026-11-01 | Drainase Jakarta Satu tidak terlihat; perhitungan benar? | NOW | Drains were in the engine (carved terrain) but not drawn; now map layers; Pages shows them after merge to main. Validation page states results incl. weaknesses |
+| 2026-11-01 | Perhitungan harus bisa dipertanggungjawabkan untuk penelitian | RULE | Every number traced to a result file; validation on 3 floods + DSDA records reported as measured, weaknesses stated (Methods §8/§9) |
