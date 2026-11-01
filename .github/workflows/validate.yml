@@ -168,11 +168,12 @@ jobs:
           cache: pip
           cache-dependency-path: pipeline/requirements.txt
       - run: pip install -r pipeline/requirements.txt
-      - name: Score against PetaBencana (raw answers stay on the runner)
+      - name: Score against PetaBencana and DSDA flood polygons (raw data stays on the runner)
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           mkdir -p "$RUNNER_TEMP/res" && gh release download "$TAG" --repo "$GITHUB_REPOSITORY" -D "$RUNNER_TEMP/res"
           python verification/observed/fetch.py "$RUNNER_TEMP/pb" --petabencana-only
-          python verification/observed/compare.py "$RUNNER_TEMP/pb" "$EVENT" "$RUNNER_TEMP/res" "$RUNNER_TEMP/${EVENT}_scores.json"
+          (cd pipeline && python jakartasatu.py "$RUNNER_TEMP/js") || echo "::warning::Jakarta Satu not reachable; scoring without DSDA flood polygons"
+          python verification/observed/compare.py "$RUNNER_TEMP/pb" "$EVENT" "$RUNNER_TEMP/res" "$RUNNER_TEMP/${EVENT}_scores.json" "$RUNNER_TEMP/js/jakartasatu.gpkg"
           gh release upload "$TAG" "$RUNNER_TEMP/${EVENT}_scores.json" --repo "$GITHUB_REPOSITORY" --clobber
