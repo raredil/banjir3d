@@ -12,7 +12,7 @@ on:
         required: true
   push:
     branches: ["claude/**"]
-    paths: ["pipeline/engine_pack.py", "pipeline/subsidence.py", "pipeline/jakartasatu.py", "pipeline/demnas_public.py", "data/engine/**", ".github/workflows/engine-pack.yml"]
+    paths: ["pipeline/engine_pack.py", "pipeline/subsidence.py", "pipeline/jakartasatu.py", "pipeline/demnas_public.py", "data/engine/**", ".github/workflows/engine-pack.yml", ".github/scripts/release.sh"]
 
 permissions:
   contents: read

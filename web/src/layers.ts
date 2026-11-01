@@ -10,7 +10,7 @@ export type LayerDef = {
   catalogId: string;
   file?: string;
   role?: "domain" | "admin";
-  kind: "raster" | "hillshade" | "relief" | "water" | "buildings" | "admin" | "demnas-grid" | "region";
+  kind: "raster" | "hillshade" | "relief" | "water" | "buildings" | "admin" | "demnas-grid" | "region" | "js-drains" | "js-pumps" | "js-polders" | "js-walls" | "genangan" | "reports";
   visible: boolean;
   opacity: number;
   note?: string;
@@ -23,6 +23,12 @@ export const ELEVATION_RAMP: [number, string][] = [
   [-5, "#3b6e9e"], [0, "#e9f2e1"], [5, "#b9dcae"], [15, "#86c08a"], [30, "#5aa37a"], [60, "#d8c879"],
   [150, "#c9944f"], [400, "#9c6b43"], [1000, "#7d5b4f"], [2000, "#b8aaa3"], [3000, "#ffffff"],
 ];
+
+// observed depth classes (cm) for the official flood polygons and citizen reports: warm colours, so they never read as model water
+export const OBS_CLASSES: [number, string][] = [[0, "#fdd49e"], [30, "#fc8d59"], [70, "#d7301f"], [150, "#7f0000"]];
+const OBS_LEGEND = (lbl: (a: number, b?: number) => string) => OBS_CLASSES.map(([v, c], i) => ({ label: lbl(v, OBS_CLASSES[i + 1]?.[0]), color: c }));
+const cm = (a: number, b?: number) => (b === undefined ? `> ${a} cm` : a === 0 ? `≤ ${b} cm / ?` : `${a}–${b} cm`);
+const JS_TITLE = "Jakarta Satu, Dinas Sumber Daya Air Provinsi DKI Jakarta";
 
 export const LAYERS: LayerDef[] = [
   { id: "s2", group: "g.imagery", name: { id: "Citra satelit Sentinel-2", en: "Sentinel-2 satellite image" }, title: "Sentinel-2 L2A cloud-free composite (10 m)", catalogId: "sentinel-2-l2a", file: "imagery_s2.pmtiles", kind: "raster", visible: false, opacity: 1 },
@@ -43,6 +49,18 @@ export const LAYERS: LayerDef[] = [
     ramp: { label: "Water occurrence", unit: "%", stops: [[1, "#bdd7ee"], [50, "#4292c6"], [100, "#08306b"]] } },
   { id: "osm-water", group: "g.water", name: { id: "Sungai, kanal, situ (OSM)", en: "Rivers, canals, lakes (OSM)" }, title: "Water bodies & waterways, OpenStreetMap (situ, ponds, canals, drains)", catalogId: "osm-water", file: "water_osm.pmtiles", kind: "water", visible: true, opacity: 1,
     legend: [{ label: "Lake / situ / pond / reservoir", color: "#2f7fd1" }, { label: "River / canal", color: "#1f5fa8" }, { label: "Stream / drain / ditch", color: "#5aa4e6" }, { label: "Wetland", color: "#5fb3a6" }] },
+  { id: "js-drains", group: "g.infra", name: { id: "Saluran primer & sekunder (DSDA)", en: "Primary & secondary drains (DSDA)" }, title: `Drainage channels with width and depth, ${JS_TITLE}`, catalogId: "jakartasatu-dsda", file: "jakartasatu.pmtiles", kind: "js-drains", visible: false, opacity: 1,
+    legend: [{ label: "Primer / primary", color: "#0b7285" }, { label: "Sekunder / secondary", color: "#3bc9db" }] },
+  { id: "js-pumps", group: "g.infra", name: { id: "Rumah pompa (DSDA)", en: "Pump stations (DSDA)" }, title: `Pump stations, capacity m³/s, ${JS_TITLE}`, catalogId: "jakartasatu-dsda", file: "jakartasatu.pmtiles", kind: "js-pumps", visible: false, opacity: 1,
+    legend: [{ label: "Pompa (besar = kapasitas besar) / pump (size = capacity)", color: "#c2255c" }] },
+  { id: "js-polders", group: "g.infra", name: { id: "Sistem polder (DSDA)", en: "Polder systems (DSDA)" }, title: `Polder systems, ${JS_TITLE}`, catalogId: "jakartasatu-dsda", file: "jakartasatu.pmtiles", kind: "js-polders", visible: false, opacity: 0.8,
+    legend: [{ label: "Polder", color: "#845ef7" }] },
+  { id: "js-walls", group: "g.infra", name: { id: "Tanggul laut NCICD (DSDA)", en: "NCICD sea walls (DSDA)" }, title: `NCICD sea and river walls, ${JS_TITLE}`, catalogId: "jakartasatu-dsda", file: "jakartasatu.pmtiles", kind: "js-walls", visible: false, opacity: 1,
+    legend: [{ label: "Tanggul / wall", color: "#5c3d2e" }] },
+  { id: "genangan", group: "g.observed", name: { id: "Genangan resmi per RT (DSDA)", en: "Official flood records per RT (DSDA)" }, title: `Flood polygons per RT with date and depth 2016–2025 ("Genangan"), ${JS_TITLE}`, catalogId: "jakartasatu-dsda", file: "jakartasatu.pmtiles", kind: "genangan", visible: false, opacity: 0.7,
+    legend: OBS_LEGEND(cm) },
+  { id: "reports", group: "g.observed", name: { id: "Laporan warga (PetaBencana)", en: "Citizen reports (PetaBencana)" }, title: "Citizen flood reports for the three validation floods, PetaBencana.id", catalogId: "petabencana", file: "reports_petabencana.pmtiles", kind: "reports", visible: false, opacity: 1,
+    legend: OBS_LEGEND(cm) },
   { id: "buildings", group: "g.exposure", name: { id: "Bangunan (Overture, zoom dekat)", en: "Buildings (Overture, zoom in)" }, title: "Buildings, Overture Maps (zoom ≥ 14)", catalogId: "overture-buildings", file: "buildings_overture.pmtiles", kind: "buildings", visible: false, opacity: 0.85,
     legend: [{ label: "Building footprint", color: "#6b6f7a" }] },
   { id: "pop", group: "g.exposure", name: { id: "Penduduk per sel 100 m (2025)", en: "People per 100 m cell (2025)" }, title: "Population, WorldPop Global2 R2025A (people per ~100 m cell)", catalogId: "worldpop-global2", file: "population_worldpop.pmtiles", kind: "raster", visible: false, opacity: 0.85,

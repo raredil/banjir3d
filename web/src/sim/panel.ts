@@ -15,11 +15,16 @@ import { esc, fromUtm } from "../util";
 import calibration from "../../../data/engine/calibration.json";
 
 const FLOOD_M = 0.15; // flooded = deeper than the lower bound of the second depth class (BLUEPRINT §8)
-// city-drain sink (m/s) per cell: calibrated capacity x built share, none on channels and sea; undefined when the capacity is 0
-const drainOf = (run: RunGrid): Float64Array | undefined => {
-  if (!(calibration.drain_mm_h > 0)) return undefined;
+// city-drain sink (m/s) per cell: calibrated capacity x built share, none on channels and sea; plus the polder pumps (Jakarta Satu
+// capacities spread over each polder, engine_pack.pump_rates) when switched on; undefined when there is no sink at all
+const drainOf = (run: RunGrid, pumps: boolean): Float64Array | undefined => {
+  const usePump = pumps && !!run.pump;
+  if (!(calibration.drain_mm_h > 0) && !usePump) return undefined;
   const d = new Float64Array(run.nx * run.ny);
-  for (let c = 0; c < d.length; c++) if (!run.channel[c] && !run.sea[c]) d[c] = (calibration.drain_mm_h / 3.6e6) * run.built[c];
+  for (let c = 0; c < d.length; c++) {
+    if (!run.channel[c] && !run.sea[c]) d[c] = (calibration.drain_mm_h / 3.6e6) * run.built[c];
+    if (usePump && !run.sea[c]) d[c] += run.pump![c];
+  }
   return d;
 };
 // observed events (IMERG hourly rain per 0.1 degree point, verification/observed/event_rain.py), loaded only when chosen
@@ -51,10 +56,12 @@ export function mountSim(page: MapPage, o: { packUrl: string; regionBbox: number
       <div data-mode="hourly" hidden><div class="field"><div class="lbl"><span>${t("sim.hourly")}</span></div><textarea id="s-hourly" rows="2" placeholder="5, 20, 60, 35, 10"></textarea></div></div>
       <div data-mode="event" hidden><div class="field"><div class="lbl"><span>${t("sim.event")} ${q("sim.event")}</span></div>
         <select id="s-event">${eventIds.map((id) => `<option value="${id}">${new Date(`${id}T12:00:00+07:00`).toLocaleDateString(lang === "id" ? "id-ID" : "en-GB", { day: "numeric", month: "long", year: "numeric" })}</option>`).join("")}</select>${tip("sim.event")}</div></div>
+      <label class="layer" data-mode="event" hidden><input type="checkbox" id="s-obs"><span><b>${t("sim.obs")}</b></span>${q("sim.obs")}</label>${tip("sim.obs")}
       <p class="help" id="s-rainsum"></p>
       <label class="layer"><input type="checkbox" id="s-up" checked><span><b id="s-up-lbl">${t("sim.up")}</b></span>${q("sim.up")}</label>${tip("sim.up")}
     </div>
-    <div class="sec">${sl("s-sea", "sim.sea", 0, 1.5, 0.1, 0, "m")}</div>
+    <div class="sec">${sl("s-sea", "sim.sea", 0, 1.5, 0.1, 0, "m")}
+      <label class="layer" id="s-pumps-row" hidden><input type="checkbox" id="s-pumps" checked><span><b>${t("sim.pumps")}</b></span>${q("sim.pumps")}</label>${tip("sim.pumps")}</div>
     <div class="sec">${sl("s-hours", "sim.hours", 3, 72, 1, 12, "h")}
       <div class="field"><div class="lbl"><span>${t("sim.res")} ${q("sim.res")}</span></div><div class="seg" id="s-res"><button type="button" data-k="1" class="on">30 m</button><button type="button" data-k="2">60 m</button><button type="button" data-k="3">90 m</button></div>${tip("sim.res")}</div>
     </div>
@@ -78,6 +85,7 @@ export function mountSim(page: MapPage, o: { packUrl: string; regionBbox: number
   // ---------- inputs ----------
   const hyeto = (): Hyetograph | null => ($<HTMLSelectElement>("s-mode").value === "hourly" ? parseHourly($<HTMLTextAreaElement>("s-hourly").value) : alternatingBlock(num("s-r24"), num("s-dur")));
   const mode = () => $<HTMLSelectElement>("s-mode").value;
+  const pumpsOn = () => $<HTMLInputElement>("s-pumps").checked;
   let evShown = "";
   const summarizeEvent = async () => {
     const id = $<HTMLSelectElement>("s-event").value, ev = await loadEvent(id);
@@ -87,8 +95,17 @@ export function mountSim(page: MapPage, o: { packUrl: string; regionBbox: number
     $("s-rainsum").textContent = t("sim.event.info", { mm: fmt(mean), h: ev.hours, mx: fmt(Math.max(...tot)), n: ev.reports.n, p: Math.round(ev.reports.hit_rate * 100) })
       + (ev.reported_km2 ? ` ${t("sim.event.rep", { km2: ev.reported_km2, rw: ev.reported_rw ?? "?" })}` : "");
   };
+  // recorded floods of the chosen event on the map (official DSDA polygons dated in the event window, PetaBencana reports)
+  const evDates = (wib: string[]) => { const out: string[] = []; for (let d = new Date(`${wib[0].slice(0, 10)}T12:00:00Z`); d <= new Date(`${wib[1].slice(0, 10)}T12:00:00Z`); d.setUTCDate(d.getUTCDate() + 1)) out.push(d.toISOString().slice(0, 10)); return out; };
+  const syncObs = async () => {
+    if (mode() !== "event") { page.setObservedEvent(null, $<HTMLInputElement>("s-obs").checked ? false : undefined); return; }
+    const ev = await loadEvent($<HTMLSelectElement>("s-event").value);
+    page.setObservedEvent({ id: ev.id, dates: evDates(ev.wib) }, $<HTMLInputElement>("s-obs").checked);
+  };
+  $("s-obs").addEventListener("change", () => { syncObs().catch(() => {}); });
   const summarize = () => {
     box.querySelectorAll<HTMLElement>("[data-mode]").forEach((el) => (el.hidden = el.dataset.mode !== mode()));
+    syncObs().catch(() => {});
     $("s-up-lbl").textContent = t(mode() === "event" ? "sim.up.ev" : "sim.up");
     if (mode() === "event") { summarizeEvent().catch((e) => ($("s-rainsum").textContent = t("sim.err", { m: String(e) }))); return; }
     evShown = "";
@@ -161,7 +178,11 @@ export function mountSim(page: MapPage, o: { packUrl: string; regionBbox: number
   }
 
   // ---------- what the engine derives from data ----------
-  const ensurePack = async () => (pack ??= await loadPack(o.packUrl));
+  const ensurePack = async () => {
+    pack ??= await loadPack(o.packUrl);
+    $("s-pumps-row").hidden = !pack.pump; // packs before the pump sink have no switch to offer
+    return pack;
+  };
   // buildings, people and kecamatan per cell (separate file; older data releases do not have it)
   let expo: Promise<Exposure | null> | null = null;
   const ensureExposure = () => (expo ??= loadExposure(o.packUrl.replace("/engine_", "/exposure_")).catch(() => null));
@@ -242,7 +263,7 @@ export function mountSim(page: MapPage, o: { packUrl: string; regionBbox: number
     c.strokeStyle = "#f97316"; c.lineWidth = 1.5 * devicePixelRatio; c.beginPath(); c.moveTo(x, 0); c.lineTo(x, h); c.stroke();
   };
   tq("t-frame").addEventListener("input", () => { frame = Number(tq<HTMLInputElement>("t-frame").value); tq("t-out").textContent = fmtT(res?.times[frame] ?? 0); render(); });
-  tq("t-show").querySelectorAll<HTMLButtonElement>("button").forEach((b) => b.addEventListener("click", () => { showMax = b.dataset.m === "max"; tq("t-show").querySelectorAll("button").forEach((x) => x.classList.toggle("on", x === b)); render(); }));
+  tq("t-show").querySelectorAll<HTMLButtonElement>("button").forEach((b) => b.addEventListener("click", () => { showMax = b.dataset.m === "max"; tq("t-show").querySelectorAll("button").forEach((x) => x.classList.toggle("on", x === b)); render(); page.refreshLayers(); }));
   const stopPlay = () => { clearInterval(playTimer); playTimer = 0; tq("t-play").textContent = "▶"; };
   tq("t-play").addEventListener("click", () => {
     if (playTimer || !res) { stopPlay(); return; }
@@ -349,7 +370,7 @@ export function mountSim(page: MapPage, o: { packUrl: string; regionBbox: number
     const box2 = (r.scenario.area as { box?: number[] }).box ?? null, [wKm, hKm] = box2 ? kmOf(box2) : [0, 0];
     const facts: Facts = {
       area: { box: box2, wKm, hKm }, landKm2: land * a, cellM: g.dx, hours: r.scenario.hours as number, gpu: !!r.gpu, landcoverYear: pack.header.landcover_year, ...(r.scenario.terrainYear ? { terrainYear: r.scenario.terrainYear as number, subEpoch: r.scenario.terrainEpoch as number } : {}),
-      drainMmH: calibration.drain_mm_h, seaM: r.scenario.seaLevel as number, floodM: FLOOD_M, rain,
+      drainMmH: calibration.drain_mm_h, dsdaDrains: !!pack.header.drains, ...(r.scenario.polderPumps ? { pumpsM3s: r.scenario.pumpM3s as number } : r.run.pump ? { pumpsOff: true } : {}), seaM: r.scenario.seaLevel as number, floodM: FLOOD_M, rain,
       upstream: r.inflows.length ? { n: r.inflows.length, peakM3s: peakInflow(), areaKm2: r.inflows.reduce((s2, f) => s2 + f.areaKm2, 0) } : null,
       env: { km2: wet * a, classesKm2: cls.map((v) => v * a), meanDepth: wet ? sum / wet : 0, maxDepth: dMax, deepest },
       peak: { km2: r.area[pk] ?? 0, tSec: r.times[pk] ?? 0 }, endKm2: r.area[r.area.length - 1] ?? 0, massError: r.mass ?? 0,
@@ -375,7 +396,7 @@ export function mountSim(page: MapPage, o: { packUrl: string; regionBbox: number
   const clear = () => {
     stopPlay(); worker?.terminate(); worker = null; setRunning(false); res = null;
     if (layer && map.getLayer("flood")) map.removeLayer("flood");
-    layer = null; page.kpis.innerHTML = ""; page.timeline.hidden = true; page.legend.hidden = true; $("s-clear").hidden = true; $("s-stats").innerHTML = ""; $("s-expo-box").hidden = true; $("s-expo").innerHTML = ""; $("s-status").textContent = ""; concl.innerHTML = ""; showConcl(false);
+    layer = null; page.removeResult("flood"); page.kpis.innerHTML = ""; page.timeline.hidden = true; page.legend.hidden = true; $("s-clear").hidden = true; $("s-stats").innerHTML = ""; $("s-expo-box").hidden = true; $("s-expo").innerHTML = ""; $("s-status").textContent = ""; concl.innerHTML = ""; showConcl(false);
   };
   $("s-clear").addEventListener("click", clear);
   $("s-cancel").addEventListener("click", () => { worker?.terminate(); worker = null; setRunning(false); $("s-status").textContent = ""; });
@@ -412,12 +433,18 @@ export function mountSim(page: MapPage, o: { packUrl: string; regionBbox: number
     const scenario = {
       area: area === "box" ? { box: bbox } : "region", rainMode: mode(), ...(mode() === "design" ? { r24: num("s-r24") } : {}), rainMm: +totalMm(hy).toFixed(1), rainHours: (hy.mm.length * hy.blockSeconds) / 3600, upstreamRain: up, seaLevel: num("s-sea"), hours, cellM: run.dx,
       ...(p.sub ? { terrainYear: +tYear.toFixed(2), terrainEpoch: p.subEpoch } : {}),
+      ...(run.pump ? { polderPumps: pumpsOn(), pumpM3s: Math.round(run.pump.reduce((a, v, c) => a + (run.sea[c] ? 0 : v), 0) * run.dx * run.dx) } : {}),
       ...(ev ? { event: ev.id, eventStartUtc: ev.start_utc, rainSource: ev.source, rainPoints: ev.mm.length } : {}),
     };
     res = { run, grid, frames: [], times: [], area: [], max: null, inflows, hy, scenario, event: ev, zone, count };
     const mine = res;
     ensureExposure().then((x) => { expoNow = x; if (res !== mine) return; if (x) res.cells = exposureCells(x, run); $("s-expo-box").hidden = false; render(); conclude(); });
     layer = new FloodLayer(grid); addLayer();
+    // the result goes into the active-layers card: on top, can be hidden, moved or removed; a new run replaces it
+    page.addResult({
+      id: "flood", ids: () => ["flood"], remove: clear, onVisible: (on) => { page.legend.hidden = !on || !res; },
+      name: () => `${t("res.layer")} · ${res?.event ? res.event.id : `${res?.scenario.rainMm ?? ""} mm`} · ${showMax ? t("sim.show.max") : t("sim.show.now")}`,
+    });
     page.legend.hidden = false; page.timeline.hidden = false;
     // frames kept in memory as uint16 cm: about 150 MB at most, between 12 and 144 frames, at least 10 min apart
     const nFrames = Math.max(12, Math.min(144, Math.floor(150e6 / (N * 2))));
@@ -450,7 +477,7 @@ export function mountSim(page: MapPage, o: { packUrl: string; regionBbox: number
     };
     worker.onerror = (e) => { setRunning(false); $("s-status").textContent = t("sim.err", { m: e.message }); };
     const msg: RunMsg = {
-      type: "run", grid: { nx: run.nx, ny: run.ny, dx: run.dx, z: run.z, n: run.n, cn: run.cn, active: run.active, sea: run.sea, drain: drainOf(run), zone, ...(run.h0 ? { h0: run.h0 } : {}) }, zoneMm: ev?.mm, seaLevel: num("s-sea"), hours, rain: hy, frameS,
+      type: "run", grid: { nx: run.nx, ny: run.ny, dx: run.dx, z: run.z, n: run.n, cn: run.cn, active: run.active, sea: run.sea, drain: drainOf(run, pumpsOn()), zone, ...(run.h0 ? { h0: run.h0 } : {}) }, zoneMm: ev?.mm, seaLevel: num("s-sea"), hours, rain: hy, frameS,
       inflowCells: inflows.map((f) => f.cell), inflowQ: inflows.map((f) => f.q), inflowDt: DT_S, floodM: FLOOD_M, count, preferGpu: gpuAvailable,
     };
     worker.postMessage(msg);

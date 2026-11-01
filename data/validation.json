@@ -1,147 +1,159 @@
 {
-  "_about": "Shown on the Validation page. Every number is copied from a result file in verification/ (named in 'file'); update together.",
-  "tests": [
-    {
-      "id": "gpu-parity",
-      "status": "pass",
-      "file": "verification/gpu-parity/results.json",
-      "id_txt": "GPU vs CPU: hasil mesin kartu grafis sama dengan mesin acuan di prosesor pada medan asli (kotak Manggarai, 2 jam hujan 1 Jan 2020).",
-      "en_txt": "GPU vs CPU: the graphics-card engine gives the same result as the processor reference on real terrain (Manggarai box, first 2 h of the 1 Jan 2020 storm).",
-      "metrics": [
-        [
-          "RMSE max depth",
-          "0.00005 m"
-        ],
-        [
-          "Largest difference",
-          "0.003 m"
-        ],
-        [
-          "CSI (> 0.15 m)",
-          "1.00"
-        ],
-        [
-          "Mass error GPU",
-          "6e-8"
-        ],
-        [
-          "RMSE, rain zones + drains (1 h)",
-          "0.0000015 m"
-        ]
-      ]
-    },
-    {
-      "id": "mass",
-      "status": "pass",
-      "file": "web/src/engine/engine.test.ts",
-      "id_txt": "Neraca air: hujan + air hulu = resapan + keluar + ke laut + tersimpan. Diuji otomatis dan dilaporkan di setiap simulasi.",
-      "en_txt": "Water balance: rain + upstream inflow = infiltration + outflow + sea + storage. Tested automatically and reported with every run.",
-      "metrics": [
-        [
-          "Mass error (tests, CPU)",
-          "< 1e-9"
-        ],
-        [
-          "Mass error, whole region 30 h (90 m)",
-          "5e-15"
-        ]
-      ]
-    },
-    {
-      "id": "analytical",
-      "status": "pass",
-      "file": "verification/analytical-wave/results.json",
-      "id_txt": "Uji analitik gelombang banjir di dataran datar (Hunter dkk. 2005): skema numerik yang sama dengan mesin v2.",
-      "en_txt": "Analytical flood-wave test on a flat plane (Hunter et al. 2005): same numerical scheme as engine v2.",
-      "metrics": [
-        [
-          "RMSE / inflow depth (n 0.03, 100 m)",
-          "2.9 %"
-        ],
-        [
-          "Front position error",
-          "100 m of 3,600 m"
-        ]
-      ]
-    },
-    {
-      "id": "sfincs",
-      "status": "pass",
-      "file": "verification/explore-vs-sfincs/comparison-spatial-n.json",
-      "id_txt": "Dibanding model terbitan SFINCS 2.4.0 (Deltares) pada medan, hujan dan kekasaran yang sama (mesin v1, skema sama; v2 akan diuji ulang).",
-      "en_txt": "Against the published SFINCS 2.4.0 model (Deltares) on the same terrain, rain and roughness (engine v1, same scheme; v2 re-run pending).",
-      "metrics": [
-        [
-          "RMSE max depth",
-          "0.056 m"
-        ],
-        [
-          "Pearson r",
-          "0.995"
-        ],
-        [
-          "Volume ratio",
-          "1.0004"
-        ]
-      ]
-    },
-    {
-      "id": "observed",
-      "status": "pass",
-      "file": "verification/observed/scores-2020-01-01-imerg.json",
-      "id_txt": "Banjir nyata: dengan hujan satelit GPM IMERG, model mengenai sekitar 80 % laporan warga PetaBencana pada tiga banjir (2020 untuk kalibrasi, 2021 dan 2025 untuk uji). Luas genangan 1 Jan 2020 di Jakarta: model 143 km², laporan Pemprov DKI 156 km².",
-      "en_txt": "Observed floods: with GPM IMERG satellite rain the model hits about 80 % of PetaBencana citizen reports in three floods (2020 calibration, 2021 and 2025 tests). Flooded area in Jakarta on 1 Jan 2020: model 143 km², city government report 156 km².",
-      "metrics": [
-        [
-          "Reports hit (≥ 0.10 m), 1 Jan 2020",
-          "80 % of 259"
-        ],
-        [
-          "20 Feb 2021 (test)",
-          "78 % of 372"
-        ],
-        [
-          "4 Mar 2025 (test)",
-          "81 % of 47"
-        ],
-        [
-          "Flooded area > 0.15 m, 2020: model / reported",
-          "143 / 156 km²"
-        ],
-        [
-          "Drain capacity chosen (1–40 mm/h tested)",
-          "0 mm/h"
-        ]
-      ]
-    },
-    {
-      "id": "observed-depth",
-      "status": "partial",
-      "file": "verification/observed/scores-2020-01-01-imerg-scaled.json",
-      "id_txt": "Kedalaman: di titik laporan, genangan model lebih dangkal dari yang dilaporkan warga. Uji kepekaan dengan hujan satelit dikali 1,5 dan 2: kedalaman 2020 jadi pas pada ×1,5, tetapi luas genangan Jakarta naik ke 200 km² (laporan 156 km²); 2021 baru pas pada ×2, 2025 sudah terlalu dalam pada ×1,5. Tidak ada satu faktor yang cocok, jadi aplikasi tetap memakai hujan apa adanya.",
-      "en_txt": "Depth: at report points the modelled water is shallower than citizens reported. Sensitivity runs with satellite rain times 1.5 and 2: 2020 depths match at ×1.5, but the flooded area in Jakarta rises to 200 km² (reported 156 km²); 2021 matches only at ×2, 2025 is already too deep at ×1.5. No single factor fits, so the app keeps the rain as observed.",
-      "metrics": [
-        [
-          "Median depth reports / model, 2020 (×1 / ×1.5 / ×2)",
-          "0.70 / 0.36 · 0.62 · 0.80 m"
-        ],
-        [
-          "2021",
-          "0.65 / 0.25 · 0.40 · 0.61 m"
-        ],
-        [
-          "2025",
-          "0.55 / 0.27 · 0.62 · 1.10 m"
-        ],
-        [
-          "Flooded area 2020, Jakarta (×1 / ×1.5 / ×2) vs reported",
-          "143 · 200 · 239 / 156 km²"
-        ],
-        [
-          "Reports hit 2020 (×1 / ×1.5 / ×2)",
-          "80 · 87 · 89 %"
-        ]
-      ]
-    }
-  ]
+ "_about": "Shown on the Validation page. Every number is copied from a result file in verification/ (named in 'file'); update together.",
+ "tests": [
+  {
+   "id": "gpu-parity",
+   "status": "pass",
+   "file": "verification/gpu-parity/results.json",
+   "id_txt": "GPU vs CPU: hasil mesin kartu grafis sama dengan mesin acuan di prosesor pada medan asli (kotak Manggarai, 2 jam hujan 1 Jan 2020).",
+   "en_txt": "GPU vs CPU: the graphics-card engine gives the same result as the processor reference on real terrain (Manggarai box, first 2 h of the 1 Jan 2020 storm).",
+   "metrics": [
+    [
+     "RMSE max depth",
+     "0.00005 m"
+    ],
+    [
+     "Largest difference",
+     "0.003 m"
+    ],
+    [
+     "CSI (> 0.15 m)",
+     "1.00"
+    ],
+    [
+     "Mass error GPU",
+     "6e-8"
+    ],
+    [
+     "RMSE, rain zones + drains (1 h)",
+     "0.0000015 m"
+    ]
+   ]
+  },
+  {
+   "id": "mass",
+   "status": "pass",
+   "file": "web/src/engine/engine.test.ts",
+   "id_txt": "Neraca air: hujan + air hulu = resapan + keluar + ke laut + tersimpan. Diuji otomatis dan dilaporkan di setiap simulasi.",
+   "en_txt": "Water balance: rain + upstream inflow = infiltration + outflow + sea + storage. Tested automatically and reported with every run.",
+   "metrics": [
+    [
+     "Mass error (tests, CPU)",
+     "< 1e-9"
+    ],
+    [
+     "Mass error, whole region 30 h (90 m)",
+     "5e-15"
+    ]
+   ]
+  },
+  {
+   "id": "analytical",
+   "status": "pass",
+   "file": "verification/analytical-wave/results.json",
+   "id_txt": "Uji analitik gelombang banjir di dataran datar (Hunter dkk. 2005): skema numerik yang sama dengan mesin v2.",
+   "en_txt": "Analytical flood-wave test on a flat plane (Hunter et al. 2005): same numerical scheme as engine v2.",
+   "metrics": [
+    [
+     "RMSE / inflow depth (n 0.03, 100 m)",
+     "2.9 %"
+    ],
+    [
+     "Front position error",
+     "100 m of 3,600 m"
+    ]
+   ]
+  },
+  {
+   "id": "sfincs",
+   "status": "pass",
+   "file": "verification/explore-vs-sfincs/comparison-spatial-n.json",
+   "id_txt": "Dibanding model terbitan SFINCS 2.4.0 (Deltares) pada medan, hujan dan kekasaran yang sama (mesin v1, skema sama; v2 akan diuji ulang).",
+   "en_txt": "Against the published SFINCS 2.4.0 model (Deltares) on the same terrain, rain and roughness (engine v1, same scheme; v2 re-run pending).",
+   "metrics": [
+    [
+     "RMSE max depth",
+     "0.056 m"
+    ],
+    [
+     "Pearson r",
+     "0.995"
+    ],
+    [
+     "Volume ratio",
+     "1.0004"
+    ]
+   ]
+  },
+  {
+   "id": "observed",
+   "status": "pass",
+   "file": "verification/observed/scores-2020-01-01-imerg-v3.json",
+   "id_txt": "Banjir nyata: dengan hujan satelit GPM IMERG dan saluran primer/sekunder Dinas SDA DKI ditoreh ke medan, model mengenai 72–81 % laporan warga PetaBencana pada tiga banjir, dan 46–64 % poligon genangan resmi per RT dari Dinas SDA DKI (Jakarta Satu). Luas genangan 1 Jan 2020 di Jakarta: model 87 km², laporan Pemprov DKI 156 km² (tanpa saluran DSDA: 143 km²).",
+   "en_txt": "Observed floods: with GPM IMERG satellite rain and the DKI water agency's primary/secondary drains carved into the terrain, the model hits 72–81 % of PetaBencana citizen reports in three floods and 46–64 % of the official flood records per RT of the DKI water agency (Jakarta Satu). Flooded area in Jakarta on 1 Jan 2020: model 87 km², city government report 156 km² (without the DSDA drains: 143 km²).",
+   "metrics": [
+    [
+     "Reports hit (≥ 0.10 m), 1 Jan 2020",
+     "72 % of 259 (80 % without DSDA drains)"
+    ],
+    [
+     "20 Feb 2021",
+     "78 % of 372"
+    ],
+    [
+     "4 Mar 2025",
+     "81 % of 47"
+    ],
+    [
+     "DSDA flood records per RT hit, 2020 / 2021 / 2025",
+     "64 % of 148 · 46 % of 37 · 56 % of 130"
+    ],
+    [
+     "Flooded area > 0.15 m, 2020: model / reported",
+     "87 / 156 km²"
+    ],
+    [
+     "Drain sink on built cells (1–40 mm/h tested)",
+     "0 mm/h"
+    ]
+   ]
+  },
+  {
+   "id": "observed-depth",
+   "status": "partial",
+   "file": "verification/observed/scores-2020-01-01-imerg-scaled.json",
+   "id_txt": "Kedalaman: di titik laporan, genangan model lebih dangkal dari yang dilaporkan warga. Uji kepekaan dengan hujan satelit dikali 1,5 dan 2: kedalaman 2020 jadi pas pada ×1,5, tetapi luas genangan Jakarta naik ke 200 km² (laporan 156 km²); 2021 baru pas pada ×2, 2025 sudah terlalu dalam pada ×1,5. Tidak ada satu faktor yang cocok, jadi aplikasi tetap memakai hujan apa adanya.",
+   "en_txt": "Depth: at report points the modelled water is shallower than citizens reported. Sensitivity runs with satellite rain times 1.5 and 2: 2020 depths match at ×1.5, but the flooded area in Jakarta rises to 200 km² (reported 156 km²); 2021 matches only at ×2, 2025 is already too deep at ×1.5. No single factor fits, so the app keeps the rain as observed.",
+   "metrics": [
+    [
+     "Median depth at reports, new pack (2020 · 2021 · 2025)",
+     "0.38 · 0.38 · 0.43 m (reported 0.70 · 0.65 · 0.55)"
+    ],
+    [
+     "DSDA records: observed / model median (2020 · 2021 · 2025)",
+     "0.30/0.17 · 0.40/0.10 · 0.60/0.17 m"
+    ],
+    [
+     "Median depth reports / model, 2020 (×1 / ×1.5 / ×2)",
+     "0.70 / 0.36 · 0.62 · 0.80 m"
+    ],
+    [
+     "2021",
+     "0.65 / 0.25 · 0.40 · 0.61 m"
+    ],
+    [
+     "2025",
+     "0.55 / 0.27 · 0.62 · 1.10 m"
+    ],
+    [
+     "Flooded area 2020, Jakarta (×1 / ×1.5 / ×2) vs reported",
+     "143 · 200 · 239 / 156 km²"
+    ],
+    [
+     "Reports hit 2020 (×1 / ×1.5 / ×2)",
+     "80 · 87 · 89 %"
+    ]
+   ]
+  }
+ ]
 }

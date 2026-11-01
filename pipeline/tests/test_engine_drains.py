@@ -26,3 +26,23 @@ def test_carve_drains_area_equivalent_depth(tmp_path):
     assert info["cells_lowered"] == 5 and info["records"]["drain_primary_line"] == 1
     assert np.allclose(h0[2], 2.0) and h0[0].sum() == 0  # flat terrain: recorded surface = ground, carved part starts full
     assert carve_drains(z, z, chan, tr, None)[3] == {}
+
+
+def test_pump_rates(tmp_path):
+    from shapely.geometry import Point, box
+    from engine_pack import pump_rates
+    tr = from_origin(700000, 9300000, 30, 30)
+    chan = np.zeros((4, 4), bool)
+    chan[0, 0] = True
+    sea = np.zeros((4, 4), bool)
+    p = tmp_path / "js.gpkg"
+    gpd.GeoDataFrame({"NAMA": ["P"]}, geometry=[box(700000, 9300000 - 60, 700060, 9300000)], crs="EPSG:32748").to_file(p, layer="polders")
+    # one pump inside, one 200 m away (snapped), one 2 km away (ignored), one without capacity
+    gpd.GeoDataFrame({"TTLKPSTS": [0.003, 0.0006, 5.0, None]}, geometry=[Point(700030, 9299970), Point(700260, 9299970), Point(702500, 9299970), Point(700010, 9299990)],
+                     crs="EPSG:32748").to_file(p, layer="pumps")
+    rate, info = pump_rates(chan, sea, tr, p)
+    land = rate > 0
+    assert land.sum() == 3 and not land[0, 0]  # the 2 x 2 polder minus its channel cell
+    assert np.isclose(rate[land].sum() * 900, 0.0036)  # all wet: the polder loses its pump capacity
+    assert info["pumps_in_polders"] == 2 and info["polders_served"] == 1
+    assert pump_rates(chan, sea, tr, None) == (None, {})
