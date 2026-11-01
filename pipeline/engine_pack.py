@@ -286,14 +286,57 @@ def d8_accumulate(fdir: np.ndarray, dirmap, res: float, cn: np.ndarray, slope: n
     return acc.reshape(H, W), acn.reshape(H, W), asl.reshape(H, W), length.reshape(H, W), down
 
 
-def build(pack: Path, out: Path, region: str, soil: str) -> dict:
+def onto_grid(path: Path, tr, crs, shape, rs, fill=np.nan) -> np.ndarray:
+    a = np.full(shape, np.nan, np.float32)
+    with rasterio.open(path) as src:
+        reproject(rasterio.band(src, 1), a, dst_transform=tr, dst_crs=crs, resampling=rs, dst_nodata=np.nan)
+    return np.where(np.isfinite(a), a, fill)
+
+
+def terrain(pack: Path, choice: str, tr, crs, shape, fab: np.ndarray) -> tuple[np.ndarray, dict]:
+    """Model terrain on the 30 m grid. 'fabdem': FABDEM as is. 'demnas': DEMNAS 8 m averaged to 30 m where it has data,
+    FABDEM elsewhere (DEMNAS covers the six sheets of the domain; the rest of the box keeps FABDEM)."""
+    if choice == "fabdem":
+        return fab, {"source": "FABDEM V1-2", "file": "dem_fabdem.tif"}
+    f = sorted(pack.glob("dem_demnas_*.tif"))
+    if not f:
+        raise SystemExit("--terrain demnas: no dem_demnas_*.tif in the pack directory")
+    dn = onto_grid(f[0], tr, crs, shape, Resampling.average)
+    ok = np.isfinite(dn) & (dn > -50)
+    z = np.where(ok, dn, fab)
+    return z, {"source": "DEMNAS (BIG) 8 m averaged to 30 m; FABDEM V1-2 where DEMNAS has no data", "file": f[0].name,
+               "demnas_share": round(float(ok.mean()), 4),
+               "demnas_minus_fabdem_median_m": round(float(np.median((dn - fab)[ok])), 3) if ok.any() else None}
+
+
+def subsidence(path: Path | None, units: str, epoch: float, tr, crs, shape) -> tuple[np.ndarray | None, dict]:
+    """Land subsidence rate per cell in mm/year (positive = sinking), bilinear onto the model grid; 0 where the map has no data.
+    The web engine lowers the terrain by rate x (run year - epoch)."""
+    if path is None:
+        return None, {}
+    scale = {"mm/yr": 1.0, "cm/yr": 10.0, "m/yr": 1000.0, "-mm/yr": -1.0, "-cm/yr": -10.0, "-m/yr": -1000.0}[units]
+    r = onto_grid(path, tr, crs, shape, Resampling.bilinear) * scale
+    ok = np.isfinite(r)
+    r = np.where(ok, r, 0.0)
+    v = r[ok]
+    info = {"file": path.name, "label": "Sentinel-1 InSAR 2016-2024", "units_in": units, "epoch": epoch, "stored": "int16 mm/year, positive = sinking",
+            "coverage_share": round(float(ok.mean()), 4),
+            "rate_p1_50_99_max_mm_yr": np.percentile(v, [1, 50, 99, 100]).round(1).tolist() if v.size else None,
+            "rule": "terrain(year) = terrain - rate x (year - epoch); cells outside the map: rate 0"}
+    return np.clip(np.round(r), -32000, 32000).astype(np.int16), info
+
+
+def build(pack: Path, out: Path, region: str, soil: str, terrain_src: str = "fabdem", sub_path: Path | None = None,
+          sub_units: str = "mm/yr", sub_epoch: float = 2013.0) -> dict:
     t0 = time.time()
     out.mkdir(parents=True, exist_ok=True)
     years = sorted(int(p.stem.split("_")[-1]) for p in pack.glob("lulc_io_*.tif") if p.stem.split("_")[-1].isdigit())
     io_year = years[-1]
     with rasterio.open(pack / "dem_fabdem.tif") as src:
-        z = src.read(1).astype(np.float64)
+        fab = src.read(1).astype(np.float64)
         tr, crs, shape = src.transform, src.crs, src.shape
+    z, terrain_info = terrain(pack, terrain_src, tr, crs, shape, fab)
+    sub, sub_info = subsidence(sub_path, sub_units, sub_epoch, tr, crs, shape)
     # land cover on the 10 m grid aligned to the model grid (3 x 3 pixels per 30 m cell)
     f = 3
     fine_tr = rasterio.transform.from_origin(tr.c, tr.f, tr.a / f, tr.a / f)
@@ -340,17 +383,24 @@ def build(pack: Path, out: Path, region: str, soil: str) -> dict:
         ("st_x", "float32", ST_X), ("st_y", "float32", ST_Y), ("st_down", "int32", st_down), ("st_area_km2", "float32", acc_km2.ravel()[ids]),
         ("st_cn", "float32", up["cn"].ravel()[ids]), ("st_slope_pct", "float32", up["slope_pct"].ravel()[ids]), ("st_length_m", "float32", up["length_m"].ravel()[ids]),
     ]
+    if sub is not None:
+        arrays.append(("sub", "int16", sub))
     inputs = {p: sha256(pack / p) for p in ["dem_fabdem.tif", f"lulc_io_{io_year}.tif", "water_osm.gpkg"]}
+    if terrain_src != "fabdem":
+        inputs[terrain_info["file"]] = sha256(pack / terrain_info["file"])
+    if sub_path is not None:
+        inputs[sub_path.name] = sha256(sub_path)
     lon_lat = lambda x, y: [round(v, 7) for v in rasterio.warp.transform(crs, "EPSG:4326", [x], [y])[0] + rasterio.warp.transform(crs, "EPSG:4326", [x], [y])[1]]
     W_, H_ = shape[1], shape[0]
     corners = [lon_lat(tr.c, tr.f), lon_lat(tr.c + W_ * tr.a, tr.f), lon_lat(tr.c + W_ * tr.a, tr.f + H_ * tr.e), lon_lat(tr.c, tr.f + H_ * tr.e)]
     header = {
         "type": "banjir3d-engine-pack", "version": 1, "region": region, "created": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
         "grid": {"crs": str(crs), "nx": W_, "ny": H_, "dx": tr.a, "dy": -tr.e, "origin": [tr.c, tr.f], "corners_lonlat": corners},
-        "encoding": {"z": f"(z + {Z_OFFSET} m) in cm", "n": "n x 1000", "cn": "curve number", "flags": "bit0 channel, bit1 sea, bit2 inside the region domain polygon", "built": "built-area share of the cell (%), IO land cover class 7", "st_*": "GLO-90 D8 stream cells (>= 1 km2 upstream): centre in metres east/south of the model origin, downstream index (-1 none), upstream area, area-mean CN, mean slope (%), longest flow path (m)"},
+        "encoding": {"z": f"(z + {Z_OFFSET} m) in cm", "n": "n x 1000", "cn": "curve number", "flags": "bit0 channel, bit1 sea, bit2 inside the region domain polygon", "sub": "land subsidence rate, mm/year, positive = sinking (optional)", "built": "built-area share of the cell (%), IO land cover class 7", "st_*": "GLO-90 D8 stream cells (>= 1 km2 upstream): centre in metres east/south of the model origin, downstream index (-1 none), upstream area, area-mean CN, mean slope (%), longest flow path (m)"},
         "arrays": [], "inputs_sha256": inputs, "landcover_year": io_year, "landcover_share": share,
         "parameters": PARAMS, "channels": chan_info, "sea": {"cells": int(sea.sum()), "rule": "IO water, z <= 0.5 m, connected to the north edge"},
-        "soil": soil_info, "upstream": up_info,
+        "soil": soil_info, "upstream": up_info, "terrain": terrain_info,
+        **({"subsidence": sub_info} if sub is not None else {}),
         "checks": {
             "dem_min_m": round(float(zc.min()), 2), "dem_max_m": round(float(zc.max()), 2),
             "n_range": [round(float(n.min()), 3), round(float(n.max()), 3)], "cn_range": [round(float(cn.min()), 1), round(float(cn.max()), 1)],
@@ -383,6 +433,10 @@ if __name__ == "__main__":
     ap.add_argument("out", type=Path)
     ap.add_argument("--region", default="jakarta")
     ap.add_argument("--soil", default="soilgrids", help="soilgrids | placeholder:D (offline development only)")
+    ap.add_argument("--terrain", default="fabdem", choices=["fabdem", "demnas"])
+    ap.add_argument("--subsidence", type=Path, default=None, help="raster of land subsidence rate")
+    ap.add_argument("--sub-units", default="mm/yr", help="units of the raster: mm/yr, cm/yr, m/yr; prefix '-' when sinking is negative")
+    ap.add_argument("--sub-epoch", type=float, default=2013.0, help="decimal year of the terrain measurement")
     a = ap.parse_args()
-    h = build(a.pack, a.out, a.region, a.soil)
-    print(json.dumps({k: h[k] for k in ("grid", "channels", "sea", "checks", "output")}, indent=1))
+    h = build(a.pack, a.out, a.region, a.soil, a.terrain, a.subsidence, a.sub_units, a.sub_epoch)
+    print(json.dumps({k: h[k] for k in ("grid", "channels", "sea", "checks", "terrain", "output")}, indent=1))

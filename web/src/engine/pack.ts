@@ -12,12 +12,14 @@ export type Pack = {
   header: PackHeader; nx: number; ny: number; dx: number; ox: number; oy: number; zone: number;
   z: Float32Array; n: Float32Array; cn: Uint8Array; flags: Uint8Array; streams: Streams;
   built: Uint8Array | null; // built-area share (%) per cell; packs before 2026-10-31 do not have it
+  sub: Int16Array | null; // land subsidence rate (mm/year, positive = sinking) per cell; packs before 2026-11-01 do not have it
+  subEpoch: number; // decimal year the terrain was measured (subsidence is counted from here)
 };
 export const CHANNEL = 1, SEA = 2, DOMAIN = 4;
 
 const VIEW: Record<string, (b: ArrayBuffer, o: number, n: number) => ArrayLike<number>> = {
   uint8: (b, o, n) => new Uint8Array(b, o, n), uint16: (b, o, n) => new Uint16Array(b, o, n), uint32: (b, o, n) => new Uint32Array(b, o, n),
-  int32: (b, o, n) => new Int32Array(b, o, n), float32: (b, o, n) => new Float32Array(b, o, n),
+  int16: (b, o, n) => new Int16Array(b, o, n), int32: (b, o, n) => new Int32Array(b, o, n), float32: (b, o, n) => new Float32Array(b, o, n),
 };
 
 /** Header and named arrays of a pack file (4-byte header length, JSON header, arrays): engine and exposure packs. */
@@ -39,6 +41,7 @@ export function parsePack(buf: ArrayBuffer): Pack {
   const n = Float32Array.from(a.n as Uint8Array, (v) => v / 1000);
   return {
     header, nx, ny, dx, ox: origin[0], oy: origin[1], zone, z, n, cn: a.cn as Uint8Array, flags: a.flags as Uint8Array, built: (a.built as Uint8Array) ?? null,
+    sub: (a.sub as Int16Array) ?? null, subEpoch: Number((header.subsidence as { epoch?: number } | undefined)?.epoch ?? 0),
     streams: { x: a.st_x as Float32Array, y: a.st_y as Float32Array, down: a.st_down as Int32Array, area: a.st_area_km2 as Float32Array, cn: a.st_cn as Float32Array, slope: a.st_slope_pct as Float32Array, len: a.st_length_m as Float32Array },
   };
 }
@@ -64,8 +67,13 @@ export type RunGrid = {
   cellAt: (x: number, y: number) => number; // lowest active cell within one cell of a point, -1 if none
 };
 
-/** Run grid for the whole region (domain polygon) or for a lon/lat box, aggregated by k x k pack cells (k = 1: 30 m). */
-export function buildRun(p: Pack, box: number[] | null, k: number): RunGrid {
+/** Terrain lowering (m) of one pack cell from the terrain epoch to `year` (0 without subsidence data or year). */
+export const sinkM = (p: Pack, c: number, year: number | undefined): number =>
+  p.sub && year ? (p.sub[c] / 1000) * (year - p.subEpoch) : 0;
+
+/** Run grid for the whole region (domain polygon) or for a lon/lat box, aggregated by k x k pack cells (k = 1: 30 m).
+ *  `year` (decimal) shifts the terrain by the mapped subsidence rate from the terrain epoch to that year. */
+export function buildRun(p: Pack, box: number[] | null, k: number, year?: number): RunGrid {
   let i0 = 0, j0 = 0, i1 = p.nx, j1 = p.ny;
   if (box) {
     const pts = [[box[0], box[1]], [box[2], box[1]], [box[2], box[3]], [box[0], box[3]]].map(([lo, la]) => toUtm(lo, la, p.zone));
@@ -83,10 +91,11 @@ export function buildRun(p: Pack, box: number[] | null, k: number): RunGrid {
       const i = i0 + I * k + di, j = j0 + J * k + dj;
       if (i >= i1 || j >= j1) continue;
       const c = j * p.nx + i, f = p.flags[c];
-      cnt++; zs += p.z[c]; ns += p.n[c]; cs += p.cn[c]; bs += p.built ? p.built[c] / 100 : 0;
+      const zc = p.z[c] - sinkM(p, c, year);
+      cnt++; zs += zc; ns += p.n[c]; cs += p.cn[c]; bs += p.built ? p.built[c] / 100 : 0;
       if (box || f & DOMAIN) inDom++;
       if (f & SEA) nSea++;
-      if (f & CHANNEL) { nCh++; zch += p.z[c]; }
+      if (f & CHANNEL) { nCh++; zch += zc; }
     }
     const C = J * nx + I;
     if (!cnt) continue;

@@ -24,6 +24,9 @@ const drainOf = (run: RunGrid): Float64Array | undefined => {
 };
 // observed events (IMERG hourly rain per 0.1 degree point, verification/observed/event_rain.py), loaded only when chosen
 const EVENTS = import.meta.glob<EventRain>("../../../data/events/*_imerg.json", { import: "default" });
+const decYear = (ms: number) => { const d = new Date(ms), y = d.getUTCFullYear(), a = Date.UTC(y, 0, 1); return y + (ms - a) / (Date.UTC(y + 1, 0, 1) - a); };
+const terrainName = (p: Pack) => (String((p.header.terrain as { source?: string } | undefined)?.source ?? "FABDEM").startsWith("DEMNAS") ? "DEMNAS (BIG)" : "FABDEM");
+const subName = (p: Pack) => String((p.header.subsidence as { label?: string } | undefined)?.label ?? "InSAR");
 const eventIds = Object.keys(EVENTS).map((f) => /([\d-]+)_imerg\.json$/.exec(f)![1]).sort();
 const loadEvent = (id: string) => EVENTS[`../../../data/events/${id}_imerg.json`]();
 type Result = { run: RunGrid; grid: Grid; frames: Uint16Array[]; times: number[]; area: number[]; max: Float32Array | null; inflows: Inflow[]; hy: Hyetograph; scenario: Record<string, unknown>; event: EventRain | null; zone?: Uint16Array; count: Uint8Array; cells?: ReturnType<typeof exposureCells>; totals?: Record<string, number>; mass?: number; wall?: number; gpu?: boolean };
@@ -173,7 +176,7 @@ export function mountSim(page: MapPage, o: { packUrl: string; regionBbox: number
       for (let c = 0; c < r.cn.length; c++) if (r.active[c] && !r.sea[c]) { cn += r.cn[c]; cnN++; }
       const soil = p.header.soil?.source?.startsWith("placeholder") ? "?" : "SoilGrids 2.0";
       $("s-auto").innerHTML = [
-        t("sim.auto.terrain", { ch: fmt(ch) }), t("sim.auto.soil", { y: p.header.landcover_year, soil, cn: fmt(cn / Math.max(1, cnN), 1) }),
+        t("sim.auto.terrain", { ch: fmt(ch), src: terrainName(p) }), ...(p.sub ? [t("sim.auto.sub", { e: Math.round(p.subEpoch), src: subName(p) })] : []), t("sim.auto.soil", { y: p.header.landcover_year, soil, cn: fmt(cn / Math.max(1, cnN), 1) }),
         t("sim.auto.rough", { y: p.header.landcover_year }), t("sim.auto.up", { n: ent.length, a: fmt(ent.reduce((a, e) => a + e.areaKm2, 0)) }), t("sim.auto.drain"),
       ].map((s) => `<li>${esc(s)}</li>`).join("");
       $("s-soilwarn").innerHTML = p.header.soil?.WARNING ? `<div class="note warn">${t("sim.soilwarn")}</div>` : "";
@@ -261,7 +264,7 @@ export function mountSim(page: MapPage, o: { packUrl: string; regionBbox: number
     const sc = res!.scenario;
     return [
       `${sc.event ? `${lang === "id" ? "Banjir nyata" : "Observed flood"} ${sc.event}, ${lang === "id" ? "hujan IMERG rata-rata" : "IMERG rain, mean"}` : lang === "id" ? "Skenario:" : "Scenario:"} ${sc.rainMm} mm / ${sc.rainHours} h, ${lang === "id" ? "laut" : "sea"} +${sc.seaLevel} m, ${sc.cellM} m, ${showMax ? t("sim.show.max") : fmtT(res!.times[frame] ?? 0)}`,
-      `Data: FABDEM V1-2 + OSM (Oct 2026), Esri/IO land cover ${pack?.header.landcover_year}, SoilGrids 2.0, Copernicus GLO-90${sc.event ? ", NASA GPM IMERG Final V07" : ""}. Banjir3D engine v2 (local inertial). ${o.releaseTag ?? ""}`,
+      `Data: ${terrainName(pack!) === "FABDEM" ? "FABDEM V1-2" : "DEMNAS (BIG) + FABDEM V1-2"}${pack?.sub ? ` shifted to ${sc.terrainYear} by ${subName(pack)} subsidence rates` : ""} + OSM (Oct 2026), Esri/IO land cover ${pack?.header.landcover_year}, SoilGrids 2.0, Copernicus GLO-90${sc.event ? ", NASA GPM IMERG Final V07" : ""}. Banjir3D engine v2 (local inertial). ${o.releaseTag ?? ""}`,
       `CRS WGS 84 / UTM 48S (EPSG:32748). ${t("exp.limit")} Licence CC BY-NC-SA 4.0 (FABDEM).`,
     ];
   };
@@ -345,7 +348,7 @@ export function mountSim(page: MapPage, o: { packUrl: string; regionBbox: number
     } else rain = { kind: r.scenario.rainMode === "hourly" ? "hourly" : "design", mm: totalMm(hy), h, peakMmH, r24: r.scenario.r24 as number | undefined };
     const box2 = (r.scenario.area as { box?: number[] }).box ?? null, [wKm, hKm] = box2 ? kmOf(box2) : [0, 0];
     const facts: Facts = {
-      area: { box: box2, wKm, hKm }, landKm2: land * a, cellM: g.dx, hours: r.scenario.hours as number, gpu: !!r.gpu, landcoverYear: pack.header.landcover_year,
+      area: { box: box2, wKm, hKm }, landKm2: land * a, cellM: g.dx, hours: r.scenario.hours as number, gpu: !!r.gpu, landcoverYear: pack.header.landcover_year, ...(r.scenario.terrainYear ? { terrainYear: r.scenario.terrainYear as number, subEpoch: r.scenario.terrainEpoch as number } : {}),
       drainMmH: calibration.drain_mm_h, seaM: r.scenario.seaLevel as number, floodM: FLOOD_M, rain,
       upstream: r.inflows.length ? { n: r.inflows.length, peakM3s: peakInflow(), areaKm2: r.inflows.reduce((s2, f) => s2 + f.areaKm2, 0) } : null,
       env: { km2: wet * a, classesKm2: cls.map((v) => v * a), meanDepth: wet ? sum / wet : 0, maxDepth: dMax, deepest },
@@ -386,7 +389,9 @@ export function mountSim(page: MapPage, o: { packUrl: string; regionBbox: number
     try { [p, ev] = await Promise.all([ensurePack(), isEv ? loadEvent($<HTMLSelectElement>("s-event").value) : null]); } catch (e) { setRunning(false); $("s-status").textContent = t("sim.err", { m: String(e) }); return; }
     const kk = !gpuAvailable && area === "region" ? Math.max(3, k) : k;
     $("s-cpuwarn").innerHTML = gpuAvailable ? "" : `<div class="note warn">${t("sim.cpuwarn")}</div>`;
-    const run = buildRun(p, area === "box" ? bbox : null, kk);
+    // terrain year: the event date for an observed flood, today otherwise (subsidence shifts the terrain to that year)
+    const tYear = decYear(ev ? Date.parse(ev.start_utc) : Date.now());
+    const run = buildRun(p, area === "box" ? bbox : null, kk, tYear);
     const N = run.nx * run.ny, count = new Uint8Array(N), mask = new Uint8Array(N);
     for (let c = 0; c < N; c++) { mask[c] = +(run.active[c] && !run.sea[c]); count[c] = +(mask[c] && !run.channel[c]); }
     const hours = num("s-hours"), steps = Math.ceil((hours * 3600) / DT_S), up = $<HTMLInputElement>("s-up").checked;
@@ -406,6 +411,7 @@ export function mountSim(page: MapPage, o: { packUrl: string; regionBbox: number
     const grid: Grid = { nx: run.nx, ny: run.ny, dx: run.dx, zone: run.utm.zone, x0: run.utm.x0, y0: run.utm.y0, z: Float32Array.from(run.z), mask };
     const scenario = {
       area: area === "box" ? { box: bbox } : "region", rainMode: mode(), ...(mode() === "design" ? { r24: num("s-r24") } : {}), rainMm: +totalMm(hy).toFixed(1), rainHours: (hy.mm.length * hy.blockSeconds) / 3600, upstreamRain: up, seaLevel: num("s-sea"), hours, cellM: run.dx,
+      ...(p.sub ? { terrainYear: +tYear.toFixed(2), terrainEpoch: p.subEpoch } : {}),
       ...(ev ? { event: ev.id, eventStartUtc: ev.start_utc, rainSource: ev.source, rainPoints: ev.mm.length } : {}),
     };
     res = { run, grid, frames: [], times: [], area: [], max: null, inflows, hy, scenario, event: ev, zone, count };
