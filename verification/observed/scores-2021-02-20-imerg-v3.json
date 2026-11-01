@@ -1,0 +1,93 @@
+{
+ "event": "2021-02-20",
+ "source": "PetaBencana.id flood reports and flooded-area archive (aggregate scores only)",
+ "reported": {
+  "_about": "Impact the city reported; figures are used only after reported_excerpts.json (fetched by the Action) shows them in the page text.",
+  "pages": [
+   "https://rmol.id/nusantara/read/2021/02/21/476030/banjir-jakarta-dalam-angka-sejak-era-sutiyoso-hingga-anies-baswedan",
+   "https://www.cnnindonesia.com/nasional/20210221075059-20-608918/banjir-jakarta-33-rw-masih-tergenang",
+   "https://www.merahputih.com/post/read/75-rw-di-jakarta-tergenang-banjir-akibat-hujan-deras-sejak-jumat-malam"
+  ],
+  "flooded_km2": null,
+  "flooded_rw": null,
+  "status": "pages refused the Action (HTTP 403); search results only: 113 RW / 342 RT on 20 Feb 2021"
+ },
+ "n_flooded_area_records": 159,
+ "rw_shapes": 0,
+ "results": [
+  {
+   "run": "2021-02-20_imerg_k3_d0",
+   "drain_mm_h": 0,
+   "rain": "rain_imerg.json",
+   "rain_scale": 1,
+   "terrain_year": 2021.1348173515983,
+   "mean_rain_mm": 50.87964066556293,
+   "flooded_km2": 136.242,
+   "mass_error": -9.257189273822611e-15,
+   "reports": {
+    "n_reports": 372,
+    "hit_rate": 0.782258064516129,
+    "n_with_depth": 325,
+    "depth_bias_m": 0.611626781237584,
+    "depth_mae_m": 1.2652052296074536,
+    "depth_rmse_m": 2.315508394368972,
+    "observed_median_m": 0.65,
+    "model_median_m": 0.38027694821357727
+   },
+   "dki_flooded_km2": 41.0184,
+   "dki_land_km2": 557.6688,
+   "genangan_dsda": {
+    "source": "Jakarta Satu, Dinas SDA DKI, layer Genangan (aggregates only)",
+    "window_utc": [
+     "2021-02-18 05:00:00+00:00",
+     "2021-02-22 05:00:00+00:00"
+    ],
+    "n_polygons": 37,
+    "hit_rate": 0.4594594594594595,
+    "median_model_depth_m": 0.04970911145210266,
+    "n_with_depth": 34,
+    "median_observed_depth_m": 0.4,
+    "median_model_depth_at_observed_m": 0.10466897860169411,
+    "mean_error_m": -0.17573410478584905,
+    "share_model_ge_half_observed": 0.4117647058823529
+   }
+  },
+  {
+   "run": "2021-02-20_imerg_k3_d0_tnone",
+   "drain_mm_h": 0,
+   "rain": "rain_imerg.json",
+   "rain_scale": 1,
+   "terrain_year": null,
+   "mean_rain_mm": 50.87964066556293,
+   "flooded_km2": 136.2096,
+   "mass_error": 2.6778577945065e-15,
+   "reports": {
+    "n_reports": 372,
+    "hit_rate": 0.782258064516129,
+    "n_with_depth": 325,
+    "depth_bias_m": 0.6109808254265442,
+    "depth_mae_m": 1.264465169640172,
+    "depth_rmse_m": 2.313015582276972,
+    "observed_median_m": 0.65,
+    "model_median_m": 0.37166672945022583
+   },
+   "dki_flooded_km2": 40.8645,
+   "dki_land_km2": 557.6688,
+   "genangan_dsda": {
+    "source": "Jakarta Satu, Dinas SDA DKI, layer Genangan (aggregates only)",
+    "window_utc": [
+     "2021-02-18 05:00:00+00:00",
+     "2021-02-22 05:00:00+00:00"
+    ],
+    "n_polygons": 37,
+    "hit_rate": 0.4594594594594595,
+    "median_model_depth_m": 0.04970528185367584,
+    "n_with_depth": 34,
+    "median_observed_depth_m": 0.4,
+    "median_model_depth_at_observed_m": 0.10467098653316498,
+    "mean_error_m": -0.17596059361582292,
+    "share_model_ge_half_observed": 0.4117647058823529
+   }
+  }
+ ]
+}
