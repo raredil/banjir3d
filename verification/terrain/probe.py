@@ -148,6 +148,41 @@ def jakarta_satu():
         out("js.layer", {**h, "count": c, **m})
 
 
+def js_quick():
+    """A few requests with short timeouts: is the DKI geoportal reachable from a GitHub runner at all?"""
+    import socket
+    for host in ("jakartasatu.jakarta.go.id", "satudata.jakarta.go.id", "data.jakarta.go.id", "tataruang.jakarta.go.id"):
+        try:
+            out("jsq.dns", {"host": host, "ip": socket.gethostbyname(host)})
+        except Exception as e:
+            out("jsq.dns", {"host": host, "error": str(e)[:120]})
+    for url in ["https://jakartasatu.jakarta.go.id/", "http://jakartasatu.jakarta.go.id/",
+                "https://jakartasatu.jakarta.go.id/server/rest/services?f=json",
+                "https://jakartasatu.jakarta.go.id/portal/sharing/rest/search?q=saluran&f=json&num=20",
+                "https://satudata.jakarta.go.id/api/3/action/package_search?q=saluran&rows=20",
+                "https://satudata.jakarta.go.id/api/3/action/package_search?q=awlr&rows=20",
+                "https://data.jakarta.go.id/api/3/action/package_search?q=saluran&rows=20"]:
+        r = get(url, timeout=(8, 15))
+        if isinstance(r, Exception):
+            out("jsq.get", {"url": url, "error": type(r).__name__, "msg": str(r)[:160]})
+            continue
+        body = r.text
+        info = {"url": url, "status": r.status_code, "final": r.url, "server": r.headers.get("server"), "bytes": len(body),
+                "title": (re.search(r"<title>(.*?)</title>", body, re.I | re.S) or [None, None])[1]}
+        if "package_search" in url:
+            try:
+                res = r.json()["result"]
+                info["count"] = res["count"]
+                info["items"] = [{"name": d.get("name"), "title": d.get("title"), "license": d.get("license_title"),
+                                  "res": [(x.get("format"), x.get("url")) for x in d.get("resources", [])][:4]} for d in res["results"]][:20]
+            except Exception as e:
+                info["parse"] = str(e)[:100]
+        else:
+            info["rest_links"] = sorted(set(re.findall(r"https?://[\w.\-]+(?:/[\w.\-]+)*/rest/services[\w/\-]*", body)))[:20]
+            info["head"] = body[:300] if r.status_code != 200 else None
+        out("jsq.get", info)
+
+
 # ---------------------------------------------------------------- 2. Zenodo subsidence
 def zenodo(work: Path):
     r = get("https://zenodo.org/api/records/19456870")
@@ -321,7 +356,7 @@ def main():
     work, pack = Path(sys.argv[1]), Path(sys.argv[2])
     only = sys.argv[3] if len(sys.argv) > 3 else "all"
     work.mkdir(parents=True, exist_ok=True)
-    for name, fn in (("jakarta_satu", jakarta_satu), ("zenodo", lambda: zenodo(work)), ("demnas", lambda: demnas(work, pack))):
+    for name, fn in (("js_quick", js_quick), ("jakarta_satu", jakarta_satu), ("zenodo", lambda: zenodo(work)), ("demnas", lambda: demnas(work, pack))):
         if only not in ("all", name):
             continue
         try:

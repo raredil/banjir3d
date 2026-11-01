@@ -16,7 +16,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        part: [zenodo, jakarta_satu]
+        part: [js_quick]
     runs-on: ubuntu-24.04
     timeout-minutes: 40
     permissions:
