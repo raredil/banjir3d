@@ -1,12 +1,15 @@
-"""Compare engine results with PetaBencana.id observations (runs in the validation workflow, next to the raw answers, which are not
-redistributed: their licence is not stated). Writes aggregate scores only.
+"""Compare engine results with PetaBencana.id observations and the official DSDA flood polygons (runs in the validation workflow).
+Writes aggregate scores; the observations themselves are published as map layers (pipeline/map_layers.py, ADR 0014).
 
-  python verification/observed/compare.py <obsdir> <event id> <run dir with *_summary.json + *_hmax.f32.gz> <out.json> [jakartasatu.gpkg]
+  python verification/observed/compare.py <obsdir> <event id> <run dir with *_summary.json + *_hmax.f32.gz> <out.json> [jakartasatu.gpkg] [rw.gpkg]
 
 Reports (points): flood reports inside the run area. Model depth = largest max depth within one cell (location of a phone report is
 approximate). Hit = model >= 0.10 m. Depth error where the report gives a depth.
 RW areas: an RW counts as observed flooded when the flooded-area archive lists it with max_state >= 1. Model score per RW = share of
 its land cells (not channel or sea) with max depth > 0.15 m. AUC (no threshold) and CSI with RW flooded when the share >= 10 %.
+RW places (rw.gpkg, Sinking City RW polygons, CC BY 4.0): an RW counts as observed flooded when a PetaBencana report of the event
+lies in it or a DSDA flood polygon dated in the event window touches it; model flooded when >= 10 % of its land is wetter than 0.15 m.
+Reports are incomplete, so an RW without a record is "not recorded", not "dry": the false-alarm ratio is an upper bound.
 Area: modelled flooded land (> 0.15 m, not channel or sea) inside the five mainland Jakarta cities (data/regions/jakarta_domain.geojson,
 admin feature), to set against the flooded area the city reported for the event ('reported' in events.json): the over-prediction check.
 """
@@ -107,6 +110,47 @@ def rw_scores(areas, flooded_ids, h, summary, land):
             "rw_share_threshold": RW_SHARE}
 
 
+def rw_place_scores(rw_gpkg: Path, rep, js_gpkg: Path | None, ev: str, h, summary, land):
+    import geopandas as gpd
+    import pandas as pd
+    from rasterio import features as rf
+    from rasterio.transform import from_origin
+
+    x0, y0, dx, nx, ny, _ = grid_of(summary)
+    rw = gpd.read_file(rw_gpkg, layer="rw").to_crs("EPSG:32748")
+    lab = rf.rasterize(((g, int(i)) for g, i in zip(rw.geometry, rw["rw_id"])), out_shape=(ny, nx), transform=from_origin(x0, y0, dx, dx), dtype="int32")
+    n = int(rw["rw_id"].max()) + 1
+    wet = (h > WET_M) & land
+    cnt = np.bincount(lab.ravel(), weights=land.ravel(), minlength=n)
+    wc = np.bincount(lab.ravel(), weights=wet.ravel(), minlength=n)
+    ids = rw["rw_id"].to_numpy()
+    keep = cnt[ids] >= 3
+    share = np.where(cnt[ids] > 0, wc[ids] / np.maximum(cnt[ids], 1), 0)
+    pts = [f["geometry"]["coordinates"][:2] for f in rep if (f.get("geometry") or {}).get("type") == "Point" and (f.get("properties") or {}).get("disaster_type", "flood") == "flood"]
+    by_rep = set()
+    if pts:
+        pg = gpd.GeoDataFrame(geometry=gpd.points_from_xy([p[0] for p in pts], [p[1] for p in pts]), crs="EPSG:4326").to_crs("EPSG:32748")
+        by_rep = set(gpd.sjoin(pg, rw[["rw_id", "geometry"]], predicate="within")["rw_id"].tolist())
+    by_gen = set()
+    if js_gpkg is not None and js_gpkg.exists():
+        e = next(e for e in json.loads((Path(__file__).parent / "events.json").read_text())["events"] if e["id"] == ev)
+        t0, t1 = pd.Timestamp(e["utc"][0], tz="UTC") - pd.Timedelta(days=1), pd.Timestamp(e["utc"][1], tz="UTC") + pd.Timedelta(days=1)
+        g = gpd.read_file(js_gpkg, layer="genangan")
+        tg = pd.to_datetime(g["TGL"], unit="ms", utc=True)
+        g = g[(tg >= t0) & (tg <= t1)].to_crs("EPSG:32748")
+        if len(g):
+            by_gen = set(gpd.sjoin(rw[["rw_id", "geometry"]], g[["geometry"]], predicate="intersects")["rw_id"].tolist())
+    out = {"source": "RW polygons: Shabrina et al. (2026), Zenodo 19456870, CC BY 4.0", "n_rw": int(keep.sum()), "rw_share_threshold": RW_SHARE,
+           "note": "RW without a record = not recorded (reports are incomplete): false_alarm_ratio is an upper bound"}
+    for name, obs_set in (("reports_or_dsda", by_rep | by_gen), ("reports", by_rep), ("dsda", by_gen)):
+        obs = np.isin(ids, list(obs_set))[keep]
+        mod = (share >= RW_SHARE)[keep]
+        hits, fa, miss = int((mod & obs).sum()), int((mod & ~obs).sum()), int((~mod & obs).sum())
+        out[name] = {"n_observed": int(obs.sum()), "n_model": int(mod.sum()), "hits": hits, "hit_rate": hits / max(1, hits + miss),
+                     "false_alarm_ratio": fa / max(1, hits + fa), "csi": hits / max(1, hits + fa + miss), "auc": auc(share[keep], obs)}
+    return out
+
+
 def dki_flooded_km2(h, summary, land):
     from rasterio import features as rf
     from rasterio.transform import from_origin
@@ -197,6 +241,12 @@ def main():
                 r["genangan_dsda"] = genangan_scores(Path(sys.argv[5]), ev, h, s, land)
             except Exception as ex:  # a missing layer must not lose the other scores
                 r["genangan_dsda"] = {"error": f"{type(ex).__name__}: {ex}"[:200]}
+        if len(sys.argv) > 6 and Path(sys.argv[6]).exists():
+            try:
+                js = Path(sys.argv[5]) if len(sys.argv) > 5 else None
+                r["rw_places"] = rw_place_scores(Path(sys.argv[6]), rep, js, ev, h, s, land)
+            except Exception as ex:
+                r["rw_places"] = {"error": f"{type(ex).__name__}: {ex}"[:200]}
         results.append(r)
     reported = next((e.get("reported") for e in json.loads((Path(__file__).parent / "events.json").read_text())["events"] if e["id"] == ev), None)
     out = {"event": ev, "source": "PetaBencana.id flood reports and flooded-area archive (aggregate scores only)", "reported": reported,
