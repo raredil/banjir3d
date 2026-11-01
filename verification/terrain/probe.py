@@ -183,6 +183,67 @@ def js_quick():
         out("jsq.get", info)
 
 
+JS = "https://jakartasatu.jakarta.go.id"
+
+
+def js_targets():
+    """Portal items (title, licence, access) for drainage / gauges / pumps, then layer facts of each hosted service."""
+    services = set()
+    for q in ("saluran", "drainase", "AWLR", "tinggi muka air", "pompa", "polder", "DAS", "kali", "tanggul", "pintu air", "genangan", "RW"):
+        r = get(f"{JS}/portal/sharing/rest/search", params={"q": q, "f": "json", "num": 50})
+        if isinstance(r, Exception) or r.status_code != 200:
+            out("jst.search", {"q": q, "error": str(r)[:120] if isinstance(r, Exception) else r.status_code})
+            continue
+        try:
+            res = r.json().get("results", [])
+        except ValueError:
+            continue
+        items = []
+        for i in res:
+            items.append({"id": i.get("id"), "title": i.get("title"), "type": i.get("type"), "owner": i.get("owner"), "access": i.get("access"),
+                          "url": i.get("url"), "modified": i.get("modified"), "licenseInfo": re.sub(r"<[^>]+>", " ", i.get("licenseInfo") or "")[:200],
+                          "accessInformation": (i.get("accessInformation") or "")[:120], "snippet": (i.get("snippet") or "")[:120]})
+            if i.get("url") and "/rest/services/" in i["url"] and i.get("type") in ("Feature Service", "Map Service"):
+                services.add(i["url"].rstrip("/"))
+        out("jst.search", {"q": q, "n": len(res), "items": items})
+    for surl in sorted(services)[:40]:
+        sr = get(surl, params={"f": "json"})
+        if isinstance(sr, Exception) or sr.status_code != 200:
+            out("jst.service", {"url": surl, "error": str(sr)[:120] if isinstance(sr, Exception) else sr.status_code})
+            continue
+        try:
+            sj = sr.json()
+        except ValueError:
+            continue
+        for l in (sj.get("layers") or [])[:6]:
+            lurl = f"{surl}/{l['id']}"
+            mj, c, sample = {}, None, None
+            m = get(lurl, params={"f": "json"})
+            if not isinstance(m, Exception) and m.status_code == 200:
+                try:
+                    mj = m.json()
+                except ValueError:
+                    pass
+            cnt = get(f"{lurl}/query", params={"where": "1=1", "returnCountOnly": "true", "f": "json"})
+            if not isinstance(cnt, Exception) and cnt.status_code == 200:
+                try:
+                    c = cnt.json().get("count")
+                except ValueError:
+                    pass
+            smp = get(f"{lurl}/query", params={"where": "1=1", "outFields": "*", "returnGeometry": "false", "resultRecordCount": 3, "f": "json"})
+            if not isinstance(smp, Exception) and smp.status_code == 200:
+                try:
+                    sample = [f.get("attributes") for f in smp.json().get("features", [])][:3]
+                except ValueError:
+                    pass
+            out("jst.layer", {"url": lurl, "name": l.get("name"), "geom": mj.get("geometryType"), "count": c,
+                              "fields": [(f.get("name"), f.get("type")) for f in mj.get("fields", [])][:40],
+                              "copyright": (mj.get("copyrightText") or sj.get("copyrightText") or "")[:200],
+                              "desc": re.sub(r"<[^>]+>", " ", mj.get("description") or sj.get("serviceDescription") or "")[:300],
+                              "capabilities": mj.get("capabilities") or sj.get("capabilities"), "maxRecordCount": mj.get("maxRecordCount"),
+                              "sample": sample})
+
+
 # ---------------------------------------------------------------- 2. Zenodo subsidence
 def zenodo(work: Path):
     r = get("https://zenodo.org/api/records/19456870")
@@ -356,7 +417,7 @@ def main():
     work, pack = Path(sys.argv[1]), Path(sys.argv[2])
     only = sys.argv[3] if len(sys.argv) > 3 else "all"
     work.mkdir(parents=True, exist_ok=True)
-    for name, fn in (("js_quick", js_quick), ("jakarta_satu", jakarta_satu), ("zenodo", lambda: zenodo(work)), ("demnas", lambda: demnas(work, pack))):
+    for name, fn in (("js_targets", js_targets), ("js_quick", js_quick), ("jakarta_satu", jakarta_satu), ("zenodo", lambda: zenodo(work)), ("demnas", lambda: demnas(work, pack))):
         if only not in ("all", name):
             continue
         try:
