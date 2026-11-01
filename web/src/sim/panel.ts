@@ -61,7 +61,7 @@ export function mountSim(page: MapPage, o: { packUrl: string; regionBbox: number
       <label class="layer"><input type="checkbox" id="s-up" checked><span><b id="s-up-lbl">${t("sim.up")}</b></span>${q("sim.up")}</label>${tip("sim.up")}
     </div>
     <div class="sec">${sl("s-sea", "sim.sea", 0, 1.5, 0.1, 0, "m")}
-      <label class="layer" id="s-pumps-row"><input type="checkbox" id="s-pumps" checked><span><b>${t("sim.pumps")}</b></span>${q("sim.pumps")}</label>${tip("sim.pumps")}</div>
+      <label class="layer" id="s-pumps-row" hidden><input type="checkbox" id="s-pumps" checked><span><b>${t("sim.pumps")}</b></span>${q("sim.pumps")}</label>${tip("sim.pumps")}</div>
     <div class="sec">${sl("s-hours", "sim.hours", 3, 72, 1, 12, "h")}
       <div class="field"><div class="lbl"><span>${t("sim.res")} ${q("sim.res")}</span></div><div class="seg" id="s-res"><button type="button" data-k="1" class="on">30 m</button><button type="button" data-k="2">60 m</button><button type="button" data-k="3">90 m</button></div>${tip("sim.res")}</div>
     </div>
@@ -178,7 +178,11 @@ export function mountSim(page: MapPage, o: { packUrl: string; regionBbox: number
   }
 
   // ---------- what the engine derives from data ----------
-  const ensurePack = async () => (pack ??= await loadPack(o.packUrl));
+  const ensurePack = async () => {
+    pack ??= await loadPack(o.packUrl);
+    $("s-pumps-row").hidden = !pack.pump; // packs before the pump sink have no switch to offer
+    return pack;
+  };
   // buildings, people and kecamatan per cell (separate file; older data releases do not have it)
   let expo: Promise<Exposure | null> | null = null;
   const ensureExposure = () => (expo ??= loadExposure(o.packUrl.replace("/engine_", "/exposure_")).catch(() => null));

@@ -28,7 +28,7 @@ from b3d.util import now_utc, output_record
 JS_ATTR = "Jakarta Satu, Dinas Sumber Daya Air Provinsi DKI Jakarta"
 PB_ATTR = "PetaBencana.id (Yayasan Peta Bencana)"
 # descriptive text fields worth showing in a popup (names, places); matched on the field name, values cut to 80 characters
-PLACE = re.compile(r"^(NAMA|NAMOBJ|LOKASI|ALAMAT|KEL|KEC|KOTA|KAB|WIL|RW|RT|SUNGAI|SISTEM|POLDER|PENYEBAB|STATUS|JENIS|TIPE)", re.I)
+PLACE = re.compile(r"^(NAMA|NAMOBJ|LOKASI|ALAMAT|KEL|KEC|KOTA|KAB|WIL|RW|RT|SUNGAI|SALURAN|POMPA|RUMAH|SISTEM|POLDER|PENYEBAB|STATUS|JENIS|TIPE)|(^|_)(NAMA|NM|NAME)(_|$)", re.I)
 MAX_FIELDS = 6
 
 
@@ -70,7 +70,7 @@ def jakartasatu(gpkg: Path) -> tuple[gpd.GeoDataFrame, dict]:
             dep = num(g.get("TGIMAX"))
             out["depth_cm"] = dep.where(dep > 0, num(g.get("TGIGNGN"))).round(0)
         parts.append(out)
-        info[layer] = {"features": int(len(out)), "text_fields": used}
+        info[layer] = {"features": int(len(out)), "text_fields": used, "all_fields": [str(c) for c in g.columns if c != "geometry"][:60]}
     js = gpd.GeoDataFrame(pd.concat(parts, ignore_index=True), crs="EPSG:4326") if parts else gpd.GeoDataFrame(geometry=[], crs="EPSG:4326")
     return js, info
 

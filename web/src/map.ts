@@ -194,8 +194,10 @@ export async function createMapPage(root: HTMLElement, ctx: MapCtx): Promise<Map
     for (const id of layerIds(def.id)) { const p = props[map.getLayer(id)?.type ?? ""]; if (p) map.setPaintProperty(id, p, def.opacity); }
   }));
   el.querySelector<HTMLSelectElement>("#basemap")!.addEventListener("change", async (ev) => {
-    map.setStyle(await loadBasemap((ev.target as HTMLSelectElement).value));
+    const style = await loadBasemap((ev.target as HTMLSelectElement).value);
+    // full reload (no diff): with a diff MapLibre patches the style in place, drops our overlays and never fires style.load
     map.once("style.load", addOverlays);
+    map.setStyle(style, { diff: false });
   });
   const coords = el.querySelector<HTMLElement>("#coords")!;
   map.on("mousemove", (ev) => {
