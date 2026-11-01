@@ -33,3 +33,4 @@ def test_map_layers(tmp_path):
     assert "Jakarta Satu, Dinas Sumber Daya Air Provinsi DKI Jakarta" in m["attribution"]
     assert rec["petabencana"]["2020-01-01"] == 1
     assert "js" in [x[0] for x in pyogrio.list_layers(pack / "jakartasatu.pmtiles")]
+    assert len(gpd.read_file(pack / "jakartasatu_genangan.geojson")) == 1 and (pack / "jakartasatu_drain1.geojson").exists()

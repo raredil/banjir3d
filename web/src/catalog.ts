@@ -58,7 +58,6 @@ export function renderCatalog(root: HTMLElement, ctx: Ctx) {
     if (!d) return;
     try { await navigator.clipboard.writeText(d.citation.bibtex); b.textContent = t("data.copied"); setTimeout(() => (b.textContent = t("data.copy")), 1500); } catch { /* blocked */ }
   }));
-  if (ctx.focus) { const el = root.querySelector<HTMLDetailsElement>(`#ds-${CSS.escape(ctx.focus)}`); el?.scrollIntoView({ block: "start" }); el?.querySelector("details")?.setAttribute("open", ""); }
 }
 
 const STATUS: Record<string, [string, string]> = { pass: ["lolos", "pass"], partial: ["berjalan", "in progress"], fail: ["gagal", "fail"], todo: ["belum", "to do"] };

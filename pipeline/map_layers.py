@@ -154,6 +154,10 @@ def main(gpkg: Path, pbdir: Path, pack: Path) -> dict:
         pyogrio.write_dataframe(js, pm, driver="PMTiles", layer="js", geometry_type="Unknown",
                                 dataset_options={"MINZOOM": 9, "MAXZOOM": 15, "NAME": "Jakarta Satu DSDA"})
         pyogrio.write_dataframe(js, gp, layer="jakartasatu", driver="GPKG", geometry_type="Unknown")
+        for t in js["t"].unique():  # per-type GeoJSON for the export menu (whole data, view or box, filtered in the browser)
+            gj = pack / f"jakartasatu_{t}.geojson"
+            gj.unlink(missing_ok=True)
+            pyogrio.write_dataframe(js[js["t"] == t], gj, driver="GeoJSON", COORDINATE_PRECISION=6)
         recs.append({"dataset": "jakartasatu-dsda", "accessed": rec["created"], "status": "ok", "attribution": JS_ATTR,
                      "sources": ["https://jakartasatu.jakarta.go.id/server/rest/services/DSDA/"],
                      "steps": ["ArcGIS REST query (pipeline/jakartasatu.py)", "normalise fields, EPSG:4326 (pipeline/map_layers.py)"],
@@ -172,7 +176,12 @@ def main(gpkg: Path, pbdir: Path, pack: Path) -> dict:
                      "steps": ["reports/archive per event window (verification/observed/fetch.py)", "keep point, time, depth, source (pipeline/map_layers.py)"],
                      "outputs": [output_record(gj, features=int(len(pb)))],
                      "display": [output_record(pm, kind="vector", layer="reports", minzoom=8, maxzoom=15)]})
-    recs += extra_records(pack)
+    for src, layer, dst in (("water_osm.gpkg", None, "water_osm.geojson"), ("admin_geoboundaries.gpkg", None, "admin_geoboundaries.geojson")):
+        if (pack / src).exists():  # other vector layers of the pack as GeoJSON for the export menu
+            parts = [gpd.read_file(pack / src, layer=l).to_crs("EPSG:4326").assign(layer=l) for l in pyogrio.list_layers(pack / src)[:, 0]]
+            (pack / dst).unlink(missing_ok=True)
+            pyogrio.write_dataframe(gpd.GeoDataFrame(pd.concat(parts, ignore_index=True), crs="EPSG:4326"), pack / dst, driver="GeoJSON", COORDINATE_PRECISION=6)
+        recs += extra_records(pack)
     add_to_manifest(pack, recs)
     rec["manifest_added"] = [r["dataset"] for r in recs]
     (pack / "map_layers.json").write_text(json.dumps(rec, indent=1, ensure_ascii=False, default=str))
