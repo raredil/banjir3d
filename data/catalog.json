@@ -626,12 +626,13 @@
       "doi": null,
       "url": "https://docs.petabencana.id",
       "licence": {
-        "id": "unknown (check terms)",
-        "redistributable": "unknown"
+        "id": "terms name no licence; published by owner decision (2026-11-01, ADR 0014)",
+        "redistributable": "yes",
+        "attribution": "PetaBencana.id (Yayasan Peta Bencana)"
       },
       "resolution": "points / RW polygons",
       "access": {
-        "method": "REST API; archive endpoints fetched in the validation workflow (raw answers not redistributed: licence not stated)",
+        "method": "REST API; archive endpoints fetched in Actions; report points (time, depth, source; no text, photos or user names) published as a map layer",
         "endpoint": "https://data.petabencana.id",
         "auth": "none"
       },
@@ -641,7 +642,7 @@
       },
       "status": "single-source",
       "checked": "2026-10-30",
-      "in_region_pack": false,
+      "in_region_pack": true,
       "notes": "Phase 4 validation. API key, if needed, only as GitHub Secret."
     },
     {
@@ -774,14 +775,14 @@
       "doi": null,
       "url": "https://jakartasatu.jakarta.go.id",
       "licence": {
-        "id": "not stated",
-        "redistributable": "unknown",
+        "id": "no licence text; verbal permission to publish reported by the owner (2026-11-01, ADR 0014)",
+        "redistributable": "yes",
         "attribution": "Jakarta Satu, Dinas Sumber Daya Air Provinsi DKI Jakarta"
       },
       "resolution": "vector (lines, polygons, points)",
       "crs": "EPSG:32748 (requested)",
       "access": {
-        "method": "ArcGIS REST query (f=geojson, paged), pipeline/jakartasatu.py, only from GitHub Actions",
+        "method": "ArcGIS REST query (f=geojson, paged), pipeline/jakartasatu.py, only from GitHub Actions; map layers pipeline/map_layers.py",
         "endpoint": "https://jakartasatu.jakarta.go.id/server/rest/services/DSDA/",
         "auth": "none"
       },
@@ -791,8 +792,8 @@
       },
       "status": "single-source",
       "checked": "2026-11-01",
-      "in_region_pack": false,
-      "notes": "Probed 2026-11-01 (verification/terrain/probe.py): copyrightText empty on all services, so raw vectors are not published; the engine pack holds only carved channel cells and initial channel depth, validation publishes aggregate scores. Primary drains 42 lines (390 km, depth median 5.6 m, width median 19 m), secondary 36 (159 km, 3.3 m, 10.8 m), tertiary 1,211, micro 60,718 (size mostly missing), pumps 263, polders 65, NCICD walls 41, river walls 172, Genangan 4,280 RT polygons with date and depth, AWLR 28 and TMA 61 stations (thresholds only)."
+      "in_region_pack": true,
+      "notes": "Probed 2026-11-01 (verification/terrain/probe.py): copyrightText empty on all services. Owner decision 2026-11-01 (ADR 0014): verbal permission to publish, written permission only if a problem arises; published as map layers (jakartasatu.pmtiles/.gpkg in the region pack) with attribution. Primary drains 42 lines (390 km, depth median 5.6 m, width median 19 m), secondary 36 (159 km, 3.3 m, 10.8 m), tertiary 1,211, micro 60,718 (size mostly missing), pumps 263, polders 65, NCICD walls 41, river walls 172, Genangan 4,280 RT polygons with date and depth, AWLR 28 and TMA 61 stations (thresholds only)."
     }
   ]
 }

@@ -51,6 +51,7 @@ export function mountSim(page: MapPage, o: { packUrl: string; regionBbox: number
       <div data-mode="hourly" hidden><div class="field"><div class="lbl"><span>${t("sim.hourly")}</span></div><textarea id="s-hourly" rows="2" placeholder="5, 20, 60, 35, 10"></textarea></div></div>
       <div data-mode="event" hidden><div class="field"><div class="lbl"><span>${t("sim.event")} ${q("sim.event")}</span></div>
         <select id="s-event">${eventIds.map((id) => `<option value="${id}">${new Date(`${id}T12:00:00+07:00`).toLocaleDateString(lang === "id" ? "id-ID" : "en-GB", { day: "numeric", month: "long", year: "numeric" })}</option>`).join("")}</select>${tip("sim.event")}</div></div>
+      <label class="layer" data-mode="event" hidden><input type="checkbox" id="s-obs"><span><b>${t("sim.obs")}</b></span>${q("sim.obs")}</label>${tip("sim.obs")}
       <p class="help" id="s-rainsum"></p>
       <label class="layer"><input type="checkbox" id="s-up" checked><span><b id="s-up-lbl">${t("sim.up")}</b></span>${q("sim.up")}</label>${tip("sim.up")}
     </div>
@@ -87,8 +88,17 @@ export function mountSim(page: MapPage, o: { packUrl: string; regionBbox: number
     $("s-rainsum").textContent = t("sim.event.info", { mm: fmt(mean), h: ev.hours, mx: fmt(Math.max(...tot)), n: ev.reports.n, p: Math.round(ev.reports.hit_rate * 100) })
       + (ev.reported_km2 ? ` ${t("sim.event.rep", { km2: ev.reported_km2, rw: ev.reported_rw ?? "?" })}` : "");
   };
+  // recorded floods of the chosen event on the map (official DSDA polygons dated in the event window, PetaBencana reports)
+  const evDates = (wib: string[]) => { const out: string[] = []; for (let d = new Date(`${wib[0].slice(0, 10)}T12:00:00Z`); d <= new Date(`${wib[1].slice(0, 10)}T12:00:00Z`); d.setUTCDate(d.getUTCDate() + 1)) out.push(d.toISOString().slice(0, 10)); return out; };
+  const syncObs = async () => {
+    if (mode() !== "event") { page.setObservedEvent(null, $<HTMLInputElement>("s-obs").checked ? false : undefined); return; }
+    const ev = await loadEvent($<HTMLSelectElement>("s-event").value);
+    page.setObservedEvent({ id: ev.id, dates: evDates(ev.wib) }, $<HTMLInputElement>("s-obs").checked);
+  };
+  $("s-obs").addEventListener("change", () => { syncObs().catch(() => {}); });
   const summarize = () => {
     box.querySelectorAll<HTMLElement>("[data-mode]").forEach((el) => (el.hidden = el.dataset.mode !== mode()));
+    syncObs().catch(() => {});
     $("s-up-lbl").textContent = t(mode() === "event" ? "sim.up.ev" : "sim.up");
     if (mode() === "event") { summarizeEvent().catch((e) => ($("s-rainsum").textContent = t("sim.err", { m: String(e) }))); return; }
     evShown = "";

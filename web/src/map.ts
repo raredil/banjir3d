@@ -1,8 +1,8 @@
 import "maplibre-gl/dist/maplibre-gl.css";
-import { AttributionControl, Map as MlMap, NavigationControl, ScaleControl, type LayerSpecification, type StyleSpecification } from "maplibre-gl";
+import { AttributionControl, Map as MlMap, NavigationControl, Popup, ScaleControl, type ExpressionSpecification, type FilterSpecification, type LayerSpecification, type StyleSpecification } from "maplibre-gl";
 import { ensurePmtiles } from "./pmtiles-init";
 import { lang, t, type Key } from "./i18n";
-import { LAYERS, type LayerDef, type LegendItem } from "./layers";
+import { LAYERS, OBS_CLASSES, type LayerDef, type LegendItem } from "./layers";
 import type { Catalog, Manifest } from "./types";
 import { MAX_ZOOM, esc, rasterResampling, toUtm } from "./util";
 
@@ -14,7 +14,14 @@ const ESRI = "https://server.arcgisonline.com/ArcGIS/rest/services";
 const ESRI_ATTR = 'Powered by <a href="https://www.esri.com">Esri</a> | Esri, Maxar, Earthstar Geographics, and the GIS User Community';
 
 export type MapCtx = { regionId: string; region: { bbox: number[]; name: string; domain?: string }; manifest: Manifest | null; catalog: Catalog; dataBase: string; at?: string | null };
-export type MapPage = { el: HTMLElement; map: MlMap; dockBody: HTMLElement; kpis: HTMLElement; timeline: HTMLElement; legend: HTMLElement; tools: HTMLElement; setTab(tab: "layers" | "sim"): void; onOverlays(f: () => void): void; onTab?: (tab: "layers" | "sim") => void };
+export type MapPage = { el: HTMLElement; map: MlMap; dockBody: HTMLElement; kpis: HTMLElement; timeline: HTMLElement; legend: HTMLElement; tools: HTMLElement; setTab(tab: "layers" | "sim"): void; onOverlays(f: () => void): void; onTab?: (tab: "layers" | "sim") => void;
+  /** Show only the recorded floods (DSDA polygons, citizen reports) of one observed event, or all of them (null). */
+  setObservedEvent(ev: { id: string; dates: string[] } | null, show?: boolean): void };
+
+// filters for the Jakarta Satu layer (one vector layer "js", feature type in "t") and the recorded-flood layers
+const isT = (...t: string[]) => ["in", ["get", "t"], ["literal", t]] as ExpressionSpecification;
+const obsColor = (): unknown => ["step", ["coalesce", ["get", "depth_cm"], 0], ...OBS_CLASSES.flatMap(([v, c], i) => (i === 0 ? [c] : [v, c]))];
+let genanganFilter: FilterSpecification = isT("genangan"), reportsFilter: FilterSpecification | null = null;
 
 const displayFiles = (m: Manifest | null) => { const r = new Map<string, Record<string, unknown>>(); m?.layers.forEach((l) => l.display?.forEach((d) => r.set(d.file, d))); return r; };
 const emptyStyle = (): StyleSpecification => ({ version: 8, glyphs: GLYPHS, sources: {}, layers: [{ id: "bg", type: "background", paint: { "background-color": "#eef1f4" } }] });
@@ -54,6 +61,21 @@ function mlLayers(def: LayerDef, src: string, zoom: number): LayerSpecification[
       { id: `${def.id}-line`, type: "line", source: src, layout: { visibility: vis }, paint: { "line-color": "#d9480f", "line-width": 1.5 } },
       { id: `${def.id}-label`, type: "symbol", source: src, layout: { visibility: vis, "text-field": ["get", "code"], "text-font": FONT, "text-size": 13 }, paint: { "text-color": "#d9480f", "text-halo-color": "#ffffff", "text-halo-width": 1.5 } },
     ];
+    case "js-drains": return [{ id: def.id, type: "line", source: src, "source-layer": "js", filter: isT("drain1", "drain2"), layout: { visibility: vis, "line-cap": "round", "line-join": "round" },
+      paint: { "line-color": ["match", ["get", "t"], "drain1", "#0b7285", "#3bc9db"], "line-opacity": o, "line-width": ["interpolate", ["linear"], ["zoom"], 10, ["match", ["get", "t"], "drain1", 2, 1.2], 16, ["match", ["get", "t"], "drain1", 7, 4]] } }];
+    case "js-walls": return [{ id: def.id, type: "line", source: src, "source-layer": "js", filter: isT("wall"), layout: { visibility: vis, "line-cap": "round" }, paint: { "line-color": "#5c3d2e", "line-opacity": o, "line-width": ["interpolate", ["linear"], ["zoom"], 10, 2, 16, 6] } }];
+    case "js-polders": return [
+      { id: `${def.id}-fill`, type: "fill", source: src, "source-layer": "js", filter: isT("polder"), layout: { visibility: vis }, paint: { "fill-color": "#845ef7", "fill-opacity": 0.18 * o } },
+      { id: `${def.id}-line`, type: "line", source: src, "source-layer": "js", filter: isT("polder"), layout: { visibility: vis }, paint: { "line-color": "#6741d9", "line-opacity": o, "line-width": 1.4 } },
+    ];
+    case "js-pumps": return [{ id: def.id, type: "circle", source: src, "source-layer": "js", filter: isT("pump"), layout: { visibility: vis },
+      paint: { "circle-color": "#c2255c", "circle-opacity": o, "circle-stroke-color": "#ffffff", "circle-stroke-width": 1, "circle-radius": ["interpolate", ["linear"], ["sqrt", ["coalesce", ["get", "cap_m3s"], 0]], 0, 3, 3, 6, 6, 10] } }];
+    case "genangan": return [
+      { id: `${def.id}-fill`, type: "fill", source: src, "source-layer": "js", filter: genanganFilter, layout: { visibility: vis }, paint: { "fill-color": obsColor() as string, "fill-opacity": o } },
+      { id: `${def.id}-line`, type: "line", source: src, "source-layer": "js", filter: genanganFilter, layout: { visibility: vis }, paint: { "line-color": "#7f0000", "line-opacity": o, "line-width": 0.7 } },
+    ];
+    case "reports": return [{ id: def.id, type: "circle", source: src, "source-layer": "reports", ...(reportsFilter ? { filter: reportsFilter } : {}), layout: { visibility: vis },
+      paint: { "circle-color": obsColor() as string, "circle-opacity": o, "circle-stroke-color": "#ffffff", "circle-stroke-width": 1.2, "circle-radius": ["interpolate", ["linear"], ["zoom"], 9, 3, 15, 7] } }];
     case "region": {
       const base = { id: def.id, type: "line" as const, source: src, layout: { visibility: vis as "visible" | "none" } };
       if (def.role === "admin") return [{ ...base, filter: ["==", ["get", "role"], "admin"], paint: { "line-color": "#334155", "line-width": 1.4, "line-dasharray": [4, 2] } }];
@@ -98,7 +120,7 @@ export async function createMapPage(root: HTMLElement, ctx: MapCtx): Promise<Map
             <input type="checkbox" ${l.visible && available(l) ? "checked" : ""} ${available(l) ? "" : "disabled"} data-toggle="${l.id}" aria-label="${esc(l.name[lang])}">
             <span title="${esc(l.title)}"><b>${esc(l.name[lang])}</b>${l.catalogId ? `<small><a href="#/data?d=${esc(l.catalogId)}">${t("source")}</a></small>` : ""}</span>
             ${l.kind === "region" || l.kind === "demnas-grid" ? "<span></span>" : `<input type="range" min="0" max="1" step="0.05" value="${l.opacity}" data-opacity="${l.id}" style="width:70px" aria-label="${t("opacity")}">`}
-            <div class="more">${legendHtml(l, l.file ? files.get(l.file) : undefined)}</div>
+            <div class="more">${l.id === "genangan" && available(l) ? `<select id="genangan-year" aria-label="${t("obs.year")}"><option value="">${t("obs.all")}</option>${Array.from({ length: 10 }, (_, i) => 2016 + i).map((y) => `<option>${y}</option>`).join("")}</select>` : ""}${legendHtml(l, l.file ? files.get(l.file) : undefined)}</div>
           </div>`).join("")}</div>`).join("")}
       </div>
       <div class="dock-body" id="dock-sim" hidden></div>
@@ -168,7 +190,7 @@ export async function createMapPage(root: HTMLElement, ctx: MapCtx): Promise<Map
   el.querySelectorAll<HTMLInputElement>("[data-opacity]").forEach((r) => r.addEventListener("input", () => {
     const def = LAYERS.find((l) => l.id === r.dataset.opacity)!;
     def.opacity = Number(r.value);
-    const props: Record<string, Parameters<MlMap["setPaintProperty"]>[1]> = { raster: "raster-opacity", hillshade: "hillshade-exaggeration", "color-relief": "color-relief-opacity", fill: "fill-opacity", line: "line-opacity" };
+    const props: Record<string, Parameters<MlMap["setPaintProperty"]>[1]> = { raster: "raster-opacity", hillshade: "hillshade-exaggeration", "color-relief": "color-relief-opacity", fill: "fill-opacity", line: "line-opacity", circle: "circle-opacity" };
     for (const id of layerIds(def.id)) { const p = props[map.getLayer(id)?.type ?? ""]; if (p) map.setPaintProperty(id, p, def.opacity); }
   }));
   el.querySelector<HTMLSelectElement>("#basemap")!.addEventListener("change", async (ev) => {
@@ -181,7 +203,43 @@ export async function createMapPage(root: HTMLElement, ctx: MapCtx): Promise<Map
     coords.textContent = `${lat.toFixed(5)}°, ${lng.toFixed(5)}° · UTM ${u.zone}${u.hemisphere} ${u.easting.toFixed(0)} E ${u.northing.toFixed(0)} N`;
   });
 
+  // click on infrastructure or a recorded flood: what the source says about it (values escaped)
+  const POP: Record<string, string> = { "js-drains": "js-drains", "js-pumps": "js-pumps", "js-polders-fill": "js-polders", "js-walls": "js-walls", "genangan-fill": "genangan", reports: "reports" };
+  map.on("click", (ev) => {
+    const ids = Object.keys(POP).filter((id) => map.getLayer(id) && map.getLayoutProperty(id, "visibility") !== "none");
+    const f = ids.length ? map.queryRenderedFeatures(ev.point, { layers: ids })[0] : undefined;
+    if (!f) return;
+    const p = f.properties as Record<string, string | number | null>, row = (k: string, v: unknown) => (v === null || v === undefined || v === "" ? "" : `<div><span>${esc(k)}</span> <b>${esc(v)}</b></div>`);
+    const kind = POP[f.layer.id], name = LAYERS.find((l) => l.id === kind)!.name[lang];
+    const body = kind === "reports" ? row(t("obs.event"), p.event) + row(t("obs.time"), `${p.time_wib ?? ""} WIB`) + row(t("obs.depth"), p.depth_cm ? `${p.depth_cm} cm` : "") + row(t("obs.via"), p.source)
+      : kind === "genangan" ? row(t("obs.date"), p.date) + row(t("obs.depth"), p.depth_cm ? `${p.depth_cm} cm` : "") + row("", p.info)
+      : row(t("obs.width"), p.width_m ? `${p.width_m} m` : "") + row(t("obs.ddepth"), p.depth_m ? `${p.depth_m} m` : "") + row(t("obs.cap"), p.cap_m3s ? `${p.cap_m3s} m³/s` : "") + row("", p.info);
+    new Popup({ maxWidth: "300px" }).setLngLat(ev.lngLat).setHTML(`<div class="pop"><h4>${esc(name)}</h4>${body}</div>`).addTo(map);
+  });
+  const applyObs = () => {
+    for (const id of ["genangan-fill", "genangan-line"]) if (map.getLayer(id)) map.setFilter(id, genanganFilter);
+    if (map.getLayer("reports")) map.setFilter("reports", reportsFilter);
+  };
+  const yearSel = el.querySelector<HTMLSelectElement>("#genangan-year");
+  yearSel?.addEventListener("change", () => {
+    genanganFilter = yearSel.value ? ["all", isT("genangan"), ["==", ["get", "year"], Number(yearSel.value)]] as ExpressionSpecification : isT("genangan");
+    applyObs();
+  });
+  const show = (id: string, on: boolean) => {
+    const def = LAYERS.find((l) => l.id === id)!, cb = el.querySelector<HTMLInputElement>(`[data-toggle="${id}"]`);
+    if (!cb || cb.disabled) return;
+    def.visible = cb.checked = on;
+    layerIds(id).forEach((x) => map.setLayoutProperty(x, "visibility", on ? "visible" : "none"));
+  };
+
   const page: MapPage = {
+    setObservedEvent(ev, on) {
+      genanganFilter = ev ? ["all", isT("genangan"), ["in", ["get", "date"], ["literal", ev.dates]]] as ExpressionSpecification : isT("genangan");
+      reportsFilter = ev ? ["==", ["get", "event"], ev.id] : null;
+      if (yearSel) yearSel.value = "";
+      applyObs();
+      if (on !== undefined) { show("genangan", on); show("reports", on); }
+    },
     el, map, dockBody: el.querySelector<HTMLElement>("#dock-sim")!, kpis: el.querySelector<HTMLElement>("#kpis")!, timeline: el.querySelector<HTMLElement>("#timeline")!,
     legend: el.querySelector<HTMLElement>("#map-legend")!, tools: el.querySelector<HTMLElement>("#map-tools")!,
     onOverlays: (f) => { overlayHooks.push(f); },

@@ -183,3 +183,9 @@ details.sec summary, details > summary { cursor: pointer; color: var(--muted); f
 .concl-body .refs li { margin-bottom: 3px; overflow-wrap: anywhere; }
 .map-tools .btn.on { outline: 2px solid var(--accent, #1d63d8); }
 @media (max-width: 760px) { .concl { left: 8px; right: 8px; width: auto; top: auto; bottom: 8px; max-height: 50%; } }
+
+/* popups for infrastructure and recorded floods */
+.pop { font: 12.5px/1.4 var(--font, system-ui); color: #1f2937; }
+.pop h4 { margin: 0 0 4px; font-size: 13px; }
+.pop div { display: flex; gap: 6px; flex-wrap: wrap; }
+.pop span { color: #6b7280; }
