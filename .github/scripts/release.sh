@@ -18,7 +18,10 @@ put() {  # <release id> <file>: replace an asset of the same name
 case "$1" in
   create)
     tag="$2"; target="$3"; title="$4"; notes="$5"; shift 5
-    id=$(gh api "$api" -f tag_name="$tag" -f target_commitish="$target" -f name="$title" -f body="$notes" -F draft=true --jq .id)
+    # some commits are refused as release targets for the workflow token (HTTP 403, seen 2026-11-01 on engine-pack runs):
+    # then the tag goes on the default branch and the notes keep the commit the files were built from
+    id=$(gh api "$api" -f tag_name="$tag" -f target_commitish="$target" -f name="$title" -f body="$notes" -F draft=true --jq .id) || \
+      id=$(gh api "$api" -f tag_name="$tag" -f name="$title" -f body="$notes (built from commit $target)" -F draft=true --jq .id)
     for f in "$@"; do put "$id" "$f"; done
     gh api -X PATCH "$api/$id" -F draft=false --jq .html_url ;;
   upload)
