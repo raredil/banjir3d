@@ -16,12 +16,17 @@ const ESRI_ATTR = 'Powered by <a href="https://www.esri.com">Esri</a> | Esri, Ma
 export type MapCtx = { regionId: string; region: { bbox: number[]; name: string; domain?: string }; manifest: Manifest | null; catalog: Catalog; dataBase: string; at?: string | null };
 export type MapPage = { el: HTMLElement; map: MlMap; dockBody: HTMLElement; kpis: HTMLElement; timeline: HTMLElement; legend: HTMLElement; tools: HTMLElement; setTab(tab: "layers" | "sim"): void; onOverlays(f: () => void): void; onTab?: (tab: "layers" | "sim") => void;
   /** Show only the recorded floods (DSDA polygons, citizen reports) of one observed event, or all of them (null). */
-  setObservedEvent(ev: { id: string; dates: string[] } | null, show?: boolean): void };
+  setObservedEvent(ev: { id: string; dates: string[] } | null, show?: boolean): void;
+  /** A simulation result in the active-layers list (on top, can be hidden, reordered, removed). */
+  addResult(r: ResultEntry): void; removeResult(id: string): void; refreshLayers(): void };
+export type ResultEntry = { id: string; name: () => string; ids: () => string[]; remove: () => void; onVisible?: (on: boolean) => void };
 
 // filters for the Jakarta Satu layer (one vector layer "js", feature type in "t") and the recorded-flood layers
 const isT = (...t: string[]) => ["in", ["get", "t"], ["literal", t]] as ExpressionSpecification;
 const obsColor = (): unknown => ["step", ["coalesce", ["get", "depth_cm"], 0], ...OBS_CLASSES.flatMap(([v, c], i) => (i === 0 ? [c] : [v, c]))];
 let genanganFilter: FilterSpecification = isT("genangan"), reportsFilter: FilterSpecification | null = null;
+const hiddenR = new Set<string>(); // switched on in the left list but hidden in the active-layers card
+let order: string[] = [], labelAnchor: string | undefined; // active layer ids, top first; first basemap label layer
 
 const displayFiles = (m: Manifest | null) => { const r = new Map<string, Record<string, unknown>>(); m?.layers.forEach((l) => l.display?.forEach((d) => r.set(d.file, d))); return r; };
 const emptyStyle = (): StyleSpecification => ({ version: 8, glyphs: GLYPHS, sources: {}, layers: [{ id: "bg", type: "background", paint: { "background-color": "#eef1f4" } }] });
@@ -39,7 +44,7 @@ async function loadBasemap(kind: string): Promise<StyleSpecification> {
 }
 
 function mlLayers(def: LayerDef, src: string, zoom: number): LayerSpecification[] {
-  const vis = def.visible ? "visible" : "none", o = def.opacity;
+  const vis = def.visible && !hiddenR.has(def.id) ? "visible" : "none", o = def.opacity;
   switch (def.kind) {
     case "raster": return [{ id: def.id, type: "raster", source: src, layout: { visibility: vis }, paint: { "raster-opacity": o, "raster-resampling": rasterResampling(def.id === "s2", zoom) } }];
     case "hillshade": return [{ id: def.id, type: "hillshade", source: src, layout: { visibility: vis }, paint: { "hillshade-exaggeration": o, "hillshade-shadow-color": "#2b3440", "hillshade-highlight-color": "#ffffff", "hillshade-accent-color": "#5b6573" } }];
@@ -129,6 +134,7 @@ export async function createMapPage(root: HTMLElement, ctx: MapCtx): Promise<Map
     <div class="timeline card" id="timeline" hidden></div>
     <div class="map-legend card" id="map-legend" hidden></div>
     <div class="map-tools" id="map-tools"></div>
+    <div class="lyr card" id="lyr" aria-label="${t("lyr.title")}"><div class="lyr-head"><b>${t("lyr.title")}</b><button type="button" id="focus-btn" class="focus-btn"></button><button type="button" id="lyr-min" title="${t("lyr.min")}" aria-label="${t("lyr.min")}">–</button></div><ol id="lyr-list"></ol></div>
     <div class="coords" id="coords"></div>`;
   root.append(el);
 
@@ -157,6 +163,7 @@ export async function createMapPage(root: HTMLElement, ctx: MapCtx): Promise<Map
   const overlayHooks: (() => void)[] = [];
   const addOverlays = () => {
     const firstSymbol = map.getStyle().layers.find((l) => l.type === "symbol")?.id;
+    labelAnchor = firstSymbol;
     for (const def of LAYERS) {
       if (!available(def)) continue;
       const src = def.kind === "region" ? "src-region" : `src-${def.file ?? def.id}`;
@@ -174,6 +181,7 @@ export async function createMapPage(root: HTMLElement, ctx: MapCtx): Promise<Map
       for (const layer of mlLayers(def, src, map.getZoom())) map.addLayer(layer, def.kind === "demnas-grid" || def.kind === "region" ? undefined : firstSymbol);
     }
     overlayHooks.forEach((f) => f());
+    refresh();
   };
   map.on("zoom", () => {
     const r = rasterResampling(true, map.getZoom());
@@ -185,7 +193,9 @@ export async function createMapPage(root: HTMLElement, ctx: MapCtx): Promise<Map
   el.querySelectorAll<HTMLInputElement>("[data-toggle]").forEach((cb) => cb.addEventListener("change", () => {
     const def = LAYERS.find((l) => l.id === cb.dataset.toggle)!;
     def.visible = cb.checked;
-    layerIds(def.id).forEach((id) => map.setLayoutProperty(id, "visibility", cb.checked ? "visible" : "none"));
+    hiddenR.delete(def.id);
+    if (cb.checked) order = [def.id, ...order.filter((x) => x !== def.id)]; // newly switched on: drawn on top
+    refresh();
   }));
   el.querySelectorAll<HTMLInputElement>("[data-opacity]").forEach((r) => r.addEventListener("input", () => {
     const def = LAYERS.find((l) => l.id === r.dataset.opacity)!;
@@ -231,10 +241,50 @@ export async function createMapPage(root: HTMLElement, ctx: MapCtx): Promise<Map
     const def = LAYERS.find((l) => l.id === id)!, cb = el.querySelector<HTMLInputElement>(`[data-toggle="${id}"]`);
     if (!cb || cb.disabled) return;
     def.visible = cb.checked = on;
-    layerIds(id).forEach((x) => map.setLayoutProperty(x, "visibility", on ? "visible" : "none"));
+    hiddenR.delete(id);
+    if (on) order = [id, ...order.filter((x) => x !== id)];
+    refresh();
   };
 
+  // ---------- active layers card: list, order (top = drawn on top), own hide, results ----------
+  const results = new Map<string, ResultEntry>();
+  const idsOf = (id: string) => results.get(id)?.ids().filter((x) => map.getLayer(x)) ?? layerIds(id);
+  const nameOf = (id: string) => results.get(id)?.name() ?? LAYERS.find((l) => l.id === id)!.name[lang];
+  const activeIds = () => [...results.keys(), ...LAYERS.filter((l) => l.visible && available(l)).map((l) => l.id)];
+  const lyr = el.querySelector<HTMLElement>("#lyr")!, list = el.querySelector<HTMLOListElement>("#lyr-list")!;
+  function refresh() {
+    if (!map.isStyleLoaded() && !map.getStyle()) return;
+    const act = activeIds();
+    if (!order.length) order = [...act].reverse(); // first time: the stacking the layers were added in
+    order = [...act.filter((x) => !order.includes(x)), ...order.filter((x) => act.includes(x))];
+    for (const id of [...order].reverse()) for (const x of idsOf(id)) map.moveLayer(x, labelAnchor && map.getLayer(labelAnchor) ? labelAnchor : undefined);
+    for (const l of LAYERS) if (available(l)) { const v = l.visible && !hiddenR.has(l.id) ? "visible" : "none"; for (const x of layerIds(l.id)) if (map.getLayoutProperty(x, "visibility") !== v) map.setLayoutProperty(x, "visibility", v); }
+    for (const [id, r] of results) { const on = !hiddenR.has(id); for (const x of idsOf(id)) map.setLayoutProperty(x, "visibility", on ? "visible" : "none"); r.onVisible?.(on); }
+    list.innerHTML = order.length ? order.map((id, i) => `<li class="${results.has(id) ? "res" : ""} ${hiddenR.has(id) ? "off" : ""}" data-id="${esc(id)}">
+      <input type="checkbox" ${hiddenR.has(id) ? "" : "checked"} data-a="vis" aria-label="${t("lyr.show")}"><span title="${esc(nameOf(id))}">${esc(nameOf(id))}</span>
+      <button type="button" data-a="up" ${i === 0 ? "disabled" : ""} title="${t("lyr.up")}" aria-label="${t("lyr.up")}">↑</button><button type="button" data-a="down" ${i === order.length - 1 ? "disabled" : ""} title="${t("lyr.down")}" aria-label="${t("lyr.down")}">↓</button>${results.has(id) ? `<button type="button" data-a="rm" title="${t("lyr.rm")}" aria-label="${t("lyr.rm")}">✕</button>` : ""}</li>`).join("") : `<li class="empty">${t("lyr.empty")}</li>`;
+  }
+  list.addEventListener("click", (ev) => {
+    const b = (ev.target as HTMLElement).closest<HTMLElement>("[data-a]"), id = b?.closest<HTMLElement>("li")?.dataset.id;
+    if (!b || !id) return;
+    const i = order.indexOf(id);
+    if (b.dataset.a === "vis") { if ((b as HTMLInputElement).checked) hiddenR.delete(id); else hiddenR.add(id); }
+    else if (b.dataset.a === "up" && i > 0) [order[i - 1], order[i]] = [order[i], order[i - 1]];
+    else if (b.dataset.a === "down" && i < order.length - 1) [order[i + 1], order[i]] = [order[i], order[i + 1]];
+    else if (b.dataset.a === "rm") { const r = results.get(id); results.delete(id); hiddenR.delete(id); r?.remove(); }
+    refresh();
+  });
+  el.querySelector("#lyr-min")!.addEventListener("click", () => { const m = lyr.classList.toggle("min"); el.querySelector("#lyr-min")!.textContent = m ? "+" : "–"; });
+  // focus mode: hide the floating cards (dock, figures, timeline, legend, conclusion) to look at the map; the button stays
+  const focusBtn = el.querySelector<HTMLButtonElement>("#focus-btn")!;
+  const setFocusLbl = () => { focusBtn.textContent = el.classList.contains("focus") ? t("focus.off") : t("focus.on"); };
+  focusBtn.addEventListener("click", () => { el.classList.toggle("focus"); setFocusLbl(); });
+  setFocusLbl();
+
   const page: MapPage = {
+    addResult(r) { results.set(r.id, r); hiddenR.delete(r.id); order = [r.id, ...order.filter((x) => x !== r.id)]; refresh(); },
+    removeResult(id) { if (results.delete(id)) { hiddenR.delete(id); refresh(); } },
+    refreshLayers: () => refresh(),
     setObservedEvent(ev, on) {
       genanganFilter = ev ? ["all", isT("genangan"), ["in", ["get", "date"], ["literal", ev.dates]]] as ExpressionSpecification : isT("genangan");
       reportsFilter = ev ? ["==", ["get", "event"], ev.id] : null;

@@ -263,7 +263,7 @@ export function mountSim(page: MapPage, o: { packUrl: string; regionBbox: number
     c.strokeStyle = "#f97316"; c.lineWidth = 1.5 * devicePixelRatio; c.beginPath(); c.moveTo(x, 0); c.lineTo(x, h); c.stroke();
   };
   tq("t-frame").addEventListener("input", () => { frame = Number(tq<HTMLInputElement>("t-frame").value); tq("t-out").textContent = fmtT(res?.times[frame] ?? 0); render(); });
-  tq("t-show").querySelectorAll<HTMLButtonElement>("button").forEach((b) => b.addEventListener("click", () => { showMax = b.dataset.m === "max"; tq("t-show").querySelectorAll("button").forEach((x) => x.classList.toggle("on", x === b)); render(); }));
+  tq("t-show").querySelectorAll<HTMLButtonElement>("button").forEach((b) => b.addEventListener("click", () => { showMax = b.dataset.m === "max"; tq("t-show").querySelectorAll("button").forEach((x) => x.classList.toggle("on", x === b)); render(); page.refreshLayers(); }));
   const stopPlay = () => { clearInterval(playTimer); playTimer = 0; tq("t-play").textContent = "▶"; };
   tq("t-play").addEventListener("click", () => {
     if (playTimer || !res) { stopPlay(); return; }
@@ -370,7 +370,7 @@ export function mountSim(page: MapPage, o: { packUrl: string; regionBbox: number
     const box2 = (r.scenario.area as { box?: number[] }).box ?? null, [wKm, hKm] = box2 ? kmOf(box2) : [0, 0];
     const facts: Facts = {
       area: { box: box2, wKm, hKm }, landKm2: land * a, cellM: g.dx, hours: r.scenario.hours as number, gpu: !!r.gpu, landcoverYear: pack.header.landcover_year, ...(r.scenario.terrainYear ? { terrainYear: r.scenario.terrainYear as number, subEpoch: r.scenario.terrainEpoch as number } : {}),
-      drainMmH: calibration.drain_mm_h, ...(r.scenario.polderPumps ? { pumpsM3s: r.scenario.pumpM3s as number } : r.run.pump ? { pumpsOff: true } : {}), seaM: r.scenario.seaLevel as number, floodM: FLOOD_M, rain,
+      drainMmH: calibration.drain_mm_h, dsdaDrains: !!pack.header.drains, ...(r.scenario.polderPumps ? { pumpsM3s: r.scenario.pumpM3s as number } : r.run.pump ? { pumpsOff: true } : {}), seaM: r.scenario.seaLevel as number, floodM: FLOOD_M, rain,
       upstream: r.inflows.length ? { n: r.inflows.length, peakM3s: peakInflow(), areaKm2: r.inflows.reduce((s2, f) => s2 + f.areaKm2, 0) } : null,
       env: { km2: wet * a, classesKm2: cls.map((v) => v * a), meanDepth: wet ? sum / wet : 0, maxDepth: dMax, deepest },
       peak: { km2: r.area[pk] ?? 0, tSec: r.times[pk] ?? 0 }, endKm2: r.area[r.area.length - 1] ?? 0, massError: r.mass ?? 0,
@@ -396,7 +396,7 @@ export function mountSim(page: MapPage, o: { packUrl: string; regionBbox: number
   const clear = () => {
     stopPlay(); worker?.terminate(); worker = null; setRunning(false); res = null;
     if (layer && map.getLayer("flood")) map.removeLayer("flood");
-    layer = null; page.kpis.innerHTML = ""; page.timeline.hidden = true; page.legend.hidden = true; $("s-clear").hidden = true; $("s-stats").innerHTML = ""; $("s-expo-box").hidden = true; $("s-expo").innerHTML = ""; $("s-status").textContent = ""; concl.innerHTML = ""; showConcl(false);
+    layer = null; page.removeResult("flood"); page.kpis.innerHTML = ""; page.timeline.hidden = true; page.legend.hidden = true; $("s-clear").hidden = true; $("s-stats").innerHTML = ""; $("s-expo-box").hidden = true; $("s-expo").innerHTML = ""; $("s-status").textContent = ""; concl.innerHTML = ""; showConcl(false);
   };
   $("s-clear").addEventListener("click", clear);
   $("s-cancel").addEventListener("click", () => { worker?.terminate(); worker = null; setRunning(false); $("s-status").textContent = ""; });
@@ -440,6 +440,11 @@ export function mountSim(page: MapPage, o: { packUrl: string; regionBbox: number
     const mine = res;
     ensureExposure().then((x) => { expoNow = x; if (res !== mine) return; if (x) res.cells = exposureCells(x, run); $("s-expo-box").hidden = false; render(); conclude(); });
     layer = new FloodLayer(grid); addLayer();
+    // the result goes into the active-layers card: on top, can be hidden, moved or removed; a new run replaces it
+    page.addResult({
+      id: "flood", ids: () => ["flood"], remove: clear, onVisible: (on) => { page.legend.hidden = !on || !res; },
+      name: () => `${t("res.layer")} · ${res?.event ? res.event.id : `${res?.scenario.rainMm ?? ""} mm`} · ${showMax ? t("sim.show.max") : t("sim.show.now")}`,
+    });
     page.legend.hidden = false; page.timeline.hidden = false;
     // frames kept in memory as uint16 cm: about 150 MB at most, between 12 and 144 frames, at least 10 min apart
     const nFrames = Math.max(12, Math.min(144, Math.floor(150e6 / (N * 2))));
