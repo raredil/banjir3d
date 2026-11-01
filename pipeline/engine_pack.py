@@ -171,6 +171,62 @@ def burn_channels(z: np.ndarray, transform, crs, water_gpkg: Path) -> tuple[np.n
     return zc, chan, info
 
 
+DRAIN_MAX_M = 10.0  # cap on the carved depth (deepest mapped primary drain is about 8 m)
+
+
+def carve_drains(z0: np.ndarray, zc: np.ndarray, chan: np.ndarray, transform, gpkg: Path | None) -> tuple[np.ndarray, np.ndarray, dict]:
+    """Jakarta Satu primary and secondary drains (DSDA, width and depth per record) become channel cells. Where the record gives
+    a depth, the bed is set to bank level minus the area-equivalent depth (depth x min(width, cell) / cell), unless the terrain is
+    already lower; bank level = 3 x 3 median of the uncarved terrain. Carved drains start empty."""
+    if gpkg is None:
+        return zc, chan, {}
+    import geopandas as gpd
+    from scipy import ndimage as nd
+
+    dx = transform.a
+    shape = zc.shape
+    deff = np.zeros(shape, np.float32)
+    mask = np.zeros(shape, bool)
+    counts = {}
+    for layer, kind in (("drain_primary_area", "area"), ("drain_secondary_area", "area"), ("drain_primary_line", "line"), ("drain_secondary_line", "line")):
+        try:
+            g = gpd.read_file(gpkg, layer=layer)
+        except Exception:
+            counts[layer] = 0
+            continue
+        counts[layer] = int(len(g))
+        if g.empty:
+            continue
+        m = features.rasterize(((geom, 1) for geom in g.geometry), out_shape=shape, transform=transform, all_touched=(kind == "line"), dtype="uint8") > 0
+        mask |= m
+        ok = g["depth_m"].notna()
+        if not ok.any():
+            continue
+        w = g["width_m"].fillna(dx).clip(upper=dx) if kind == "line" else pd_full(len(g), dx)
+        val = (g["depth_m"].clip(upper=DRAIN_MAX_M) * w / dx)[ok]
+        d = features.rasterize(((geom, float(v)) for geom, v in zip(g.geometry[ok], val)), out_shape=shape, transform=transform,
+                               all_touched=(kind == "line"), dtype="float32", merge_alg=features.MergeAlg.replace)
+        deff = np.maximum(deff, d)
+    bank = nd.median_filter(z0, size=3)
+    target = np.where(deff > 0, bank - deff, np.inf)
+    out = zc.copy()
+    newchan = mask & ~chan
+    zmin = nd.minimum_filter(z0, size=3)
+    out[newchan] = np.minimum(out[newchan], zmin[newchan])
+    out = np.minimum(out, target)
+    lowered = out < zc
+    info = {"source": "Jakarta Satu, Dinas SDA DKI (raw vectors not published)", "records": counts,
+            "channel_cells_added": int(newchan.sum()), "cells_with_depth": int((deff > 0).sum()), "cells_lowered": int(lowered.sum()),
+            "mean_lowering_m": round(float((zc - out)[lowered].mean()), 3) if lowered.any() else 0.0,
+            "rule": "bed = min(terrain, 3x3 median bank - depth x min(width, 30 m) / 30 m); drains start empty"}
+    return out, chan | mask, info
+
+
+def pd_full(n: int, v: float):
+    import pandas as pd
+    return pd.Series([v] * n)
+
+
 def sea_mask(z: np.ndarray, lc_cell_water: np.ndarray) -> np.ndarray:
     from scipy import ndimage as nd
 
@@ -327,7 +383,7 @@ def subsidence(path: Path | None, units: str, epoch: float, tr, crs, shape) -> t
 
 
 def build(pack: Path, out: Path, region: str, soil: str, terrain_src: str = "fabdem", sub_path: Path | None = None,
-          sub_units: str = "mm/yr", sub_epoch: float = 2013.0) -> dict:
+          sub_units: str = "mm/yr", sub_epoch: float = 2013.0, drains: Path | None = None) -> dict:
     t0 = time.time()
     out.mkdir(parents=True, exist_ok=True)
     years = sorted(int(p.stem.split("_")[-1]) for p in pack.glob("lulc_io_*.tif") if p.stem.split("_")[-1].isdigit())
@@ -353,6 +409,7 @@ def build(pack: Path, out: Path, region: str, soil: str, terrain_src: str = "fab
     n, cn, share, built_share = lc_to_n_cn(lc, hsg_fine, f)
     water_cell = (lc == 1).reshape(shape[0], f, shape[1], f).mean(axis=(1, 3)) >= 0.5
     zc, chan, chan_info = burn_channels(z, tr, crs, pack / "water_osm.gpkg")
+    zc, chan, drain_info = carve_drains(z, zc, chan, tr, drains)
     sea = sea_mask(zc, water_cell)
     chan &= ~sea
     # Stream network: GLO-90 D8 cells with at least STREAM_KM2 upstream, with their downstream cell (index into the same list).
@@ -399,7 +456,7 @@ def build(pack: Path, out: Path, region: str, soil: str, terrain_src: str = "fab
         "encoding": {"z": f"(z + {Z_OFFSET} m) in cm", "n": "n x 1000", "cn": "curve number", "flags": "bit0 channel, bit1 sea, bit2 inside the region domain polygon", "sub": "land subsidence rate, mm/year, positive = sinking (optional)", "built": "built-area share of the cell (%), IO land cover class 7", "st_*": "GLO-90 D8 stream cells (>= 1 km2 upstream): centre in metres east/south of the model origin, downstream index (-1 none), upstream area, area-mean CN, mean slope (%), longest flow path (m)"},
         "arrays": [], "inputs_sha256": inputs, "landcover_year": io_year, "landcover_share": share,
         "parameters": PARAMS, "channels": chan_info, "sea": {"cells": int(sea.sum()), "rule": "IO water, z <= 0.5 m, connected to the north edge"},
-        "soil": soil_info, "upstream": up_info, "terrain": terrain_info,
+        "soil": soil_info, "upstream": up_info, "terrain": terrain_info, **({"drains": drain_info} if drain_info else {}),
         **({"subsidence": sub_info} if sub is not None else {}),
         "checks": {
             "dem_min_m": round(float(zc.min()), 2), "dem_max_m": round(float(zc.max()), 2),
@@ -437,6 +494,7 @@ if __name__ == "__main__":
     ap.add_argument("--subsidence", type=Path, default=None, help="raster of land subsidence rate")
     ap.add_argument("--sub-units", default="mm/yr", help="units of the raster: mm/yr, cm/yr, m/yr; prefix '-' when sinking is negative")
     ap.add_argument("--sub-epoch", type=float, default=2013.0, help="decimal year of the terrain measurement")
+    ap.add_argument("--drains", type=Path, default=None, help="jakartasatu.gpkg from pipeline/jakartasatu.py")
     a = ap.parse_args()
-    h = build(a.pack, a.out, a.region, a.soil, a.terrain, a.subsidence, a.sub_units, a.sub_epoch)
-    print(json.dumps({k: h[k] for k in ("grid", "channels", "sea", "checks", "terrain", "output")}, indent=1))
+    h = build(a.pack, a.out, a.region, a.soil, a.terrain, a.subsidence, a.sub_units, a.sub_epoch, a.drains)
+    print(json.dumps({k: h.get(k) for k in ("grid", "channels", "drains", "sea", "checks", "terrain", "subsidence", "output")}, indent=1))
