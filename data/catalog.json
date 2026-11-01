@@ -763,6 +763,36 @@
       "checked": "2026-10-30",
       "notes": "Mapped rivers and streams of the whole upstream area, used to steer the flow routing (canals excluded).",
       "doi": null
+    },
+    {
+      "id": "jakartasatu-dsda",
+      "name": "Jakarta Satu — Dinas Sumber Daya Air DKI: drainage channels, pumps, polders, walls, flood records (Genangan)",
+      "theme": "water-bodies",
+      "role": "primary",
+      "provider": "Pemerintah Provinsi DKI Jakarta, Dinas Sumber Daya Air (Jakarta Satu geoportal)",
+      "version": "live ArcGIS services (accessed at build time)",
+      "doi": null,
+      "url": "https://jakartasatu.jakarta.go.id",
+      "licence": {
+        "id": "not stated",
+        "redistributable": "unknown",
+        "attribution": "Jakarta Satu, Dinas Sumber Daya Air Provinsi DKI Jakarta"
+      },
+      "resolution": "vector (lines, polygons, points)",
+      "crs": "EPSG:32748 (requested)",
+      "access": {
+        "method": "ArcGIS REST query (f=geojson, paged), pipeline/jakartasatu.py, only from GitHub Actions",
+        "endpoint": "https://jakartasatu.jakarta.go.id/server/rest/services/DSDA/",
+        "auth": "none"
+      },
+      "citation": {
+        "text": "Dinas Sumber Daya Air Provinsi DKI Jakarta (2026). Saluran Drainase, Genangan, Pompa, Polder, Tanggul. Jakarta Satu geoportal. https://jakartasatu.jakarta.go.id (accessed 1 November 2026)",
+        "bibtex": "@misc{dsda2026jakartasatu,\n  author = {{Dinas Sumber Daya Air Provinsi DKI Jakarta}},\n  title = {Saluran Drainase, Genangan, Pompa, Polder dan Tanggul},\n  howpublished = {Jakarta Satu geoportal, \\url{https://jakartasatu.jakarta.go.id}},\n  year = {2026},\n  note = {Accessed 1 November 2026}\n}"
+      },
+      "status": "single-source",
+      "checked": "2026-11-01",
+      "in_region_pack": false,
+      "notes": "Probed 2026-11-01 (verification/terrain/probe.py): copyrightText empty on all services, so raw vectors are not published; the engine pack holds only carved channel cells and initial channel depth, validation publishes aggregate scores. Primary drains 42 lines (390 km, depth median 5.6 m, width median 19 m), secondary 36 (159 km, 3.3 m, 10.8 m), tertiary 1,211, micro 60,718 (size mostly missing), pumps 263, polders 65, NCICD walls 41, river walls 172, Genangan 4,280 RT polygons with date and depth, AWLR 28 and TMA 61 stations (thresholds only)."
     }
   ]
 }

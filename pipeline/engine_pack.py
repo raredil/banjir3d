@@ -174,12 +174,13 @@ def burn_channels(z: np.ndarray, transform, crs, water_gpkg: Path) -> tuple[np.n
 DRAIN_MAX_M = 10.0  # cap on the carved depth (deepest mapped primary drain is about 8 m)
 
 
-def carve_drains(z0: np.ndarray, zc: np.ndarray, chan: np.ndarray, transform, gpkg: Path | None) -> tuple[np.ndarray, np.ndarray, dict]:
+def carve_drains(z0: np.ndarray, zc: np.ndarray, chan: np.ndarray, transform, gpkg: Path | None) -> tuple[np.ndarray, np.ndarray, np.ndarray | None, dict]:
     """Jakarta Satu primary and secondary drains (DSDA, width and depth per record) become channel cells. Where the record gives
     a depth, the bed is set to bank level minus the area-equivalent depth (depth x min(width, cell) / cell), unless the terrain is
-    already lower; bank level = 3 x 3 median of the uncarved terrain. Carved drains start empty."""
+    already lower; bank level = 3 x 3 median of the uncarved terrain. The carved part below the water surface the DEM recorded
+    (the conditioned terrain before carving) starts filled, as for the OSM channels (base flow), and is returned as initial depth."""
     if gpkg is None:
-        return zc, chan, {}
+        return zc, chan, None, {}
     import geopandas as gpd
     from scipy import ndimage as nd
 
@@ -213,13 +214,16 @@ def carve_drains(z0: np.ndarray, zc: np.ndarray, chan: np.ndarray, transform, gp
     newchan = mask & ~chan
     zmin = nd.minimum_filter(z0, size=3)
     out[newchan] = np.minimum(out[newchan], zmin[newchan])
+    surface = out.copy()  # recorded water surface: conditioned terrain before the depth is carved
     out = np.minimum(out, target)
+    h0 = np.where(mask, surface - out, 0.0).clip(min=0)
     lowered = out < zc
     info = {"source": "Jakarta Satu, Dinas SDA DKI (raw vectors not published)", "records": counts,
             "channel_cells_added": int(newchan.sum()), "cells_with_depth": int((deff > 0).sum()), "cells_lowered": int(lowered.sum()),
             "mean_lowering_m": round(float((zc - out)[lowered].mean()), 3) if lowered.any() else 0.0,
-            "rule": "bed = min(terrain, 3x3 median bank - depth x min(width, 30 m) / 30 m); drains start empty"}
-    return out, chan | mask, info
+            "initial_volume_million_m3": round(float(h0.sum() * dx * dx / 1e6), 2),
+            "rule": "bed = min(terrain, 3x3 median bank - depth x min(width, 30 m) / 30 m); carved part below the recorded water surface starts filled (h0)"}
+    return out, chan | mask, h0, info
 
 
 def pd_full(n: int, v: float):
@@ -409,7 +413,7 @@ def build(pack: Path, out: Path, region: str, soil: str, terrain_src: str = "fab
     n, cn, share, built_share = lc_to_n_cn(lc, hsg_fine, f)
     water_cell = (lc == 1).reshape(shape[0], f, shape[1], f).mean(axis=(1, 3)) >= 0.5
     zc, chan, chan_info = burn_channels(z, tr, crs, pack / "water_osm.gpkg")
-    zc, chan, drain_info = carve_drains(z, zc, chan, tr, drains)
+    zc, chan, h0, drain_info = carve_drains(z, zc, chan, tr, drains)
     sea = sea_mask(zc, water_cell)
     chan &= ~sea
     # Stream network: GLO-90 D8 cells with at least STREAM_KM2 upstream, with their downstream cell (index into the same list).
@@ -442,6 +446,8 @@ def build(pack: Path, out: Path, region: str, soil: str, terrain_src: str = "fab
     ]
     if sub is not None:
         arrays.append(("sub", "int16", sub))
+    if h0 is not None:
+        arrays.append(("h0", "uint16", np.clip(np.round(np.where(sea, 0, h0) * 100), 0, 65535).astype(np.uint16)))
     inputs = {p: sha256(pack / p) for p in ["dem_fabdem.tif", f"lulc_io_{io_year}.tif", "water_osm.gpkg"]}
     if terrain_src != "fabdem":
         inputs[terrain_info["file"]] = sha256(pack / terrain_info["file"])
@@ -453,7 +459,7 @@ def build(pack: Path, out: Path, region: str, soil: str, terrain_src: str = "fab
     header = {
         "type": "banjir3d-engine-pack", "version": 1, "region": region, "created": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
         "grid": {"crs": str(crs), "nx": W_, "ny": H_, "dx": tr.a, "dy": -tr.e, "origin": [tr.c, tr.f], "corners_lonlat": corners},
-        "encoding": {"z": f"(z + {Z_OFFSET} m) in cm", "n": "n x 1000", "cn": "curve number", "flags": "bit0 channel, bit1 sea, bit2 inside the region domain polygon", "sub": "land subsidence rate, mm/year, positive = sinking (optional)", "built": "built-area share of the cell (%), IO land cover class 7", "st_*": "GLO-90 D8 stream cells (>= 1 km2 upstream): centre in metres east/south of the model origin, downstream index (-1 none), upstream area, area-mean CN, mean slope (%), longest flow path (m)"},
+        "encoding": {"z": f"(z + {Z_OFFSET} m) in cm", "n": "n x 1000", "cn": "curve number", "flags": "bit0 channel, bit1 sea, bit2 inside the region domain polygon", "sub": "land subsidence rate, mm/year, positive = sinking (optional)", "h0": "initial water depth in carved drains, cm (optional)", "built": "built-area share of the cell (%), IO land cover class 7", "st_*": "GLO-90 D8 stream cells (>= 1 km2 upstream): centre in metres east/south of the model origin, downstream index (-1 none), upstream area, area-mean CN, mean slope (%), longest flow path (m)"},
         "arrays": [], "inputs_sha256": inputs, "landcover_year": io_year, "landcover_share": share,
         "parameters": PARAMS, "channels": chan_info, "sea": {"cells": int(sea.sum()), "rule": "IO water, z <= 0.5 m, connected to the north edge"},
         "soil": soil_info, "upstream": up_info, "terrain": terrain_info, **({"drains": drain_info} if drain_info else {}),

@@ -450,7 +450,7 @@ export function mountSim(page: MapPage, o: { packUrl: string; regionBbox: number
     };
     worker.onerror = (e) => { setRunning(false); $("s-status").textContent = t("sim.err", { m: e.message }); };
     const msg: RunMsg = {
-      type: "run", grid: { nx: run.nx, ny: run.ny, dx: run.dx, z: run.z, n: run.n, cn: run.cn, active: run.active, sea: run.sea, drain: drainOf(run), zone }, zoneMm: ev?.mm, seaLevel: num("s-sea"), hours, rain: hy, frameS,
+      type: "run", grid: { nx: run.nx, ny: run.ny, dx: run.dx, z: run.z, n: run.n, cn: run.cn, active: run.active, sea: run.sea, drain: drainOf(run), zone, ...(run.h0 ? { h0: run.h0 } : {}) }, zoneMm: ev?.mm, seaLevel: num("s-sea"), hours, rain: hy, frameS,
       inflowCells: inflows.map((f) => f.cell), inflowQ: inflows.map((f) => f.q), inflowDt: DT_S, floodM: FLOOD_M, count, preferGpu: gpuAvailable,
     };
     worker.postMessage(msg);

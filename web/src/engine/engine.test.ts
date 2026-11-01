@@ -19,6 +19,13 @@ describe("NRCS curve number", () => {
 });
 
 describe("flood engine v2 (CPU reference)", () => {
+  it("starts with the initial depth and counts it in the water balance", () => {
+    const g = grid(10, 10, 10, () => 0, { h0: new Float64Array(100).fill(0.2) });
+    const e = new FloodEngine(g);
+    expect(e.h[55]).toBeCloseTo(0.2, 9);
+    run(e, 300);
+    expect(Math.abs(e.massError())).toBeLessThan(1e-9);
+  });
   it("keeps a lake at rest", () => {
     const g = grid(20, 20, 10, (i) => 0.1 * i);
     const e = new FloodEngine(g);

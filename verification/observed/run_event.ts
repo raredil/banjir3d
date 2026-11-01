@@ -56,7 +56,7 @@ const inflows = inflowsForSpatial(pack.streams, run.isIn, (m) => cumOf[stPoint[m
 const drain = new Float64Array(N);
 for (let c = 0; c < N; c++) if (!run.channel[c] && !run.sea[c]) drain[c] = (drainMmH / 3.6e6) * run.built[c];
 
-const e = new FloodEngine({ nx: run.nx, ny: run.ny, dx: run.dx, z: run.z, n: run.n, cn: run.cn, active: run.active, sea: run.sea, zone, drain }, { inflowCells: inflows.map((f) => f.cell) });
+const e = new FloodEngine({ nx: run.nx, ny: run.ny, dx: run.dx, z: run.z, n: run.n, cn: run.cn, active: run.active, sea: run.sea, zone, drain, ...(run.h0 ? { h0: run.h0 } : {}) }, { inflowCells: inflows.map((f) => f.cell) });
 const w0 = Date.now();
 let nsteps = 0;
 while (e.t < hours * 3600) {

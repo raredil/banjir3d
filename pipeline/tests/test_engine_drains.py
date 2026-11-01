@@ -20,8 +20,9 @@ def test_carve_drains_area_equivalent_depth(tmp_path):
     g = gpd.GeoDataFrame({"width_m": [15.0], "depth_m": [4.0]}, geometry=[line], crs="EPSG:32748")
     p = tmp_path / "js.gpkg"
     g.to_file(p, layer="drain_primary_line", driver="GPKG")
-    out, chan, info = carve_drains(z, z.copy(), np.zeros((5, 5), bool), tr, p)
+    out, chan, h0, info = carve_drains(z, z.copy(), np.zeros((5, 5), bool), tr, p)
     assert np.allclose(out[2], 3.0 - 4.0 * 15 / 30)  # 2 m area-equivalent lowering
     assert chan[2].all() and not chan[0].any()
     assert info["cells_lowered"] == 5 and info["records"]["drain_primary_line"] == 1
-    assert carve_drains(z, z, chan, tr, None)[2] == {}
+    assert np.allclose(h0[2], 2.0) and h0[0].sum() == 0  # flat terrain: recorded surface = ground, carved part starts full
+    assert carve_drains(z, z, chan, tr, None)[3] == {}
