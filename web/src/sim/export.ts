@@ -120,8 +120,8 @@ export function htmlMap(title: string, png: { url: string; bounds: [[number, num
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"><script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <style>html,body,#m{height:100%;margin:0;font:13px system-ui,sans-serif}.box{background:#fff;padding:8px 10px;border-radius:8px;box-shadow:0 1px 6px #0003;max-width:320px}.box i{display:inline-block;width:12px;height:12px;margin-right:6px;border-radius:2px;vertical-align:-1px}.box h1{font-size:14px;margin:0 0 4px}.box p{margin:2px 0;color:#444}</style></head>
 <body><div id="m"></div><script>
-var m=L.map('m');L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'&copy; OpenStreetMap contributors'}).addTo(m);
-var b=${JSON.stringify(png.bounds)};var o=L.imageOverlay(${JSON.stringify(png.url)},b,{opacity:0.85}).addTo(m);m.fitBounds(b);L.control.scale({imperial:false}).addTo(m);
+var m=L.map('m');var sat=L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',{maxZoom:19,attribution:'Powered by Esri | Esri, Maxar, Earthstar Geographics, and the GIS User Community'}).addTo(m);var road=L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',{maxZoom:19,subdomains:'abcd',attribution:'&copy; OpenStreetMap contributors &copy; CARTO'});var lc=L.control.layers({'Citra satelit (Esri)':sat,'Peta jalan (CARTO / OSM)':road},{},{collapsed:false});
+var b=${JSON.stringify(png.bounds)};var o=L.imageOverlay(${JSON.stringify(png.url)},b,{opacity:0.85}).addTo(m);lc.addOverlay(o,'Kedalaman banjir');lc.addTo(m);m.fitBounds(b);L.control.scale({imperial:false}).addTo(m);
 var info=L.control({position:'topright'});info.onAdd=function(){var d=L.DomUtil.create('div','box');d.innerHTML=${JSON.stringify(`<h1>${escHtml(title)}</h1>${lines.map((l) => `<p>${escHtml(l)}</p>`).join("")}`)};return d};info.addTo(m);
 var lg=L.control({position:'bottomright'});lg.onAdd=function(){var d=L.DomUtil.create('div','box');d.innerHTML=${JSON.stringify(`<b>${escHtml(legendTitle)}</b>${leg}`)};return d};lg.addTo(m);
 </script></body></html>`;
@@ -141,7 +141,8 @@ export function mapPng(map: MlMap, title: string, sub: string, lines: string[], 
         c.strokeStyle = "#222"; c.lineWidth = 1 * dpr; c.strokeRect(pad, head, src.width, src.height);
         c.fillStyle = "#111"; c.font = `600 ${18 * dpr}px "IBM Plex Sans", sans-serif`; c.fillText(title, pad, 28 * dpr);
         c.fillStyle = "#444"; c.font = `${12.5 * dpr}px "IBM Plex Sans", sans-serif`; c.fillText(sub, pad, 48 * dpr);
-        // legend
+        // legend (flood depth classes; skipped for a plain map without a result)
+        if (legendTitle) {
         const lx = pad + 12 * dpr, ly = head + 12 * dpr, lw = 150 * dpr, lh = (26 + 5 * 17) * dpr;
         c.fillStyle = "rgba(255,255,255,.92)"; c.fillRect(lx, ly, lw, lh); c.strokeStyle = "#999"; c.strokeRect(lx, ly, lw, lh);
         c.fillStyle = "#111"; c.font = `600 ${11.5 * dpr}px "IBM Plex Sans", sans-serif`; c.fillText(legendTitle, lx + 8 * dpr, ly + 17 * dpr);
@@ -150,6 +151,7 @@ export function mapPng(map: MlMap, title: string, sub: string, lines: string[], 
           const y = ly + (26 + i * 17) * dpr;
           c.fillStyle = CLASS_COLORS[i]; c.fillRect(lx + 8 * dpr, y, 14 * dpr, 12 * dpr);
           c.fillStyle = "#222"; c.fillText(`${CLASSES[i]}${i < 4 ? `–${CLASSES[i + 1]}` : "+"} m`, lx + 28 * dpr, y + 10 * dpr);
+        }
         }
         // scale bar
         const lat = map.getCenter().lat, mpp = (40075016.686 * Math.cos((lat * Math.PI) / 180)) / (512 * 2 ** map.getZoom()) / dpr;

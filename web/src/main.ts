@@ -65,7 +65,13 @@ async function route() {
     const { renderMethods } = await import("./methods/page");
     renderMethods(doc);
   }
-  app.scrollTo(0, 0);
+  const focus = path === "data" || path === "catalog" ? q.get("d") : null;
+  const el = focus ? doc.querySelector<HTMLElement>(`#ds-${CSS.escape(focus)}`) : null;
+  if (el) { // "Sumber" link from a map layer: open that dataset's card, scroll to it and mark it
+    el.querySelector("details")?.setAttribute("open", "");
+    el.classList.add("hit");
+    requestAnimationFrame(() => el.scrollIntoView({ block: "start", behavior: "smooth" }));
+  } else app.scrollTo(0, 0);
 }
 
 function applyTheme(theme: string | null) {

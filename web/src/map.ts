@@ -197,6 +197,12 @@ export async function createMapPage(root: HTMLElement, ctx: MapCtx): Promise<Map
     if (cb.checked) order = [def.id, ...order.filter((x) => x !== def.id)]; // newly switched on: drawn on top
     refresh();
   }));
+  // the layer name toggles too (a bigger target than the checkbox); the "Sumber" link keeps its own job
+  el.querySelectorAll<HTMLElement>(".layer > span").forEach((sp) => sp.addEventListener("click", (ev) => {
+    if ((ev.target as HTMLElement).closest("a")) return;
+    const cb = sp.parentElement!.querySelector<HTMLInputElement>("[data-toggle]");
+    if (cb && !cb.disabled) cb.click();
+  }));
   el.querySelectorAll<HTMLInputElement>("[data-opacity]").forEach((r) => r.addEventListener("input", () => {
     const def = LAYERS.find((l) => l.id === r.dataset.opacity)!;
     def.opacity = Number(r.value);

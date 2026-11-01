@@ -12,9 +12,17 @@ import { exposureCells, exposureSums, loadExposure, type Exposure, type Exposure
 import { colourTiff, depthTiff, htmlMap, mapPng, mercatorPng, save, type Grid } from "./export";
 import type { OutMsg, RunMsg } from "./worker";
 import { esc, fromUtm } from "../util";
+import { exportLayer, exportable, type Scope } from "../layer-export";
+import { LAYERS } from "../layers";
 import calibration from "../../../data/engine/calibration.json";
 
-const FLOOD_M = 0.15; // flooded = deeper than the lower bound of the second depth class (BLUEPRINT §8)
+const FLOOD_M = 0.15;
+// number of DSDA primary/secondary drain sections carved into the pack (line records), for the conclusion text
+const dsdaFacts = (p: Pack): { dsdaDrains?: number } => {
+  const r = (p.header.drains as { records?: Record<string, number> } | undefined)?.records;
+  const n = r ? (r.drain_primary_line ?? 0) + (r.drain_secondary_line ?? 0) : 0;
+  return n ? { dsdaDrains: n } : {};
+}; // flooded = deeper than the lower bound of the second depth class (BLUEPRINT §8)
 // city-drain sink (m/s) per cell: calibrated capacity x built share, none on channels and sea; plus the polder pumps (Jakarta Satu
 // capacities spread over each polder, engine_pack.pump_rates) when switched on; undefined when there is no sink at all
 const drainOf = (run: RunGrid, pumps: boolean): Float64Array | undefined => {
@@ -217,10 +225,18 @@ export function mountSim(page: MapPage, o: { packUrl: string; regionBbox: number
     return f ? Float32Array.from(f, (v) => v / 100) : null;
   };
   const kpi = (k1: string, v: string, unit: string, sub: string) => `<div class="kpi card" title="${esc(sub)}"><div class="k">${esc(k1)}</div><div class="v">${v}<small>${unit}</small></div></div>`;
+  // depth range filter (legend card): only depths inside [fMin, fMax] are drawn, and their area is measured
+  let fMin = 0, fMax = Infinity;
   const render = () => {
     if (!res || !layer) return;
     const d = depthNow();
-    layer.setDepth(d);
+    const filtered = d && (fMin > 0 || fMax < Infinity);
+    layer.setDepth(filtered ? d!.map((v) => (v >= fMin && v <= fMax ? v : 0)) : d);
+    if (d) {
+      let n = 0;
+      for (let c = 0; c < d.length; c++) if (res.count[c] && d[c] > (fMin > 0 ? fMin : FLOOD_M) && d[c] <= fMax) n++; // no lower bound set: same 0.15 m as the KPI
+      $l("lg-area").textContent = t("lg.area", { km2: fmt((n * res.run.dx * res.run.dx) / 1e6, 2) });
+    }
     const g = res.run;
     let wet = 0, deep = 0;
     if (d) for (let c = 0; c < d.length; c++) if (res.count[c]) { if (d[c] > FLOOD_M) wet++; if (d[c] > deep) deep = d[c]; }
@@ -243,7 +259,21 @@ export function mountSim(page: MapPage, o: { packUrl: string; regionBbox: number
     el.innerHTML = `<table class="tbl"><thead><tr><th>${t("sim.expo.kec")}</th><th>${t("sim.expo.bld")}</th><th>${t("sim.expo.pop")}</th></tr></thead><tbody>${top.map((u) => `<tr><td>${esc(unitName(u.unit))}<small>${esc(u.unit.name ? u.unit.kota ?? "" : "")}</small></td><td>${fmt(u.buildings)}</td><td>${fmt(u.people)}</td></tr>`).join("")}</tbody></table>`
       + (ex.perUnit.length > top.length ? `<p class="help">${esc(t("sim.expo.more", { n: ex.perUnit.length - top.length }))}</p>` : "");
   };
-  page.legend.innerHTML = `<b>${t("legend")}</b><ul class="legend">${CLASS_COLORS.slice(0, 5).map((c, i) => `<li><span class="swatch" style="background:${c}"></span>${CLASSES[i]}${i < 4 ? `–${CLASSES[i + 1]}` : "+"} m</li>`).join("")}</ul>`;
+  page.legend.innerHTML = `<b>${t("legend")}</b><ul class="legend lg-pick">${CLASS_COLORS.slice(0, 5).map((c, i) => `<li><button type="button" data-lo="${CLASSES[i]}" data-hi="${i < 4 ? CLASSES[i + 1] : ""}" title="${t("lg.pick")}"><span class="swatch" style="background:${c}"></span>${CLASSES[i]}${i < 4 ? `–${CLASSES[i + 1]}` : "+"} m</button></li>`).join("")}</ul>
+    <div class="lg-range"><span>${t("lg.range")}</span><input type="number" id="lg-min" min="0" max="20" step="0.05" value="" placeholder="0" aria-label="min (m)"> – <input type="number" id="lg-max" min="0" max="20" step="0.05" value="" placeholder="∞" aria-label="max (m)"> m <button type="button" class="btn small" id="lg-reset">${t("lg.reset")}</button></div>
+    <div class="lg-area" id="lg-area"></div>`;
+  const $l = (id: string) => page.legend.querySelector<HTMLInputElement>(`#${id}`)!;
+  const setRange = (lo: string, hi: string) => {
+    $l("lg-min").value = lo; $l("lg-max").value = hi;
+    const a = parseFloat(lo), b = parseFloat(hi);
+    fMin = Number.isFinite(a) && a > 0 ? a : 0; fMax = Number.isFinite(b) && b > 0 ? b : Infinity;
+    if (fMax < fMin) [fMin, fMax] = [fMax, fMin];
+    page.legend.querySelectorAll<HTMLButtonElement>("[data-lo]").forEach((x) => x.classList.toggle("on", fMin > 0 || fMax < Infinity ? x.dataset.lo === lo && x.dataset.hi === hi : false));
+    render();
+  };
+  page.legend.querySelectorAll<HTMLButtonElement>("[data-lo]").forEach((b) => b.addEventListener("click", () => (b.classList.contains("on") ? setRange("", "") : setRange(b.dataset.lo!, b.dataset.hi!))));
+  for (const id of ["lg-min", "lg-max"]) $l(id).addEventListener("change", () => setRange($l("lg-min").value, $l("lg-max").value));
+  $l("lg-reset").addEventListener("click", () => setRange("", ""));
   page.timeline.innerHTML = `
     <div class="tl-row"><button class="btn small" id="t-play" type="button">▶</button><input type="range" id="t-frame" min="0" max="0" value="0" aria-label="${t("kpi.time")}"><output id="t-out"></output>
       <div class="seg" id="t-show"><button type="button" class="on" data-m="now">${t("sim.show.now")}</button><button type="button" data-m="max">${t("sim.show.max")}</button></div></div>
@@ -277,7 +307,12 @@ export function mountSim(page: MapPage, o: { packUrl: string; regionBbox: number
 
   // ---------- export menu ----------
   page.tools.innerHTML = `<div style="position:relative"><button class="btn" id="x-btn" type="button"><svg viewBox="0 0 24 24"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg>${t("exp.btn")}</button>
-    <div class="menu card" id="x-menu" hidden>${(["tif", "ctif", "html", "png", "csv", "json"] as const).map((x) => `<button type="button" data-x="${x}"><b>${t(`exp.${x}` as Key)}</b><small>${t(`exp.${x}.h` as Key)}</small></button>`).join("")}<p class="help" id="x-which" style="padding:4px 10px"></p></div></div>`;
+    <div class="menu card" id="x-menu" hidden>${(["tif", "ctif", "html", "png", "csv", "json"] as const).map((x) => `<button type="button" data-x="${x}"><b>${t(`exp.${x}` as Key)}</b><small>${t(`exp.${x}.h` as Key)}</small></button>`).join("")}<p class="help" id="x-which" style="padding:4px 10px"></p>
+      <div class="x-data"><b>${t("xd.title")}</b>
+        <select id="xd-layer" aria-label="${t("xd.layer")}">${exportable().map((l) => `<option value="${esc(l.id)}">${esc(l.name[lang])}${l.dl!.file ? ` (${t("xd.whole")})` : ""}</option>`).join("")}</select>
+        <div class="seg" id="xd-scope"><button type="button" data-s="all" class="on">${t("xd.all")}</button><button type="button" data-s="view">${t("xd.view")}</button><button type="button" data-s="box">${t("xd.box")}</button></div>
+        <div class="row"><button type="button" class="btn small primary" id="xd-go">${t("xd.go")}</button><button type="button" class="btn small" id="xd-png">${t("xd.png")}</button></div>
+        <p class="help" id="xd-msg"></p></div></div></div>`;
   const menu = page.tools.querySelector<HTMLElement>("#x-menu")!;
   page.tools.querySelector("#x-btn")!.addEventListener("click", () => { menu.hidden = !menu.hidden; page.tools.querySelector("#x-which")!.textContent = res ? t("exp.which", { w: showMax ? t("sim.show.max") : `${t("sim.show.now")} (${fmtT(res.times[frame] ?? 0)})` }) : t("exp.none"); });
   const stamp = () => new Date().toISOString().replace(/[-:]/g, "").slice(0, 13);
@@ -304,8 +339,34 @@ export function mountSim(page: MapPage, o: { packUrl: string; regionBbox: number
     inflows: res!.inflows.map((f) => ({ catchment_km2: +f.areaKm2.toFixed(2), cn: +f.cn.toFixed(1), lag_h: +f.lagH.toFixed(2), peak_m3s: +Math.max(...f.q).toFixed(1), x_m: f.x, y_m: f.y })),
     totals_m3: res!.totals, mass_error: res!.mass, flooded_km2_series: res!.times.map((tt, i) => [tt, +res!.area[i].toFixed(3)]),
     drain_mm_h: calibration.drain_mm_h,
-    limitations: ["City drains: calibrated capacity " + calibration.drain_mm_h + " mm/h (1 Jan 2020 flood with IMERG rain, Validation page); no pumps or sea walls.", "Below-water channel shape not in the DEM; channels start at their mapped water level.", res!.event ? "Rain: GPM IMERG 0.1 degree hourly per point (nearest point per cell and per upstream catchment); satellites smooth local peaks (Halim gauge 377 mm/day vs 166 mm in its IMERG cell, 1 Jan 2020)." : "Upstream rain is spatially uniform and equal to the scenario rain when switched on.", "Checked on three observed floods at report points (about 80 % hit); modelled depths shallower than reported (Validation page)."],
+    limitations: ["City drains: calibrated capacity " + calibration.drain_mm_h + " mm/h (1 Jan 2020 flood with IMERG rain, Validation page); polder pumps " + (res!.scenario.polderPumps ? "on (lower bound)" : res!.run.pump ? "switched off" : "not in this pack") + "; no sea walls.", "Below-water channel shape not in the DEM; channels start at their mapped water level.", res!.event ? "Rain: GPM IMERG 0.1 degree hourly per point (nearest point per cell and per upstream catchment); satellites smooth local peaks (Halim gauge 377 mm/day vs 166 mm in its IMERG cell, 1 Jan 2020)." : "Upstream rain is spatially uniform and equal to the scenario rain when switched on.", "Checked on three observed floods at report points (about 80 % hit); modelled depths shallower than reported (Validation page)."],
     licence: "CC BY-NC-SA 4.0 (most restrictive input: FABDEM)",
+  });
+  // map data export: whole dataset, area on screen, or the drawn box
+  let xScope: Scope = "all";
+  const xmsg = (m: string) => { menu.querySelector("#xd-msg")!.textContent = m; };
+  menu.querySelectorAll<HTMLButtonElement>("#xd-scope button").forEach((b) => b.addEventListener("click", () => {
+    xScope = b.dataset.s as Scope; menu.querySelectorAll("#xd-scope button").forEach((x) => x.classList.toggle("on", x === b));
+    const def = LAYERS.find((l) => l.id === menu.querySelector<HTMLSelectElement>("#xd-layer")!.value)!;
+    xmsg(def.dl!.file && xScope !== "all" ? t("xd.rasterall") : xScope === "box" && !bbox ? t("xd.nobox") : "");
+  }));
+  menu.querySelector("#xd-layer")!.addEventListener("change", () => menu.querySelector<HTMLButtonElement>(`#xd-scope [data-s="${xScope}"]`)!.click());
+  menu.querySelector("#xd-go")!.addEventListener("click", async () => {
+    const def = LAYERS.find((l) => l.id === menu.querySelector<HTMLSelectElement>("#xd-layer")!.value)!;
+    const b = map.getBounds(), area = xScope === "view" ? [b.getWest(), b.getSouth(), b.getEast(), b.getNorth()] : xScope === "box" ? bbox : null;
+    if (xScope === "box" && !bbox) { xmsg(t("xd.nobox")); return; }
+    xmsg(t("xd.busy"));
+    try {
+      const r = await exportLayer(def, def.dl!.file ? "all" : xScope, area, o.packUrl.replace(/\/[^/]*$/, ""), o.releaseTag);
+      if (r.url) { window.open(r.url, "_blank", "noopener"); xmsg(t("xd.file", { f: r.name })); return; }
+      save(r.name, r.blob!, "application/geo+json");
+      xmsg(t("xd.done", { n: fmt(r.n ?? 0), total: fmt(r.total ?? 0) }));
+    } catch (e) { xmsg(t("sim.err", { m: String(e) })); }
+  });
+  menu.querySelector("#xd-png")!.addEventListener("click", async () => {
+    const on = LAYERS.filter((l) => l.visible).map((l) => l.name[lang]);
+    const attrib = [...new Set(LAYERS.filter((l) => l.visible).map((l) => l.title))].join("; ");
+    save(`banjir3d_peta_${stamp()}.png`, await mapPng(map, `Banjir3D: ${t("region")}`, `${t("lyr.title")}: ${on.join(", ")}`, [attrib.slice(0, 230), `CRS WGS 84 / Web Mercator. ${new Date().toISOString().slice(0, 10)}`], ""), "image/png");
   });
   menu.querySelectorAll<HTMLButtonElement>("[data-x]").forEach((b) => b.addEventListener("click", async () => {
     menu.hidden = true;
@@ -370,7 +431,7 @@ export function mountSim(page: MapPage, o: { packUrl: string; regionBbox: number
     const box2 = (r.scenario.area as { box?: number[] }).box ?? null, [wKm, hKm] = box2 ? kmOf(box2) : [0, 0];
     const facts: Facts = {
       area: { box: box2, wKm, hKm }, landKm2: land * a, cellM: g.dx, hours: r.scenario.hours as number, gpu: !!r.gpu, landcoverYear: pack.header.landcover_year, ...(r.scenario.terrainYear ? { terrainYear: r.scenario.terrainYear as number, subEpoch: r.scenario.terrainEpoch as number } : {}),
-      drainMmH: calibration.drain_mm_h, dsdaDrains: !!pack.header.drains, ...(r.scenario.polderPumps ? { pumpsM3s: r.scenario.pumpM3s as number } : r.run.pump ? { pumpsOff: true } : {}), seaM: r.scenario.seaLevel as number, floodM: FLOOD_M, rain,
+      drainMmH: calibration.drain_mm_h, ...dsdaFacts(pack), ...(r.scenario.polderPumps ? { pumpsM3s: r.scenario.pumpM3s as number, pumpPolders: (pack.header.pumps as { polders_served?: number } | undefined)?.polders_served } : r.run.pump ? { pumpsOff: true } : {}), seaM: r.scenario.seaLevel as number, floodM: FLOOD_M, rain,
       upstream: r.inflows.length ? { n: r.inflows.length, peakM3s: peakInflow(), areaKm2: r.inflows.reduce((s2, f) => s2 + f.areaKm2, 0) } : null,
       env: { km2: wet * a, classesKm2: cls.map((v) => v * a), meanDepth: wet ? sum / wet : 0, maxDepth: dMax, deepest },
       peak: { km2: r.area[pk] ?? 0, tSec: r.times[pk] ?? 0 }, endKm2: r.area[r.area.length - 1] ?? 0, massError: r.mass ?? 0,
