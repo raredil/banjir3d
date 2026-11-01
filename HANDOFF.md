@@ -58,6 +58,7 @@ docs/adr/0011-observed-flood-mode-exposure.md (event mode, rain sensitivity not 
 2026-10-30: no new dependencies; CSP unchanged (engine pack same-origin; exported HTML loads Leaflet/OSM from CDN only inside the downloaded file). New inputs: `#/sim?box=` (numbers, clipped to region), hourly rain (existing strict parser). npm audit not re-run this session (no dependency change).
 
 ## Next steps (ordered, specific, file paths)
+Owner's improvement options (2026-11-01, owner picks which; friend's critique: drains, old method/maps): A) Jakarta Satu geoportal (jakartasatu.jakarta.go.id, AWLR map: DAS, primary drains, AWLR gauges) via an Action: test if ArcGIS REST is public; carve primary drains, AWLR water levels for validation. B) Subsidence correction of FABDEM (catalog `jakarta-subsidence-sinking-city`). C) Sentinel-1 flood extent for the 3 events as a validation layer. D) Terrain-edit scenarios (walls, retention ponds, channels) like SCALGO Live. Also check IO LULC 2025.
 Owner's one-session list (1, 2, 4) is done. Remaining, in order (owner may reprioritise):
 1. BACKLOG: SFINCS re-run with engine v2 (Action) and EA benchmarks 1, 2, 4.
 2. Depth shortfall: test a sub-cell rain correction only if a gauge network becomes available (BMKG data is not open); otherwise leave as a stated limitation.
