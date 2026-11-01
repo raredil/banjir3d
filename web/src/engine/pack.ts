@@ -12,11 +12,14 @@ export type Pack = {
   header: PackHeader; nx: number; ny: number; dx: number; ox: number; oy: number; zone: number;
   z: Float32Array; n: Float32Array; cn: Uint8Array; flags: Uint8Array; streams: Streams;
   built: Uint8Array | null; // built-area share (%) per cell; packs before 2026-10-31 do not have it
+  subs: Int16Array | null; // land-subsidence rate, 0.1 mm/yr downward (SUBS_NODATA outside the mapped area); packs before 2026-11-01 do not have it
 };
+export const SUBS_NODATA = -32768;
+export type SubsidenceInfo = { epoch_year: number; epoch_range: [number, number]; source: string; rate_years: [number, number]; [k: string]: unknown };
 export const CHANNEL = 1, SEA = 2, DOMAIN = 4;
 
 const VIEW: Record<string, (b: ArrayBuffer, o: number, n: number) => ArrayLike<number>> = {
-  uint8: (b, o, n) => new Uint8Array(b, o, n), uint16: (b, o, n) => new Uint16Array(b, o, n), uint32: (b, o, n) => new Uint32Array(b, o, n),
+  uint8: (b, o, n) => new Uint8Array(b, o, n), int16: (b, o, n) => new Int16Array(b, o, n), uint16: (b, o, n) => new Uint16Array(b, o, n), uint32: (b, o, n) => new Uint32Array(b, o, n),
   int32: (b, o, n) => new Int32Array(b, o, n), float32: (b, o, n) => new Float32Array(b, o, n),
 };
 
@@ -39,8 +42,28 @@ export function parsePack(buf: ArrayBuffer): Pack {
   const n = Float32Array.from(a.n as Uint8Array, (v) => v / 1000);
   return {
     header, nx, ny, dx, ox: origin[0], oy: origin[1], zone, z, n, cn: a.cn as Uint8Array, flags: a.flags as Uint8Array, built: (a.built as Uint8Array) ?? null,
+    subs: (a.subs as Int16Array) ?? null,
     streams: { x: a.st_x as Float32Array, y: a.st_y as Float32Array, down: a.st_down as Int32Array, area: a.st_area_km2 as Float32Array, cn: a.st_cn as Float32Array, slope: a.st_slope_pct as Float32Array, len: a.st_length_m as Float32Array },
   };
+}
+
+/** Subsidence record of the pack (null when the pack has no rate grid). */
+export const subsidenceOf = (p: Pack): SubsidenceInfo | null => (p.subs ? ((p.header.subsidence as SubsidenceInfo | undefined) ?? null) : null);
+
+/** Terrain shifted from the DEM epoch to `year` with the mapped subsidence rate (constant rate; no shift outside the mapped area).
+ *  Returns the pack with the shifted elevations and the largest lowering (m). Years before the epoch raise the ground. */
+export function terrainAt(p: Pack, year: number): { pack: Pack; maxDrop: number } {
+  const info = subsidenceOf(p);
+  if (!info || !p.subs || !Number.isFinite(year) || year === info.epoch_year) return { pack: p, maxDrop: 0 };
+  const dt = year - info.epoch_year, z = new Float32Array(p.z.length);
+  let maxDrop = 0;
+  for (let c = 0; c < z.length; c++) {
+    const r = p.subs[c];
+    const d = r === SUBS_NODATA ? 0 : (r / 10000) * dt; // 0.1 mm/yr -> m/yr
+    z[c] = p.z[c] - d;
+    if (d > maxDrop) maxDrop = d;
+  }
+  return { pack: { ...p, z }, maxDrop };
 }
 
 /** Fetch a .bin.gz pack: some servers send it with Content-Encoding (the browser already unpacked it), others as a plain file. */
