@@ -11,16 +11,12 @@ on:
 permissions:
   contents: read
 
-concurrency:
-  group: terrain-probe-${{ github.ref }}
-  cancel-in-progress: true
-
 jobs:
   probe:
     strategy:
       fail-fast: false
       matrix:
-        part: [zenodo]
+        part: [zenodo, jakarta_satu]
     runs-on: ubuntu-24.04
     timeout-minutes: 40
     permissions:
