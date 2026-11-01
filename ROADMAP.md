@@ -1,5 +1,5 @@
 # ROADMAP
-**Current position: Phase 4 validation done for three observed floods (ADR 0010/0011). 2026-11-01: terrain upgrade (ADR 0013): InSAR land subsidence shifts the terrain to the run date, Jakarta Satu (DSDA) drains carved with width/depth, DEMNAS 8 m public as map layer. Next: validate the new pack on the 3 floods incl. DSDA flood polygons per RT, then pumps/polders. Owner options open: C (Sentinel-1 flood extent), D (terrain-edit scenarios).**
+**Current position: Phase 4 validation done for three observed floods (ADR 0010/0011). 2026-11-01: terrain upgrade (ADR 0013): InSAR land subsidence shifts the terrain to the run date, Jakarta Satu (DSDA) drains carved with width/depth, DEMNAS 8 m public as map layer. 2026-11-01 (17th): Jakarta Satu + PetaBencana published as map layers (ADR 0014), polder pumps in the engine, new pack validated (depth better, 2020 drier), map UI (active-layers card, hidden rail). Next: pump validation, 2020 dryness. Owner options open: C (Sentinel-1 flood extent), D (terrain-edit scenarios).**
 
 | Phase | Work | Gate (owner sees) | Status |
 |---|---|---|---|
