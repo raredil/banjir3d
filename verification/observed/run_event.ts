@@ -1,9 +1,9 @@
 // Run engine v2 (CPU reference) on an observed event: hourly rain per 0.1 degree reanalysis cell (fetch.py), each catchment with
 // its own rain, and the city-drain sink on built-up cells. Usage (from web/):
 //   npx vite-node ../verification/observed/run_event.ts <engine.bin.gz> <rain_era5_land.json> <start UTC> <hours> <outdir>
-//       [--k 3] [--drain 0] [--scale 1] [--box W,S,E,N]
+//       [--k 3] [--drain 0] [--scale 1] [--box W,S,E,N] [--year auto|none|<decimal year>]
 // --drain: drainage capacity (mm/h) on a fully built cell, scaled by the built-area share; 0 on channels and sea.
-// --scale: rain multiplier (1 = reanalysis as it is). Writes hmax.f32 (row-major, run grid), mask.u8 and summary.json.
+// --year: terrain year for the land subsidence shift (auto = event start; none = terrain as measured). --scale: rain multiplier (1 = reanalysis as it is). Writes hmax.f32 (row-major, run grid), mask.u8 and summary.json.
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { gunzipSync } from "node:zlib";
 import { buildRun, parsePack } from "../../web/src/engine/pack";
@@ -19,7 +19,10 @@ mkdirSync(out, { recursive: true });
 const raw = gunzipSync(readFileSync(packFile));
 const pack = parsePack(raw.buffer.slice(raw.byteOffset, raw.byteOffset + raw.byteLength));
 const box = opt("box", "") ? opt("box", "").split(",").map(Number) : null;
-const run = buildRun(pack, box, k);
+const yOpt = opt("year", "auto");
+const decYear = (ms: number) => { const y = new Date(ms).getUTCFullYear(), a0 = Date.UTC(y, 0, 1); return y + (ms - a0) / (Date.UTC(y + 1, 0, 1) - a0); };
+const terrainYear = yOpt === "none" || !pack.sub ? undefined : yOpt === "auto" ? decYear(Date.parse(startUtc)) : Number(yOpt);
+const run = buildRun(pack, box, k, terrainYear);
 
 // hourly rain per point; value at time T is the rain of the hour ending at T
 type Pt = { lon: number; lat: number; time: string[]; mm: (number | null)[] };
@@ -69,7 +72,7 @@ writeFileSync(`${out}/mask.u8`, Uint8Array.from({ length: N }, (_, c) => run.act
 let wet = 0, cnt = 0, rainSum = 0;
 for (let c = 0; c < N; c++) if (run.active[c] && !run.sea[c]) { cnt++; rainSum += cumOf[zone[c]][steps]; if (!run.channel[c] && e.hMax[c] > 0.15) wet++; }
 const summary = {
-  pack: pack.header.created, rain: rainFile.split("/").pop(), start_utc: startUtc, hours, k, dx: run.dx, nx: run.nx, ny: run.ny, drain_mm_h: drainMmH, rain_scale: scale,
+  pack: pack.header.created, rain: rainFile.split("/").pop(), start_utc: startUtc, hours, k, dx: run.dx, nx: run.nx, ny: run.ny, drain_mm_h: drainMmH, rain_scale: scale, terrain_year: terrainYear ?? null, terrain_epoch: pack.sub ? pack.subEpoch : null,
   steps: nsteps, wall_s: (Date.now() - w0) / 1000, massError: e.massError(), totals: e.totals, built_share_known: !!pack.built,
   mean_rain_mm: rainSum / cnt, flooded_km2_gt015_outside_channels: (wet * run.dx * run.dx) / 1e6, utm: run.utm, corners: run.corners,
   inflows: inflows.slice(0, 12).map((f) => ({ areaKm2: +f.areaKm2.toFixed(1), rainMm: +f.rainMm.toFixed(1), peakQ: +Math.max(...f.q).toFixed(1), x: f.x, y: f.y })),
