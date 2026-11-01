@@ -29,7 +29,7 @@ session.headers.update(UA)
 
 def get(url, **kw):
     try:
-        r = session.get(url, timeout=kw.pop("timeout", 40), **kw)
+        r = session.get(url, timeout=kw.pop("timeout", (10, 25)), **kw)
         return r
     except Exception as e:  # network facts are the result here
         return e
@@ -94,7 +94,7 @@ def walk_arcgis(root, budget):
 
 
 def jakarta_satu():
-    budget = [400]
+    budget = [250]
     for page in JS_PAGES:
         r = get(page)
         if isinstance(r, Exception):
@@ -278,8 +278,11 @@ def demnas(work: Path, pack: Path):
 
 def main():
     work, pack = Path(sys.argv[1]), Path(sys.argv[2])
+    only = sys.argv[3] if len(sys.argv) > 3 else "all"
     work.mkdir(parents=True, exist_ok=True)
     for name, fn in (("jakarta_satu", jakarta_satu), ("zenodo", lambda: zenodo(work)), ("demnas", lambda: demnas(work, pack))):
+        if only not in ("all", name):
+            continue
         try:
             fn()
         except Exception as e:

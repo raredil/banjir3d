@@ -17,8 +17,12 @@ concurrency:
 
 jobs:
   probe:
+    strategy:
+      fail-fast: false
+      matrix:
+        part: [jakarta_satu, zenodo, demnas]
     runs-on: ubuntu-24.04
-    timeout-minutes: 45
+    timeout-minutes: 40
     permissions:
       contents: write   # listing draft releases (DEMNAS) needs push-level access; nothing is written
     steps:
@@ -42,4 +46,4 @@ jobs:
       - name: Probe
         env:
           GITHUB_TOKEN: ${{ github.token }}
-        run: python verification/terrain/probe.py "$RUNNER_TEMP/work" "$RUNNER_TEMP/pack"
+        run: python verification/terrain/probe.py "$RUNNER_TEMP/work" "$RUNNER_TEMP/pack" "${{ matrix.part }}"
