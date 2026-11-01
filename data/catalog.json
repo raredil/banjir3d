@@ -12,9 +12,10 @@
       "doi": null,
       "url": "https://tanahair.indonesia.go.id",
       "licence": {
-        "id": "BIG terms (not yet read)",
+        "id": "BIG terms (owner confirmed use is allowed, 2026-11-01; text not yet stored)",
         "redistributable": "unknown",
-        "attribution": "DEMNAS © Badan Informasi Geospasial"
+        "attribution": "DEMNAS © Badan Informasi Geospasial",
+        "use_allowed": true
       },
       "resolution": "0.27 arc-second (~8 m)",
       "crs": "EPSG:4326",
@@ -30,7 +31,7 @@
       "status": "verified",
       "checked": "2026-10-24",
       "in_region_pack": false,
-      "notes": "Format verified 2026-10-24 from BIG's own DEMNAS description (sent by the owner: 0.27 arc-second, EGM2008, geographic, GeoTIFF float32; files DEMNAS_xxxx-yy-v1.0.tif per RBI 1:50k sheet, xxxx-yyy for 1:25k) and from the owner's upload (25 sheets; 6 inside the Jakarta domain, mosaicked by demnas.yml). Licence still unverified: kept out of the public site. DSM/DTM behaviour in dense urban areas to be compared with FABDEM in Phase 2. Tile list: data/demnas/jakarta_tiles.json."
+      "notes": "Format verified 2026-10-24 from BIG's own DEMNAS description (sent by the owner: 0.27 arc-second, EGM2008, geographic, GeoTIFF float32; files DEMNAS_xxxx-yy-v1.0.tif per RBI 1:50k sheet, xxxx-yyy for 1:25k) and from the owner's upload (25 sheets; 6 inside the Jakarta domain, mosaicked by demnas.yml). Licence still unverified: kept out of the public site. DSM/DTM behaviour in dense urban areas to be compared with FABDEM in Phase 2. Tile list: data/demnas/jakarta_tiles.json. 2026-11-01: owner confirmed the BIG licence allows use. Redistribution (public release of tiles) waits for the licence text; derived products may use it."
     },
     {
       "id": "fabdem",
