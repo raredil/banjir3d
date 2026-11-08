@@ -1,10 +1,10 @@
 // Exports of a simulation result: GeoTIFF (depth in metres or coloured), a self-contained HTML map, a PNG map figure and the
 // provenance record. GeoTIFFs are in the model grid (WGS 84 / UTM 48S, EPSG:32748) and open directly in QGIS or ArcGIS.
 import type { Map as MlMap } from "maplibre-gl";
-import { CLASSES, CLASS_COLORS, downscale } from "./flood-layer";
+import { CLASSES, CLASS_COLORS, downscale, type FloodGeom } from "./flood-layer";
 import { fromUtm, toUtm } from "../util";
 
-export type Grid = { nx: number; ny: number; dx: number; zone: number; x0: number; y0: number; z: Float32Array; mask: Uint8Array };
+export type Grid = FloodGeom; // model grid: cells, UTM corner, ground, draw mask (and the fine grid of dual-grid runs)
 
 export function save(name: string, data: BlobPart, type: string) {
   const a = document.createElement("a");
@@ -87,8 +87,8 @@ export function colourTiff(g: Grid, d: Float32Array, f = 3): Uint8Array<ArrayBuf
 }
 
 /** Web-Mercator-aligned transparent PNG of the depth classes and its lon/lat bounds (for the HTML map). */
-export async function mercatorPng(g: Grid, d: Float32Array, maxW = 2400): Promise<{ url: string; bounds: [[number, number], [number, number]] }> {
-  const f = 2, fine = downscale(g, g.z, d, g.mask, f), FW = g.nx * f, FH = g.ny * f, fdx = g.dx / f;
+export async function mercatorPng(g: Grid, d: Float32Array, maxW = 2400, f = 2): Promise<{ url: string; bounds: [[number, number], [number, number]] }> {
+  const fine = downscale(g, g.z, d, g.mask, f), FW = g.nx * f, FH = g.ny * f, fdx = g.dx / f;
   const cs = [[0, 0], [1, 0], [1, 1], [0, 1]].map(([u, v]) => fromUtm(g.x0 + u * g.nx * g.dx, g.y0 - v * g.ny * g.dx, g.zone, true));
   const W0 = Math.min(...cs.map((c) => c.lon)), E0 = Math.max(...cs.map((c) => c.lon)), S0 = Math.min(...cs.map((c) => c.lat)), N0 = Math.max(...cs.map((c) => c.lat));
   const my = (lat: number) => Math.log(Math.tan(Math.PI / 4 + (lat * Math.PI) / 360));

@@ -129,3 +129,40 @@ describe("upstream hydrology", () => {
     expect(g.lat).toBeCloseTo(-6.2088, 7);
   });
 });
+
+describe("building porosity (dual-grid fine runs)", () => {
+  const mk = (por: boolean) => {
+    const nx = 16, ny = 12, N = nx * ny, g = grid(nx, ny, 10, (i, j) => 0.02 * i + 0.01 * j, { cn: new Float64Array(N).fill(90) });
+    if (por) {
+      const phi = new Float64Array(N), psiX = new Float64Array(N), psiY = new Float64Array(N), rainW = new Float64Array(N);
+      for (let c = 0; c < N; c++) { phi[c] = 0.3 + 0.7 * ((c * 7919) % 13) / 12; psiX[c] = 0.2 + 0.8 * ((c * 104729) % 11) / 10; psiY[c] = 0.5; rainW[c] = c % 2 ? 1.2 : 0.8; }
+      Object.assign(g, { phi, psiX, psiY, rainW });
+    }
+    return g;
+  };
+  it("equals the plain engine when every share is one", () => {
+    const g = mk(false), N = g.nx * g.ny;
+    const a = new FloodEngine(g, { inflowCells: [40] });
+    const b = new FloodEngine({ ...g, phi: new Float64Array(N).fill(1), psiX: new Float64Array(N).fill(1), psiY: new Float64Array(N).fill(1), rainW: new Float64Array(N).fill(1) }, { inflowCells: [40] });
+    for (const e of [a, b]) { e.rate = 80; e.inflows = [2]; run(e, 1800); }
+    let d = 0;
+    for (let c = 0; c < N; c++) d = Math.max(d, Math.abs(a.h[c] - b.h[c]));
+    expect(d).toBe(0);
+  });
+  it("conserves mass with storage and face shares, roof rain routing, inflow and open edges", () => {
+    const e = new FloodEngine(mk(true), { inflowCells: [40] });
+    e.rate = 80; e.inflows = [2];
+    run(e, 1800); e.rate = 0; e.inflows = [0]; run(e, 3600);
+    expect(Math.abs(e.massError())).toBeLessThan(1e-9);
+    expect(e.totals.outflow).toBeGreaterThan(0);
+    for (let c = 0; c < e.h.length; c++) expect(e.h[c]).toBeGreaterThanOrEqual(0);
+  });
+  it("blocks flow across a closed face", () => {
+    const nx = 10, ny = 1, N = nx, g = grid(nx, ny, 10, () => 0);
+    const psiX = new Float64Array(N).fill(1); psiX[4] = 0; g.psiX = psiX; g.phi = new Float64Array(N).fill(1);
+    const e = new FloodEngine(g);
+    for (let c = 0; c < 5; c++) e.h[c] = 1;
+    run(e, 600);
+    for (let c = 5; c < N; c++) expect(e.h[c]).toBe(0);
+  });
+});

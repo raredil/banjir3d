@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { BUILDING_RAISE_M, buildFineRun, buildRun, packCellOf, sinkM, CHANNEL, DOMAIN, type Pack } from "./pack";
+import { BUILDING_RAISE_M, buildDualRun, buildFineRun, buildRun, fineGround, packCellOf, sinkM, CHANNEL, DOMAIN, type Pack } from "./pack";
 import { fromUtm } from "../util";
 
 // 2 x 1 pack: one cell sinking 50 mm/year, one stable; terrain measured in 2013
@@ -60,5 +60,42 @@ describe("fine run grid (cells below 30 m)", () => {
     const g = buildFineRun(q, box, 3);
     for (const c of [3, 4, 5, 9, 10, 11, 15, 16, 17]) expect(g.z[c]).toBeCloseTo(-1, 6);
     expect(g.z[2]).toBeCloseTo(2, 6); // land next to the channel is not pulled down by it
+  });
+});
+
+describe("dual-grid run (porosity compute cells, fine result cells)", () => {
+  // 2 x 1 pack, fine r = 6 (5 m, 12 x 6 cells), compute rc = 2 (15 m, 4 x 2 cells): one fine column of buildings across
+  // the whole height at fine column 4 (inside compute column 1), and fine column 7 half blocked
+  const p = pack(null); p.z = Float32Array.from([2, 4]);
+  const box = (() => { const a = fromUtm(700000, 9300000, 48, true), b = fromUtm(700060, 9299970, 48, true); return [a.lon + 1e-7, b.lat + 1e-7, b.lon - 1e-7, a.lat - 1e-7]; })();
+  const bld = new Uint8Array(12 * 6);
+  for (let J = 0; J < 6; J++) bld[J * 12 + 4] = 1;
+  for (let J = 0; J < 3; J++) bld[J * 12 + 7] = 1;
+  const g = buildDualRun(p, box, 6, 2, undefined, bld);
+  it("keeps the fine grid and the coarser compute grid", () => {
+    expect([g.nx, g.ny, g.dx, g.r]).toEqual([4, 2, 15, 2]);
+    expect([g.fine!.nx, g.fine!.ny, g.fine!.dx, g.fine!.s]).toEqual([12, 6, 5, 3]);
+    expect(Array.from(g.fine!.building)).toEqual(Array.from(bld));
+  });
+  it("stores water on the open share and blocks a closed row of buildings", () => {
+    expect(g.phi![1]).toBeCloseTo(6 / 9, 6); // compute cell (1, 0): fine columns 3-5, one of them all building
+    expect(g.phi![0]).toBe(1);
+    expect(g.psiX![0]).toBe(0); // centre of cell 0 to centre of cell 1 crosses the closed column 4
+    expect(g.psiX![1]).toBe(0); // cell 1 centre (column 4) is itself all building
+    expect(g.psiX![2]).toBe(0); // band 0 (rows 0-2): column 7 between the centres is closed
+    expect(g.psiX![6]).toBe(1); // band 1 (rows 3-5): columns 7-10 all open
+    expect(g.psiX![5]).toBe(0); // band 1, centre column 4 closed
+  });
+  it("grounds fine cells like the building-block grid", () => {
+    const f = buildFineRun(p, box, 6);
+    for (let J = 0; J < 6; J++) for (let I = 0; I < 12; I++) expect(fineGround(g.fine!.base, 6, I, J)).toBeCloseTo(f.z[J * 12 + I], 9);
+  });
+  it("hands roof rain of a closed cell to open neighbours, total rain area kept", () => {
+    const all = new Uint8Array(12 * 6); for (let J = 0; J < 3; J++) for (let I = 0; I < 3; I++) all[J * 12 + I] = 1; // compute cell 0 all roof
+    const h = buildDualRun(p, box, 6, 2, undefined, all);
+    expect(h.phi![0]).toBe(0);
+    expect(h.rainW![0]).toBe(0);
+    expect(Array.from(h.rainW!).reduce((a, b) => a + b, 0)).toBeCloseTo(8, 5);
+    expect(h.cellAt(15, 15)).not.toBe(0); // inflow never lands on a closed cell
   });
 });

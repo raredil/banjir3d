@@ -1,7 +1,7 @@
 // Flood engine v2 on WebGPU: the same steps as solver.ts (CPU reference), one compute pass per step stage, float32.
 // Verified against the CPU solver on real terrain (verification/gpu-parity). Runs in a worker; no GPU readback per step:
 // the time step is computed on the GPU from the deepest water (CFL) and the CPU only reads state between batches.
-import type { EngineGrid } from "./solver";
+import { porosityArrays, type EngineGrid } from "./solver";
 
 const WG = 256;
 // WebGPU flag values (spec constants), written out so the module also type-checks where the globals are not declared
@@ -18,13 +18,15 @@ struct S { dt: f32, t: f32, p0: f32, p1: f32, dmax: atomic<u32>, rain: f32, infi
 @group(0) @binding(5) var<storage, read_write> qn: array<vec2<f32>>;  // new fluxes
 @group(0) @binding(6) var<storage, read_write> bs: array<vec2<f32>>;  // open-side outflow (m3/s), limiter scale
 @group(0) @binding(7) var<storage, read_write> aux: array<f32>;       // [rain block depths (mm), nZ x nBlk] [inflow cells (bits)] [inflow m3/s, nIn x inSteps] [per-workgroup sums x5]
-@group(0) @binding(8) var<storage, read> ex: array<vec2<f32>>;        // rain zone (bits), drainage capacity (m/s)
+@group(0) @binding(8) var<storage, read> ex: array<vec4<f32>>;        // per cell two entries: [zone (bits), drainage (m/s), storage share, rain area], [east face share, south face share, 0, 0]
 const G = 9.81;
 var<workgroup> red: array<vec4<f32>, ${WG}>;
 var<workgroup> red2: array<f32, ${WG}>;
-// flags: bit0 active, bit1 sea, bit2 N open, bit3 S open, bit4 W open, bit5 E open
+// flags: bit0 active, bit1 sea, bit2 N open, bit3 S open, bit4 W open, bit5 E open, bit6 limits the time step (exchanges water)
 fn fl(c: u32) -> u32 { return bitcast<u32>(cell[c].w); }
 fn z(c: u32) -> f32 { return cell[c].x; }
+fn phi(c: u32) -> f32 { return ex[2u * c].z; }
+fn psi(c: u32) -> vec2<f32> { return ex[2u * c + 1u].xy; }
 
 fn cumRain(t: f32, zn: u32) -> f32 {
   var s = 0.0;
@@ -66,12 +68,13 @@ fn face(c: u32, r: u32, q0: f32, qt: f32, dt: f32) -> f32 {
   let i = c % p.nx; let j = c / p.nx; let dt = st.dt;
   var a = vec2<f32>(0.0);
   if ((fl(c) & 1u) != 0u) {
-    if (i < p.nx - 1u && (fl(c + 1u) & 1u) != 0u) {
+    let ps = psi(c);
+    if (i < p.nx - 1u && ps.x > 0.0) {
       var qt = q[c].y + q[c + 1u].y;
       if (j > 0u) { qt += q[c - p.nx].y + q[c + 1u - p.nx].y; }
       a.x = face(c, c + 1u, q[c].x, 0.25 * qt, dt);
     }
-    if (j < p.ny - 1u && (fl(c + p.nx) & 1u) != 0u) {
+    if (j < p.ny - 1u && ps.y > 0.0) {
       var qt = q[c].x + q[c + p.nx].x;
       if (i > 0u) { qt += q[c - 1u].x + q[c - 1u + p.nx].x; }
       a.y = face(c, c + p.nx, q[c].y, 0.25 * qt, dt);
@@ -94,13 +97,14 @@ fn face(c: u32, r: u32, q0: f32, qt: f32, dt: f32) -> f32 {
     if (oS && !oN) { b += min(qc, max(0.0, qn[c - p.nx].y)); }
     if (oN && !oS) { b += min(qc, max(0.0, -qn[c].y)); }
   }
-  b *= p.dx;
+  let ph = phi(c); let ps = psi(c);
+  b *= p.dx * ph;
   var o = b;
-  if (qn[c].x > 0.0) { o += qn[c].x * p.dx; }
-  if (i > 0u && qn[c - 1u].x < 0.0) { o -= qn[c - 1u].x * p.dx; }
-  if (qn[c].y > 0.0) { o += qn[c].y * p.dx; }
-  if (c >= p.nx && qn[c - p.nx].y < 0.0) { o -= qn[c - p.nx].y * p.dx; }
-  let v = o * dt; let a = hc * p.dx * p.dx;
+  if (qn[c].x > 0.0) { o += qn[c].x * ps.x * p.dx; }
+  if (i > 0u && qn[c - 1u].x < 0.0) { o -= qn[c - 1u].x * psi(c - 1u).x * p.dx; }
+  if (qn[c].y > 0.0) { o += qn[c].y * ps.y * p.dx; }
+  if (c >= p.nx && qn[c - p.nx].y < 0.0) { o -= qn[c - p.nx].y * psi(c - p.nx).y * p.dx; }
+  let v = o * dt; let a = hc * ph * p.dx * p.dx;
   var s = 1.0;
   if (v > a && v > 0.0) { s = a / v; }
   bs[c] = vec2<f32>(b, s);
@@ -121,23 +125,25 @@ fn face(c: u32, r: u32, q0: f32, qt: f32, dt: f32) -> f32 {
   var dr = 0.0;
   if (c < p.nx * p.ny && (fl(c) & 1u) != 0u) {
     let dt = st.dt; let i = c % p.nx; let k = cell[c];
-    var div = -qn[c].x - qn[c].y;
-    if (i > 0u) { div += qn[c - 1u].x; }
-    if (c >= p.nx) { div += qn[c - p.nx].y; }
+    let e0 = ex[2u * c]; let ps = psi(c); let ph = e0.z;
+    var div = -qn[c].x * ps.x - qn[c].y * ps.y;
+    if (i > 0u) { div += qn[c - 1u].x * psi(c - 1u).x; }
+    if (c >= p.nx) { div += qn[c - p.nx].y * psi(c - p.nx).y; }
     var p0 = st.p0; var p1 = st.p1;
-    if (p.nZ > 1u) { let zn = bitcast<u32>(ex[c].x); p0 = cumRain(st.t, zn); p1 = cumRain(st.t + dt, zn); }
-    let gross = (p1 - p0) / 1000.0;
+    if (p.nZ > 1u) { let zn = bitcast<u32>(e0.x); p0 = cumRain(st.t, zn); p1 = cumRain(st.t + dt, zn); }
+    let gross = (p1 - p0) / 1000.0 * e0.w;
     var eff = gross;
-    if (k.z >= 0.0) { eff = (scs(p1, k.z) - scs(p0, k.z)) / 1000.0; }
+    if (k.z >= 0.0) { eff = (scs(p1, k.z) - scs(p0, k.z)) / 1000.0 * e0.w; }
     let area = p.dx * p.dx;
     let b = bs[c].x * bs[c].y;
-    var hn = max(hh[c].x + dt * div / p.dx - b * dt / area + eff, 0.0);
-    dr = min(hn, ex[c].y * dt);
-    hn -= dr;
+    var hn = max(hh[c].x + dt * div / (p.dx * ph) - b * dt / (area * ph) + eff / ph, 0.0);
+    let d0 = min(hn, e0.y * dt);
+    hn -= d0;
+    dr = d0 * ph;
     var sv = 0.0;
-    if ((fl(c) & 2u) != 0u) { let fix = max(0.0, p.seaLevel - k.x); sv = hn - fix; hn = fix; }
+    if ((fl(c) & 2u) != 0u) { let fix = max(0.0, p.seaLevel - k.x); sv = (hn - fix) * ph; hn = fix; }
     hh[c] = vec2<f32>(hn, max(hh[c].y, hn));
-    atomicMax(&st.dmax, bitcast<u32>(hn));
+    if ((fl(c) & 64u) != 0u) { atomicMax(&st.dmax, bitcast<u32>(hn)); }
     acc = vec4<f32>(gross, eff, b * dt / area, sv);
   }
   red[li] = acc;
@@ -164,9 +170,9 @@ fn face(c: u32, r: u32, q0: f32, qt: f32, dt: f32) -> f32 {
     let v = aux[p.inOff + p.nIn + m * p.inSteps + k] * dt;
     if (v > 0.0) {
       let c = bitcast<u32>(aux[p.inOff + m]);
-      let hn = hh[c].x + v / area;
+      let hn = hh[c].x + v / (area * phi(c));
       hh[c] = vec2<f32>(hn, max(hh[c].y, hn));
-      atomicMax(&st.dmax, bitcast<u32>(hn));
+      if ((fl(c) & 64u) != 0u) { atomicMax(&st.dmax, bitcast<u32>(hn)); }
       vin += v;
     }
   }
@@ -185,13 +191,13 @@ export type GpuState = { t: number; dt: number; totals: { rain: number; infiltra
 export class GpuEngine {
   private constructor(
     private dev: GPUDevice, private pipes: Record<string, GPUComputePipeline>, private groups: GPUBindGroup[],
-    private bufs: Record<string, GPUBuffer>, readonly N: number, private nWg: number, private initialVolume: number, private area: number,
+    private bufs: Record<string, GPUBuffer>, readonly N: number, private nWg: number, private initialVolume: number, private area: number, private phi: Float64Array,
   ) {}
   static async create(inp: GpuInputs): Promise<GpuEngine | null> {
     const ad = await navigator.gpu?.requestAdapter({ powerPreference: "high-performance" });
     if (!ad) return null;
     const N = inp.grid.nx * inp.grid.ny;
-    const need = N * 16;
+    const need = N * 32;
     if (need > ad.limits.maxStorageBufferBindingSize) return null;
     const dev = await ad.requestDevice({ requiredLimits: { maxStorageBufferBindingSize: Math.max(need, 128 << 20), maxBufferSize: Math.max(need, 256 << 20) } });
     const g = inp.grid, nWg = Math.ceil(N / WG);
@@ -202,16 +208,18 @@ export class GpuEngine {
       if (typeof data !== "number") dev.queue.writeBuffer(b, 0, data.buffer, data.byteOffset, data.byteLength);
       return b;
     };
-    const flags = new Uint32Array(N), { nx, ny, active, sea } = g;
+    const flags = new Uint32Array(N), { nx, ny, active, sea } = g, por = porosityArrays(g);
     const off = (i: number, j: number) => i < 0 || j < 0 || i >= nx || j >= ny || !active[j * nx + i];
     const h0 = new Float32Array(N);
     let dmax = 0, vol = 0;
     for (let j = 0; j < ny; j++) for (let i = 0; i < nx; i++) {
       const c = j * nx + i;
       if (!active[c]) continue;
-      flags[c] = 1 | (sea?.[c] ? 2 : 0) | (off(i, j - 1) ? 4 : 0) | (off(i, j + 1) ? 8 : 0) | (off(i - 1, j) ? 16 : 0) | (off(i + 1, j) ? 32 : 0);
-      if (sea?.[c]) { h0[c] = Math.max(0, inp.seaLevel - g.z[c]); dmax = Math.max(dmax, h0[c]); vol += h0[c]; }
-      else if (g.h0 && g.h0[c] > 0) { h0[c] = g.h0[c]; dmax = Math.max(dmax, h0[c]); vol += h0[c]; }
+      flags[c] = 1 | (sea?.[c] ? 2 : 0) | (off(i, j - 1) ? 4 : 0) | (off(i, j + 1) ? 8 : 0) | (off(i - 1, j) ? 16 : 0) | (off(i + 1, j) ? 32 : 0) | (por.cfl[c] ? 64 : 0);
+      if (sea?.[c]) h0[c] = Math.max(0, inp.seaLevel - g.z[c]);
+      else if (g.h0 && g.h0[c] > 0) h0[c] = g.h0[c];
+      if (por.cfl[c]) dmax = Math.max(dmax, h0[c]);
+      vol += h0[c] * por.phi[c];
     }
     const cellData = new Float32Array(N * 4), cu = new Uint32Array(cellData.buffer);
     for (let c = 0; c < N; c++) {
@@ -220,8 +228,11 @@ export class GpuEngine {
       cu[c * 4 + 3] = flags[c];
     }
     const zm = inp.zoneMm && g.zone ? inp.zoneMm : [inp.rain.mm], nZ = zm.length, nBlk = Math.max(1, ...zm.map((v) => v.length)), rOff = nZ * nBlk;
-    const exData = new Float32Array(N * 2), eu = new Uint32Array(exData.buffer);
-    for (let c = 0; c < N; c++) { eu[2 * c] = nZ > 1 ? g.zone![c] : 0; exData[2 * c + 1] = g.drain?.[c] ?? 0; }
+    const exData = new Float32Array(N * 8), eu = new Uint32Array(exData.buffer);
+    for (let c = 0; c < N; c++) {
+      eu[8 * c] = nZ > 1 ? g.zone![c] : 0; exData[8 * c + 1] = g.drain?.[c] ?? 0; exData[8 * c + 2] = por.phi[c]; exData[8 * c + 3] = por.rw[c];
+      exData[8 * c + 4] = por.px[c]; exData[8 * c + 5] = por.py[c];
+    }
     const inSteps = Math.max(1, inp.inflowQ[0]?.length ?? 1), nIn = inp.inflowCells.length;
     const aux = new Float32Array(rOff + nIn + nIn * inSteps + nWg * 5), au = new Uint32Array(aux.buffer);
     zm.forEach((v, k) => aux.set(v, k * nBlk));
@@ -254,7 +265,7 @@ export class GpuEngine {
       layout, entries: ["p", "st", "cell", "hh", qo, qn, "bs", "aux", "ex"].map((k, b) => ({ binding: b, resource: { buffer: bufs[k] } })),
     });
     const groups = [group("qa", "qb"), group("qb", "qa")];
-    return new GpuEngine(dev, pipes, groups, bufs, N, nWg, vol * g.dx * g.dx, g.dx * g.dx);
+    return new GpuEngine(dev, pipes, groups, bufs, N, nWg, vol * g.dx * g.dx, g.dx * g.dx, por.phi);
   }
   private parity = 0;
   /** Encode n time steps and submit them. */
@@ -292,7 +303,7 @@ export class GpuEngine {
   async massError(active: Uint8Array): Promise<number> {
     const [s, h] = [await this.state(), await this.depths()];
     let v = 0;
-    for (let c = 0; c < active.length; c++) if (active[c]) v += h[2 * c];
+    for (let c = 0; c < active.length; c++) if (active[c]) v += h[2 * c] * this.phi[c];
     const T = s.totals, inn = this.initialVolume + T.rain + T.inflow;
     return inn > 0 ? (inn - T.infiltration - T.outflow - T.sea - T.drain - v * this.area) / inn : 0;
   }
