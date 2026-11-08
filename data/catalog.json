@@ -794,6 +794,35 @@
       "checked": "2026-11-01",
       "in_region_pack": true,
       "notes": "Probed 2026-11-01 (verification/terrain/probe.py): copyrightText empty on all services. Owner decision 2026-11-01 (ADR 0014): verbal permission to publish, written permission only if a problem arises; published as map layers (jakartasatu.pmtiles/.gpkg in the region pack) with attribution. Primary drains 42 lines (390 km, depth median 5.6 m, width median 19 m), secondary 36 (159 km, 3.3 m, 10.8 m), tertiary 1,211, micro 60,718 (size mostly missing), pumps 263, polders 65, NCICD walls 41, river walls 172, Genangan 4,280 RT polygons with date and depth, AWLR 28 and TMA 61 stations (thresholds only)."
+    },
+    {
+      "id": "dki-drainase-tersier",
+      "name": "Drainase tersier DKI Jakarta (DRAINASE_LN_5K, peta skala 1:5.000)",
+      "theme": "water-bodies",
+      "role": "alternative",
+      "provider": "Pemerintah Provinsi DKI Jakarta (file Drainase_Tersier.gdb supplied by the project owner)",
+      "version": "file dated 2025-09-11",
+      "doi": null,
+      "url": "https://jakartasatu.jakarta.go.id",
+      "licence": {
+        "id": "no licence text; published as map layer by owner decision (same basis as ADR 0014)",
+        "redistributable": "yes",
+        "attribution": "Drainase tersier: Pemerintah Provinsi DKI Jakarta (DRAINASE_LN_5K, 1:5.000)"
+      },
+      "resolution": "vector lines, 1:5,000",
+      "crs": "EPSG:4326 (WGS 84 + EGM2008)",
+      "access": {
+        "method": "Esri File Geodatabase from the owner, converted with pyogrio to data/drains/drainase_tersier_dki.geojson (2D, 1e-6 degree)",
+        "auth": "none"
+      },
+      "citation": {
+        "text": "Pemerintah Provinsi DKI Jakarta (2025). Drainase Tersier (DRAINASE_LN_5K), skala 1:5.000. File geodatabase, received 8 November 2026.",
+        "bibtex": "@misc{dki2025tersier,\n  author = {{Pemerintah Provinsi DKI Jakarta}},\n  title = {Drainase Tersier (DRAINASE\\_LN\\_5K), skala 1:5.000},\n  year = {2025},\n  note = {File geodatabase, received 8 November 2026}\n}"
+      },
+      "status": "single-source",
+      "checked": "2026-11-08",
+      "in_region_pack": false,
+      "notes": "1,844 lines, 1,105 km, 1,051 names (mostly 'Sal. Phb', saluran penghubung), 258 kelurahan in 43 kecamatan of the 5 mainland kota; KUGI FCODE HA02080620. Fields for size, year and material (REMARK, THNPBN, THNOPR, KONCOU, TJDRLG) are empty in every record, so the lines carry location and name only. Not carved into the engine terrain: without width and depth any carving would be an invented number; at 30 m the area-equivalent lowering of a ~1 m drain would be a few cm. Shown as a map layer and used to explain results."
     }
   ]
 }

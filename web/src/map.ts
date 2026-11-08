@@ -2,7 +2,8 @@ import "maplibre-gl/dist/maplibre-gl.css";
 import { AttributionControl, Map as MlMap, NavigationControl, Popup, ScaleControl, type ExpressionSpecification, type FilterSpecification, type LayerSpecification, type StyleSpecification } from "maplibre-gl";
 import { ensurePmtiles } from "./pmtiles-init";
 import { lang, t, type Key } from "./i18n";
-import { LAYERS, OBS_CLASSES, type LayerDef, type LegendItem } from "./layers";
+import { LAYERS, OBS_CLASSES, RAIN_CLASSES, type LayerDef, type LegendItem } from "./layers";
+import type { EventRain } from "./engine/event-rain";
 import type { Catalog, Manifest } from "./types";
 import { MAX_ZOOM, esc, rasterResampling, toUtm } from "./util";
 
@@ -24,6 +25,19 @@ export type ResultEntry = { id: string; name: () => string; ids: () => string[];
 // filters for the Jakarta Satu layer (one vector layer "js", feature type in "t") and the recorded-flood layers
 const isT = (...t: string[]) => ["in", ["get", "t"], ["literal", t]] as ExpressionSpecification;
 const obsColor = (): unknown => ["step", ["coalesce", ["get", "depth_cm"], 0], ...OBS_CLASSES.flatMap(([v, c], i) => (i === 0 ? [c] : [v, c]))];
+// observed-event rain (data/events, the IMERG hours the model runs on) as 0.1 degree cells: total and wettest hour per cell
+const EVENT_RAIN = import.meta.glob<EventRain>("../../data/events/*_imerg.json", { import: "default", eager: true });
+function rainGeo(id: string) {
+  const ev = Object.entries(EVENT_RAIN).find(([f]) => f.endsWith(`/${id}_imerg.json`))?.[1];
+  if (!ev) return { type: "FeatureCollection" as const, features: [] };
+  const h = (a: number[]) => (a.length > 1 ? Math.abs(a[1] - a[0]) / 2 : 0.05);
+  const hx = h(ev.lon), hy = h(ev.lat);
+  return { type: "FeatureCollection" as const, features: ev.mm.map((mm, m) => {
+    const lo = ev.lon[m % ev.lon.length], la = ev.lat[Math.floor(m / ev.lon.length)];
+    return { type: "Feature" as const, properties: { total_mm: Math.round(mm.reduce((a, v) => a + v, 0)), max_mm_h: Math.round(Math.max(0, ...mm) * 10) / 10, hours: mm.length, lon: lo, lat: la },
+      geometry: { type: "Polygon" as const, coordinates: [[[lo - hx, la - hy], [lo + hx, la - hy], [lo + hx, la + hy], [lo - hx, la + hy], [lo - hx, la - hy]]] } };
+  }) };
+}
 let genanganFilter: FilterSpecification = isT("genangan"), reportsFilter: FilterSpecification | null = null;
 const hiddenR = new Set<string>(); // switched on in the left list but hidden in the active-layers card
 let order: string[] = [], labelAnchor: string | undefined; // active layer ids, top first; first basemap label layer
@@ -78,6 +92,12 @@ function mlLayers(def: LayerDef, src: string, zoom: number): LayerSpecification[
     case "genangan": return [
       { id: `${def.id}-fill`, type: "fill", source: src, "source-layer": "js", filter: genanganFilter, layout: { visibility: vis }, paint: { "fill-color": obsColor() as string, "fill-opacity": o } },
       { id: `${def.id}-line`, type: "line", source: src, "source-layer": "js", filter: genanganFilter, layout: { visibility: vis }, paint: { "line-color": "#7f0000", "line-opacity": o, "line-width": 0.7 } },
+    ];
+    case "tersier": return [{ id: def.id, type: "line", source: src, layout: { visibility: vis, "line-cap": "round", "line-join": "round" }, paint: { "line-color": "#e8590c", "line-opacity": o, "line-width": ["interpolate", ["linear"], ["zoom"], 10, 0.8, 16, 3] } }];
+    case "rain": return [
+      { id: `${def.id}-fill`, type: "fill", source: src, layout: { visibility: vis }, paint: { "fill-color": ["step", ["get", "total_mm"], ...RAIN_CLASSES.flatMap(([v, c], i) => (i === 0 ? [c] : [v, c]))] as unknown as string, "fill-opacity": o } },
+      { id: `${def.id}-line`, type: "line", source: src, layout: { visibility: vis }, paint: { "line-color": "#ffffff", "line-opacity": o * 0.6, "line-width": 0.5 } },
+      { id: `${def.id}-label`, type: "symbol", source: src, minzoom: 9.5, layout: { visibility: vis, "text-field": ["concat", ["to-string", ["get", "total_mm"]], " mm"], "text-font": FONT, "text-size": 11 }, paint: { "text-color": "#1b2430", "text-halo-color": "#ffffff", "text-halo-width": 1.2, "text-opacity": o > 0 ? 1 : 0 } },
     ];
     case "reports": return [{ id: def.id, type: "circle", source: src, "source-layer": "reports", ...(reportsFilter ? { filter: reportsFilter } : {}), layout: { visibility: vis },
       paint: { "circle-color": obsColor() as string, "circle-opacity": o, "circle-stroke-color": "#ffffff", "circle-stroke-width": 1.2, "circle-radius": ["interpolate", ["linear"], ["zoom"], 9, 3, 15, 7] } }];
@@ -169,6 +189,8 @@ export async function createMapPage(root: HTMLElement, ctx: MapCtx): Promise<Map
       const src = def.kind === "region" ? "src-region" : `src-${def.file ?? def.id}`;
       if (!map.getSource(src)) {
         if (def.kind === "demnas-grid") map.addSource(src, { type: "geojson", data: tileGrid });
+        else if (def.kind === "rain") map.addSource(src, { type: "geojson", data: rainGeo(def.event!), attribution: attr(def) });
+        else if (def.url) map.addSource(src, { type: "geojson", data: new URL(def.url, location.href).href, attribution: attr(def) });
         else if (def.kind === "region") map.addSource(src, { type: "geojson", data: domain ?? { type: "Feature", properties: { role: "domain" }, geometry: { type: "Polygon", coordinates: [[[w, s], [e, s], [e, n], [w, n], [w, s]]] } } });
         else {
           const url = `pmtiles://${new URL(`${ctx.dataBase}/${def.file}`, location.href).href}`;
@@ -222,14 +244,17 @@ export async function createMapPage(root: HTMLElement, ctx: MapCtx): Promise<Map
   });
 
   // click on infrastructure or a recorded flood: what the source says about it (values escaped)
-  const POP: Record<string, string> = { "js-drains": "js-drains", "js-pumps": "js-pumps", "js-polders-fill": "js-polders", "js-walls": "js-walls", "genangan-fill": "genangan", reports: "reports" };
+  const POP: Record<string, string> = { "js-drains": "js-drains", "js-pumps": "js-pumps", "js-polders-fill": "js-polders", "js-walls": "js-walls", "genangan-fill": "genangan", reports: "reports", tersier: "tersier", ...Object.fromEntries(LAYERS.filter((l) => l.kind === "rain").map((l) => [`${l.id}-fill`, l.id])) };
   map.on("click", (ev) => {
     const ids = Object.keys(POP).filter((id) => map.getLayer(id) && map.getLayoutProperty(id, "visibility") !== "none");
     const f = ids.length ? map.queryRenderedFeatures(ev.point, { layers: ids })[0] : undefined;
     if (!f) return;
     const p = f.properties as Record<string, string | number | null>, row = (k: string, v: unknown) => (v === null || v === undefined || v === "" ? "" : `<div><span>${esc(k)}</span> <b>${esc(v)}</b></div>`);
     const kind = POP[f.layer.id], name = LAYERS.find((l) => l.id === kind)!.name[lang];
-    const body = kind === "reports" ? row(t("obs.event"), p.event) + row(t("obs.time"), `${p.time_wib ?? ""} WIB`) + row(t("obs.depth"), p.depth_cm ? `${p.depth_cm} cm` : "") + row(t("obs.via"), p.source)
+    const def = LAYERS.find((l) => l.id === kind)!;
+    const body = def.kind === "rain" ? row(t("rain.total"), `${p.total_mm} mm / ${p.hours} ${lang === "id" ? "jam" : "h"}`) + row(t("rain.max"), `${p.max_mm_h} mm/${lang === "id" ? "jam" : "h"}`) + row("", `IMERG 0.1° · ${Number(p.lon).toFixed(2)}°, ${Number(p.lat).toFixed(2)}°`)
+      : kind === "tersier" ? row("", p.name) + row("Kel.", p.kel) + row("Kec.", p.kec) + row(lang === "id" ? "Panjang" : "Length", p.len_m ? `${p.len_m} m` : "") + row("", t("tersier.note"))
+      : kind === "reports" ? row(t("obs.event"), p.event) + row(t("obs.time"), `${p.time_wib ?? ""} WIB`) + row(t("obs.depth"), p.depth_cm ? `${p.depth_cm} cm` : "") + row(t("obs.via"), p.source)
       : kind === "genangan" ? row(t("obs.date"), p.date) + row(t("obs.depth"), p.depth_cm ? `${p.depth_cm} cm` : "") + row("", p.info)
       : row(t("obs.width"), p.width_m ? `${p.width_m} m` : "") + row(t("obs.ddepth"), p.depth_m ? `${p.depth_m} m` : "") + row(t("obs.cap"), p.cap_m3s ? `${p.cap_m3s} m³/s` : "") + row("", p.info);
     new Popup({ maxWidth: "300px" }).setLngLat(ev.lngLat).setHTML(`<div class="pop"><h4>${esc(name)}</h4>${body}</div>`).addTo(map);

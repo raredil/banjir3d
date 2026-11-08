@@ -26,3 +26,16 @@ describe("exposure", () => {
     expect(exposureSums(x, cells, [0.5, 0.5], [0, 1], 0.15).buildings).toBe(8);
   });
 });
+
+describe("exposure on fine runs", () => {
+  // r = 2 over the west 2 x 1 pack cells: run grid 4 x 2; pack cell 0 holds 1 building and 1 person
+  const run = { nx: 4, ny: 2, k: 1, i0: 0, j0: 0, r: 2 };
+  it("spreads a 30 m cell's buildings and people over its counted fine cells (no double counting)", () => {
+    const count = Uint8Array.from([1, 0, 1, 1, 1, 1, 1, 1]); // run cell 1 is a building footprint
+    const c = exposureCells(x, run, count);
+    const wet = new Float32Array(8).fill(0.5);
+    expect(exposureSums(x, c, wet, count, 0.15).buildings).toBeCloseTo(1, 6); // whole pack cell 0 flooded: 1 building, not 3
+    const half = Float32Array.from([0.5, 0, 0, 0, 0, 0, 0, 0]); // one of its three counted cells
+    expect(exposureSums(x, c, half, count, 0.15).buildings).toBeCloseTo(1 / 3, 6);
+  });
+});

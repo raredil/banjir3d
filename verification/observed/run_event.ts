@@ -1,8 +1,9 @@
 // Run engine v2 (CPU reference) on an observed event: hourly rain per 0.1 degree reanalysis cell (fetch.py), each catchment with
 // its own rain, and the city-drain sink on built-up cells. Usage (from web/):
 //   npx vite-node ../verification/observed/run_event.ts <engine.bin.gz> <rain_era5_land.json> <start UTC> <hours> <outdir>
-//       [--k 3] [--drain 0] [--scale 1] [--box W,S,E,N] [--year auto|none|<decimal year>] [--pumps on|off]
+//       [--k 3] [--drain 0] [--scale 1] [--box W,S,E,N] [--year auto|none|<decimal year>] [--pumps on|off] [--upstream on|off]
 // --drain: drainage capacity (mm/h) on a fully built cell, scaled by the built-area share; 0 on channels and sea.
+// --upstream off: no river inflow from the catchments upstream of the run area (local rain only; source attribution runs).
 // --pumps: polder pump sink from the engine pack (Jakarta Satu pump capacities per polder), on by default when the pack has it.
 // --year: terrain year for the land subsidence shift (auto = event start; none = terrain as measured). --scale: rain multiplier (1 = reanalysis as it is). Writes hmax.f32 (row-major, run grid), mask.u8 and summary.json.
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
@@ -15,7 +16,7 @@ import { fromUtm } from "../../web/src/util";
 const a = process.argv.slice(2);
 const opt = (k: string, d: string) => { const i = a.indexOf(`--${k}`); return i >= 0 ? a[i + 1] : d; };
 const [packFile, rainFile, startUtc, hoursS, out] = a;
-const hours = Number(hoursS), k = Number(opt("k", "3")), drainMmH = Number(opt("drain", "0")), scale = Number(opt("scale", "1")), pumpsOn = opt("pumps", "on") !== "off";
+const hours = Number(hoursS), k = Number(opt("k", "3")), drainMmH = Number(opt("drain", "0")), scale = Number(opt("scale", "1")), pumpsOn = opt("pumps", "on") !== "off", upOn = opt("upstream", "on") !== "off";
 mkdirSync(out, { recursive: true });
 const raw = gunzipSync(readFileSync(packFile));
 const pack = parsePack(raw.buffer.slice(raw.byteOffset, raw.byteOffset + raw.byteLength));
@@ -53,7 +54,7 @@ for (let m = 0; m < stPoint.length; m++) {
   const g = fromUtm(pack.ox + pack.streams.x[m], pack.oy - pack.streams.y[m], pack.zone, true);
   stPoint[m] = pointAt(g.lon, g.lat);
 }
-const inflows = inflowsForSpatial(pack.streams, run.isIn, (m) => cumOf[stPoint[m]], steps).map((f) => ({ ...f, cell: run.cellAt(f.x, f.y) })).filter((f) => f.cell >= 0);
+const inflows = !upOn ? [] : inflowsForSpatial(pack.streams, run.isIn, (m) => cumOf[stPoint[m]], steps).map((f) => ({ ...f, cell: run.cellAt(f.x, f.y) })).filter((f) => f.cell >= 0);
 const drain = new Float64Array(N);
 for (let c = 0; c < N; c++) {
   if (!run.channel[c] && !run.sea[c]) drain[c] = (drainMmH / 3.6e6) * run.built[c];
@@ -76,7 +77,7 @@ writeFileSync(`${out}/mask.u8`, Uint8Array.from({ length: N }, (_, c) => run.act
 let wet = 0, cnt = 0, rainSum = 0;
 for (let c = 0; c < N; c++) if (run.active[c] && !run.sea[c]) { cnt++; rainSum += cumOf[zone[c]][steps]; if (!run.channel[c] && e.hMax[c] > 0.15) wet++; }
 const summary = {
-  pack: pack.header.created, rain: rainFile.split("/").pop(), start_utc: startUtc, hours, k, dx: run.dx, nx: run.nx, ny: run.ny, drain_mm_h: drainMmH, pumps: pumpsOn && !!run.pump, pump_m3s: run.pump ? Math.round(run.pump.reduce((a, v, c) => a + (run.sea[c] ? 0 : v), 0) * run.dx * run.dx * 10) / 10 : 0, rain_scale: scale, terrain_year: terrainYear ?? null, terrain_epoch: pack.sub ? pack.subEpoch : null,
+  pack: pack.header.created, rain: rainFile.split("/").pop(), start_utc: startUtc, hours, k, dx: run.dx, nx: run.nx, ny: run.ny, drain_mm_h: drainMmH, upstream: upOn, pumps: pumpsOn && !!run.pump, pump_m3s: run.pump ? Math.round(run.pump.reduce((a, v, c) => a + (run.sea[c] ? 0 : v), 0) * run.dx * run.dx * 10) / 10 : 0, rain_scale: scale, terrain_year: terrainYear ?? null, terrain_epoch: pack.sub ? pack.subEpoch : null,
   steps: nsteps, wall_s: (Date.now() - w0) / 1000, massError: e.massError(), totals: e.totals, built_share_known: !!pack.built,
   mean_rain_mm: rainSum / cnt, flooded_km2_gt015_outside_channels: (wet * run.dx * run.dx) / 1e6, utm: run.utm, corners: run.corners,
   inflows: inflows.slice(0, 12).map((f) => ({ areaKm2: +f.areaKm2.toFixed(1), rainMm: +f.rainMm.toFixed(1), peakQ: +Math.max(...f.q).toFixed(1), x: f.x, y: f.y })),

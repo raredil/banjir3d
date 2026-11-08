@@ -1,0 +1,83 @@
+{
+ "_about": "Source attribution of the modelled flood of 1 Jan 2020: the same run (whole region, 90 m, GPM IMERG per 0.1 deg cell, 48 h, drains 0, pumps off, terrain shifted to the event date) with and without river inflow from the catchments upstream of the region. Run in a cloud session on 2026-11-08 with verification/observed/run_event.ts --upstream on|off (engine pack region-jakarta-20261101-m4); analysis scratch script, numbers below. Flooded = depth > 0.15 m outside channels and sea.",
+ "pack": "2026-11-01T16:43:25Z",
+ "event": "2020-01-01",
+ "k": 3,
+ "cell_m": 90,
+ "hours": 48,
+ "flooded_km2": {
+  "with_upstream": 300.0,
+  "rain_only": 247.8,
+  "only_with_upstream": 52.2,
+  "only_rain_only": 0.0
+ },
+ "share_of_flooded_area_within_m_of_a_channel": {
+  "90": {
+   "with_upstream": 17,
+   "rain_only": 18,
+   "upstream_only_part": 11
+  },
+  "180": {
+   "with_upstream": 28,
+   "rain_only": 29,
+   "upstream_only_part": 21
+  },
+  "300": {
+   "with_upstream": 41,
+   "rain_only": 42,
+   "upstream_only_part": 33
+  },
+  "500": {
+   "with_upstream": 60,
+   "rain_only": 61,
+   "upstream_only_part": 53
+  }
+ },
+ "flooded_km2_by_depth_class_m": {
+  "0.15-0.5": {
+   "with_upstream": 201.7,
+   "rain_only": 182.1
+  },
+  "0.5-1": {
+   "with_upstream": 72.1,
+   "rain_only": 51.1
+  },
+  "1-2": {
+   "with_upstream": 23.3,
+   "rain_only": 12.4
+  },
+  ">2": {
+   "with_upstream": 2.9,
+   "rain_only": 2.2
+  }
+ },
+ "deeper_by_more_than_0.3_m_with_upstream_km2": 21.7,
+ "water_balance_million_m3": {
+  "with_upstream": {
+   "rain": 295.7,
+   "infiltration": 16.7,
+   "inflow": 372.9,
+   "outflow": 170.5,
+   "sea": 354.4,
+   "drain": 0.0
+  },
+  "rain_only": {
+   "rain": 295.7,
+   "infiltration": 16.7,
+   "inflow": 0.0,
+   "outflow": 13.8,
+   "sea": 186.4,
+   "drain": 0.0
+  }
+ },
+ "mass_error": {
+  "with_upstream": -4.759640367388825e-15,
+  "rain_only": 5.339453287920148e-15
+ },
+ "reading": "83 % of the modelled flooded area (248 of 300 km2) floods with local rain alone; upstream river water adds 52 km2 and doubles the area deeper than 1 m (12 -> 23 km2). Channels here = OSM rivers + DSDA primary/secondary drains carved in the pack. Whole region incl. the 10 km buffer, not DKI only.",
+ "tertiary_drains_in_pack": {
+  "_about": "Owner file Drainase_Tersier.gdb (1,844 lines, 1,105 km), sampled every ~11 m (158,453 points) against the channel flag of the engine pack",
+  "on_a_channel_cell_pct": 22.9,
+  "within_30_m_of_a_channel_cell_pct": 27.6
+ }
+}

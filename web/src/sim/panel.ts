@@ -2,7 +2,8 @@
 import type { GeoJSONSource, MapMouseEvent } from "maplibre-gl";
 import { lang, t, type Key } from "../i18n";
 import type { MapPage } from "../map";
-import { buildRun, loadPack, CHANNEL, type Pack, type RunGrid } from "../engine/pack";
+import { buildFineRun, buildRun, loadPack, packCellOf, CHANNEL, type Pack, type RunGrid } from "../engine/pack";
+import { buildingMask } from "./buildings";
 import { DT_S, inflowsFor, inflowsForSpatial, type Inflow } from "../engine/hydrology";
 import { cumAtSteps, meanHyetograph, pointAt, zoneGrid, type EventRain } from "../engine/event-rain";
 import { alternatingBlock, parseHourly, totalMm, type Hyetograph } from "../explore/rain";
@@ -17,6 +18,9 @@ import { LAYERS } from "../layers";
 import calibration from "../../../data/engine/calibration.json";
 
 const FLOOD_M = 0.15;
+// fine cells for a drawn box: run cells per 30 m pack cell side (10, 5, 2, 1 m); cell limits keep memory and run time in bounds
+const FINE = [3, 6, 15, 30];
+const MAX_CELLS = { gpu: 6e6, cpu: 1e6 }, MAX_SIDE = 4096; // MAX_SIDE: the flood layer is one WebGL texture
 // number of DSDA primary/secondary drain sections carved into the pack (line records), for the conclusion text
 const dsdaFacts = (p: Pack): { dsdaDrains?: number } => {
   const r = (p.header.drains as { records?: Record<string, number> } | undefined)?.records;
@@ -71,7 +75,8 @@ export function mountSim(page: MapPage, o: { packUrl: string; regionBbox: number
     <div class="sec">${sl("s-sea", "sim.sea", 0, 1.5, 0.1, 0, "m")}
       <label class="layer" id="s-pumps-row" hidden><input type="checkbox" id="s-pumps" ${calibration.pumps_default ? "checked" : ""}><span><b>${t("sim.pumps")}</b></span>${q("sim.pumps")}</label>${tip("sim.pumps")}</div>
     <div class="sec">${sl("s-hours", "sim.hours", 3, 72, 1, 12, "h")}
-      <div class="field"><div class="lbl"><span>${t("sim.res")} ${q("sim.res")}</span></div><div class="seg" id="s-res"><button type="button" data-k="1" class="on">30 m</button><button type="button" data-k="2">60 m</button><button type="button" data-k="3">90 m</button></div>${tip("sim.res")}</div>
+      <div class="field"><div class="lbl"><span>${t("sim.res")} ${q("sim.res")}</span></div><div class="seg" id="s-res"><button type="button" data-k="1" class="on">30 m</button><button type="button" data-k="2">60 m</button><button type="button" data-k="3">90 m</button></div>
+        <div class="seg" id="s-fine">${FINE.map((r) => `<button type="button" data-r="${r}">${30 / r} m</button>`).join("")}</div>${tip("sim.res")}<p class="help" id="s-fine-msg"></p></div>
     </div>
     <details class="sec"><summary>${t("sim.auto")}</summary><ul class="legend" id="s-auto"><li>${t("sim.loading")}</li></ul></details><div id="s-soilwarn"></div>
     <div class="sec">
@@ -132,7 +137,24 @@ export function mountSim(page: MapPage, o: { packUrl: string; regionBbox: number
   const qe = new URLSearchParams(location.hash.split("?")[1] ?? "").get("event");
   if (qe && eventIds.includes(qe)) { $<HTMLSelectElement>("s-mode").value = "event"; $<HTMLSelectElement>("s-event").value = qe; }
   summarize();
-  $("s-res").querySelectorAll<HTMLButtonElement>("button").forEach((b) => b.addEventListener("click", () => { k = Number(b.dataset.k); $("s-res").querySelectorAll("button").forEach((x) => x.classList.toggle("on", x === b)); }));
+  // cell size: 30/60/90 m (k pack cells per run cell) or, for a drawn box, 10/5/2/1 m (r run cells per pack cell)
+  let r = 1;
+  const resBtns = () => [...box.querySelectorAll<HTMLButtonElement>("#s-res button, #s-fine button")];
+  const fineCheck = () => {
+    const msg = $("s-fine-msg");
+    if (r === 1) { msg.textContent = ""; return true; }
+    if (area !== "box" || !bbox) { msg.textContent = t("sim.fine.box"); return false; }
+    const [w, h] = kmOf(bbox), cell = 30 / r, nx = Math.ceil((w * 1000) / cell), ny = Math.ceil((h * 1000) / cell), N = nx * ny, cap = gpuAvailable ? MAX_CELLS.gpu : MAX_CELLS.cpu;
+    const maxKm = Math.sqrt(cap) * cell / 1000;
+    if (N > cap || nx > MAX_SIDE || ny > MAX_SIDE) { msg.textContent = t("sim.fine.big", { m: cell, km: fmt(Math.min(maxKm, (MAX_SIDE * cell) / 1000), 1) }); return false; }
+    msg.textContent = t("sim.fine.ok", { n: fmt(N / 1e6, 2), m: cell }) + (gpuAvailable ? "" : ` ${t("sim.fine.cpu")}`);
+    return true;
+  };
+  resBtns().forEach((b) => b.addEventListener("click", () => {
+    k = Number(b.dataset.k ?? 1); r = Number(b.dataset.r ?? 1);
+    resBtns().forEach((x) => x.classList.toggle("on", x === b));
+    fineCheck();
+  }));
 
   // ---------- area: whole region or a drawn box ----------
   const whenLoaded = (f: () => void) => (map.isStyleLoaded() ? f() : map.once("idle", f));
@@ -152,7 +174,7 @@ export function mountSim(page: MapPage, o: { packUrl: string; regionBbox: number
     box.querySelector<HTMLElement>('[data-tipfor="sim.area.region"]')!.textContent = t(area === "region" ? "sim.area.region.h" : "sim.area.box.h");
     $("s-draw-row").hidden = area !== "box";
     showBox(area === "box" ? bbox : null);
-    refreshAuto();
+    refreshAuto(); fineCheck();
   }));
   let drawing = false, start: [number, number] | null = null;
   const endDraw = () => { drawing = false; start = null; map.dragPan.enable(); map.getCanvas().style.cursor = ""; $("s-draw").textContent = t("sim.draw"); };
@@ -171,7 +193,7 @@ export function mountSim(page: MapPage, o: { packUrl: string; regionBbox: number
     if (w < 0.5 || h < 0.5) return;
     bbox = b; showBox(b);
     $("s-box-txt").textContent = t("sim.box", { w: w.toFixed(1), h: h.toFixed(1) });
-    refreshAuto();
+    refreshAuto(); fineCheck();
   });
 
   // deep link: #/sim?box=W,S,E,N opens with that area selected
@@ -411,7 +433,7 @@ export function mountSim(page: MapPage, o: { packUrl: string; regionBbox: number
       const i = deep % g.nx, j = Math.floor(deep / g.nx), ll = fromUtm(g.utm.x0 + (i + 0.5) * g.dx, g.utm.y0 - (j + 0.5) * g.dx, g.utm.zone, true);
       let kec: string | null = null;
       if (expoNow) {
-        const pi = g.i0 + i * g.k + (g.k >> 1), pj = g.j0 + j * g.k + (g.k >> 1), u = pi < expoNow.nx && pj < expoNow.ny ? expoNow.kec[pj * expoNow.nx + pi] : 0;
+        const [pi, pj] = packCellOf(g, deep), u = pi < expoNow.nx && pj < expoNow.ny ? expoNow.kec[pj * expoNow.nx + pi] : 0;
         const unit = u ? expoNow.units[u - 1] : null;
         if (unit) kec = unit.name ? `${lang === "id" ? "Kec." : "Kecamatan"} ${unit.name}${unit.kota ? `, ${unit.kota}` : ""}` : unitName(unit);
       }
@@ -430,7 +452,7 @@ export function mountSim(page: MapPage, o: { packUrl: string; regionBbox: number
     } else rain = { kind: r.scenario.rainMode === "hourly" ? "hourly" : "design", mm: totalMm(hy), h, peakMmH, r24: r.scenario.r24 as number | undefined };
     const box2 = (r.scenario.area as { box?: number[] }).box ?? null, [wKm, hKm] = box2 ? kmOf(box2) : [0, 0];
     const facts: Facts = {
-      area: { box: box2, wKm, hKm }, landKm2: land * a, cellM: g.dx, hours: r.scenario.hours as number, gpu: !!r.gpu, landcoverYear: pack.header.landcover_year, ...(r.scenario.terrainYear ? { terrainYear: r.scenario.terrainYear as number, subEpoch: r.scenario.terrainEpoch as number } : {}),
+      area: { box: box2, wKm, hKm }, landKm2: land * a, cellM: g.dx, ...(g.r > 1 ? { fine: { buildingShare: (r.scenario.fineCells as { buildings?: { share?: number } } | undefined)?.buildings?.share ?? null } } : {}), hours: r.scenario.hours as number, gpu: !!r.gpu, landcoverYear: pack.header.landcover_year, ...(r.scenario.terrainYear ? { terrainYear: r.scenario.terrainYear as number, subEpoch: r.scenario.terrainEpoch as number } : {}),
       drainMmH: calibration.drain_mm_h, ...dsdaFacts(pack), ...(r.scenario.polderPumps ? { pumpsM3s: r.scenario.pumpM3s as number, pumpPolders: (pack.header.pumps as { polders_served?: number } | undefined)?.polders_served } : r.run.pump ? { pumpsOff: true } : {}), seaM: r.scenario.seaLevel as number, floodM: FLOOD_M, rain,
       upstream: r.inflows.length ? { n: r.inflows.length, peakM3s: peakInflow(), areaKm2: r.inflows.reduce((s2, f) => s2 + f.areaKm2, 0) } : null,
       env: { km2: wet * a, classesKm2: cls.map((v) => v * a), meanDepth: wet ? sum / wet : 0, maxDepth: dMax, deepest },
@@ -466,6 +488,7 @@ export function mountSim(page: MapPage, o: { packUrl: string; regionBbox: number
   $("s-run").addEventListener("click", async () => {
     const isEv = mode() === "event", hyIn = isEv ? null : hyeto();
     if (!isEv && !hyIn) { $("s-status").textContent = t("sim.hourly.bad"); return; }
+    if (!fineCheck()) { $("s-status").textContent = $("s-fine-msg").textContent ?? ""; return; }
     clear(); setRunning(true); $("s-status").textContent = t("sim.loading");
     let p: Pack, ev: EventRain | null;
     try { [p, ev] = await Promise.all([ensurePack(), isEv ? loadEvent($<HTMLSelectElement>("s-event").value) : null]); } catch (e) { setRunning(false); $("s-status").textContent = t("sim.err", { m: String(e) }); return; }
@@ -473,9 +496,19 @@ export function mountSim(page: MapPage, o: { packUrl: string; regionBbox: number
     $("s-cpuwarn").innerHTML = gpuAvailable ? "" : `<div class="note warn">${t("sim.cpuwarn")}</div>`;
     // terrain year: the event date for an observed flood, today otherwise (subsidence shifts the terrain to that year)
     const tYear = decYear(ev ? Date.parse(ev.start_utc) : Date.now());
-    const run = buildRun(p, area === "box" ? bbox : null, kk, tYear);
+    let run = buildRun(p, area === "box" ? bbox : null, kk, tYear), bldInfo: { cells: number; share: number } | null = null;
+    if (r > 1 && bbox) {
+      // fine run: building footprints from the region's building tiles become solid blocks
+      $("s-status").textContent = t("sim.fine.bld");
+      const g0 = buildFineRun(p, bbox, r, tYear);
+      try {
+        const bm = await buildingMask(o.packUrl.replace(/[^/]*$/, "buildings_overture.pmtiles"), g0);
+        run = buildFineRun(p, bbox, r, tYear, bm.mask);
+        bldInfo = { cells: bm.cells, share: bm.cells / (run.nx * run.ny) };
+      } catch (e) { run = g0; $("s-cpuwarn").innerHTML += `<div class="note warn">${esc(t("sim.fine.nobld", { m: String(e) }))}</div>`; }
+    }
     const N = run.nx * run.ny, count = new Uint8Array(N), mask = new Uint8Array(N);
-    for (let c = 0; c < N; c++) { mask[c] = +(run.active[c] && !run.sea[c]); count[c] = +(mask[c] && !run.channel[c]); }
+    for (let c = 0; c < N; c++) { mask[c] = +(run.active[c] && !run.sea[c] && !run.building?.[c]); count[c] = +(mask[c] && !run.channel[c]); }
     const hours = num("s-hours"), steps = Math.ceil((hours * 3600) / DT_S), up = $<HTMLInputElement>("s-up").checked;
     // observed event: rain zone per cell, area-mean hyetograph for the chart and KPIs, each upstream catchment with the rain of its own points
     const zone = ev ? zoneGrid(ev, run) : undefined, hy = ev ? meanHyetograph(ev, zone!, mask) : hyIn!;
@@ -494,12 +527,13 @@ export function mountSim(page: MapPage, o: { packUrl: string; regionBbox: number
     const scenario = {
       area: area === "box" ? { box: bbox } : "region", rainMode: mode(), ...(mode() === "design" ? { r24: num("s-r24") } : {}), rainMm: +totalMm(hy).toFixed(1), rainHours: (hy.mm.length * hy.blockSeconds) / 3600, upstreamRain: up, seaLevel: num("s-sea"), hours, cellM: run.dx,
       ...(p.sub ? { terrainYear: +tYear.toFixed(2), terrainEpoch: p.subEpoch } : {}),
+      ...(run.r > 1 ? { fineCells: { cellM: run.dx, terrain: "bilinear from the 30 m pack (no new terrain detail)", buildings: bldInfo ? { method: "building block +10 m (Schubert and Sanders 2012)", source: "Overture Maps buildings, region pack tiles z14", cells: bldInfo.cells, share: +bldInfo.share.toFixed(3) } : "not loaded" } } : {}),
       ...(run.pump ? { polderPumps: pumpsOn(), pumpM3s: Math.round(run.pump.reduce((a, v, c) => a + (run.sea[c] ? 0 : v), 0) * run.dx * run.dx) } : {}),
       ...(ev ? { event: ev.id, eventStartUtc: ev.start_utc, rainSource: ev.source, rainPoints: ev.mm.length } : {}),
     };
     res = { run, grid, frames: [], times: [], area: [], max: null, inflows, hy, scenario, event: ev, zone, count };
     const mine = res;
-    ensureExposure().then((x) => { expoNow = x; if (res !== mine) return; if (x) res.cells = exposureCells(x, run); $("s-expo-box").hidden = false; render(); conclude(); });
+    ensureExposure().then((x) => { expoNow = x; if (res !== mine) return; if (x) res.cells = exposureCells(x, run, count); $("s-expo-box").hidden = false; render(); conclude(); });
     layer = new FloodLayer(grid); addLayer();
     // the result goes into the active-layers card: on top, can be hidden, moved or removed; a new run replaces it
     page.addResult({
@@ -530,8 +564,8 @@ export function mountSim(page: MapPage, o: { packUrl: string; regionBbox: number
         const T = m.totals, mm = (v: number) => fmt(v / 1e6, 1);
         $("s-stats-box").hidden = false;
         $("s-stats").innerHTML = (lang === "id"
-          ? [["Hujan rata-rata (mm)", fmt(totalMm(hy))], ["Air dari hulu, puncak (m³/s)", fmt(peakInflow())], ["Hujan jatuh (juta m³)", mm(T.rain)], ["Meresap ke tanah", mm(T.infiltration)], ["Masuk dari hulu", mm(T.inflow)], ["Keluar lewat tepi area", mm(T.outflow)], ["Ke laut", mm(T.sea)], ["Kesalahan neraca air", m.massError.toExponential(1)], ["Ukuran grid", `${run.nx} × ${run.ny} × ${run.dx} m`], ["Sungai masuk", String(inflows.length)]]
-          : [["Mean rain (mm)", fmt(totalMm(hy))], ["Upstream inflow, peak (m³/s)", fmt(peakInflow())], ["Rain fallen (million m³)", mm(T.rain)], ["Infiltrated", mm(T.infiltration)], ["Inflow from upstream", mm(T.inflow)], ["Left through the area edge", mm(T.outflow)], ["To the sea", mm(T.sea)], ["Water balance error", m.massError.toExponential(1)], ["Grid", `${run.nx} × ${run.ny} × ${run.dx} m`], ["Entering rivers", String(inflows.length)]])
+          ? [["Hujan rata-rata (mm)", fmt(totalMm(hy))], ["Air dari hulu, puncak (m³/s)", fmt(peakInflow())], ["Hujan jatuh (juta m³)", mm(T.rain)], ["Meresap ke tanah", mm(T.infiltration)], ["Masuk dari hulu", mm(T.inflow)], ["Keluar lewat tepi area", mm(T.outflow)], ["Ke laut", mm(T.sea)], ["Kesalahan neraca air", m.massError.toExponential(1)], ["Ukuran grid", `${run.nx} × ${run.ny} × ${run.dx} m`], ...(bldInfo ? [["Sel bangunan (blok padat)", `${fmt(bldInfo.share * 100, 1)} %`]] : []), ["Sungai masuk", String(inflows.length)]]
+          : [["Mean rain (mm)", fmt(totalMm(hy))], ["Upstream inflow, peak (m³/s)", fmt(peakInflow())], ["Rain fallen (million m³)", mm(T.rain)], ["Infiltrated", mm(T.infiltration)], ["Inflow from upstream", mm(T.inflow)], ["Left through the area edge", mm(T.outflow)], ["To the sea", mm(T.sea)], ["Water balance error", m.massError.toExponential(1)], ["Grid", `${run.nx} × ${run.ny} × ${run.dx} m`], ...(bldInfo ? [["Building cells (solid blocks)", `${fmt(bldInfo.share * 100, 1)} %`]] : []), ["Entering rivers", String(inflows.length)]])
           .map(([a, b2]) => `<dt>${esc(a)}</dt><dd>${esc(b2)}</dd>`).join("");
         render(); conclude(); showConcl(true);
       } else if (m.type === "error") { setRunning(false); $("s-status").textContent = t("sim.err", { m: m.message }); }
