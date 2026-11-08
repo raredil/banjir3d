@@ -1,0 +1,24 @@
+{
+ "what": "Fine-run speed and accuracy: building blocks on every fine cell vs dual grid (building porosity on a coarser compute grid, result drawn on the fine cells), CPU solver in Node (one core)",
+ "date": "2026-11-08",
+ "pack": "region-jakarta-20261101-m4 engine pack (DSDA drains carved, h0 in channels)",
+ "rain": "377 mm / 24 h alternating-block design storm, first 14 h (peak inside)",
+ "cases": [
+  { "box": [106.8540, -6.1841, 106.8562, -6.1819], "place": "Johar Baru, 250 m, no channel, 44 % building cells", "reference": "2 m building blocks",
+    "runs": [
+     { "compute_m": 2, "method": "building blocks", "wall_s": 259.8, "flooded_share": 0.622 },
+     { "compute_m": 6, "method": "porosity", "wall_s": 6.9, "flooded_share": 0.569, "csi_vs_ref": 0.723, "depth_rmse_m": 0.248, "mean_depth_diff_m": -0.019 },
+     { "compute_m": 10, "method": "porosity", "wall_s": 1.5, "flooded_share": 0.544, "csi_vs_ref": 0.638, "depth_rmse_m": 0.201, "mean_depth_diff_m": -0.022 } ],
+    "water_balance_m3": { "blocks_2m": { "rain": 23913, "outflow": 17300, "stored": 6117 }, "porosity_6m": { "rain": 23912, "outflow": 18501, "stored": 4915 } } },
+  { "box": [106.8598, -6.2272, 106.8643, -6.2228], "place": "Kampung Melayu, 500 m, Ciliwung channel (5-6 m deep water sets the time step)", "reference": "5 m building blocks",
+    "runs": [
+     { "compute_m": 5, "method": "building blocks", "wall_s": 75.6, "flooded_share": 0.501 },
+     { "compute_m": 10, "method": "porosity", "wall_s": 9.4, "csi_vs_ref": 0.697, "depth_rmse_m": 0.119, "mean_depth_diff_m": -0.041 },
+     { "compute_m": 15, "method": "porosity", "wall_s": 2.9, "csi_vs_ref": 0.632, "depth_rmse_m": 0.236, "mean_depth_diff_m": -0.039 },
+     { "compute_m": 30, "method": "porosity", "wall_s": 0.39, "csi_vs_ref": 0.551, "depth_rmse_m": 0.194, "mean_depth_diff_m": -0.049 } ],
+    "note": "10 m building blocks flood 56 % of open cells, 5 m blocks 50 %: the block grid itself changes with cell size (closed courtyards fill with roof rain; at 10 m all 64 flooded courtyard cells were full)" }
+ ],
+ "cpu_speed_cell_updates_per_s": "11-18 million (Node 22, one core); the app budgets 12 million on the CPU and 300 million on WebGPU",
+ "gpu_parity_porosity": { "how": "web/verify-gpu.html?hours=2&por=1&drain=10 (synthetic porosity on real 30 m terrain, SwiftShader)", "rmse_max_depth_m": 4.9e-05, "max_abs_diff_m": 0.00104, "csi": 1.0, "gpu_mass_error": 1.0e-08 },
+ "gpu_parity_plain": { "how": "same without porosity (regression)", "rmse_max_depth_m": 2.0e-05, "max_abs_diff_m": 0.00139, "csi": 1.0 }
+}

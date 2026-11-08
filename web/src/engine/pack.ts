@@ -68,6 +68,9 @@ export type RunGrid = {
   built: Float64Array; // built-area share 0..1 (0 where the pack has no share: no drains)
   h0: Float64Array | null; // initial depth (m), mean over the block (channel cells only in a block holding a channel)
   pump: Float64Array | null; // polder pump sink (m/s), mean over the block, so a coarse cell removes the same volume
+  // dual-grid fine runs (buildDualRun): building porosity of each compute cell and the fine grid the result is shown on
+  phi?: Float32Array; psiX?: Float32Array; psiY?: Float32Array; rainW?: Float32Array;
+  fine?: FineGrid;
   corners: [number, number][]; // lon/lat of the outer grid corners NW, NE, SE, SW
   utm: { zone: number; x0: number; y0: number }; // UTM of the NW corner
   isIn: (x: number, y: number) => boolean; // pack metres (east, south of the pack origin) inside the active area
@@ -145,6 +148,31 @@ export const packCellOf = (g: Pick<RunGrid, "nx" | "k" | "r" | "i0" | "j0">, c: 
   return g.r > 1 ? [g.i0 + Math.floor(I / g.r), g.j0 + Math.floor(J / g.r)] : [g.i0 + I * g.k + (g.k >> 1), g.j0 + J * g.k + (g.k >> 1)];
 };
 
+/** Fine grid of a dual-grid run: the compute grid solves the flow, the result is drawn and exported on these cells. */
+export type FineGrid = {
+  r: number; // fine cells per 30 m pack cell side
+  s: number; // fine cells per compute cell side
+  nx: number; ny: number; dx: number;
+  building: Uint8Array; // 1 = building footprint (no water drawn there)
+  base: { nx: number; ny: number; z: Float32Array; channel: Uint8Array }; // the 30 m cells of the box (ground of the fine cells)
+};
+
+/** Ground (m) of fine cell (I, J) with r fine cells per 30 m cell: bilinear between the centres of the neighbouring land cells;
+ *  a channel cell keeps its own bed level (channels keep their 30 m width and volume). The same rule runs in the map shader. */
+export function fineGround(base: { nx: number; ny: number; z: ArrayLike<number>; channel: ArrayLike<number> }, r: number, I: number, J: number): number {
+  const pnx = base.nx, pny = base.ny, P = Math.floor(J / r) * pnx + Math.floor(I / r);
+  if (base.channel[P]) return base.z[P];
+  const u = (I + 0.5) / r - 0.5, v = (J + 0.5) / r - 0.5, a0 = Math.floor(u), b0 = Math.floor(v), fx = u - a0, fy = v - b0;
+  let ws = 0, wz = 0;
+  for (let q = 0; q < 4; q++) {
+    const a = a0 + (q & 1), b = b0 + (q >> 1);
+    if (a < 0 || b < 0 || a >= pnx || b >= pny || base.channel[b * pnx + a]) continue;
+    const w = ((q & 1) ? fx : 1 - fx) * ((q >> 1) ? fy : 1 - fy);
+    ws += w; wz += w * base.z[b * pnx + a];
+  }
+  return ws > 1e-9 ? wz / ws : base.z[P];
+}
+
 export const BUILDING_RAISE_M = 10; // building block: roof cells raised above any modelled water, so water flows around buildings
 
 /** Run grid finer than the 30 m pack for a lon/lat box: r run cells per pack cell side (3 = 10 m, 6 = 5 m, 15 = 2 m, 30 = 1 m).
@@ -161,22 +189,11 @@ export function buildFineRun(p: Pack, box: number[], r: number, year?: number, b
   const z = new Float64Array(N), n = new Float64Array(N), cn = new Float64Array(N), built = new Float64Array(N);
   const active = new Uint8Array(N), sea = new Uint8Array(N), channel = new Uint8Array(N), building = bld ? new Uint8Array(N) : null;
   const h0 = base.h0 ? new Float64Array(N) : null, pump = base.pump ? new Float64Array(N) : null;
-  const land = (a: number, b: number) => a >= 0 && b >= 0 && a < pnx && b < pny && !base.channel[b * pnx + a];
   for (let J = 0; J < ny; J++) {
-    const v = (J + 0.5) / r - 0.5, b0 = Math.floor(v), fy = v - b0, pj = Math.floor((J + 0.5) / r);
+    const pj = Math.floor(J / r);
     for (let I = 0; I < nx; I++) {
-      const u = (I + 0.5) / r - 0.5, a0 = Math.floor(u), fx = u - a0, pi = Math.floor((I + 0.5) / r), P = pj * pnx + pi, C = J * nx + I;
-      let zz = base.z[P];
-      if (!base.channel[P]) {
-        let ws = 0, wz = 0;
-        for (let q = 0; q < 4; q++) {
-          const a = a0 + (q & 1), b = b0 + (q >> 1);
-          if (!land(a, b)) continue;
-          const w = ((q & 1) ? fx : 1 - fx) * ((q >> 1) ? fy : 1 - fy);
-          ws += w; wz += w * base.z[b * pnx + a];
-        }
-        if (ws > 1e-9) zz = wz / ws;
-      }
+      const P = pj * pnx + Math.floor(I / r), C = J * nx + I;
+      let zz = fineGround(base, r, I, J);
       n[C] = base.n[P]; cn[C] = base.cn[P]; built[C] = base.built[P]; active[C] = base.active[P]; sea[C] = base.sea[P]; channel[C] = base.channel[P];
       if (h0) h0[C] = base.h0![P];
       if (bld?.[C] && !channel[C] && !sea[C]) { building![C] = 1; zz += BUILDING_RAISE_M; }
@@ -215,3 +232,123 @@ export function buildFineRun(p: Pack, box: number[], r: number, year?: number, b
     },
   };
 }
+
+export const PHI_DONOR = 0.1; // compute cells with less open ground than this hand the rain on their roofs to open neighbours
+
+/** Dual-grid run for a lon/lat box (Sanders and Schubert 2019): the result is drawn on fine cells (r per 30 m cell side, e.g.
+ *  30 = 1 m), the flow is solved on coarser compute cells (rc per 30 m cell side, rc divides r) that carry the buildings of
+ *  their fine cells as porosity (Sanders et al. 2008): the open share of the cell stores water, the open share between two
+ *  cell centres conveys it (harmonic mean of the open share of each fine column or row in between, so a closed row of
+ *  buildings blocks the flow), and rain on roofs reaches the open ground of the cell, or of the nearest open neighbours when
+ *  the cell is almost all roof. Ground: open fine cells averaged (fineGround). rc = r gives the building-block grid instead. */
+export function buildDualRun(p: Pack, box: number[], r: number, rc: number, year: number | undefined, bld: Uint8Array): RunGrid {
+  if (rc >= r) return buildFineRun(p, box, r, year, bld);
+  if (r % rc) throw new Error("compute cells must divide the fine cells");
+  const base = buildRun(p, box, 1, year);
+  const { i0, j0 } = base, pnx = base.nx, pny = base.ny, s = r / rc;
+  const nfx = pnx * r, nfy = pny * r, nx = pnx * rc, ny = pny * rc, N = nx * ny, dx = p.dx / rc;
+  if (bld.length !== nfx * nfy) throw new Error("building mask size does not match the run grid");
+  const z = new Float64Array(N), n = new Float64Array(N), cn = new Float64Array(N), built = new Float64Array(N);
+  const active = new Uint8Array(N), sea = new Uint8Array(N), channel = new Uint8Array(N);
+  const h0 = base.h0 ? new Float64Array(N) : null, pump = base.pump ? new Float64Array(N) : null;
+  const phi = new Float32Array(N), psiX = new Float32Array(N), psiY = new Float32Array(N), rainW = new Float32Array(N).fill(1);
+  const building = new Uint8Array(nfx * nfy);
+  const bz = Float32Array.from(base.z), bch = base.channel;
+  // fine cells: building where a footprint covers the centre (not on channels or the sea)
+  for (let J = 0; J < nfy; J++) for (let I = 0; I < nfx; I++) {
+    const F = J * nfx + I, P = Math.floor(J / r) * pnx + Math.floor(I / r);
+    if (bld[F] && !base.channel[P] && !base.sea[P]) building[F] = 1;
+  }
+  // open fine cells per fine column within each compute row band, and per fine row within each compute column band
+  const colOpen = new Uint16Array(ny * nfx), rowOpen = new Uint16Array(nx * nfy);
+  for (let J = 0; J < nfy; J++) for (let I = 0; I < nfx; I++) if (!building[J * nfx + I]) { colOpen[Math.floor(J / s) * nfx + I]++; rowOpen[Math.floor(I / s) * nfy + J]++; }
+  for (let Jc = 0; Jc < ny; Jc++) for (let Ic = 0; Ic < nx; Ic++) {
+    const C = Jc * nx + Ic, P = Math.floor(Jc / rc) * pnx + Math.floor(Ic / rc);
+    let open = 0, zo = 0, za = 0;
+    for (let dj = 0; dj < s; dj++) for (let di = 0; di < s; di++) {
+      const I = Ic * s + di, J = Jc * s + dj, zg = fineGround(base, r, I, J);
+      za += zg;
+      if (!building[J * nfx + I]) { open++; zo += zg; }
+    }
+    z[C] = open ? zo / open : za / (s * s); phi[C] = open / (s * s);
+    n[C] = base.n[P]; cn[C] = base.cn[P]; built[C] = base.built[P]; active[C] = base.active[P]; sea[C] = base.sea[P]; channel[C] = base.channel[P];
+    if (h0) h0[C] = base.h0![P];
+    // conveyance between this cell centre and the next: the fine columns (rows) in between act in series (weighted harmonic
+    // mean of their open share; with an odd s the two centre columns count half)
+    const h2 = Math.floor(s / 2), odd = s % 2, span = s + odd;
+    const harm = (get: (k: number) => number) => {
+      let ws = 0, sum = 0;
+      for (let k = 0; k < span; k++) { const w = odd && (k === 0 || k === span - 1) ? 0.5 : 1, f = get(k) / s; if (f <= 0) return 0; ws += w; sum += w / f; }
+      return ws / sum;
+    };
+    if (Ic < nx - 1) psiX[C] = harm((k) => colOpen[Jc * nfx + Ic * s + h2 + k]);
+    if (Jc < ny - 1) psiY[C] = harm((k) => rowOpen[Ic * nfy + Jc * s + h2 + k]);
+  }
+  // pump sink: the same volume per 30 m cell, on the open ground of its compute cells
+  if (pump) for (let P = 0; P < pnx * pny; P++) {
+    if (!base.pump![P]) continue;
+    const pi = P % pnx, pj = (P - pi) / pnx;
+    let open = 0;
+    for (let dj = 0; dj < rc; dj++) for (let di = 0; di < rc; di++) open += phi[(pj * rc + dj) * nx + pi * rc + di];
+    if (open > 0) for (let dj = 0; dj < rc; dj++) for (let di = 0; di < rc; di++) pump[(pj * rc + dj) * nx + pi * rc + di] = (base.pump![P] * rc * rc) / open;
+  }
+  // roof rain of cells that are almost all roof goes to the nearest ring (up to 3 cells) of cells with open ground
+  const recv = (c: number) => active[c] === 1 && !sea[c] && phi[c] >= PHI_DONOR;
+  for (let Jc = 0; Jc < ny; Jc++) for (let Ic = 0; Ic < nx; Ic++) {
+    const C = Jc * nx + Ic;
+    if (!active[C] || sea[C] || phi[C] >= PHI_DONOR) continue;
+    for (let d = 1; d <= 3; d++) {
+      const ring: number[] = [];
+      let ws = 0;
+      for (let b = Jc - d; b <= Jc + d; b++) for (let a = Ic - d; a <= Ic + d; a++) {
+        if (a < 0 || b < 0 || a >= nx || b >= ny || (Math.abs(a - Ic) < d && Math.abs(b - Jc) < d)) continue;
+        const c = b * nx + a;
+        if (recv(c)) { ring.push(c); ws += phi[c]; }
+      }
+      if (!ring.length) continue;
+      const give = 1 - phi[C];
+      for (const c of ring) rainW[c] += (give * phi[c]) / ws;
+      rainW[C] = phi[C];
+      break;
+    }
+  }
+  const x0 = base.utm.x0, y0 = base.utm.y0;
+  const cell = (x: number, y: number) => {
+    const I = Math.floor((x - i0 * p.dx) / dx), J = Math.floor((y - j0 * p.dx) / dx);
+    return I >= 0 && J >= 0 && I < nx && J < ny ? J * nx + I : -1;
+  };
+  return {
+    nx, ny, dx, k: 1, i0, j0, r: rc, building: null, z, n, cn, active, sea, channel, built, h0, pump, phi, psiX, psiY, rainW,
+    fine: { r, s, nx: nfx, ny: nfy, dx: p.dx / r, building, base: { nx: pnx, ny: pny, z: bz, channel: bch } },
+    corners: base.corners, utm: { zone: p.zone, x0, y0 },
+    isIn: (x, y) => { const c = cell(x, y); return c >= 0 && active[c] === 1 && !sea[c]; },
+    cellAt: (x, y) => {
+      const c0 = cell(x, y);
+      if (c0 < 0) return -1;
+      const I = c0 % nx, J = (c0 - I) / nx;
+      let best = -1;
+      for (let dj = -rc; dj <= rc; dj++) for (let di = -rc; di <= rc; di++) {
+        const a = I + di, b = J + dj;
+        if (a < 0 || b < 0 || a >= nx || b >= ny) continue;
+        const c = b * nx + a;
+        if (active[c] && !sea[c] && phi[c] >= PHI_DONOR && (best < 0 || z[c] < z[best])) best = c;
+      }
+      return best;
+    },
+  };
+}
+
+/** Compute cells per 30 m cell side for a fine run of r cells per side: the finest divisor of r whose estimated run time fits
+ *  `budgetS` (cells x time steps / speed; the time step follows the deepest water, estimated from the carved channels).
+ *  rc = r is the building-block grid itself. */
+export function chooseCompute(p: Pack, box: number[], r: number, hours: number, cellStepsPerS: number, budgetS: number): { rc: number; estS: number } {
+  const base = buildRun(p, box, 1);
+  let h0max = 0;
+  if (base.h0) for (let c = 0; c < base.h0.length; c++) if (base.active[c] && !base.sea[c] && base.h0[c] > h0max) h0max = base.h0[c];
+  const hEst = h0max + 1.5, landCells = base.nx * base.ny;
+  const est = (rc: number) => { const dx = p.dx / rc, dt = Math.min(15, (0.5 * dx) / Math.sqrt(G_EST * hEst)); return (landCells * rc * rc * ((hours * 3600) / dt)) / cellStepsPerS; };
+  const divs = Array.from({ length: r }, (_, i) => r - i).filter((d) => r % d === 0); // finest first
+  for (const rc of divs) { const e = est(rc); if (e <= budgetS) return { rc, estS: e }; }
+  return { rc: 1, estS: est(1) };
+}
+const G_EST = 9.81;

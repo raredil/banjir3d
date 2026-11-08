@@ -21,7 +21,13 @@ const out = document.querySelector("#out")!;
   const zone = zones ? Uint16Array.from({ length: N }, (_, c) => +(c % run.nx >= run.nx / 2)) : undefined;
   const drain = drainMmH > 0 ? Float64Array.from({ length: N }, (_, c) => (run.channel[c] || run.sea[c] ? 0 : (drainMmH / 3.6e6) * (pack.built ? run.built[c] : 1))) : undefined;
   const zoneMm = zones ? [hy.mm, hy.mm.map((v) => v * 0.5)] : undefined;
-  const grid = { nx: run.nx, ny: run.ny, dx: run.dx, z: run.z, n: run.n, cn: run.cn, active: run.active, sea: run.sea, zone, drain };
+  // &por=1: synthetic building porosity on every cell (storage, face shares, roof rain) to check the dual-grid terms
+  const por = q.get("por") === "1" ? (() => {
+    const phi = new Float32Array(N), psiX = new Float32Array(N), psiY = new Float32Array(N), rainW = new Float32Array(N);
+    for (let c = 0; c < N; c++) { const ch = run.channel[c] || run.sea[c]; phi[c] = ch ? 1 : 0.35 + 0.6 * (((c * 7919) % 13) / 12); psiX[c] = ch ? 1 : 0.15 + 0.85 * (((c * 104729) % 11) / 10); psiY[c] = ch ? 1 : 0.6; rainW[c] = ch ? 1 : c % 2 ? 1.15 : 0.85; }
+    return { phi, psiX, psiY, rainW };
+  })() : {};
+  const grid = { nx: run.nx, ny: run.ny, dx: run.dx, z: run.z, n: run.n, cn: run.cn, active: run.active, sea: run.sea, zone, drain, ...por };
   // CPU: rain rate per block is constant, inflow per DT_S step (same discretisation as the GPU)
   const cpu = new FloodEngine(grid, { inflowCells: inflows.map((f) => f.cell) });
   let t0 = performance.now();
@@ -48,7 +54,7 @@ const out = document.querySelector("#out")!;
     const wa = a > 0.15, wb = b > 0.15; if (wa) wetC++; if (wb) wetG++; if (wa && wb) both++;
   }
   const r = { cells: n, nx: run.nx, ny: run.ny, dx: run.dx, hours, inflows: inflows.length, cpuMs, gpuMs, rmseMax: Math.sqrt(se / n), maxAbsMax: mx,
-    csi: both / (wetC + wetG - both), cpuMass: cpu.massError(), gpuMass: await gpu.massError(run.active), cpuT: cpu.t, gpuT: st.t, zones, drainMmH, cpuDrain: cpu.totals.drain, gpuDrain: st.totals.drain };
+    csi: both / (wetC + wetG - both), cpuMass: cpu.massError(), gpuMass: await gpu.massError(run.active), por: q.get("por") === "1", cpuT: cpu.t, gpuT: st.t, zones, drainMmH, cpuDrain: cpu.totals.drain, gpuDrain: st.totals.drain };
   out.textContent = JSON.stringify(r, null, 1);
   (window as any).__result = r;
 })().catch((e) => { out.textContent = String(e?.stack ?? e); (window as any).__result = { error: String(e) }; });

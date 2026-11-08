@@ -2,12 +2,12 @@
 import type { GeoJSONSource, MapMouseEvent } from "maplibre-gl";
 import { lang, t, type Key } from "../i18n";
 import type { MapPage } from "../map";
-import { buildFineRun, buildRun, loadPack, packCellOf, CHANNEL, type Pack, type RunGrid } from "../engine/pack";
+import { buildDualRun, buildFineRun, buildRun, chooseCompute, loadPack, packCellOf, CHANNEL, type Pack, type RunGrid } from "../engine/pack";
 import { buildingMask } from "./buildings";
 import { DT_S, inflowsFor, inflowsForSpatial, type Inflow } from "../engine/hydrology";
 import { cumAtSteps, meanHyetograph, pointAt, zoneGrid, type EventRain } from "../engine/event-rain";
 import { alternatingBlock, parseHourly, totalMm, type Hyetograph } from "../explore/rain";
-import { CLASSES, CLASS_COLORS, FloodLayer } from "./flood-layer";
+import { CLASSES, CLASS_COLORS, FloodLayer, fineResult } from "./flood-layer";
 import { buildConclusion, type Facts } from "./conclusion";
 import { exposureCells, exposureSums, loadExposure, type Exposure, type ExposureSums } from "./exposure";
 import { colourTiff, depthTiff, htmlMap, mapPng, mercatorPng, save, type Grid } from "./export";
@@ -20,7 +20,10 @@ import calibration from "../../../data/engine/calibration.json";
 const FLOOD_M = 0.15;
 // fine cells for a drawn box: run cells per 30 m pack cell side (10, 5, 2, 1 m); cell limits keep memory and run time in bounds
 const FINE = [3, 6, 15, 30];
-const MAX_CELLS = { gpu: 6e6, cpu: 1e6 }, MAX_SIDE = 4096; // MAX_SIDE: the flood layer is one WebGL texture
+const MAX_SIDE = 4096; // fine cells per side: the building mask is one WebGL texture (at most 16.8 million fine cells)
+// Dual grid (ADR 0016): fine runs solve the flow on the finest compute grid that fits the time budget and draw the result on the
+// fine cells. Speeds (cell updates per second) are conservative: measured 11-18 million on one CPU core (verification/fine-speed).
+const SPEED = { gpu: 3e8, cpu: 1.2e7 }, BUDGET_S = 30;
 // number of DSDA primary/secondary drain sections carved into the pack (line records), for the conclusion text
 const dsdaFacts = (p: Pack): { dsdaDrains?: number } => {
   const r = (p.header.drains as { records?: Record<string, number> } | undefined)?.records;
@@ -46,7 +49,7 @@ const terrainName = (p: Pack) => (String((p.header.terrain as { source?: string 
 const subName = (p: Pack) => String((p.header.subsidence as { label?: string } | undefined)?.label ?? "InSAR");
 const eventIds = Object.keys(EVENTS).map((f) => /([\d-]+)_imerg\.json$/.exec(f)![1]).sort();
 const loadEvent = (id: string) => EVENTS[`../../../data/events/${id}_imerg.json`]();
-type Result = { run: RunGrid; grid: Grid; frames: Uint16Array[]; times: number[]; area: number[]; max: Float32Array | null; inflows: Inflow[]; hy: Hyetograph; scenario: Record<string, unknown>; event: EventRain | null; zone?: Uint16Array; count: Uint8Array; cells?: ReturnType<typeof exposureCells>; totals?: Record<string, number>; mass?: number; wall?: number; gpu?: boolean };
+type Result = { run: RunGrid; grid: Grid; frames: Uint16Array[]; times: number[]; area: number[]; max: Float32Array | null; inflows: Inflow[]; hy: Hyetograph; scenario: Record<string, unknown>; event: EventRain | null; zone?: Uint16Array; count: Float32Array; cells?: ReturnType<typeof exposureCells>; totals?: Record<string, number>; mass?: number; wall?: number; gpu?: boolean };
 
 export function mountSim(page: MapPage, o: { packUrl: string; regionBbox: number[]; releaseTag: string | null }) {
   const { map } = page;
@@ -93,7 +96,9 @@ export function mountSim(page: MapPage, o: { packUrl: string; regionBbox: number
   const fmt = (v: number, d = 0) => v.toLocaleString(lang === "id" ? "id-ID" : "en-GB", { maximumFractionDigits: d, minimumFractionDigits: d });
   let area: "region" | "box" = "region", bbox: number[] | null = null, k = 1, pack: Pack | null = null, worker: Worker | null = null, res: Result | null = null, layer: FloodLayer | null = null;
   let showMax = false, frame = 0, playTimer = 0;
-  const gpuAvailable = "gpu" in navigator;
+  // WebGPU only counts when an adapter answers (headless and blocklisted browsers expose navigator.gpu without one)
+  let gpuAvailable = "gpu" in navigator;
+  (navigator as Navigator & { gpu?: { requestAdapter(): Promise<unknown> } }).gpu?.requestAdapter().then((a) => { gpuAvailable = !!a; fineCheck(); }).catch(() => { gpuAvailable = false; fineCheck(); });
 
   // ---------- inputs ----------
   const hyeto = (): Hyetograph | null => ($<HTMLSelectElement>("s-mode").value === "hourly" ? parseHourly($<HTMLTextAreaElement>("s-hourly").value) : alternatingBlock(num("s-r24"), num("s-dur")));
@@ -144,10 +149,13 @@ export function mountSim(page: MapPage, o: { packUrl: string; regionBbox: number
     const msg = $("s-fine-msg");
     if (r === 1) { msg.textContent = ""; return true; }
     if (area !== "box" || !bbox) { msg.textContent = t("sim.fine.box"); return false; }
-    const [w, h] = kmOf(bbox), cell = 30 / r, nx = Math.ceil((w * 1000) / cell), ny = Math.ceil((h * 1000) / cell), N = nx * ny, cap = gpuAvailable ? MAX_CELLS.gpu : MAX_CELLS.cpu;
-    const maxKm = Math.sqrt(cap) * cell / 1000;
-    if (N > cap || nx > MAX_SIDE || ny > MAX_SIDE) { msg.textContent = t("sim.fine.big", { m: cell, km: fmt(Math.min(maxKm, (MAX_SIDE * cell) / 1000), 1) }); return false; }
-    msg.textContent = t("sim.fine.ok", { n: fmt(N / 1e6, 2), m: cell }) + (gpuAvailable ? "" : ` ${t("sim.fine.cpu")}`);
+    const [w, h] = kmOf(bbox), cell = 30 / r, nx = Math.ceil((w * 1000) / cell), ny = Math.ceil((h * 1000) / cell), N = nx * ny;
+    if (nx > MAX_SIDE || ny > MAX_SIDE) { msg.textContent = t("sim.fine.big", { m: cell, km: fmt((MAX_SIDE * cell) / 1000, 1) }); return false; }
+    msg.textContent = t("sim.fine.ok", { n: N >= 1e5 ? `${fmt(N / 1e6, 2)} ${lang === "id" ? "juta" : "million"}` : fmt(N), m: cell });
+    if (pack) {
+      const c = computeFor(pack, bbox, r);
+      msg.textContent += " " + t(c.rc === r ? "sim.fine.exact" : "sim.fine.dual", { c: fmt(30 / c.rc, 0), s: fmt(Math.max(1, c.estS), 0) });
+    } else ensurePack().then(() => fineCheck()).catch(() => undefined);
     return true;
   };
   resBtns().forEach((b) => b.addEventListener("click", () => {
@@ -208,6 +216,10 @@ export function mountSim(page: MapPage, o: { packUrl: string; regionBbox: number
   }
 
   // ---------- what the engine derives from data ----------
+  // device speed: measured on this browser's last run (cell updates per second, kept in localStorage), else the default
+  const speedKey = (gpu: boolean) => `banjir3d.speed.${gpu ? "gpu" : "cpu"}`;
+  const speedOf = (gpu: boolean) => { try { const v = Number(localStorage.getItem(speedKey(gpu))); if (v > 1e5 && v < 1e12) return v; } catch { /* storage blocked */ } return gpu ? SPEED.gpu : SPEED.cpu; };
+  const computeFor = (p: Pack, b: number[], rr: number) => chooseCompute(p, b, rr, num("s-hours"), speedOf(gpuAvailable), BUDGET_S);
   const ensurePack = async () => {
     pack ??= await loadPack(o.packUrl);
     $("s-pumps-row").hidden = !pack.pump; // packs before the pump sink have no switch to offer
@@ -256,12 +268,12 @@ export function mountSim(page: MapPage, o: { packUrl: string; regionBbox: number
     layer.setDepth(filtered ? d!.map((v) => (v >= fMin && v <= fMax ? v : 0)) : d);
     if (d) {
       let n = 0;
-      for (let c = 0; c < d.length; c++) if (res.count[c] && d[c] > (fMin > 0 ? fMin : FLOOD_M) && d[c] <= fMax) n++; // no lower bound set: same 0.15 m as the KPI
+      for (let c = 0; c < d.length; c++) if (res.count[c] && d[c] > (fMin > 0 ? fMin : FLOOD_M) && d[c] <= fMax) n += res.count[c]; // no lower bound set: same 0.15 m as the KPI
       $l("lg-area").textContent = t("lg.area", { km2: fmt((n * res.run.dx * res.run.dx) / 1e6, 2) });
     }
     const g = res.run;
     let wet = 0, deep = 0;
-    if (d) for (let c = 0; c < d.length; c++) if (res.count[c]) { if (d[c] > FLOOD_M) wet++; if (d[c] > deep) deep = d[c]; }
+    if (d) for (let c = 0; c < d.length; c++) if (res.count[c]) { if (d[c] > FLOOD_M) wet += res.count[c]; if (d[c] > deep) deep = d[c]; }
     const ex = d && expoNow && res.cells ? exposureSums(expoNow, res.cells, d, res.count, FLOOD_M) : null;
     page.kpis.innerHTML = kpi(t("kpi.area"), fmt((wet * g.dx * g.dx) / 1e6, 1), "km²", t("kpi.area.s")) + kpi(t("kpi.depth"), fmt(deep, 2), "m", t("kpi.depth.s"))
       + (ex ? kpi(t("kpi.bld"), fmt(ex.buildings), "", t("kpi.bld.s")) + kpi(t("kpi.pop"), fmt(ex.people), "", t("kpi.pop.s"))
@@ -397,9 +409,11 @@ export function mountSim(page: MapPage, o: { packUrl: string; regionBbox: number
     const name = `banjir3d_${showMax ? "max" : `t${Math.round((res.times[frame] ?? 0) / 60)}min`}_${stamp()}`;
     const title = `${t("exp.title")}: ${t("region")}`;
     const x = b.dataset.x;
-    if (x === "tif") save(`${name}_depth_m.tif`, depthTiff(res.grid, d), "image/tiff");
-    else if (x === "ctif") save(`${name}_colour.tif`, colourTiff(res.grid, d), "image/tiff");
-    else if (x === "html") save(`${name}.html`, htmlMap(title, await mercatorPng(res.grid, d), sourceLines(), t("legend")), "text/html");
+    // dual-grid runs export on the fine cells (the drawn result); f = 1: no further refinement
+    const fr = res.grid.fine && (x === "tif" || x === "ctif" || x === "html") ? fineResult(res.grid, d) : null;
+    if (x === "tif") save(`${name}_depth_m.tif`, fr ? depthTiff(fr.grid, fr.depth) : depthTiff(res.grid, d), "image/tiff");
+    else if (x === "ctif") save(`${name}_colour.tif`, fr ? colourTiff(fr.grid, fr.depth, 1) : colourTiff(res.grid, d), "image/tiff");
+    else if (x === "html") save(`${name}.html`, htmlMap(title, await (fr ? mercatorPng(fr.grid, fr.depth, 2400, 1) : mercatorPng(res.grid, d)), sourceLines(), t("legend")), "text/html");
     else if (x === "png") save(`${name}.png`, await mapPng(map, title, sourceLines()[0], sourceLines().slice(1), t("legend")), "image/png");
     else if (x === "csv") save(`${name}_kecamatan.csv`, expoCsv(), "text/csv");
     else save(`${name}_provenance.json`, JSON.stringify(provenance(), null, 1), "application/json");
@@ -421,12 +435,13 @@ export function mountSim(page: MapPage, o: { packUrl: string; regionBbox: number
     let land = 0, wet = 0, sum = 0, deep = -1, dMax = 0;
     const cls = [0, 0, 0, 0], bounds = [0.5, 1, 2];
     for (let c = 0; c < mx.length; c++) {
-      if (!r.count[c]) continue;
-      land++;
+      const w = r.count[c];
+      if (!w) continue;
+      land += w;
       const v = mx[c];
       if (v > dMax) { dMax = v; deep = c; }
       if (v <= FLOOD_M) continue;
-      wet++; sum += v; cls[bounds.filter((b2) => v > b2).length]++;
+      wet += w; sum += v * w; cls[bounds.filter((b2) => v > b2).length] += w;
     }
     let deepest: Facts["env"]["deepest"] = null;
     if (deep >= 0 && dMax > FLOOD_M) {
@@ -452,7 +467,7 @@ export function mountSim(page: MapPage, o: { packUrl: string; regionBbox: number
     } else rain = { kind: r.scenario.rainMode === "hourly" ? "hourly" : "design", mm: totalMm(hy), h, peakMmH, r24: r.scenario.r24 as number | undefined };
     const box2 = (r.scenario.area as { box?: number[] }).box ?? null, [wKm, hKm] = box2 ? kmOf(box2) : [0, 0];
     const facts: Facts = {
-      area: { box: box2, wKm, hKm }, landKm2: land * a, cellM: g.dx, ...(g.r > 1 ? { fine: { buildingShare: (r.scenario.fineCells as { buildings?: { share?: number } } | undefined)?.buildings?.share ?? null } } : {}), hours: r.scenario.hours as number, gpu: !!r.gpu, landcoverYear: pack.header.landcover_year, ...(r.scenario.terrainYear ? { terrainYear: r.scenario.terrainYear as number, subEpoch: r.scenario.terrainEpoch as number } : {}),
+      area: { box: box2, wKm, hKm }, landKm2: land * a, cellM: g.fine ? g.fine.dx : g.dx, ...(r.scenario.fineCells ? { fine: { buildingShare: (r.scenario.fineCells as { buildings?: { share?: number } } | undefined)?.buildings?.share ?? null, ...(g.fine ? { computeM: g.dx } : {}) } } : {}), hours: r.scenario.hours as number, gpu: !!r.gpu, landcoverYear: pack.header.landcover_year, ...(r.scenario.terrainYear ? { terrainYear: r.scenario.terrainYear as number, subEpoch: r.scenario.terrainEpoch as number } : {}),
       drainMmH: calibration.drain_mm_h, ...dsdaFacts(pack), ...(r.scenario.polderPumps ? { pumpsM3s: r.scenario.pumpM3s as number, pumpPolders: (pack.header.pumps as { polders_served?: number } | undefined)?.polders_served } : r.run.pump ? { pumpsOff: true } : {}), seaM: r.scenario.seaLevel as number, floodM: FLOOD_M, rain,
       upstream: r.inflows.length ? { n: r.inflows.length, peakM3s: peakInflow(), areaKm2: r.inflows.reduce((s2, f) => s2 + f.areaKm2, 0) } : null,
       env: { km2: wet * a, classesKm2: cls.map((v) => v * a), meanDepth: wet ? sum / wet : 0, maxDepth: dMax, deepest },
@@ -498,17 +513,20 @@ export function mountSim(page: MapPage, o: { packUrl: string; regionBbox: number
     const tYear = decYear(ev ? Date.parse(ev.start_utc) : Date.now());
     let run = buildRun(p, area === "box" ? bbox : null, kk, tYear), bldInfo: { cells: number; share: number } | null = null;
     if (r > 1 && bbox) {
-      // fine run: building footprints from the region's building tiles become solid blocks
+      // fine run: building footprints from the region's building tiles; the flow is solved on the finest compute grid that fits
+      // the time budget (building blocks when that is the fine grid itself, building porosity otherwise)
       $("s-status").textContent = t("sim.fine.bld");
-      const g0 = buildFineRun(p, bbox, r, tYear);
+      const rc = computeFor(p, bbox, r).rc, fx = { nx: run.nx * r, ny: run.ny * r, dx: run.dx / r, utm: run.utm, corners: run.corners };
+      let bld: Uint8Array = new Uint8Array(fx.nx * fx.ny);
       try {
-        const bm = await buildingMask(o.packUrl.replace(/[^/]*$/, "buildings_overture.pmtiles"), g0);
-        run = buildFineRun(p, bbox, r, tYear, bm.mask);
-        bldInfo = { cells: bm.cells, share: bm.cells / (run.nx * run.ny) };
-      } catch (e) { run = g0; $("s-cpuwarn").innerHTML += `<div class="note warn">${esc(t("sim.fine.nobld", { m: String(e) }))}</div>`; }
+        const bm = await buildingMask(o.packUrl.replace(/[^/]*$/, "buildings_overture.pmtiles"), fx);
+        bld = bm.mask; bldInfo = { cells: bm.cells, share: bm.cells / bld.length };
+      } catch (e) { $("s-cpuwarn").innerHTML += `<div class="note warn">${esc(t("sim.fine.nobld", { m: String(e) }))}</div>`; }
+      run = rc === r ? buildFineRun(p, bbox, r, tYear, bldInfo ? bld : null) : buildDualRun(p, bbox, r, rc, tYear, bld);
     }
-    const N = run.nx * run.ny, count = new Uint8Array(N), mask = new Uint8Array(N);
-    for (let c = 0; c < N; c++) { mask[c] = +(run.active[c] && !run.sea[c] && !run.building?.[c]); count[c] = +(mask[c] && !run.channel[c]); }
+    // count: share of each cell that counts for flooded area (open ground; channels, sea and buildings do not count)
+    const N = run.nx * run.ny, count = new Float32Array(N), mask = new Uint8Array(N);
+    for (let c = 0; c < N; c++) { mask[c] = +(run.active[c] && !run.sea[c] && !run.building?.[c] && (!run.phi || run.phi[c] > 0)); count[c] = mask[c] && !run.channel[c] ? (run.phi ? run.phi[c] : 1) : 0; }
     const hours = num("s-hours"), steps = Math.ceil((hours * 3600) / DT_S), up = $<HTMLInputElement>("s-up").checked;
     // observed event: rain zone per cell, area-mean hyetograph for the chart and KPIs, each upstream catchment with the rain of its own points
     const zone = ev ? zoneGrid(ev, run) : undefined, hy = ev ? meanHyetograph(ev, zone!, mask) : hyIn!;
@@ -523,12 +541,12 @@ export function mountSim(page: MapPage, o: { packUrl: string; regionBbox: number
       raw = inflowsFor(p.streams, run.isIn, cum, steps);
     }
     const inflows = raw.map((f) => ({ ...f, cell: run.cellAt(f.x, f.y) })).filter((f) => f.cell >= 0);
-    const grid: Grid = { nx: run.nx, ny: run.ny, dx: run.dx, zone: run.utm.zone, x0: run.utm.x0, y0: run.utm.y0, z: Float32Array.from(run.z), mask };
+    const grid: Grid = { nx: run.nx, ny: run.ny, dx: run.dx, zone: run.utm.zone, x0: run.utm.x0, y0: run.utm.y0, z: Float32Array.from(run.z), mask, fine: run.fine };
     const scenario = {
-      area: area === "box" ? { box: bbox } : "region", rainMode: mode(), ...(mode() === "design" ? { r24: num("s-r24") } : {}), rainMm: +totalMm(hy).toFixed(1), rainHours: (hy.mm.length * hy.blockSeconds) / 3600, upstreamRain: up, seaLevel: num("s-sea"), hours, cellM: run.dx,
+      area: area === "box" ? { box: bbox } : "region", rainMode: mode(), ...(mode() === "design" ? { r24: num("s-r24") } : {}), rainMm: +totalMm(hy).toFixed(1), rainHours: (hy.mm.length * hy.blockSeconds) / 3600, upstreamRain: up, seaLevel: num("s-sea"), hours, cellM: run.fine ? run.fine.dx : run.dx,
       ...(p.sub ? { terrainYear: +tYear.toFixed(2), terrainEpoch: p.subEpoch } : {}),
-      ...(run.r > 1 ? { fineCells: { cellM: run.dx, terrain: "bilinear from the 30 m pack (no new terrain detail)", buildings: bldInfo ? { method: "building block +10 m (Schubert and Sanders 2012)", source: "Overture Maps buildings, region pack tiles z14", cells: bldInfo.cells, share: +bldInfo.share.toFixed(3) } : "not loaded" } } : {}),
-      ...(run.pump ? { polderPumps: pumpsOn(), pumpM3s: Math.round(run.pump.reduce((a, v, c) => a + (run.sea[c] ? 0 : v), 0) * run.dx * run.dx) } : {}),
+      ...(r > 1 ? { fineCells: { cellM: 30 / r, computeM: run.dx, terrain: "bilinear from the 30 m pack (no new terrain detail)", buildings: bldInfo ? { method: run.fine ? "building porosity on the compute grid, result drawn on the fine cells (dual grid: Sanders et al. 2008; Sanders and Schubert 2019)" : "building block +10 m (Schubert and Sanders 2012)", source: "Overture Maps buildings, region pack tiles z14", cells: bldInfo.cells, share: +bldInfo.share.toFixed(3) } : "not loaded" } } : {}),
+      ...(run.pump ? { polderPumps: pumpsOn(), pumpM3s: Math.round(run.pump.reduce((a, v, c) => a + (run.sea[c] ? 0 : v * (run.phi ? run.phi[c] : 1)), 0) * run.dx * run.dx) } : {}),
       ...(ev ? { event: ev.id, eventStartUtc: ev.start_utc, rainSource: ev.source, rainPoints: ev.mm.length } : {}),
     };
     res = { run, grid, frames: [], times: [], area: [], max: null, inflows, hy, scenario, event: ev, zone, count };
@@ -550,7 +568,7 @@ export function mountSim(page: MapPage, o: { packUrl: string; regionBbox: number
       if (!res) return;
       if (m.type === "engine") res.gpu = m.gpu;
       else if (m.type === "frame") {
-        res.frames.push(Uint16Array.from(m.depth, (v) => Math.min(65535, Math.round(v * 100)))); res.times.push(m.t); res.area.push(m.floodedKm2);
+        res.frames.push(m.depthCm); res.times.push(m.t); res.area.push(m.floodedKm2);
         frame = res.frames.length - 1;
         const fr = tq<HTMLInputElement>("t-frame"); fr.max = String(frame); fr.value = String(frame); tq("t-out").textContent = fmtT(m.t);
         render();
@@ -559,20 +577,23 @@ export function mountSim(page: MapPage, o: { packUrl: string; regionBbox: number
         $("s-status").textContent = t("sim.running", { p: pc }); ($("s-prog").firstElementChild as HTMLElement).style.width = `${pc}%`;
       } else if (m.type === "done") {
         res.max = m.maxDepth; res.totals = m.totals; res.mass = m.massError; res.wall = m.wallMs; res.gpu = m.gpu;
+        // remember how fast this device was (only runs long enough to measure); the next fine run picks its grid from it
+        if (m.wallMs > 3000 && m.steps > 0) try { const v = (run.nx * run.ny * m.steps) / (m.wallMs / 1000), old = Number(localStorage.getItem(speedKey(m.gpu))) || v; localStorage.setItem(speedKey(m.gpu), String(Math.round(Math.min(old * 3, 0.5 * (old + v))))); } catch { /* storage blocked */ }
         setRunning(false); $("s-clear").hidden = false; worker = null;
         $("s-status").textContent = t("sim.done", { s: (m.wallMs / 1000).toFixed(0), e: t(m.gpu ? "sim.gpu" : "sim.cpu") });
         const T = m.totals, mm = (v: number) => fmt(v / 1e6, 1);
+        const gridTxt = `${run.nx} × ${run.ny} × ${run.dx} m` + (run.fine ? ` → ${run.fine.nx} × ${run.fine.ny} × ${run.fine.dx} m` : "");
         $("s-stats-box").hidden = false;
         $("s-stats").innerHTML = (lang === "id"
-          ? [["Hujan rata-rata (mm)", fmt(totalMm(hy))], ["Air dari hulu, puncak (m³/s)", fmt(peakInflow())], ["Hujan jatuh (juta m³)", mm(T.rain)], ["Meresap ke tanah", mm(T.infiltration)], ["Masuk dari hulu", mm(T.inflow)], ["Keluar lewat tepi area", mm(T.outflow)], ["Ke laut", mm(T.sea)], ["Kesalahan neraca air", m.massError.toExponential(1)], ["Ukuran grid", `${run.nx} × ${run.ny} × ${run.dx} m`], ...(bldInfo ? [["Sel bangunan (blok padat)", `${fmt(bldInfo.share * 100, 1)} %`]] : []), ["Sungai masuk", String(inflows.length)]]
-          : [["Mean rain (mm)", fmt(totalMm(hy))], ["Upstream inflow, peak (m³/s)", fmt(peakInflow())], ["Rain fallen (million m³)", mm(T.rain)], ["Infiltrated", mm(T.infiltration)], ["Inflow from upstream", mm(T.inflow)], ["Left through the area edge", mm(T.outflow)], ["To the sea", mm(T.sea)], ["Water balance error", m.massError.toExponential(1)], ["Grid", `${run.nx} × ${run.ny} × ${run.dx} m`], ...(bldInfo ? [["Building cells (solid blocks)", `${fmt(bldInfo.share * 100, 1)} %`]] : []), ["Entering rivers", String(inflows.length)]])
+          ? [["Hujan rata-rata (mm)", fmt(totalMm(hy))], ["Air dari hulu, puncak (m³/s)", fmt(peakInflow())], ["Hujan jatuh (juta m³)", mm(T.rain)], ["Meresap ke tanah", mm(T.infiltration)], ["Masuk dari hulu", mm(T.inflow)], ["Keluar lewat tepi area", mm(T.outflow)], ["Ke laut", mm(T.sea)], ["Kesalahan neraca air", m.massError.toExponential(1)], ["Ukuran grid", gridTxt], ...(bldInfo ? [[run.fine ? "Sel bangunan (porositas)" : "Sel bangunan (blok padat)", `${fmt(bldInfo.share * 100, 1)} %`]] : []), ["Sungai masuk", String(inflows.length)]]
+          : [["Mean rain (mm)", fmt(totalMm(hy))], ["Upstream inflow, peak (m³/s)", fmt(peakInflow())], ["Rain fallen (million m³)", mm(T.rain)], ["Infiltrated", mm(T.infiltration)], ["Inflow from upstream", mm(T.inflow)], ["Left through the area edge", mm(T.outflow)], ["To the sea", mm(T.sea)], ["Water balance error", m.massError.toExponential(1)], ["Grid", gridTxt], ...(bldInfo ? [[run.fine ? "Building cells (porosity)" : "Building cells (solid blocks)", `${fmt(bldInfo.share * 100, 1)} %`]] : []), ["Entering rivers", String(inflows.length)]])
           .map(([a, b2]) => `<dt>${esc(a)}</dt><dd>${esc(b2)}</dd>`).join("");
         render(); conclude(); showConcl(true);
       } else if (m.type === "error") { setRunning(false); $("s-status").textContent = t("sim.err", { m: m.message }); }
     };
     worker.onerror = (e) => { setRunning(false); $("s-status").textContent = t("sim.err", { m: e.message }); };
     const msg: RunMsg = {
-      type: "run", grid: { nx: run.nx, ny: run.ny, dx: run.dx, z: run.z, n: run.n, cn: run.cn, active: run.active, sea: run.sea, drain: drainOf(run, pumpsOn()), zone, ...(run.h0 ? { h0: run.h0 } : {}) }, zoneMm: ev?.mm, seaLevel: num("s-sea"), hours, rain: hy, frameS,
+      type: "run", grid: { nx: run.nx, ny: run.ny, dx: run.dx, z: run.z, n: run.n, cn: run.cn, active: run.active, sea: run.sea, drain: drainOf(run, pumpsOn()), zone, ...(run.h0 ? { h0: run.h0 } : {}), ...(run.phi ? { phi: run.phi, psiX: run.psiX, psiY: run.psiY, rainW: run.rainW } : {}) }, zoneMm: ev?.mm, seaLevel: num("s-sea"), hours, rain: hy, frameS,
       inflowCells: inflows.map((f) => f.cell), inflowQ: inflows.map((f) => f.q), inflowDt: DT_S, floodM: FLOOD_M, count, preferGpu: gpuAvailable,
     };
     worker.postMessage(msg);
