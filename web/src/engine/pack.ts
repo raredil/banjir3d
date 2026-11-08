@@ -341,14 +341,14 @@ export function buildDualRun(p: Pack, box: number[], r: number, rc: number, year
 /** Compute cells per 30 m cell side for a fine run of r cells per side: the finest divisor of r whose estimated run time fits
  *  `budgetS` (cells x time steps / speed; the time step follows the deepest water, estimated from the carved channels).
  *  rc = r is the building-block grid itself. */
-export function chooseCompute(p: Pack, box: number[], r: number, hours: number, cellStepsPerS: number, budgetS: number): { rc: number; estS: number } {
+export function chooseCompute(p: Pack, box: number[], r: number, hours: number, cellStepsPerS: number, budgetS: number, maxCells = Infinity): { rc: number; estS: number } {
   const base = buildRun(p, box, 1);
   let h0max = 0;
   if (base.h0) for (let c = 0; c < base.h0.length; c++) if (base.active[c] && !base.sea[c] && base.h0[c] > h0max) h0max = base.h0[c];
   const hEst = h0max + 1.5, landCells = base.nx * base.ny;
   const est = (rc: number) => { const dx = p.dx / rc, dt = Math.min(15, (0.5 * dx) / Math.sqrt(G_EST * hEst)); return (landCells * rc * rc * ((hours * 3600) / dt)) / cellStepsPerS; };
   const divs = Array.from({ length: r }, (_, i) => r - i).filter((d) => r % d === 0); // finest first
-  for (const rc of divs) { const e = est(rc); if (e <= budgetS) return { rc, estS: e }; }
+  for (const rc of divs) { const e = est(rc); if (e <= budgetS && landCells * rc * rc <= maxCells) return { rc, estS: e }; }
   return { rc: 1, estS: est(1) };
 }
 const G_EST = 9.81;

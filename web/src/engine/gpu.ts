@@ -192,14 +192,21 @@ export class GpuEngine {
   private constructor(
     private dev: GPUDevice, private pipes: Record<string, GPUComputePipeline>, private groups: GPUBindGroup[],
     private bufs: Record<string, GPUBuffer>, readonly N: number, private nWg: number, private initialVolume: number, private area: number, private phi: Float64Array,
+    private health: { error: string | null },
   ) {}
-  static async create(inp: GpuInputs): Promise<GpuEngine | null> {
+  /** First GPU problem seen (validation or out-of-memory error, device lost); the run is not trusted once this is set. */
+  get error() { return this.health.error; }
+  static async create(inp: GpuInputs): Promise<GpuEngine> {
     const ad = await navigator.gpu?.requestAdapter({ powerPreference: "high-performance" });
-    if (!ad) return null;
+    if (!ad) throw new Error("no WebGPU adapter");
     const N = inp.grid.nx * inp.grid.ny;
     const need = N * 32;
-    if (need > ad.limits.maxStorageBufferBindingSize) return null;
-    const dev = await ad.requestDevice({ requiredLimits: { maxStorageBufferBindingSize: Math.max(need, 128 << 20), maxBufferSize: Math.max(need, 256 << 20) } });
+    if (need > ad.limits.maxStorageBufferBindingSize || need > ad.limits.maxBufferSize) throw new Error(`grid too large for this GPU (${N} cells)`);
+    const dev = await ad.requestDevice({ requiredLimits: { maxStorageBufferBindingSize: Math.max(need, Math.min(128 << 20, ad.limits.maxStorageBufferBindingSize)), maxBufferSize: Math.max(need, Math.min(256 << 20, ad.limits.maxBufferSize)) } });
+    const health: { error: string | null } = { error: null };
+    dev.addEventListener("uncapturederror", (e) => { health.error ??= `GPU: ${(e as GPUUncapturedErrorEvent).error.message}`; });
+    void dev.lost.then((i) => { health.error ??= `GPU device lost: ${i.message || i.reason}`; });
+    dev.pushErrorScope("out-of-memory"); dev.pushErrorScope("validation");
     const g = inp.grid, nWg = Math.ceil(N / WG);
     const S = BU.STORAGE, D = BU.COPY_DST, C = BU.COPY_SRC;
     const buf = (data: ArrayBufferView | number, usage = S | D) => {
@@ -265,7 +272,9 @@ export class GpuEngine {
       layout, entries: ["p", "st", "cell", "hh", qo, qn, "bs", "aux", "ex"].map((k, b) => ({ binding: b, resource: { buffer: bufs[k] } })),
     });
     const groups = [group("qa", "qb"), group("qb", "qa")];
-    return new GpuEngine(dev, pipes, groups, bufs, N, nWg, vol * g.dx * g.dx, g.dx * g.dx, por.phi);
+    const e1 = await dev.popErrorScope(), e2 = await dev.popErrorScope();
+    if (e1 || e2) { dev.destroy(); throw new Error(`GPU setup: ${(e1 ?? e2)!.message}`); }
+    return new GpuEngine(dev, pipes, groups, bufs, N, nWg, vol * g.dx * g.dx, g.dx * g.dx, por.phi, health);
   }
   private parity = 0;
   /** Encode n time steps and submit them. */
@@ -307,5 +316,5 @@ export class GpuEngine {
     const T = s.totals, inn = this.initialVolume + T.rain + T.inflow;
     return inn > 0 ? (inn - T.infiltration - T.outflow - T.sea - T.drain - v * this.area) / inn : 0;
   }
-  destroy() { for (const b of Object.values(this.bufs)) b.destroy(); this.dev.destroy(); }
+  destroy() { try { for (const b of Object.values(this.bufs)) b.destroy(); this.dev.destroy(); } catch { /* already lost */ } }
 }

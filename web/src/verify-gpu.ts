@@ -39,8 +39,8 @@ const out = document.querySelector("#out")!;
     cpu.step();
   }
   const cpuMs = performance.now() - t0;
-  const gpu = await GpuEngine.create({ grid, seaLevel: 0, hMin: 0.001, alpha: 0.5, dtMax: 15, tEnd: hours * 3600, rain: hy, inflowCells: inflows.map((f) => f.cell), inflowQ: inflows.map((f) => f.q), inflowDt: DT_S, zoneMm });
-  if (!gpu) { out.textContent = "no WebGPU"; (window as any).__result = { error: "no webgpu" }; return; }
+  const gpu = await GpuEngine.create({ grid, seaLevel: 0, hMin: 0.001, alpha: 0.5, dtMax: 15, tEnd: hours * 3600, rain: hy, inflowCells: inflows.map((f) => f.cell), inflowQ: inflows.map((f) => f.q), inflowDt: DT_S, zoneMm }).catch((e) => { out.textContent = String(e); (window as any).__result = { error: String(e) }; return null; });
+  if (!gpu) return;
   t0 = performance.now();
   let st = await gpu.state();
   while (st.t < hours * 3600 - 1e-3) { gpu.steps(200); st = await gpu.state(); }

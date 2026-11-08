@@ -97,8 +97,12 @@ export function mountSim(page: MapPage, o: { packUrl: string; regionBbox: number
   let area: "region" | "box" = "region", bbox: number[] | null = null, k = 1, pack: Pack | null = null, worker: Worker | null = null, res: Result | null = null, layer: FloodLayer | null = null;
   let showMax = false, frame = 0, playTimer = 0;
   // WebGPU only counts when an adapter answers (headless and blocklisted browsers expose navigator.gpu without one)
-  let gpuAvailable = "gpu" in navigator;
-  (navigator as Navigator & { gpu?: { requestAdapter(): Promise<unknown> } }).gpu?.requestAdapter().then((a) => { gpuAvailable = !!a; fineCheck(); }).catch(() => { gpuAvailable = false; fineCheck(); });
+  // gpuCells: largest grid this GPU's buffer limits hold (32 bytes per cell in the engine's largest buffer)
+  let gpuAvailable = "gpu" in navigator, gpuCells = Infinity, gpuNote = "";
+  type Lim = { limits: { maxStorageBufferBindingSize: number; maxBufferSize: number } };
+  (navigator as Navigator & { gpu?: { requestAdapter(): Promise<Lim | null> } }).gpu?.requestAdapter()
+    .then((a) => { gpuAvailable = !!a; if (a) gpuCells = Math.floor(Math.min(a.limits.maxStorageBufferBindingSize, a.limits.maxBufferSize) / 32); fineCheck(); })
+    .catch(() => { gpuAvailable = false; fineCheck(); });
 
   // ---------- inputs ----------
   const hyeto = (): Hyetograph | null => ($<HTMLSelectElement>("s-mode").value === "hourly" ? parseHourly($<HTMLTextAreaElement>("s-hourly").value) : alternatingBlock(num("s-r24"), num("s-dur")));
@@ -219,7 +223,7 @@ export function mountSim(page: MapPage, o: { packUrl: string; regionBbox: number
   // device speed: measured on this browser's last run (cell updates per second, kept in localStorage), else the default
   const speedKey = (gpu: boolean) => `banjir3d.speed.${gpu ? "gpu" : "cpu"}`;
   const speedOf = (gpu: boolean) => { try { const v = Number(localStorage.getItem(speedKey(gpu))); if (v > 1e5 && v < 1e12) return v; } catch { /* storage blocked */ } return gpu ? SPEED.gpu : SPEED.cpu; };
-  const computeFor = (p: Pack, b: number[], rr: number) => chooseCompute(p, b, rr, num("s-hours"), speedOf(gpuAvailable), BUDGET_S);
+  const computeFor = (p: Pack, b: number[], rr: number) => chooseCompute(p, b, rr, num("s-hours"), speedOf(gpuAvailable), BUDGET_S, gpuAvailable ? gpuCells : Infinity);
   const ensurePack = async () => {
     pack ??= await loadPack(o.packUrl);
     $("s-pumps-row").hidden = !pack.pump; // packs before the pump sink have no switch to offer
@@ -500,15 +504,26 @@ export function mountSim(page: MapPage, o: { packUrl: string; regionBbox: number
   $("s-cancel").addEventListener("click", () => { worker?.terminate(); worker = null; setRunning(false); $("s-status").textContent = ""; });
   const addLayer = () => { if (layer && !map.getLayer("flood")) map.addLayer(layer, map.getStyle().layers.find((l) => l.type === "symbol")?.id); };
   page.onOverlays(addLayer);
-  $("s-run").addEventListener("click", async () => {
+  // a failure anywhere in a run: stop it, say what failed (text the owner can copy and send) and offer a reload when files are missing
+  const fail = (e: unknown, stale = false) => {
+    worker?.terminate(); worker = null; setRunning(false);
+    const m = String((e as Error)?.message ?? e ?? "");
+    $("s-status").innerHTML = `${esc(t("sim.err", { m: m || t("sim.err.unknown") }))}${stale ? `<br>${esc(t("sim.err.stale"))}` : ""}
+      <span class="row"><button class="btn small" type="button" data-e="copy">${t("err.copy")}</button><button class="btn small" type="button" data-e="reload">${t("err.reload")}</button></span>`;
+    const detail = `Banjir3D ${o.releaseTag ?? ""} ${import.meta.env.VITE_GIT_SHA ?? ""}\n${m}\n${(e as Error)?.stack ?? ""}\n${navigator.userAgent}\nWebGPU: ${gpuAvailable} ${gpuNote}`;
+    $("s-status").querySelector<HTMLButtonElement>('[data-e="copy"]')!.onclick = async (ev) => { const b2 = ev.currentTarget as HTMLButtonElement; try { await navigator.clipboard.writeText(detail); b2.textContent = t("concl.copied"); } catch { b2.textContent = "✗"; } };
+    $("s-status").querySelector<HTMLButtonElement>('[data-e="reload"]')!.onclick = () => location.reload();
+  };
+  const startRun = async () => {
     const isEv = mode() === "event", hyIn = isEv ? null : hyeto();
     if (!isEv && !hyIn) { $("s-status").textContent = t("sim.hourly.bad"); return; }
     if (!fineCheck()) { $("s-status").textContent = $("s-fine-msg").textContent ?? ""; return; }
     clear(); setRunning(true); $("s-status").textContent = t("sim.loading");
     let p: Pack, ev: EventRain | null;
-    try { [p, ev] = await Promise.all([ensurePack(), isEv ? loadEvent($<HTMLSelectElement>("s-event").value) : null]); } catch (e) { setRunning(false); $("s-status").textContent = t("sim.err", { m: String(e) }); return; }
+    try { [p, ev] = await Promise.all([ensurePack(), isEv ? loadEvent($<HTMLSelectElement>("s-event").value) : null]); } catch (e) { fail(e, /fetch|import|load/i.test(String(e))); return; }
     const kk = !gpuAvailable && area === "region" ? Math.max(3, k) : k;
-    $("s-cpuwarn").innerHTML = gpuAvailable ? "" : `<div class="note warn">${t("sim.cpuwarn")}</div>`;
+    $("s-cpuwarn").innerHTML = (gpuNote ? `<div class="note warn">${esc(gpuNote)}</div>` : "") + (gpuAvailable ? "" : `<div class="note warn">${t("sim.cpuwarn")}</div>`);
+    let rc = 1; // compute cells per 30 m side (fine runs); kept to see whether a CPU fallback needs another grid
     // terrain year: the event date for an observed flood, today otherwise (subsidence shifts the terrain to that year)
     const tYear = decYear(ev ? Date.parse(ev.start_utc) : Date.now());
     let run = buildRun(p, area === "box" ? bbox : null, kk, tYear), bldInfo: { cells: number; share: number } | null = null;
@@ -516,7 +531,8 @@ export function mountSim(page: MapPage, o: { packUrl: string; regionBbox: number
       // fine run: building footprints from the region's building tiles; the flow is solved on the finest compute grid that fits
       // the time budget (building blocks when that is the fine grid itself, building porosity otherwise)
       $("s-status").textContent = t("sim.fine.bld");
-      const rc = computeFor(p, bbox, r).rc, fx = { nx: run.nx * r, ny: run.ny * r, dx: run.dx / r, utm: run.utm, corners: run.corners };
+      rc = computeFor(p, bbox, r).rc;
+      const fx = { nx: run.nx * r, ny: run.ny * r, dx: run.dx / r, utm: run.utm, corners: run.corners };
       let bld: Uint8Array = new Uint8Array(fx.nx * fx.ny);
       try {
         const bm = await buildingMask(o.packUrl.replace(/[^/]*$/, "buildings_overture.pmtiles"), fx);
@@ -566,7 +582,18 @@ export function mountSim(page: MapPage, o: { packUrl: string; regionBbox: number
     worker.onmessage = (ev: MessageEvent<OutMsg>) => {
       const m = ev.data;
       if (!res) return;
-      if (m.type === "engine") res.gpu = m.gpu;
+      if (m.type === "engine") {
+        res.gpu = m.gpu;
+        if (m.reason) {
+          // WebGPU failed on this device: CPU from now on; frames of the GPU attempt are dropped. When the grid was sized for
+          // the GPU (whole region at 30/60 m, a finer fine-run compute grid) the run restarts with the CPU's grid.
+          gpuAvailable = false; gpuNote = t("sim.gpufail", { m: m.reason });
+          res.frames = []; res.times = []; res.area = [];
+          const cpuK = area === "region" ? Math.max(3, k) : k, cpuRc = r > 1 && bbox ? computeFor(p, bbox, r).rc : rc;
+          if (cpuK !== kk || cpuRc !== rc) { worker?.terminate(); worker = null; setRunning(false); setTimeout(() => void startRun().catch((e) => fail(e)), 0); return; }
+          $("s-cpuwarn").innerHTML = `<div class="note warn">${esc(gpuNote)}</div>`;
+        }
+      }
       else if (m.type === "frame") {
         res.frames.push(m.depthCm); res.times.push(m.t); res.area.push(m.floodedKm2);
         frame = res.frames.length - 1;
@@ -589,14 +616,16 @@ export function mountSim(page: MapPage, o: { packUrl: string; regionBbox: number
           : [["Mean rain (mm)", fmt(totalMm(hy))], ["Upstream inflow, peak (m³/s)", fmt(peakInflow())], ["Rain fallen (million m³)", mm(T.rain)], ["Infiltrated", mm(T.infiltration)], ["Inflow from upstream", mm(T.inflow)], ["Left through the area edge", mm(T.outflow)], ["To the sea", mm(T.sea)], ["Water balance error", m.massError.toExponential(1)], ["Grid", gridTxt], ...(bldInfo ? [[run.fine ? "Building cells (porosity)" : "Building cells (solid blocks)", `${fmt(bldInfo.share * 100, 1)} %`]] : []), ["Entering rivers", String(inflows.length)]])
           .map(([a, b2]) => `<dt>${esc(a)}</dt><dd>${esc(b2)}</dd>`).join("");
         render(); conclude(); showConcl(true);
-      } else if (m.type === "error") { setRunning(false); $("s-status").textContent = t("sim.err", { m: m.message }); }
+      } else if (m.type === "error") fail(m.message);
     };
-    worker.onerror = (e) => { setRunning(false); $("s-status").textContent = t("sim.err", { m: e.message }); };
+    // no message at all: the worker file did not load (usually an old page after the site was updated)
+    worker.onerror = (e) => { e.preventDefault(); fail(e.message, !e.message); };
     const msg: RunMsg = {
       type: "run", grid: { nx: run.nx, ny: run.ny, dx: run.dx, z: run.z, n: run.n, cn: run.cn, active: run.active, sea: run.sea, drain: drainOf(run, pumpsOn()), zone, ...(run.h0 ? { h0: run.h0 } : {}), ...(run.phi ? { phi: run.phi, psiX: run.psiX, psiY: run.psiY, rainW: run.rainW } : {}) }, zoneMm: ev?.mm, seaLevel: num("s-sea"), hours, rain: hy, frameS,
       inflowCells: inflows.map((f) => f.cell), inflowQ: inflows.map((f) => f.q), inflowDt: DT_S, floodM: FLOOD_M, count, preferGpu: gpuAvailable,
     };
     worker.postMessage(msg);
-  });
+  };
+  $("s-run").addEventListener("click", () => { startRun().catch((e) => fail(e)); });
   return { destroy() { clear(); } };
 }
