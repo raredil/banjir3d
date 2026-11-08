@@ -239,3 +239,8 @@ details.sec summary, details > summary { cursor: pointer; color: var(--muted); f
 .x-data .seg button { font-size: 12px; padding: 4px 6px; }
 
 .map-tools .menu { max-height: calc(100vh - 90px); overflow-y: auto; }
+
+/* error bar: something failed to load or crashed; text to copy and a reload button */
+.err-bar { position: fixed; top: 10px; left: 50%; transform: translateX(-50%); z-index: 1000; max-width: min(720px, calc(100vw - 32px)); display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px;
+  background: var(--warn-soft); color: var(--warn); border: 1px solid var(--warn); border-radius: 10px; padding: 9px 12px; font-size: 13px; box-shadow: 0 6px 24px rgba(0,0,0,.18); }
+.err-bar span { color: var(--text); overflow-wrap: anywhere; flex: 1 1 200px; }
