@@ -62,6 +62,8 @@ export const loadPack = async (url: string): Promise<Pack> => parsePack(await fe
 
 export type RunGrid = {
   nx: number; ny: number; dx: number; k: number; i0: number; j0: number;
+  r: number; // run cells per pack cell side: 1 for 30 m and coarser (k pack cells per run cell), 3 for 10 m ... 30 for 1 m
+  building: Uint8Array | null; // fine runs: 1 = building footprint (solid block, Schubert and Sanders 2012), null otherwise
   z: Float64Array; n: Float64Array; cn: Float64Array; active: Uint8Array; sea: Uint8Array; channel: Uint8Array;
   built: Float64Array; // built-area share 0..1 (0 where the pack has no share: no drains)
   h0: Float64Array | null; // initial depth (m), mean over the block (channel cells only in a block holding a channel)
@@ -117,7 +119,7 @@ export function buildRun(p: Pack, box: number[] | null, k: number, year?: number
     return I >= 0 && J >= 0 && I < nx && J < ny ? J * nx + I : -1;
   };
   return {
-    nx, ny, dx, k, i0, j0, z, n, cn, active, sea, channel, built, h0, pump,
+    nx, ny, dx, k, i0, j0, r: 1, building: null, z, n, cn, active, sea, channel, built, h0, pump,
     corners: [ll(x0, y0), ll(x0 + nx * dx, y0), ll(x0 + nx * dx, y0 - ny * dx), ll(x0, y0 - ny * dx)],
     utm: { zone: p.zone, x0, y0 },
     isIn: (x, y) => { const c = cell(x, y); return c >= 0 && active[c] === 1 && !sea[c]; },
@@ -131,6 +133,83 @@ export function buildRun(p: Pack, box: number[] | null, k: number, year?: number
         if (a < 0 || b < 0 || a >= nx || b >= ny) continue;
         const c = b * nx + a;
         if (active[c] && !sea[c] && (best < 0 || z[c] < z[best])) best = c;
+      }
+      return best;
+    },
+  };
+}
+
+/** Pack cell (column, row) holding run cell c, for coarse (k) and fine (r) runs alike. */
+export const packCellOf = (g: Pick<RunGrid, "nx" | "k" | "r" | "i0" | "j0">, c: number): [number, number] => {
+  const I = c % g.nx, J = (c - I) / g.nx;
+  return g.r > 1 ? [g.i0 + Math.floor(I / g.r), g.j0 + Math.floor(J / g.r)] : [g.i0 + I * g.k + (g.k >> 1), g.j0 + J * g.k + (g.k >> 1)];
+};
+
+export const BUILDING_RAISE_M = 10; // building block: roof cells raised above any modelled water, so water flows around buildings
+
+/** Run grid finer than the 30 m pack for a lon/lat box: r run cells per pack cell side (3 = 10 m, 6 = 5 m, 15 = 2 m, 30 = 1 m).
+ *  The pack has no terrain detail below 30 m, so the ground is interpolated bilinearly between the centres of neighbouring
+ *  land cells (channel cells keep their own bed level, so channels keep their 30 m width and volume); roughness, curve
+ *  number, built share, sea and channel flags come from the pack cell holding the run cell. The detail that is real at this
+ *  size are the building footprints (`bld`, 1 = building, Overture Maps): those cells are raised as solid blocks (building-block
+ *  method, Schubert and Sanders 2012) so water flows in the streets between them; rain on a roof runs off to the street. */
+export function buildFineRun(p: Pack, box: number[], r: number, year?: number, bld?: Uint8Array | null): RunGrid {
+  const base = buildRun(p, box, 1, year);
+  const { i0, j0 } = base, pnx = base.nx, pny = base.ny;
+  const nx = pnx * r, ny = pny * r, N = nx * ny, dx = p.dx / r;
+  if (bld && bld.length !== N) throw new Error("building mask size does not match the run grid");
+  const z = new Float64Array(N), n = new Float64Array(N), cn = new Float64Array(N), built = new Float64Array(N);
+  const active = new Uint8Array(N), sea = new Uint8Array(N), channel = new Uint8Array(N), building = bld ? new Uint8Array(N) : null;
+  const h0 = base.h0 ? new Float64Array(N) : null, pump = base.pump ? new Float64Array(N) : null;
+  const land = (a: number, b: number) => a >= 0 && b >= 0 && a < pnx && b < pny && !base.channel[b * pnx + a];
+  for (let J = 0; J < ny; J++) {
+    const v = (J + 0.5) / r - 0.5, b0 = Math.floor(v), fy = v - b0, pj = Math.floor((J + 0.5) / r);
+    for (let I = 0; I < nx; I++) {
+      const u = (I + 0.5) / r - 0.5, a0 = Math.floor(u), fx = u - a0, pi = Math.floor((I + 0.5) / r), P = pj * pnx + pi, C = J * nx + I;
+      let zz = base.z[P];
+      if (!base.channel[P]) {
+        let ws = 0, wz = 0;
+        for (let q = 0; q < 4; q++) {
+          const a = a0 + (q & 1), b = b0 + (q >> 1);
+          if (!land(a, b)) continue;
+          const w = ((q & 1) ? fx : 1 - fx) * ((q >> 1) ? fy : 1 - fy);
+          ws += w; wz += w * base.z[b * pnx + a];
+        }
+        if (ws > 1e-9) zz = wz / ws;
+      }
+      n[C] = base.n[P]; cn[C] = base.cn[P]; built[C] = base.built[P]; active[C] = base.active[P]; sea[C] = base.sea[P]; channel[C] = base.channel[P];
+      if (h0) h0[C] = base.h0![P];
+      if (bld?.[C] && !channel[C] && !sea[C]) { building![C] = 1; zz += BUILDING_RAISE_M; }
+      z[C] = zz;
+    }
+  }
+  // pump sink: the same volume per pack cell, spread over its cells that are not buildings
+  if (pump) for (let P = 0; P < pnx * pny; P++) {
+    if (!base.pump![P]) continue;
+    const pi = P % pnx, pj = (P - pi) / pnx;
+    let free = 0;
+    for (let dj = 0; dj < r; dj++) for (let di = 0; di < r; di++) if (!building?.[(pj * r + dj) * nx + pi * r + di]) free++;
+    if (free) for (let dj = 0; dj < r; dj++) for (let di = 0; di < r; di++) { const C = (pj * r + dj) * nx + pi * r + di; if (!building?.[C]) pump[C] = (base.pump![P] * r * r) / free; }
+  }
+  const x0 = base.utm.x0, y0 = base.utm.y0;
+  const cell = (x: number, y: number) => {
+    const I = Math.floor((x - i0 * p.dx) / dx), J = Math.floor((y - j0 * p.dx) / dx);
+    return I >= 0 && J >= 0 && I < nx && J < ny ? J * nx + I : -1;
+  };
+  return {
+    nx, ny, dx, k: 1, i0, j0, r, building, z, n, cn, active, sea, channel, built, h0, pump, corners: base.corners, utm: { zone: p.zone, x0, y0 },
+    isIn: (x, y) => { const c = cell(x, y); return c >= 0 && active[c] === 1 && !sea[c]; },
+    // river inflow points are 30 m stream cells: search one pack cell around the point for the lowest open run cell
+    cellAt: (x, y) => {
+      const c0 = cell(x, y);
+      if (c0 < 0) return -1;
+      const I = c0 % nx, J = (c0 - I) / nx;
+      let best = -1;
+      for (let dj = -r; dj <= r; dj++) for (let di = -r; di <= r; di++) {
+        const a = I + di, b = J + dj;
+        if (a < 0 || b < 0 || a >= nx || b >= ny) continue;
+        const c = b * nx + a;
+        if (active[c] && !sea[c] && !building?.[c] && (best < 0 || z[c] < z[best])) best = c;
       }
       return best;
     },

@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { buildRun, sinkM, DOMAIN, type Pack } from "./pack";
+import { BUILDING_RAISE_M, buildFineRun, buildRun, packCellOf, sinkM, CHANNEL, DOMAIN, type Pack } from "./pack";
+import { fromUtm } from "../util";
 
 // 2 x 1 pack: one cell sinking 50 mm/year, one stable; terrain measured in 2013
 const pack = (sub: Int16Array | null): Pack => ({
@@ -30,5 +31,34 @@ describe("land subsidence shift", () => {
   it("leaves the terrain unchanged without a rate map or a year", () => {
     expect(buildRun(pack(null), null, 1, 2025).z[0]).toBeCloseTo(2, 5);
     expect(buildRun(pack(Int16Array.from([50, 0])), null, 1).z[0]).toBeCloseTo(2, 5);
+  });
+});
+
+describe("fine run grid (cells below 30 m)", () => {
+  // 2 x 1 pack: ground 2 m and 4 m; r = 3 gives 6 x 3 cells of 10 m
+  const p = pack(null); p.z = Float32Array.from([2, 4]);
+  const box = (() => { const a = fromUtm(700000, 9300000, 48, true), b = fromUtm(700060, 9299970, 48, true); return [a.lon + 1e-7, b.lat + 1e-7, b.lon - 1e-7, a.lat - 1e-7]; })();
+  it("interpolates the ground bilinearly between pack centres and keeps the pack values at the centres", () => {
+    const g = buildFineRun(p, box, 3);
+    expect([g.nx, g.ny, g.dx, g.r]).toEqual([6, 3, 10, 3]);
+    expect(g.z[1]).toBeCloseTo(2, 6); // centre of pack cell 0 (fine column 1)
+    expect(g.z[4]).toBeCloseTo(4, 6); // centre of pack cell 1 (fine column 4)
+    expect(g.z[2]).toBeCloseTo(2 + 2 / 3, 6); // a third of the way between the centres
+    expect(g.z[0]).toBeCloseTo(2, 6); // outside the outer centre: no extrapolation
+    expect(g.z[6 + 2]).toBeCloseTo(g.z[2], 9); // same in every row of a one-row pack
+  });
+  it("raises building cells as solid blocks and maps run cells back to their pack cell", () => {
+    const bld = new Uint8Array(18); bld[0] = 1;
+    const g = buildFineRun(p, box, 3, undefined, bld);
+    expect(g.building![0]).toBe(1);
+    expect(g.z[0]).toBeCloseTo(2 + BUILDING_RAISE_M, 6);
+    expect(packCellOf(g, 5)).toEqual([1, 0]);
+    expect(packCellOf(buildRun(p, null, 2), 0)).toEqual([1, 1]); // centre of the 2 x 2 block
+  });
+  it("keeps a channel cell's bed level in all its fine cells", () => {
+    const q = pack(null); q.z = Float32Array.from([2, -1]); q.flags = Uint8Array.from([DOMAIN, DOMAIN | CHANNEL]);
+    const g = buildFineRun(q, box, 3);
+    for (const c of [3, 4, 5, 9, 10, 11, 15, 16, 17]) expect(g.z[c]).toBeCloseTo(-1, 6);
+    expect(g.z[2]).toBeCloseTo(2, 6); // land next to the channel is not pulled down by it
   });
 });

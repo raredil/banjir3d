@@ -30,7 +30,7 @@ export async function exportLayer(def: LayerDef, scope: Scope, area: number[] | 
   }
   const feats: { geometry: Parameters<typeof bboxOf>[0] }[] = [];
   for (const f of dl.geojson!) {
-    const r = await fetch(`${base}/${f}`);
+    const r = await fetch(f.startsWith("meta/") ? new URL(f, location.href).href : `${base}/${f}`); // meta/: files shipped with the app
     if (!r.ok) throw new Error(`${f} ${r.status}`);
     feats.push(...((await r.json()) as { features: typeof feats }).features);
   }
