@@ -187,6 +187,15 @@ export function groundAt(base: Ground, x: number, y: number): number {
 /** Ground (m) of fine cell (I, J) with r fine cells per 30 m cell (groundAt at the fine cell centre). */
 export const fineGround = (base: Ground, r: number, I: number, J: number): number => groundAt(base, (I + 0.5) / r, (J + 0.5) / r);
 
+/** Manning n of built area in the land-cover table (data/engine/landcover-parameters.json, class Built area): an effective
+ *  roughness for 30 m cells that stands for the buildings missing from the bare-earth terrain (Beretta et al. 2018). */
+export const BUILT_N = 0.15;
+/** Manning n of the open ground between buildings when the buildings themselves are in the grid (fine runs): rough asphalt,
+ *  Chow (1959). Keeping 0.15 there would count the buildings twice: as blocks or porosity and again as roughness. */
+export const STREET_N = 0.016;
+/** Roughness of the open ground of a 30 m cell once its buildings are explicit: the built share's 0.15 becomes street n. */
+export const openGroundN = (n: number, builtShare: number) => Math.max(STREET_N, n - builtShare * (BUILT_N - STREET_N));
+
 export const BUILDING_RAISE_M = 10; // building block: roof cells raised above any modelled water, so water flows around buildings
 
 /** Run grid finer than the 30 m pack for a lon/lat box: r run cells per pack cell side (3 = 10 m, 6 = 5 m, 15 = 2 m, 30 = 1 m).
@@ -194,12 +203,15 @@ export const BUILDING_RAISE_M = 10; // building block: roof cells raised above a
  *  land cells (channel cells keep their own bed level, so channels keep their 30 m width and volume); roughness, curve
  *  number, built share, sea and channel flags come from the pack cell holding the run cell. The detail that is real at this
  *  size are the building footprints (`bld`, 1 = building, Overture Maps): those cells are raised as solid blocks (building-block
- *  method, Schubert and Sanders 2012) so water flows in the streets between them; rain on a roof runs off to the street. */
+ *  method, Schubert and Sanders 2012) so water flows in the streets between them; rain on a roof runs off to the street. Open
+ *  cells closed in on all sides by buildings (sealedPockets: a courtyard, or an alley narrower than the cell) join the block,
+ *  so their rain also reaches the street instead of filling an isolated pond the cell size made up. */
 export function buildFineRun(p: Pack, box: number[], r: number, year?: number, bld?: Uint8Array | null): RunGrid {
   const base = buildRun(p, box, 1, year);
   const { i0, j0 } = base, pnx = base.nx, pny = base.ny;
   const nx = pnx * r, ny = pny * r, N = nx * ny, dx = p.dx / r;
   if (bld && bld.length !== N) throw new Error("building mask size does not match the run grid");
+  const anyB = !!bld && bld.some((v) => v > 0); // footprints in the grid: the open ground between them gets street roughness
   const z = new Float64Array(N), n = new Float64Array(N), cn = new Float64Array(N), built = new Float64Array(N);
   const active = new Uint8Array(N), sea = new Uint8Array(N), channel = new Uint8Array(N), building = bld ? new Uint8Array(N) : null;
   const h0 = base.h0 ? new Float64Array(N) : null, pump = base.pump ? new Float64Array(N) : null;
@@ -208,12 +220,16 @@ export function buildFineRun(p: Pack, box: number[], r: number, year?: number, b
     for (let I = 0; I < nx; I++) {
       const P = pj * pnx + Math.floor(I / r), C = J * nx + I;
       let zz = fineGround(base, r, I, J);
-      n[C] = base.n[P]; cn[C] = base.cn[P]; built[C] = base.built[P]; active[C] = base.active[P]; sea[C] = base.sea[P]; channel[C] = base.channel[P];
+      n[C] = anyB && !base.channel[P] ? openGroundN(base.n[P], base.built[P]) : base.n[P];
+      cn[C] = base.cn[P]; built[C] = base.built[P]; active[C] = base.active[P]; sea[C] = base.sea[P]; channel[C] = base.channel[P];
       if (h0) h0[C] = base.h0![P];
-      if (bld?.[C] && !channel[C] && !sea[C]) { building![C] = 1; zz += BUILDING_RAISE_M; }
+      if (bld?.[C] && !channel[C] && !sea[C]) building![C] = 1;
       z[C] = zz;
     }
   }
+  // open cells sealed off by buildings (gaps narrower than the cell) are part of the block: their rain runs off to the street
+  if (building) { const sp = sealedPockets(nx, ny, building, channel); for (let C = 0; C < N; C++) if (sp[C] && !sea[C]) building[C] = 1; }
+  if (building) for (let C = 0; C < N; C++) if (building[C]) z[C] += BUILDING_RAISE_M;
   // pump sink: the same volume per pack cell, spread over its cells that are not buildings
   if (pump) for (let P = 0; P < pnx * pny; P++) {
     if (!base.pump![P]) continue;
@@ -268,12 +284,18 @@ export function buildDualRun(p: Pack, box: number[], r: number, rc: number, year
   const active = new Uint8Array(N), sea = new Uint8Array(N), channel = new Uint8Array(N);
   const h0 = base.h0 ? new Float64Array(N) : null, pump = base.pump ? new Float64Array(N) : null;
   const phi = new Float32Array(N), psiX = new Float32Array(N), psiY = new Float32Array(N), rainW = new Float32Array(N).fill(1);
-  const building = new Uint8Array(nfx * nfy);
+  const building = new Uint8Array(nfx * nfy), anyB = bld.some((v) => v > 0); // no footprints (not loaded): the 30 m roughness stays
   const bz = Float32Array.from(base.z), bch = base.channel;
   // fine cells: building where a footprint covers the centre (not on channels or the sea)
   for (let J = 0; J < nfy; J++) for (let I = 0; I < nfx; I++) {
     const F = J * nfx + I, P = Math.floor(J / r) * pnx + Math.floor(I / r);
     if (bld[F] && !base.channel[P] && !base.sea[P]) building[F] = 1;
+  }
+  {
+    const chF = new Uint8Array(nfx * nfy);
+    for (let J = 0; J < nfy; J++) for (let I = 0; I < nfx; I++) chF[J * nfx + I] = base.channel[Math.floor(J / r) * pnx + Math.floor(I / r)];
+    const sp = sealedPockets(nfx, nfy, building, chF);
+    for (let F = 0; F < sp.length; F++) if (sp[F] && !base.sea[Math.floor(Math.floor(F / nfx) / r) * pnx + Math.floor((F % nfx) / r)]) building[F] = 1;
   }
   // open fine cells per fine column within each compute row band, and per fine row within each compute column band
   const colOpen = new Uint16Array(ny * nfx), rowOpen = new Uint16Array(nx * nfy);
@@ -287,7 +309,7 @@ export function buildDualRun(p: Pack, box: number[], r: number, rc: number, year
       if (!building[J * nfx + I]) { open++; zo += zg; }
     }
     z[C] = open ? zo / open : za / (s * s); phi[C] = open / (s * s);
-    n[C] = base.n[P]; cn[C] = base.cn[P]; built[C] = base.built[P]; active[C] = base.active[P]; sea[C] = base.sea[P]; channel[C] = base.channel[P];
+    n[C] = base.channel[P] || !anyB ? base.n[P] : openGroundN(base.n[P], base.built[P]); cn[C] = base.cn[P]; built[C] = base.built[P]; active[C] = base.active[P]; sea[C] = base.sea[P]; channel[C] = base.channel[P];
     if (h0) h0[C] = base.h0![P];
     // conveyance between this cell centre and the next: the fine columns (rows) in between act in series (weighted harmonic
     // mean of their open share; with an odd s the two centre columns count half)
@@ -385,4 +407,25 @@ export function inflowSpread(g: Pick<RunGrid, "nx" | "ny" | "r" | "active" | "se
   }
   if (!cells.length || !cells.includes(c)) return { cells: [c], w: [1] };
   return { cells, w: w.map((v) => v / sum) };
+}
+
+/** Open fine cells (not buildings) with no 4-connected open path to the edge of the grid or to a channel: courtyards and
+ *  alleys that a footprint mask closes when the gaps between buildings are narrower than the cell. 1 = sealed. */
+export function sealedPockets(nx: number, ny: number, building: ArrayLike<number>, channel: ArrayLike<number>): Uint8Array {
+  const N = nx * ny, seen = new Uint8Array(N), q = new Int32Array(N);
+  let head = 0, tail = 0;
+  const push = (c: number) => { if (!seen[c] && !building[c]) { seen[c] = 1; q[tail++] = c; } };
+  for (let i = 0; i < nx; i++) { push(i); push((ny - 1) * nx + i); }
+  for (let j = 0; j < ny; j++) { push(j * nx); push(j * nx + nx - 1); }
+  for (let c = 0; c < N; c++) if (channel[c]) push(c);
+  while (head < tail) {
+    const c = q[head++], i = c % nx;
+    if (i > 0) push(c - 1);
+    if (i < nx - 1) push(c + 1);
+    if (c >= nx) push(c - nx);
+    if (c < N - nx) push(c + nx);
+  }
+  const out = new Uint8Array(N);
+  for (let c = 0; c < N; c++) out[c] = +(!building[c] && !seen[c]);
+  return out;
 }

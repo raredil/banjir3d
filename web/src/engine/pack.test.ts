@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { BUILDING_RAISE_M, buildDualRun, buildFineRun, buildRun, fineGround, groundAt, inflowSpread, packCellOf, parsePack, sinkM, CHANNEL, CHANNEL_N, DOMAIN, type Pack } from "./pack";
+import { BUILDING_RAISE_M, buildDualRun, buildFineRun, buildRun, fineGround, groundAt, inflowSpread, packCellOf, parsePack, sealedPockets, openGroundN, STREET_N, sinkM, CHANNEL, CHANNEL_N, DOMAIN, type Pack } from "./pack";
 import { fromUtm } from "../util";
 
 // 2 x 1 pack: one cell sinking 50 mm/year, one stable; terrain measured in 2013
@@ -141,5 +141,31 @@ describe("channel roughness and river entry (same flood at every cell size)", ()
     const base = { nx: 3, ny: 1, z: [5, 1, 5], channel: [0, 1, 0] };
     expect(groundAt(base, 0.9, 0.5)).toBeCloseTo(5, 9); // bank next to the channel keeps the bank level
     expect(groundAt(base, 1.5, 0.5)).toBe(1);
+  });
+});
+
+describe("sealed pockets", () => {
+  it("finds open cells closed in by buildings and leaves edge- or channel-connected cells open", () => {
+    // 5 x 5, a ring of buildings around the centre cell; a second ring touching a channel cell stays open inside
+    const b = new Uint8Array(25), ch = new Uint8Array(25);
+    for (const c of [6, 7, 8, 11, 13, 16, 17, 18]) b[c] = 1;
+    expect(Array.from(sealedPockets(5, 5, b, ch)).reduce((a, v) => a + v, 0)).toBe(1);
+    expect(sealedPockets(5, 5, b, ch)[12]).toBe(1);
+    ch[12] = 1;
+    expect(sealedPockets(5, 5, b, ch)[12]).toBe(0);
+  });
+});
+
+describe("roughness between explicit buildings", () => {
+  it("replaces the built share's effective roughness by street roughness only when buildings are in the grid", () => {
+    const p = pack(null); p.built = Uint8Array.from([60, 0]); p.n = Float32Array.from([0.6 * 0.15 + 0.4 * 0.035, 0.035]);
+    const box = (() => { const a = fromUtm(700000, 9300000, 48, true), b = fromUtm(700060, 9299970, 48, true); return [a.lon + 1e-7, b.lat + 1e-7, b.lon - 1e-7, a.lat - 1e-7]; })();
+    const bld = new Uint8Array(6 * 3); bld[0] = 1;
+    expect(buildFineRun(p, box, 3, undefined, bld).n[1]).toBeCloseTo(0.6 * STREET_N + 0.4 * 0.035, 6);
+    expect(buildFineRun(p, box, 3, undefined, bld).n[4]).toBeCloseTo(0.035, 6);
+    expect(buildFineRun(p, box, 3).n[1]).toBeCloseTo(p.n[0], 6); // no footprints: the 30 m effective roughness stays
+    expect(buildDualRun(p, box, 6, 2, undefined, new Uint8Array(12 * 6)).n[0]).toBeCloseTo(p.n[0], 6);
+    const b6 = new Uint8Array(12 * 6); b6[0] = 1;
+    expect(buildDualRun(p, box, 6, 2, undefined, b6).n[0]).toBeCloseTo(openGroundN(p.n[0], 0.6), 6);
   });
 });

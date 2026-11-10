@@ -84,9 +84,12 @@ for (const cs of cases) {
   per30[cs.name] = { wse, dep, wet };
   let land = 0, wetS = 0, depS = 0;
   for (let P = 0; P < PN; P++) if (base.active[P] && !base.sea[P] && !base.channel[P] && cnt[P]) { land++; wetS += wet[P]; depS += dep[P]; }
+  // the app's flooded-area rule: compute cells deeper than 0.15 m outside channels, weighted by their open share
+  let cw = 0, cl = 0;
+  for (let c = 0; c < run.nx * run.ny; c++) { if (!run.active[c] || run.sea[c] || run.channel[c] || run.building?.[c]) continue; const w = run.phi ? run.phi[c] : 1; cl += w; if (e.hMax[c] > 0.15) cw += w; }
   const T = e.totals;
   out[cs.name] = { r: cs.r, rc: cs.rc, blocks: cs.blocks, compute: [run.nx, run.ny, +run.dx.toFixed(2)], steps: n, wall_s: wall, mass: e.massError(),
-    flooded_share: +(wetS / land).toFixed(3), mean_depth_m: +(depS / land).toFixed(3), inflow_m3: Math.round(T.inflow), rain_m3: Math.round(T.rain), outflow_m3: Math.round(T.outflow), infil_m3: Math.round(T.infiltration), stored_m3: Math.round(e.volume()), n_inflows: entries, inflow_cells: inflows.length };
+    flooded_share: +(wetS / land).toFixed(3), flooded_share_app: +(cw / cl).toFixed(3), flooded_km2_app: +((cw * run.dx * run.dx) / 1e6).toFixed(3), mean_depth_m: +(depS / land).toFixed(3), inflow_m3: Math.round(T.inflow), rain_m3: Math.round(T.rain), outflow_m3: Math.round(T.outflow), infil_m3: Math.round(T.infiltration), stored_m3: Math.round(e.volume()), n_inflows: entries, inflow_cells: inflows.length };
   console.log(cs.name, JSON.stringify(out[cs.name]));
   writeFileSync(`${outF}.${cs.name}.f32`, Buffer.from(fdep.buffer));
   writeFileSync(`${outF}.${cs.name}.json`, JSON.stringify({ nx: fx, ny: fy }));
