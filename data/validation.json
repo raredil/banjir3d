@@ -86,6 +86,31 @@
    ]
   },
   {
+   "id": "fine-consistency",
+   "status": "pass",
+   "file": "verification/fine-consistency/results.json",
+   "id_txt": "Ukuran sel: kotak 1 km di Kampung Melayu (Ciliwung), hujan 150 mm/6 jam, dihitung pada 30, 10, 5 dan 2 m. Sebelum perbaikan November 2026 luas genangan berubah 0,03–0,41 km² hanya karena ukuran sel (alur sungai memakai kekasaran kawasan terbangun 0,15). Sesudah perbaikan: 30 m 0,065 km², 10 m 0,08–0,10 km², 5 m 0,03–0,05 km², 2 m 0,028 km². Sisa beda berasal dari bangunan (di 10 m gang sempit tertutup); dari 5 m ke bawah hasil menyatu.",
+   "en_txt": "Cell size: a 1 km box at Kampung Melayu (Ciliwung), 150 mm in 6 h, run at 30, 10, 5 and 2 m. Before the November 2026 fixes the flooded area changed from 0.03 to 0.41 km² with the cell size alone (river cells had the built-area roughness 0.15). After: 30 m 0.065 km², 10 m 0.08–0.10 km², 5 m 0.03–0.05 km², 2 m 0.028 km². The remaining spread is the buildings (narrow streets close up at 10 m); from 5 m down the results converge.",
+   "metrics": [
+    [
+     "Flooded area > 0.15 m, before (30 · 10 · 5 m)",
+     "0.41 · 0.25 · 0.03 km²"
+    ],
+    [
+     "After (30 · 10 · 5 · 2 m)",
+     "0.065 · 0.10 · 0.03 · 0.028 km²"
+    ],
+    [
+     "Mean depth difference to 30 m per 30 m cell, before / after",
+     "−0.48…+0.31 / +0.01…+0.09 m"
+    ],
+    [
+     "Channel / street Manning n",
+     "0.035 / 0.016 (were 0.15 / 0.15)"
+    ]
+   ]
+  },
+  {
    "id": "observed",
    "status": "pass",
    "file": "verification/observed/scores-2020-01-01-imerg-v3.json",

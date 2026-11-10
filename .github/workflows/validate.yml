@@ -158,7 +158,7 @@ jobs:
     needs: [prep, run]
     if: ${{ always() && needs.prep.result == 'success' }}
     runs-on: ubuntu-24.04
-    timeout-minutes: 30
+    timeout-minutes: 45
     permissions:
       contents: write
     env:
@@ -180,7 +180,7 @@ jobs:
         run: |
           mkdir -p "$RUNNER_TEMP/res" && gh release download "$TAG" --repo "$GITHUB_REPOSITORY" -D "$RUNNER_TEMP/res"
           python verification/observed/fetch.py "$RUNNER_TEMP/pb" --petabencana-only
-          (cd pipeline && python jakartasatu.py "$RUNNER_TEMP/js") || echo "::warning::Jakarta Satu not reachable; scoring without DSDA flood polygons"
-          python verification/observed/rw_zenodo.py "$RUNNER_TEMP/rw" || echo "::warning::RW polygons not available; scoring without RW places"
+          (cd pipeline && timeout 480 python jakartasatu.py "$RUNNER_TEMP/js") || echo "::warning::Jakarta Satu not reachable; scoring without DSDA flood polygons"
+          timeout 480 python verification/observed/rw_zenodo.py "$RUNNER_TEMP/rw" || echo "::warning::RW polygons not available; scoring without RW places"
           python verification/observed/compare.py "$RUNNER_TEMP/pb" "$EVENT" "$RUNNER_TEMP/res" "$RUNNER_TEMP/${EVENT}_scores.json" "$RUNNER_TEMP/js/jakartasatu.gpkg" "$RUNNER_TEMP/rw/rw.gpkg"
           "$GITHUB_WORKSPACE/.github/scripts/release.sh" upload "$TAG" "$RUNNER_TEMP/${EVENT}_scores.json"
