@@ -1,0 +1,92 @@
+{
+ "event": "2020-01-01",
+ "source": "PetaBencana.id flood reports and flooded-area archive (aggregate scores only)",
+ "reported": {
+  "_about": "Impact the city reported; figures are used only after reported_excerpts.json (fetched by the Action) shows them in the page text.",
+  "pages": [
+   "https://sumut.antaranews.com/berita/270492/banjir-tahun-baru-2020-adalah-yang-terbaik-selama-siklus-banjir-besar-jakarta",
+   "https://www.antaranews.com/berita/1921596/banjir-dan-kenangan",
+   "https://www.mobil123.com/berita/pemprov-dki-jakarta-klaim-banjir-kali-ini-tidak-seluas-tahun-lalu/62890/amp/"
+  ],
+  "flooded_km2": 156,
+  "flooded_rw": 390,
+  "status": "checked in page text 2026-10-30 (reported_excerpts.json in release observed-jakarta-20261030-o8)",
+  "quote": "luas area tergenang 156 km persegi dengan jumlah RW tergenang sebanyak 390 (Antara, data Pemprov DKI, rapat koordinasi 7 Jan 2020)",
+  "context": {
+   "2007": {
+    "km2": 455,
+    "rw": 955,
+    "rain_mm_day": 340
+   },
+   "2013": {
+    "km2": 240,
+    "rw": 599
+   },
+   "2015": {
+    "km2": 281,
+    "rw": 702
+   }
+  }
+ },
+ "n_flooded_area_records": 482,
+ "rw_shapes": 0,
+ "results": [
+  {
+   "run": "2020-01-01_imerg_k3_d0_poff",
+   "drain_mm_h": 0,
+   "rain": "rain_imerg.json",
+   "rain_scale": 1,
+   "terrain_year": 2019.9978310502283,
+   "pumps": false,
+   "pump_m3s": 664.8,
+   "mean_rain_mm": 142.87322662903097,
+   "flooded_km2": 290.5065,
+   "mass_error": 2.8984030748869966e-15,
+   "reports": {
+    "n_reports": 259,
+    "hit_rate": 0.722007722007722,
+    "n_with_depth": 211,
+    "depth_bias_m": 0.72309310667411,
+    "depth_mae_m": 1.4758758346212066,
+    "depth_rmse_m": 2.604140056874883,
+    "observed_median_m": 0.7,
+    "model_median_m": 0.3339219391345978
+   },
+   "dki_flooded_km2": 82.8063,
+   "dki_land_km2": 557.6688,
+   "rw_places": {
+    "source": "RW polygons: Shabrina et al. (2026), Zenodo 19456870, CC BY 4.0",
+    "n_rw": 2610,
+    "rw_share_threshold": 0.1,
+    "note": "RW without a record = not recorded (reports are incomplete): false_alarm_ratio is an upper bound",
+    "reports_or_dsda": {
+     "n_observed": 112,
+     "n_model": 826,
+     "hits": 56,
+     "hit_rate": 0.5,
+     "false_alarm_ratio": 0.9322033898305084,
+     "csi": 0.06349206349206349,
+     "auc": 0.6157926341072858
+    },
+    "reports": {
+     "n_observed": 112,
+     "n_model": 826,
+     "hits": 56,
+     "hit_rate": 0.5,
+     "false_alarm_ratio": 0.9322033898305084,
+     "csi": 0.06349206349206349,
+     "auc": 0.6157926341072858
+    },
+    "dsda": {
+     "n_observed": 0,
+     "n_model": 826,
+     "hits": 0,
+     "hit_rate": 0.0,
+     "false_alarm_ratio": 1.0,
+     "csi": 0.0,
+     "auc": null
+    }
+   }
+  }
+ ]
+}

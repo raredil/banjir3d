@@ -1,0 +1,76 @@
+{
+ "event": "2021-02-20",
+ "source": "PetaBencana.id flood reports and flooded-area archive (aggregate scores only)",
+ "reported": {
+  "_about": "Impact the city reported; figures are used only after reported_excerpts.json (fetched by the Action) shows them in the page text.",
+  "pages": [
+   "https://rmol.id/nusantara/read/2021/02/21/476030/banjir-jakarta-dalam-angka-sejak-era-sutiyoso-hingga-anies-baswedan",
+   "https://www.cnnindonesia.com/nasional/20210221075059-20-608918/banjir-jakarta-33-rw-masih-tergenang",
+   "https://www.merahputih.com/post/read/75-rw-di-jakarta-tergenang-banjir-akibat-hujan-deras-sejak-jumat-malam"
+  ],
+  "flooded_km2": null,
+  "flooded_rw": null,
+  "status": "pages refused the Action (HTTP 403); search results only: 113 RW / 342 RT on 20 Feb 2021"
+ },
+ "n_flooded_area_records": 159,
+ "rw_shapes": 0,
+ "results": [
+  {
+   "run": "2021-02-20_imerg_k3_d0_poff",
+   "drain_mm_h": 0,
+   "rain": "rain_imerg.json",
+   "rain_scale": 1,
+   "terrain_year": 2021.1348173515983,
+   "pumps": false,
+   "pump_m3s": 664.8,
+   "mean_rain_mm": 50.87964066556293,
+   "flooded_km2": 140.3811,
+   "mass_error": -4.666818705581064e-15,
+   "reports": {
+    "n_reports": 372,
+    "hit_rate": 0.771505376344086,
+    "n_with_depth": 325,
+    "depth_bias_m": 0.6435281633594861,
+    "depth_mae_m": 1.3100612824919133,
+    "depth_rmse_m": 2.392028359850405,
+    "observed_median_m": 0.65,
+    "model_median_m": 0.35173866152763367
+   },
+   "dki_flooded_km2": 44.6877,
+   "dki_land_km2": 557.6688,
+   "rw_places": {
+    "source": "RW polygons: Shabrina et al. (2026), Zenodo 19456870, CC BY 4.0",
+    "n_rw": 2610,
+    "rw_share_threshold": 0.1,
+    "note": "RW without a record = not recorded (reports are incomplete): false_alarm_ratio is an upper bound",
+    "reports_or_dsda": {
+     "n_observed": 156,
+     "n_model": 482,
+     "hits": 49,
+     "hit_rate": 0.3141025641025641,
+     "false_alarm_ratio": 0.8983402489626556,
+     "csi": 0.0831918505942275,
+     "auc": 0.6340707479154912
+    },
+    "reports": {
+     "n_observed": 156,
+     "n_model": 482,
+     "hits": 49,
+     "hit_rate": 0.3141025641025641,
+     "false_alarm_ratio": 0.8983402489626556,
+     "csi": 0.0831918505942275,
+     "auc": 0.6340707479154912
+    },
+    "dsda": {
+     "n_observed": 0,
+     "n_model": 482,
+     "hits": 0,
+     "hit_rate": 0.0,
+     "false_alarm_ratio": 1.0,
+     "csi": 0.0,
+     "auc": null
+    }
+   }
+  }
+ ]
+}

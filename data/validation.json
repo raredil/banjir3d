@@ -88,21 +88,25 @@
   {
    "id": "fine-consistency",
    "status": "pass",
-   "file": "verification/fine-consistency/results.json",
-   "id_txt": "Ukuran sel: kotak 1 km di Kampung Melayu (Ciliwung), hujan 150 mm/6 jam, dihitung pada 30, 10, 5 dan 2 m. Sebelum perbaikan November 2026 luas genangan berubah 0,03–0,41 km² hanya karena ukuran sel (alur sungai memakai kekasaran kawasan terbangun 0,15). Sesudah perbaikan: 30 m 0,065 km², 10 m 0,08–0,10 km², 5 m 0,03–0,05 km², 2 m 0,028 km². Sisa beda berasal dari bangunan (di 10 m gang sempit tertutup); dari 5 m ke bawah hasil menyatu.",
-   "en_txt": "Cell size: a 1 km box at Kampung Melayu (Ciliwung), 150 mm in 6 h, run at 30, 10, 5 and 2 m. Before the November 2026 fixes the flooded area changed from 0.03 to 0.41 km² with the cell size alone (river cells had the built-area roughness 0.15). After: 30 m 0.065 km², 10 m 0.08–0.10 km², 5 m 0.03–0.05 km², 2 m 0.028 km². The remaining spread is the buildings (narrow streets close up at 10 m); from 5 m down the results converge.",
+   "file": "docs/adr/0018-fine-cells-draw-the-30m-flood.md",
+   "id_txt": "Ukuran sel: sejak November 2026 (ADR 0018) sel 10, 5, 2 dan 1 m memakai aliran yang sama dengan 30 m dan hanya menggambar hasilnya lebih tajam dengan bentuk bangunan. Kotak 2,2 km di Kampung Melayu (Ciliwung), hujan 150 mm/6 jam: 30, 10, 5 dan 2 m semuanya 0,4 km², terdalam 0,80 m, 2.186 bangunan, 9.328 penduduk. Sebelumnya aliran dihitung ulang di sel kecil dan memberi hasil di tempat lain (kecocokan tempat dengan 30 m hanya 6–17 %, terdalam 4,5 m); cara itu tetap ada sebagai pilihan uji coba.",
+   "en_txt": "Cell size: since November 2026 (ADR 0018) 10, 5, 2 and 1 m cells use the same flow as 30 m and only draw the result more sharply with building shapes. A 2.2 km box at Kampung Melayu (Ciliwung), 150 mm in 6 h: 30, 10, 5 and 2 m all give 0.4 km², deepest 0.80 m, 2,186 buildings, 9,328 people. Before, the flow was solved again on the small cells and put the water elsewhere (place agreement with 30 m only 6–17 %, deepest 4.5 m); that method stays as a trial option.",
    "metrics": [
     [
-     "Flooded area > 0.15 m, before (30 · 10 · 5 m)",
-     "0.41 · 0.25 · 0.03 km²"
+     "Flooded area > 0.15 m, 30 · 10 · 5 · 2 m (2.2 km box)",
+     "0.4 · 0.4 · 0.4 · 0.4 km²"
     ],
     [
-     "After (30 · 10 · 5 · 2 m)",
-     "0.065 · 0.10 · 0.03 · 0.028 km²"
+     "Deepest point, 30 m / 10 m",
+     "0.80 / 0.80 m (before: 0.80 / 4.46 m)"
     ],
     [
-     "Mean depth difference to 30 m per 30 m cell, before / after",
-     "−0.48…+0.31 / +0.01…+0.09 m"
+     "Buildings flooded, 30 m / 10 m",
+     "2,186 / 2,186 (before: 2,186 / 6,444)"
+    ],
+    [
+     "Place agreement (CSI) 30 m vs fine flow, 1 km box, trial option",
+     "0.06–0.17"
     ],
     [
      "Channel / street Manning n",
@@ -113,29 +117,33 @@
   {
    "id": "observed",
    "status": "pass",
-   "file": "verification/observed/scores-2020-01-01-imerg-v3.json",
-   "id_txt": "Banjir nyata: dengan hujan satelit GPM IMERG dan saluran primer/sekunder Dinas SDA DKI ditoreh ke medan, model mengenai 72–81 % laporan warga PetaBencana pada tiga banjir, dan 46–64 % poligon genangan resmi per RT dari Dinas SDA DKI (Jakarta Satu). Luas genangan 1 Jan 2020 di Jakarta: model 87 km², laporan Pemprov DKI 156 km² (tanpa saluran DSDA: 143 km²).",
-   "en_txt": "Observed floods: with GPM IMERG satellite rain and the DKI water agency's primary/secondary drains carved into the terrain, the model hits 72–81 % of PetaBencana citizen reports in three floods and 46–64 % of the official flood records per RT of the DKI water agency (Jakarta Satu). Flooded area in Jakarta on 1 Jan 2020: model 87 km², city government report 156 km² (without the DSDA drains: 143 km²).",
+   "file": "verification/observed/scores-2020-01-01-imerg-v5.json",
+   "id_txt": "Banjir nyata: dengan hujan satelit GPM IMERG, saluran primer/sekunder Dinas SDA DKI ditoreh ke medan dan kekasaran alur sungai 0,035 (November 2026), model mengenai 72–77 % laporan warga PetaBencana pada tiga banjir (sebelum perubahan kekasaran 72–81 %). Pada uji sebelumnya model mengenai 46–64 % poligon genangan resmi per RT Dinas SDA DKI (Jakarta Satu); data Jakarta Satu tidak bisa diunduh pada uji ulang ini, jadi bagian itu belum diperbarui. Luas genangan 1 Jan 2020 di Jakarta: model 83 km², laporan Pemprov DKI 156 km².",
+   "en_txt": "Observed floods: with GPM IMERG satellite rain, the DKI water agency's primary/secondary drains carved into the terrain and channel roughness 0.035 (November 2026), the model hits 72–77 % of PetaBencana citizen reports in three floods (72–81 % before the roughness change). In the previous test it hit 46–64 % of the official flood records per RT of the DKI water agency (Jakarta Satu); Jakarta Satu could not be downloaded in this re-run, so that part is not updated. Flooded area in Jakarta on 1 Jan 2020: model 83 km², city government report 156 km².",
    "metrics": [
     [
      "Reports hit (≥ 0.10 m), 1 Jan 2020",
-     "72 % of 259 (80 % without DSDA drains)"
+     "72 % of 259 (before: 72 %)"
     ],
     [
      "20 Feb 2021",
-     "78 % of 372"
+     "77 % of 372 (before: 78 %)"
     ],
     [
      "4 Mar 2025",
-     "81 % of 47"
+     "77 % of 47 (before: 81 %)"
     ],
     [
-     "DSDA flood records per RT hit, 2020 / 2021 / 2025",
+     "Median depth at reports, model / reported, 2020 · 2021 · 2025",
+     "0.33 / 0.70 · 0.35 / 0.65 · 0.43 / 0.55 m"
+    ],
+    [
+     "DSDA flood records per RT hit (previous test, Jakarta Satu not reachable in the re-run)",
      "64 % of 148 · 46 % of 37 · 56 % of 130"
     ],
     [
      "Flooded area > 0.15 m, 2020: model / reported",
-     "87 / 156 km²"
+     "83 / 156 km² (before: 87)"
     ],
     [
      "Drain sink on built cells (1–40 mm/h tested)",

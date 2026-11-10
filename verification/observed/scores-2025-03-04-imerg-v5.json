@@ -1,0 +1,76 @@
+{
+ "event": "2025-03-04",
+ "source": "PetaBencana.id flood reports and flooded-area archive (aggregate scores only)",
+ "reported": {
+  "_about": "Impact the city reported; figures are used only after reported_excerpts.json (fetched by the Action) shows them in the page text.",
+  "pages": [
+   "https://kabar24.bisnis.com/read/20250304/15/1845118/bpbd-jakarta-117-rt-masih-terendam-banjir-hingga-selasa-malam",
+   "https://www.akurat.co/megapolitan/1305720822/banjir-di-jakarta-meluas-121-rt-dan-lima-ruas-jalan-tergenang"
+  ],
+  "flooded_km2": null,
+  "flooded_rw": null,
+  "status": "checked in page text 2026-10-30: 121 RT and 5 roads at 15:00 WIB 4 Mar 2025 (BPBD via akurat.co); no area figure",
+  "flooded_rt": 121
+ },
+ "n_flooded_area_records": 5,
+ "rw_shapes": 0,
+ "results": [
+  {
+   "run": "2025-03-04_imerg_k3_d0_poff",
+   "drain_mm_h": 0,
+   "rain": "rain_imerg.json",
+   "rain_scale": 1,
+   "terrain_year": 2025.1663242009133,
+   "pumps": false,
+   "pump_m3s": 664.8,
+   "mean_rain_mm": 99.08576445454118,
+   "flooded_km2": 273.0996,
+   "mass_error": 1.2009299558245048e-15,
+   "reports": {
+    "n_reports": 47,
+    "hit_rate": 0.7659574468085106,
+    "n_with_depth": 45,
+    "depth_bias_m": 1.002160486507747,
+    "depth_mae_m": 1.6325118595014017,
+    "depth_rmse_m": 2.8341810772156832,
+    "observed_median_m": 0.55,
+    "model_median_m": 0.426822304725647
+   },
+   "dki_flooded_km2": 77.3955,
+   "dki_land_km2": 557.6688,
+   "rw_places": {
+    "source": "RW polygons: Shabrina et al. (2026), Zenodo 19456870, CC BY 4.0",
+    "n_rw": 2610,
+    "rw_share_threshold": 0.1,
+    "note": "RW without a record = not recorded (reports are incomplete): false_alarm_ratio is an upper bound",
+    "reports_or_dsda": {
+     "n_observed": 13,
+     "n_model": 808,
+     "hits": 6,
+     "hit_rate": 0.46153846153846156,
+     "false_alarm_ratio": 0.9925742574257426,
+     "csi": 0.007361963190184049,
+     "auc": 0.618924202482154
+    },
+    "reports": {
+     "n_observed": 13,
+     "n_model": 808,
+     "hits": 6,
+     "hit_rate": 0.46153846153846156,
+     "false_alarm_ratio": 0.9925742574257426,
+     "csi": 0.007361963190184049,
+     "auc": 0.618924202482154
+    },
+    "dsda": {
+     "n_observed": 0,
+     "n_model": 808,
+     "hits": 0,
+     "hit_rate": 0.0,
+     "false_alarm_ratio": 1.0,
+     "csi": 0.0,
+     "auc": null
+    }
+   }
+  }
+ ]
+}
