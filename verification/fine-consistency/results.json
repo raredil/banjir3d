@@ -1,0 +1,314 @@
+{
+ "what": "Same box at 30 m and at fine cells: does the cell size change the flood? (ADR 0017)",
+ "date": "2026-11-10",
+ "pack": "region-jakarta-20261101-m4 engine pack",
+ "box": [
+  106.8575,
+  -6.2295,
+  106.8665,
+  -6.2205
+ ],
+ "place": "Kampung Melayu / Bukit Duri, about 1 x 1 km, Ciliwung entering from the south",
+ "rain": "150 mm in 6 h (alternating block, Mononobe), same rain upstream, 12 h simulated, CPU solver in Node",
+ "metrics": "flooded_km2_app: compute cells deeper than 0.15 m outside channels weighted by open share (the app's 'Luas banjir'); flooded_share: share of drawn open land cells deeper than 0.15 m after downscaling; vs30: per 30 m land cell, depth difference to the 30 m run",
+ "before_code_2026_11_08": {
+  "30": {
+   "compute": [
+    34,
+    34,
+    30
+   ],
+   "flooded_share": 0.427,
+   "mean_depth_m": 0.518,
+   "stored_m3": 915956,
+   "mass": 2.444251297318332e-15,
+   "wall_s": 2.179
+  },
+  "10n": {
+   "compute": [
+    102,
+    102,
+    10
+   ],
+   "flooded_share": 0.039,
+   "mean_depth_m": 0.042,
+   "stored_m3": 313165,
+   "mass": 4.1127695805273425e-15,
+   "wall_s": 47.881,
+   "vs30": {
+    "mean_depth_diff_m": -0.477,
+    "rmse_m": 0.847,
+    "csi": 0.081,
+    "hit": 37,
+    "false_alarm": 3,
+    "miss": 418
+   }
+  },
+  "10b": {
+   "compute": [
+    102,
+    102,
+    10
+   ],
+   "flooded_share": 0.335,
+   "mean_depth_m": 0.137,
+   "stored_m3": 342301,
+   "mass": -7.915311180583318e-16,
+   "wall_s": 62.099,
+   "vs30": {
+    "mean_depth_diff_m": -0.382,
+    "rmse_m": 0.809,
+    "csi": 0.263,
+    "hit": 158,
+    "false_alarm": 146,
+    "miss": 297
+   }
+  },
+  "10p": {
+   "compute": [
+    34,
+    34,
+    30
+   ],
+   "flooded_share": 0.664,
+   "mean_depth_m": 0.832,
+   "stored_m3": 906395,
+   "mass": 9.409880747297923e-15,
+   "wall_s": 2.433,
+   "vs30": {
+    "mean_depth_diff_m": 0.309,
+    "rmse_m": 0.578,
+    "csi": 0.636,
+    "hit": 443,
+    "false_alarm": 241,
+    "miss": 12
+   }
+  },
+  "5p": {
+   "compute": [
+    102,
+    102,
+    10
+   ],
+   "flooded_share": 0.214,
+   "mean_depth_m": 0.101,
+   "stored_m3": 320204,
+   "mass": 8.960063407094802e-15,
+   "wall_s": 63.211,
+   "vs30": {
+    "mean_depth_diff_m": -0.417,
+    "rmse_m": 0.82,
+    "csi": 0.206,
+    "hit": 110,
+    "false_alarm": 79,
+    "miss": 345
+   }
+  }
+ },
+ "channel_roughness_old_other_fixes_new": {
+  "30": {
+   "compute": [
+    34,
+    34,
+    30
+   ],
+   "flooded_km2_app": 0.409,
+   "flooded_share": 0.427,
+   "mean_depth_m": 0.518,
+   "stored_m3": 915956,
+   "mass": 2.444251297318332e-15,
+   "wall_s": 1.72
+  },
+  "10p": {
+   "compute": [
+    34,
+    34,
+    30
+   ],
+   "flooded_km2_app": 0.247,
+   "flooded_share": 0.6,
+   "mean_depth_m": 0.589,
+   "stored_m3": 744422,
+   "mass": -2.8304514519929326e-15,
+   "wall_s": 1.865,
+   "vs30": {
+    "mean_depth_diff_m": 0.023,
+    "rmse_m": 0.424,
+    "csi": 0.591,
+    "hit": 379,
+    "false_alarm": 186,
+    "miss": 76
+   }
+  },
+  "5p": {
+   "compute": [
+    102,
+    102,
+    10
+   ],
+   "flooded_km2_app": 0.029,
+   "flooded_share": 0.09,
+   "mean_depth_m": 0.061,
+   "stored_m3": 321962,
+   "mass": -8.820813611341834e-15,
+   "wall_s": 55.095,
+   "vs30": {
+    "mean_depth_diff_m": -0.459,
+    "rmse_m": 0.854,
+    "csi": 0.057,
+    "hit": 28,
+    "false_alarm": 37,
+    "miss": 427
+   }
+  }
+ },
+ "after": {
+  "30": {
+   "case": "30 m, no buildings",
+   "compute": [
+    34,
+    34,
+    30
+   ],
+   "flooded_km2_app": 0.065,
+   "flooded_share": 0.068,
+   "mean_depth_m": 0.05,
+   "stored_m3": 378502,
+   "mass": 4.749260147093932e-16,
+   "wall_s": 1.673
+  },
+  "10n": {
+   "case": "10 m, no buildings",
+   "compute": [
+    102,
+    102,
+    10
+   ],
+   "flooded_km2_app": 0.04,
+   "flooded_share": 0.042,
+   "mean_depth_m": 0.041,
+   "stored_m3": 355587,
+   "mass": 1.0524211627623417e-14,
+   "wall_s": 42.122,
+   "vs30": {
+    "mean_depth_diff_m": -0.009,
+    "rmse_m": 0.032,
+    "csi": 0.513,
+    "hit": 39,
+    "false_alarm": 4,
+    "miss": 33
+   }
+  },
+  "10p": {
+   "case": "10 m drawn, 30 m porosity compute (what the browser picks)",
+   "compute": [
+    34,
+    34,
+    30
+   ],
+   "flooded_km2_app": 0.101,
+   "flooded_share": 0.342,
+   "mean_depth_m": 0.155,
+   "stored_m3": 398339,
+   "mass": -6.648990226055185e-17,
+   "wall_s": 1.708,
+   "vs30": {
+    "mean_depth_diff_m": 0.092,
+    "rmse_m": 0.208,
+    "csi": 0.167,
+    "hit": 53,
+    "false_alarm": 246,
+    "miss": 19
+   }
+  },
+  "10b": {
+   "case": "10 m building blocks",
+   "compute": [
+    102,
+    102,
+    10
+   ],
+   "flooded_km2_app": 0.082,
+   "flooded_share": 0.198,
+   "mean_depth_m": 0.101,
+   "stored_m3": 377283,
+   "mass": -1.1641878426442267e-14,
+   "wall_s": 52.902,
+   "vs30": {
+    "mean_depth_diff_m": 0.043,
+    "rmse_m": 0.183,
+    "csi": 0.11,
+    "hit": 24,
+    "false_alarm": 146,
+    "miss": 48
+   }
+  },
+  "5p": {
+   "case": "5 m drawn, 10 m porosity compute",
+   "compute": [
+    102,
+    102,
+    10
+   ],
+   "flooded_km2_app": 0.03,
+   "flooded_share": 0.092,
+   "mean_depth_m": 0.062,
+   "stored_m3": 359670,
+   "mass": -5.116475968059486e-15,
+   "wall_s": 50.731,
+   "vs30": {
+    "mean_depth_diff_m": 0.011,
+    "rmse_m": 0.128,
+    "csi": 0.069,
+    "hit": 9,
+    "false_alarm": 59,
+    "miss": 63
+   }
+  },
+  "2p": {
+   "case": "2 m drawn, 6 m porosity compute",
+   "compute": [
+    170,
+    170,
+    6
+   ],
+   "flooded_km2_app": 0.028,
+   "flooded_share": 0.115,
+   "mean_depth_m": 0.07,
+   "stored_m3": 356095,
+   "mass": -7.78227289852995e-15,
+   "wall_s": 228.715,
+   "vs30": {
+    "mean_depth_diff_m": 0.02,
+    "rmse_m": 0.08,
+    "csi": 0.064,
+    "hit": 7,
+    "false_alarm": 37,
+    "miss": 65
+   }
+  },
+  "5b": {
+   "case": "5 m building blocks (reference)",
+   "compute": [
+    204,
+    204,
+    5
+   ],
+   "flooded_km2_app": 0.051,
+   "flooded_share": 0.126,
+   "mean_depth_m": 0.069,
+   "stored_m3": 362052,
+   "mass": -2.915997034358312e-15,
+   "wall_s": 386.853,
+   "vs30": {
+    "mean_depth_diff_m": 0.017,
+    "rmse_m": 0.131,
+    "csi": 0.094,
+    "hit": 15,
+    "false_alarm": 88,
+    "miss": 57
+   }
+  }
+ },
+ "reading": "Before, the Ciliwung cells had built-area roughness 0.15: the river spilled at 30 m (0.41 km2 flooded) but much less on finer grids (0.03-0.25 km2). With channel n 0.035, street roughness between explicit buildings, the river entering over its 30 m cell and sealed pockets joined to the blocks, 30 m gives 0.065 km2, 10 m 0.08-0.10 km2, 5 m 0.03-0.05 km2 and 2 m 0.028 km2; mean depth per 30 m cell differs from the 30 m run by 0.01-0.09 m (before -0.48 to +0.31 m). The remaining spread is the buildings: at 10 m narrow streets close up, from 5 m down the results converge."
+}
