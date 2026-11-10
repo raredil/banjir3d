@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { BUILDING_RAISE_M, buildDualRun, buildFineRun, buildRun, fineGround, packCellOf, sinkM, CHANNEL, DOMAIN, type Pack } from "./pack";
+import { BUILDING_RAISE_M, buildDualRun, buildFineRun, buildRun, fineGround, groundAt, inflowSpread, packCellOf, parsePack, sealedPockets, openGroundN, STREET_N, sinkM, CHANNEL, CHANNEL_N, DOMAIN, type Pack } from "./pack";
 import { fromUtm } from "../util";
 
 // 2 x 1 pack: one cell sinking 50 mm/year, one stable; terrain measured in 2013
@@ -97,5 +97,75 @@ describe("dual-grid run (porosity compute cells, fine result cells)", () => {
     expect(h.rainW![0]).toBe(0);
     expect(Array.from(h.rainW!).reduce((a, b) => a + b, 0)).toBeCloseTo(8, 5);
     expect(h.cellAt(15, 15)).not.toBe(0); // inflow never lands on a closed cell
+  });
+});
+
+describe("channel roughness and river entry (same flood at every cell size)", () => {
+  it("gives mapped channel cells open-water roughness when the pack is read", () => {
+    const arrays = [["z", "uint16", [2200, 2100]], ["n", "uint8", [150, 150]], ["cn", "uint8", [98, 98]], ["flags", "uint8", [DOMAIN, DOMAIN | CHANNEL]]] as const;
+    let off = 0;
+    const desc = arrays.map(([name, dtype, v]) => { const d = { name, dtype, offset: off, length: v.length }; off += v.length * (dtype === "uint16" ? 2 : 1); off += off % 2; return d; });
+    const head = new TextEncoder().encode(JSON.stringify({ version: 1, grid: { crs: "EPSG:32748", nx: 2, ny: 1, dx: 30, origin: [700000, 9300000] }, arrays: desc }));
+    const hl = head.length + ((4 - (head.length % 4)) % 4), buf = new ArrayBuffer(4 + hl + off), u8 = new Uint8Array(buf);
+    new DataView(buf).setUint32(0, hl, true); u8.set(head, 4); u8.fill(32, 4 + head.length, 4 + hl);
+    arrays.forEach(([, dtype, v], k) => { const o = 4 + hl + desc[k].offset; if (dtype === "uint16") new Uint16Array(buf, o, v.length).set(v); else u8.set(v, o); });
+    const p = parsePack(buf);
+    expect(p.n[0]).toBeCloseTo(0.15, 6); // land keeps its land-cover roughness
+    expect(p.n[1]).toBeCloseTo(CHANNEL_N, 6);
+  });
+  it("keeps the channel roughness on a coarse cell that holds a channel", () => {
+    const p = pack(null); p.n = Float32Array.from([0.15, CHANNEL_N]); p.flags = Uint8Array.from([DOMAIN, DOMAIN | CHANNEL]);
+    expect(buildRun(p, null, 2).n[0]).toBeCloseTo(CHANNEL_N, 6);
+    expect(buildRun(pack(null), null, 2).n[0]).toBeCloseTo(0.03, 6);
+  });
+  it("lets a river enter over its whole 30 m entry cell on a fine grid, and one cell on a 30 m grid", () => {
+    const p = pack(null);
+    const box = (() => { const a = fromUtm(700000, 9300000, 48, true), b = fromUtm(700060, 9299970, 48, true); return [a.lon + 1e-7, b.lat + 1e-7, b.lon - 1e-7, a.lat - 1e-7]; })();
+    expect(inflowSpread(buildRun(p, box, 1), 1)).toEqual({ cells: [1], w: [1] });
+    const bld = new Uint8Array(6 * 3); bld[3] = 1; // one building in the second 30 m cell
+    const f = buildFineRun(p, box, 3, undefined, bld);
+    const sp = inflowSpread(f, 4);
+    expect(sp.cells.sort((a, b) => a - b)).toEqual([4, 5, 9, 10, 11, 15, 16, 17]);
+    expect(sp.w.reduce((a, b) => a + b, 0)).toBeCloseTo(1, 12);
+  });
+  it("draws building-block runs on their own cells with the fine-cell ground (buildings are holes, not raised ground)", () => {
+    const p = pack(null); p.z = Float32Array.from([2, 4]);
+    const box = (() => { const a = fromUtm(700000, 9300000, 48, true), b = fromUtm(700060, 9299970, 48, true); return [a.lon + 1e-7, b.lat + 1e-7, b.lon - 1e-7, a.lat - 1e-7]; })();
+    const bld = new Uint8Array(6 * 3); bld[2] = 1;
+    const f = buildFineRun(p, box, 3, undefined, bld);
+    expect([f.fine!.s, f.fine!.nx, f.fine!.r]).toEqual([1, 6, 3]);
+    expect(f.fine!.building[2]).toBe(1);
+    expect(fineGround(f.fine!.base, 3, 2, 0)).toBeCloseTo(f.z[2] - BUILDING_RAISE_M, 9);
+  });
+  it("does not spread a channel bed onto its banks", () => {
+    const base = { nx: 3, ny: 1, z: [5, 1, 5], channel: [0, 1, 0] };
+    expect(groundAt(base, 0.9, 0.5)).toBeCloseTo(5, 9); // bank next to the channel keeps the bank level
+    expect(groundAt(base, 1.5, 0.5)).toBe(1);
+  });
+});
+
+describe("sealed pockets", () => {
+  it("finds open cells closed in by buildings and leaves edge- or channel-connected cells open", () => {
+    // 5 x 5, a ring of buildings around the centre cell; a second ring touching a channel cell stays open inside
+    const b = new Uint8Array(25), ch = new Uint8Array(25);
+    for (const c of [6, 7, 8, 11, 13, 16, 17, 18]) b[c] = 1;
+    expect(Array.from(sealedPockets(5, 5, b, ch)).reduce((a, v) => a + v, 0)).toBe(1);
+    expect(sealedPockets(5, 5, b, ch)[12]).toBe(1);
+    ch[12] = 1;
+    expect(sealedPockets(5, 5, b, ch)[12]).toBe(0);
+  });
+});
+
+describe("roughness between explicit buildings", () => {
+  it("replaces the built share's effective roughness by street roughness only when buildings are in the grid", () => {
+    const p = pack(null); p.built = Uint8Array.from([60, 0]); p.n = Float32Array.from([0.6 * 0.15 + 0.4 * 0.035, 0.035]);
+    const box = (() => { const a = fromUtm(700000, 9300000, 48, true), b = fromUtm(700060, 9299970, 48, true); return [a.lon + 1e-7, b.lat + 1e-7, b.lon - 1e-7, a.lat - 1e-7]; })();
+    const bld = new Uint8Array(6 * 3); bld[0] = 1;
+    expect(buildFineRun(p, box, 3, undefined, bld).n[1]).toBeCloseTo(0.6 * STREET_N + 0.4 * 0.035, 6);
+    expect(buildFineRun(p, box, 3, undefined, bld).n[4]).toBeCloseTo(0.035, 6);
+    expect(buildFineRun(p, box, 3).n[1]).toBeCloseTo(p.n[0], 6); // no footprints: the 30 m effective roughness stays
+    expect(buildDualRun(p, box, 6, 2, undefined, new Uint8Array(12 * 6)).n[0]).toBeCloseTo(p.n[0], 6);
+    const b6 = new Uint8Array(12 * 6); b6[0] = 1;
+    expect(buildDualRun(p, box, 6, 2, undefined, b6).n[0]).toBeCloseTo(openGroundN(p.n[0], 0.6), 6);
   });
 });

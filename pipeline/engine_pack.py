@@ -460,6 +460,9 @@ def build(pack: Path, out: Path, region: str, soil: str, terrain_src: str = "fab
     zc, chan, h0, drain_info = carve_drains(z, zc, chan, tr, drains)
     sea = sea_mask(zc, water_cell)
     chan &= ~sea
+    # a mapped channel conveys water with open-water roughness (class Water; Chow 1959), not the land cover around it (mostly
+    # built area, n 0.15, when the river is narrower than the 10 m land-cover pixels); the web app does the same for older packs
+    n = np.where(chan, PARAMS["classes"]["1"]["n"], n)
     pump, pump_info = pump_rates(chan, sea, tr, drains)
     # Stream network: GLO-90 D8 cells with at least STREAM_KM2 upstream, with their downstream cell (index into the same list).
     acc_km2 = up["area_km2"]
