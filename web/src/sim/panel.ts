@@ -2,7 +2,7 @@
 import type { GeoJSONSource, MapMouseEvent } from "maplibre-gl";
 import { lang, t, type Key } from "../i18n";
 import type { MapPage } from "../map";
-import { buildDualRun, buildFineRun, buildRun, chooseCompute, loadPack, packCellOf, CHANNEL, type Pack, type RunGrid } from "../engine/pack";
+import { buildDualRun, buildFineRun, buildRun, chooseCompute, inflowSpread, loadPack, packCellOf, CHANNEL, type Pack, type RunGrid } from "../engine/pack";
 import { buildingMask } from "./buildings";
 import { DT_S, inflowsFor, inflowsForSpatial, type Inflow } from "../engine/hydrology";
 import { cumAtSteps, meanHyetograph, pointAt, zoneGrid, type EventRain } from "../engine/event-rain";
@@ -471,7 +471,7 @@ export function mountSim(page: MapPage, o: { packUrl: string; regionBbox: number
     } else rain = { kind: r.scenario.rainMode === "hourly" ? "hourly" : "design", mm: totalMm(hy), h, peakMmH, r24: r.scenario.r24 as number | undefined };
     const box2 = (r.scenario.area as { box?: number[] }).box ?? null, [wKm, hKm] = box2 ? kmOf(box2) : [0, 0];
     const facts: Facts = {
-      area: { box: box2, wKm, hKm }, landKm2: land * a, cellM: g.fine ? g.fine.dx : g.dx, ...(r.scenario.fineCells ? { fine: { buildingShare: (r.scenario.fineCells as { buildings?: { share?: number } } | undefined)?.buildings?.share ?? null, ...(g.fine ? { computeM: g.dx } : {}) } } : {}), hours: r.scenario.hours as number, gpu: !!r.gpu, landcoverYear: pack.header.landcover_year, ...(r.scenario.terrainYear ? { terrainYear: r.scenario.terrainYear as number, subEpoch: r.scenario.terrainEpoch as number } : {}),
+      area: { box: box2, wKm, hKm }, landKm2: land * a, cellM: g.fine ? g.fine.dx : g.dx, ...(r.scenario.fineCells ? { fine: { buildingShare: (r.scenario.fineCells as { buildings?: { share?: number } } | undefined)?.buildings?.share ?? null, ...(g.fine && g.fine.s > 1 ? { computeM: g.dx } : {}) } } : {}), hours: r.scenario.hours as number, gpu: !!r.gpu, landcoverYear: pack.header.landcover_year, ...(r.scenario.terrainYear ? { terrainYear: r.scenario.terrainYear as number, subEpoch: r.scenario.terrainEpoch as number } : {}),
       drainMmH: calibration.drain_mm_h, ...dsdaFacts(pack), ...(r.scenario.polderPumps ? { pumpsM3s: r.scenario.pumpM3s as number, pumpPolders: (pack.header.pumps as { polders_served?: number } | undefined)?.polders_served } : r.run.pump ? { pumpsOff: true } : {}), seaM: r.scenario.seaLevel as number, floodM: FLOOD_M, rain,
       upstream: r.inflows.length ? { n: r.inflows.length, peakM3s: peakInflow(), areaKm2: r.inflows.reduce((s2, f) => s2 + f.areaKm2, 0) } : null,
       env: { km2: wet * a, classesKm2: cls.map((v) => v * a), meanDepth: wet ? sum / wet : 0, maxDepth: dMax, deepest },
@@ -557,11 +557,11 @@ export function mountSim(page: MapPage, o: { packUrl: string; regionBbox: number
       raw = inflowsFor(p.streams, run.isIn, cum, steps);
     }
     const inflows = raw.map((f) => ({ ...f, cell: run.cellAt(f.x, f.y) })).filter((f) => f.cell >= 0);
-    const grid: Grid = { nx: run.nx, ny: run.ny, dx: run.dx, zone: run.utm.zone, x0: run.utm.x0, y0: run.utm.y0, z: Float32Array.from(run.z), mask, fine: run.fine };
+    const grid: Grid = { nx: run.nx, ny: run.ny, dx: run.dx, zone: run.utm.zone, x0: run.utm.x0, y0: run.utm.y0, z: Float32Array.from(run.z), mask, channel: run.channel, fine: run.fine };
     const scenario = {
       area: area === "box" ? { box: bbox } : "region", rainMode: mode(), ...(mode() === "design" ? { r24: num("s-r24") } : {}), rainMm: +totalMm(hy).toFixed(1), rainHours: (hy.mm.length * hy.blockSeconds) / 3600, upstreamRain: up, seaLevel: num("s-sea"), hours, cellM: run.fine ? run.fine.dx : run.dx,
       ...(p.sub ? { terrainYear: +tYear.toFixed(2), terrainEpoch: p.subEpoch } : {}),
-      ...(r > 1 ? { fineCells: { cellM: 30 / r, computeM: run.dx, terrain: "bilinear from the 30 m pack (no new terrain detail)", buildings: bldInfo ? { method: run.fine ? "building porosity on the compute grid, result drawn on the fine cells (dual grid: Sanders et al. 2008; Sanders and Schubert 2019)" : "building block +10 m (Schubert and Sanders 2012)", source: "Overture Maps buildings, region pack tiles z14", cells: bldInfo.cells, share: +bldInfo.share.toFixed(3) } : "not loaded" } } : {}),
+      ...(r > 1 ? { fineCells: { cellM: 30 / r, computeM: run.dx, terrain: "bilinear from the 30 m pack (no new terrain detail)", buildings: bldInfo ? { method: run.phi ? "building porosity on the compute grid, result drawn on the fine cells (dual grid: Sanders et al. 2008; Sanders and Schubert 2019)" : "building block +10 m (Schubert and Sanders 2012)", source: "Overture Maps buildings, region pack tiles z14", cells: bldInfo.cells, share: +bldInfo.share.toFixed(3) } : "not loaded" } } : {}),
       ...(run.pump ? { polderPumps: pumpsOn(), pumpM3s: Math.round(run.pump.reduce((a, v, c) => a + (run.sea[c] ? 0 : v * (run.phi ? run.phi[c] : 1)), 0) * run.dx * run.dx) } : {}),
       ...(ev ? { event: ev.id, eventStartUtc: ev.start_utc, rainSource: ev.source, rainPoints: ev.mm.length } : {}),
     };
@@ -609,20 +609,23 @@ export function mountSim(page: MapPage, o: { packUrl: string; regionBbox: number
         setRunning(false); $("s-clear").hidden = false; worker = null;
         $("s-status").textContent = t("sim.done", { s: (m.wallMs / 1000).toFixed(0), e: t(m.gpu ? "sim.gpu" : "sim.cpu") });
         const T = m.totals, mm = (v: number) => fmt(v / 1e6, 1);
-        const gridTxt = `${run.nx} × ${run.ny} × ${run.dx} m` + (run.fine ? ` → ${run.fine.nx} × ${run.fine.ny} × ${run.fine.dx} m` : "");
+        const gridTxt = `${run.nx} × ${run.ny} × ${run.dx} m` + (run.fine && run.fine.s > 1 ? ` → ${run.fine.nx} × ${run.fine.ny} × ${run.fine.dx} m` : "");
         $("s-stats-box").hidden = false;
         $("s-stats").innerHTML = (lang === "id"
-          ? [["Hujan rata-rata (mm)", fmt(totalMm(hy))], ["Air dari hulu, puncak (m³/s)", fmt(peakInflow())], ["Hujan jatuh (juta m³)", mm(T.rain)], ["Meresap ke tanah", mm(T.infiltration)], ["Masuk dari hulu", mm(T.inflow)], ["Keluar lewat tepi area", mm(T.outflow)], ["Ke laut", mm(T.sea)], ["Kesalahan neraca air", m.massError.toExponential(1)], ["Ukuran grid", gridTxt], ...(bldInfo ? [[run.fine ? "Sel bangunan (porositas)" : "Sel bangunan (blok padat)", `${fmt(bldInfo.share * 100, 1)} %`]] : []), ["Sungai masuk", String(inflows.length)]]
-          : [["Mean rain (mm)", fmt(totalMm(hy))], ["Upstream inflow, peak (m³/s)", fmt(peakInflow())], ["Rain fallen (million m³)", mm(T.rain)], ["Infiltrated", mm(T.infiltration)], ["Inflow from upstream", mm(T.inflow)], ["Left through the area edge", mm(T.outflow)], ["To the sea", mm(T.sea)], ["Water balance error", m.massError.toExponential(1)], ["Grid", gridTxt], ...(bldInfo ? [[run.fine ? "Building cells (porosity)" : "Building cells (solid blocks)", `${fmt(bldInfo.share * 100, 1)} %`]] : []), ["Entering rivers", String(inflows.length)]])
+          ? [["Hujan rata-rata (mm)", fmt(totalMm(hy))], ["Air dari hulu, puncak (m³/s)", fmt(peakInflow())], ["Hujan jatuh (juta m³)", mm(T.rain)], ["Meresap ke tanah", mm(T.infiltration)], ["Masuk dari hulu", mm(T.inflow)], ["Keluar lewat tepi area", mm(T.outflow)], ["Ke laut", mm(T.sea)], ["Kesalahan neraca air", m.massError.toExponential(1)], ["Ukuran grid", gridTxt], ...(bldInfo ? [[run.phi ? "Sel bangunan (porositas)" : "Sel bangunan (blok padat)", `${fmt(bldInfo.share * 100, 1)} %`]] : []), ["Sungai masuk", String(inflows.length)]]
+          : [["Mean rain (mm)", fmt(totalMm(hy))], ["Upstream inflow, peak (m³/s)", fmt(peakInflow())], ["Rain fallen (million m³)", mm(T.rain)], ["Infiltrated", mm(T.infiltration)], ["Inflow from upstream", mm(T.inflow)], ["Left through the area edge", mm(T.outflow)], ["To the sea", mm(T.sea)], ["Water balance error", m.massError.toExponential(1)], ["Grid", gridTxt], ...(bldInfo ? [[run.phi ? "Building cells (porosity)" : "Building cells (solid blocks)", `${fmt(bldInfo.share * 100, 1)} %`]] : []), ["Entering rivers", String(inflows.length)]])
           .map(([a, b2]) => `<dt>${esc(a)}</dt><dd>${esc(b2)}</dd>`).join("");
         render(); conclude(); showConcl(true);
       } else if (m.type === "error") fail(m.message);
     };
     // no message at all: the worker file did not load (usually an old page after the site was updated)
     worker.onerror = (e) => { e.preventDefault(); fail(e.message, !e.message); };
+    // each river enters over the open cells of its 30 m entry cell (fine runs), so the entry is as wide at every cell size
+    const inCells: number[] = [], inQ: Float64Array[] = [];
+    for (const f of inflows) { const sp = inflowSpread(run, f.cell); sp.cells.forEach((c, m) => { inCells.push(c); inQ.push(sp.w[m] === 1 ? f.q : f.q.map((v) => v * sp.w[m])); }); }
     const msg: RunMsg = {
       type: "run", grid: { nx: run.nx, ny: run.ny, dx: run.dx, z: run.z, n: run.n, cn: run.cn, active: run.active, sea: run.sea, drain: drainOf(run, pumpsOn()), zone, ...(run.h0 ? { h0: run.h0 } : {}), ...(run.phi ? { phi: run.phi, psiX: run.psiX, psiY: run.psiY, rainW: run.rainW } : {}) }, zoneMm: ev?.mm, seaLevel: num("s-sea"), hours, rain: hy, frameS,
-      inflowCells: inflows.map((f) => f.cell), inflowQ: inflows.map((f) => f.q), inflowDt: DT_S, floodM: FLOOD_M, count, preferGpu: gpuAvailable,
+      inflowCells: inCells, inflowQ: inQ, inflowDt: DT_S, floodM: FLOOD_M, count, preferGpu: gpuAvailable,
     };
     worker.postMessage(msg);
   };
