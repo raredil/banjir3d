@@ -3,7 +3,7 @@
 > The AUTO part is rebuilt by `python3 tools/make_map.py`. Write by hand only below it.
 
 <!-- AUTO:START -->
-Files: 140 | Lines: 18752 | Fingerprint: b0e49783c050492d | Generated: 2026-11-10
+Files: 142 | Lines: 19420 | Fingerprint: 8a6fcfe2e630442b | Generated: 2026-11-10
 
 ### Files
 - `pipeline/catalog_tools.py` (67 lines): load, bib_entries, check, write_bib
@@ -63,14 +63,14 @@ Files: 140 | Lines: 18752 | Fingerprint: b0e49783c050492d | Generated: 2026-11-1
 - `web/src/engine/gpu.ts` (321 lines): GpuEngine, buf, off, group
 - `web/src/engine/hydrology.ts` (110 lines): nrcsLagHours, uhRatio, catchmentHydrograph, findEntries, inflowsFor, entryMembers, inflowsForSpatial, vol
   - data objects: UH_Q, UH_T
-- `web/src/engine/pack.test.ts` (172 lines): box
-- `web/src/engine/pack.ts` (432 lines): parsePack, fetchPackBytes, buildRun, groundAt, buildFineRun, buildDualRun, chooseCompute, inflowSpread (+8 more)
+- `web/src/engine/pack.test.ts` (201 lines): box
+- `web/src/engine/pack.ts` (500 lines): parsePack, fetchPackBytes, buildRun, groundAt, landGround, bilinearAt, buildFineRun, buildDualRun (+11 more)
 - `web/src/engine/solver.ts` (259 lines): porosityArrays, FloodEngine, scsRunoff, retention, isOpen
 - `web/src/explore/analytical.ts` (32 lines): analyticalWave, waveDepth, bc
 - `web/src/explore/local-inertial.test.ts` (83 lines): flat, run
 - `web/src/explore/local-inertial.ts` (234 lines): LocalInertial, cap
 - `web/src/explore/rain.ts` (41 lines): alternatingBlock, parseHourly, rainRate, mononobeDepth, totalMm, durationS
-- Not listed one by one (80 files): data/ (5), data/demnas/ (1), data/engine/ (2), data/events/ (3), data/methods/ (1), data/roughness/ (1), verification/analytical-wave/ (2), verification/data-checks/ (2), verification/explore-vs-sfincs/ (3), verification/fine-consistency/ (2), verification/fine-speed/ (4), verification/gpu-parity/ (2), verification/observed/ (16), web/ (5), web/public/data/jakarta/ (6), web/public/meta/ (2), web/scripts/ (1), web/src/ (4), web/src/engine/ (1), web/src/explore/ (3), web/src/methods/ (3), web/src/sim/ (11)
+- Not listed one by one (82 files): data/ (5), data/demnas/ (1), data/engine/ (2), data/events/ (3), data/methods/ (1), data/roughness/ (1), verification/analytical-wave/ (2), verification/data-checks/ (2), verification/explore-vs-sfincs/ (3), verification/fine-consistency/ (3), verification/fine-speed/ (4), verification/gpu-parity/ (2), verification/observed/ (16), web/ (5), web/public/data/jakarta/ (7), web/public/meta/ (2), web/scripts/ (1), web/src/ (4), web/src/engine/ (1), web/src/explore/ (3), web/src/methods/ (3), web/src/sim/ (11)
 
 ### Links (A -> B means A loads or uses B)
 - `pipeline/catalog_tools.py` -> pipeline/engine_pack.py, web/src/engine/gpu.ts
@@ -115,7 +115,7 @@ Files: 140 | Lines: 18752 | Fingerprint: b0e49783c050492d | Generated: 2026-11-1
 - `verification/region-run/run.ts` -> node:fs, node:zlib, ../../web/src/engine/pack, ../../web/src/engine/solver, ../../web/src/engine/hydrology, ../../web/src/explore/rain (+6 more)
 - `verification/terrain/probe.py` -> pipeline/b3d/grid.py, pipeline/demnas_ingest.py, pipeline/engine_pack.py, pipeline/map_layers.py, pipeline/subsidence.py, pipeline/verify_sources.py (+9 more)
 - `web/src/catalog.ts` -> ../../data/catalog-use.json, ./i18n, ./types, ./util, pipeline/b3d/util.py, pipeline/demnas_ingest.py (+7 more)
-- `web/src/i18n.ts` -> pipeline/b3d/grid.py, pipeline/catalog_tools.py, pipeline/demnas_ingest.py, pipeline/engine_pack.py, verification/data-checks/check_pack.py, verification/observed/compare.py (+7 more)
+- `web/src/i18n.ts` -> pipeline/b3d/grid.py, pipeline/catalog_tools.py, pipeline/engine_pack.py, verification/data-checks/check_pack.py, verification/observed/compare.py, verification/observed/fetch.py (+6 more)
 - `web/src/layer-export.ts` -> ./layers, pipeline/b3d/util.py, pipeline/jakartasatu.py, pipeline/verify_sources.py, verification/observed/compare.py, web/src/engine/pack.ts
 - `web/src/layers.ts` -> ./i18n, pipeline/b3d/layers.py, pipeline/b3d/util.py, pipeline/engine_pack.py, pipeline/map_layers.py, verification/data-checks/check_pack.py (+8 more)
 - `web/src/main.ts` -> ../../data/validation.json, ./catalog, ./i18n, ./map, ./types, ./util (+11 more)
@@ -126,8 +126,8 @@ Files: 140 | Lines: 18752 | Fingerprint: b0e49783c050492d | Generated: 2026-11-1
 - `web/src/engine/event-rain.ts` -> ../util, ./hydrology, ../explore/rain, pipeline/engine_pack.py, verification/data-checks/check_pack.py, verification/observed/run_event.ts (+3 more)
 - `web/src/engine/gpu.ts` -> ./solver, pipeline/engine_pack.py, web/src/engine/engine.test.ts, web/src/engine/pack.ts, web/src/engine/solver.ts, web/src/main.ts (+3 more)
 - `web/src/engine/hydrology.ts` -> ./solver, pipeline/engine_pack.py, web/src/engine/engine.test.ts, web/src/engine/pack.ts, web/src/engine/solver.ts, web/src/sim/conclusion.ts
-- `web/src/engine/pack.test.ts` -> vitest, ./pack, ../util, pipeline/demnas_ingest.py, pipeline/engine_pack.py, pipeline/subsidence.py (+6 more)
-- `web/src/engine/pack.ts` -> ../util, ./hydrology, pipeline/engine_pack.py, pipeline/jakartasatu.py, pipeline/subsidence.py, pipeline/verify_sources.py (+9 more)
+- `web/src/engine/pack.test.ts` -> vitest, ./pack, ../util, pipeline/demnas_ingest.py, pipeline/engine_pack.py, pipeline/subsidence.py (+7 more)
+- `web/src/engine/pack.ts` -> ../util, ./hydrology, pipeline/engine_pack.py, pipeline/jakartasatu.py, pipeline/subsidence.py, pipeline/verify_sources.py (+10 more)
 - `web/src/engine/solver.ts` -> pipeline/demnas_ingest.py, pipeline/engine_pack.py, web/src/engine/engine.test.ts, web/src/engine/pack.ts, web/src/i18n.ts, web/src/sim/conclusion.ts
 - `web/src/explore/analytical.ts` -> ./local-inertial, pipeline/catalog_tools.py, verification/observed/run_event.ts, web/src/explore/local-inertial.ts
 - `web/src/explore/local-inertial.test.ts` -> vitest, ./local-inertial, ./analytical, pipeline/b3d/grid.py, pipeline/demnas_ingest.py, web/src/explore/analytical.ts (+2 more)

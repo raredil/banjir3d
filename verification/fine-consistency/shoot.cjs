@@ -21,7 +21,7 @@ const { chromium } = require("playwright");
     await p.click('#t-show [data-m="max"]').catch(() => {}); await p.waitForTimeout(1000);
     await p.click('[data-c="x"]').catch(() => {}); await p.waitForTimeout(300);
     await p.mouse.move(700, 430);
-    for (let i = 0; i < 6; i++) { await p.mouse.wheel(0, -240); await p.waitForTimeout(250); }
+    for (let i = 0; i < +(process.env.ZW || 6); i++) { await p.mouse.wheel(0, -240); await p.waitForTimeout(250); }
     await p.waitForTimeout(2500);
     await p.screenshot({ path: `${out}/r${r}.png` });
     await p.close();

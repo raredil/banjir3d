@@ -162,6 +162,8 @@ export type FineGrid = {
   s: number; // fine cells per compute cell side
   nx: number; ny: number; dx: number;
   building: Uint8Array; // 1 = building footprint (no water drawn there)
+  draw?: { nx: number; ny: number; building: Uint8Array }; // sharper footprints for the map only (withFineDrawing)
+  drawOnly?: boolean; // true: the flow is the 30 m run, the fine cells only draw it (withFineDrawing, ADR 0018)
   base: { nx: number; ny: number; z: Float32Array; channel: Uint8Array }; // the 30 m cells of the box (ground of the fine cells)
 };
 
@@ -186,6 +188,42 @@ export function groundAt(base: Ground, x: number, y: number): number {
 
 /** Ground (m) of fine cell (I, J) with r fine cells per 30 m cell (groundAt at the fine cell centre). */
 export const fineGround = (base: Ground, r: number, I: number, J: number): number => groundAt(base, (I + 0.5) / r, (J + 0.5) / r);
+
+/** Land surface for DRAWING a flood map (ADR 0018): a channel cell (river, canal, drain, lake carved into the terrain) takes the
+ *  mean level of the land cells around it (its banks), filled outwards for wide channels. Depth drawn = water surface minus this
+ *  surface, so water inside a channel up to its banks is the river, not a flood, and is not drawn; water above the banks is.
+ *  Without this the channel bed shows as a chain of deep 30 m squares (a staircase) along every river and drain. Flood maps
+ *  usually mask permanent water the same way. The solver itself keeps the carved bed (groundAt / fineGround). */
+export function landGround(nx: number, ny: number, z: ArrayLike<number>, channel: ArrayLike<number>): Float32Array {
+  const N = nx * ny, out = Float32Array.from(z as ArrayLike<number>), done = new Uint8Array(N);
+  let todo: number[] = [];
+  for (let c = 0; c < N; c++) if (channel[c]) todo.push(c); else done[c] = 1;
+  if (todo.length === N) return out;
+  while (todo.length) {
+    const next: number[] = [], upd: [number, number][] = [];
+    for (const c of todo) {
+      const I = c % nx, J = (c - I) / nx;
+      let s = 0, k = 0;
+      for (let dj = -1; dj <= 1; dj++) for (let di = -1; di <= 1; di++) {
+        const a = I + di, b = J + dj;
+        if ((di || dj) && a >= 0 && b >= 0 && a < nx && b < ny && done[b * nx + a]) { s += out[b * nx + a]; k++; }
+      }
+      if (k) upd.push([c, s / k]); else next.push(c);
+    }
+    if (!upd.length) break;
+    for (const [c, v] of upd) { out[c] = v; done[c] = 1; }
+    todo = next;
+  }
+  return out;
+}
+
+/** Plain bilinear value of a cell-centred field at x, y (in cells from the NW corner), clamped at the edges: continuous, so the
+ *  drawn flood has no steps at cell borders. Used with landGround for the map, the exports and the fine cells alike. */
+export function bilinearAt(nx: number, ny: number, v: ArrayLike<number>, x: number, y: number): number {
+  const u = Math.min(nx - 1, Math.max(0, x - 0.5)), w = Math.min(ny - 1, Math.max(0, y - 0.5));
+  const a = Math.floor(u), b = Math.floor(w), a1 = Math.min(nx - 1, a + 1), b1 = Math.min(ny - 1, b + 1), fx = u - a, fy = w - b;
+  return (1 - fy) * ((1 - fx) * v[b * nx + a] + fx * v[b * nx + a1]) + fy * ((1 - fx) * v[b1 * nx + a] + fx * v[b1 * nx + a1]);
+}
 
 /** Manning n of built area in the land-cover table (data/engine/landcover-parameters.json, class Built area): an effective
  *  roughness for 30 m cells that stands for the buildings missing from the bare-earth terrain (Beretta et al. 2018). */
@@ -379,6 +417,36 @@ export function buildDualRun(p: Pack, box: number[], r: number, rc: number, year
 /** Compute cells per 30 m cell side for a fine run of r cells per side: the finest divisor of r whose estimated run time fits
  *  `budgetS` (cells x time steps / speed; the time step follows the deepest water, estimated from the carved channels).
  *  rc = r is the building-block grid itself. */
+/** Fine cells as a DRAWING grid (default since ADR 0018): the flow is the 30 m run itself (run30 = buildRun(p, box, 1, year),
+ *  the grid checked against real floods), and its water surface is drawn on fine cells of 30/r m with the building footprints
+ *  (`bld`, fine cells) left dry. The pack has no ground detail below 30 m, so a finer flow grid only adds interpolated ground;
+ *  solving on it changed where the water went (verification/fine-consistency). Every number (area, depth, buildings, people)
+ *  is therefore the same as at 30 m; the fine cells only sharpen the picture and the exports. */
+export function withFineDrawing(run30: RunGrid, r: number, bld: Uint8Array | null, m = 1): RunGrid {
+  // bld: footprints on cells of 30/(r m) m (m >= 1 drawing cells per fine cell side): the map leaves these dry; the fine cells of
+  // the exports take the drawing cell at their centre
+  const nx = run30.nx * r, ny = run30.ny * r, rd = r * m, dnx = run30.nx * rd, dny = run30.ny * rd;
+  const building = new Uint8Array(nx * ny), draw = new Uint8Array(dnx * dny);
+  if (bld) {
+    if (bld.length !== dnx * dny) throw new Error("building mask size does not match the drawing grid");
+    for (let C = 0; C < dnx * dny; C++) {
+      const P = Math.floor(C / dnx / rd) * run30.nx + Math.floor((C % dnx) / rd);
+      if (bld[C] && !run30.channel[P] && !run30.sea[P]) draw[C] = 1;
+    }
+    const h = m >> 1;
+    for (let J = 0; J < ny; J++) for (let I = 0; I < nx; I++) building[J * nx + I] = draw[(J * m + h) * dnx + I * m + h];
+  }
+  return { ...run30, fine: { r, s: r, nx, ny, dx: run30.dx / r, building, drawOnly: true, ...(m > 1 ? { draw: { nx: dnx, ny: dny, building: draw } } : {}), base: { nx: run30.nx, ny: run30.ny, z: Float32Array.from(run30.z), channel: run30.channel } } };
+}
+
+/** Drawing cells per fine cell side for the building shapes on the map: as close to 2 m as the texture limit allows (at least the
+ *  fine cell itself), so 10 m and 5 m results show buildings as shapes, not as a speckle of 10 m squares. */
+export const drawFactor = (r: number, nx30: number, ny30: number, maxSide: number): number => {
+  let m = Math.max(1, Math.floor(15 / r));
+  while (m > 1 && Math.max(nx30, ny30) * r * m > maxSide) m--;
+  return m;
+};
+
 export function chooseCompute(p: Pack, box: number[], r: number, hours: number, cellStepsPerS: number, budgetS: number, maxCells = Infinity): { rc: number; estS: number } {
   const base = buildRun(p, box, 1);
   let h0max = 0;

@@ -1,18 +1,20 @@
 // Flood depth on the map as a WebGL custom layer. The model gives one depth per 30 m (or coarser) cell. On screen every pixel
-// takes the water surface (terrain + depth) interpolated bilinearly from the wet cells around it and subtracts the ground
-// there (groundAt: bilinear between land cells, a channel cell keeps its own bed, so a river bed is not spread onto its banks):
-// water edges follow the ground smoothly instead of showing square cells, and no water is invented where all surrounding cells
-// are dry. Coarse and fine runs use the same ground rule, so the same flood looks the same at every cell size. This is the water-surface downscaling used for SFINCS output (Leijnse et al.
-// 2021; HydroMT-SFINCS downscale_floodmap), done here on the model's own terrain grid. Colours: depth classes of BLUEPRINT §8.
+// takes the water surface (terrain + depth) interpolated bilinearly from the wet cells around it and subtracts the land surface
+// there (landGround in pack.ts, interpolated bilinearly: a river, canal or drain cell takes the level of its banks, ADR 0018):
+// water inside a channel up to its banks is the river and is not drawn, water above the banks is, so rivers no longer show as a
+// staircase of 30 m squares, and water edges follow the ground smoothly. No water is invented where all surrounding cells are
+// dry. This is the water-surface downscaling used for SFINCS output (Leijnse et al. 2021; HydroMT-SFINCS downscale_floodmap),
+// done here on the model's own terrain grid. Fine cells (10-1 m) use the same rule and leave building footprints dry, so the
+// same flood looks the same at every cell size. Colours: depth classes of BLUEPRINT §8.
 import { MercatorCoordinate, type CustomLayerInterface, type CustomRenderMethodInput, type Map as MlMap } from "maplibre-gl";
 import { fromUtm } from "../util";
-import { fineGround, groundAt, type FineGrid } from "../engine/pack";
+import { bilinearAt, landGround, type FineGrid } from "../engine/pack";
 
 export const CLASSES = [0.05, 0.15, 0.5, 1.0, 2.0]; // m, lower bounds
 export const CLASS_COLORS = ["#c6dbef", "#9ecae1", "#4292c6", "#2166ac", "#0b3d7a", "#08214a"]; // below first = transparent
 export type FloodGeom = { nx: number; ny: number; dx: number; zone: number; x0: number; y0: number; z: Float32Array; mask: Uint8Array; channel?: Uint8Array; fine?: FineGrid }; // mask 1 = draw
-// fine (dual-grid runs): the water surface of the compute cells is drawn on the fine cells: depth = surface - ground of the fine
-// cell (fineGround, the same rule as pack.ts), no water on building cells. Only the compute-cell depth changes per frame.
+// fine (10-1 m cells): the water surface of the compute cells minus the land surface (landGround, bilinear, the same at every
+// cell size), no water on building footprints (drawn near 2 m, fine.draw). Only the compute-cell depth changes per frame.
 
 const VS = `#version 300 es
 in vec2 a_pos; in vec2 a_uv; uniform mat4 u_m; out vec2 v_uv;
@@ -20,25 +22,16 @@ void main() { v_uv = a_uv; gl_Position = u_m * vec4(a_pos, 0.0, 1.0); }`;
 const FS = `#version 300 es
 precision highp float; precision highp sampler2D;
 in vec2 v_uv; uniform sampler2D u_d; uniform sampler2D u_z; uniform vec2 u_n; uniform float u_min; uniform vec4 u_c[6]; uniform float u_k[5]; uniform float u_a;
-uniform int u_fine; uniform sampler2D u_b; uniform sampler2D u_g; uniform vec2 u_nf; uniform float u_r;
+uniform int u_fine; uniform sampler2D u_b; uniform sampler2D u_g;
 out vec4 o;
-// ground at x (in cells of t, from the NW corner): t holds (ground, channel flag); same rule as groundAt in pack.ts
-float groundAt(sampler2D t, vec2 x) {
+// land surface at x (in cells of t, from the NW corner): plain bilinear of channel ch of t (landGround), clamped at the edges
+float groundAt(sampler2D t, int ch, vec2 x) {
   ivec2 nb = textureSize(t, 0);
-  ivec2 P = clamp(ivec2(floor(x)), ivec2(0), nb - 1);
-  vec2 g0 = texelFetch(t, P, 0).rg;
-  if (g0.g > 0.5) return g0.r;
-  vec2 u = x - 0.5; vec2 a0 = floor(u); vec2 f = u - a0;
-  float ws = 0.0, wz = 0.0;
-  for (int k = 0; k < 4; k++) {
-    ivec2 q = ivec2(a0) + ivec2(k & 1, k >> 1);
-    if (q.x < 0 || q.y < 0 || q.x >= nb.x || q.y >= nb.y) continue;
-    vec2 g = texelFetch(t, q, 0).rg;
-    if (g.g > 0.5) continue;
-    float w = ((k & 1) == 1 ? f.x : 1.0 - f.x) * ((k >> 1) == 1 ? f.y : 1.0 - f.y);
-    ws += w; wz += w * g.r;
-  }
-  return ws > 1e-9 ? wz / ws : g0.r;
+  vec2 u = clamp(x - 0.5, vec2(0.0), vec2(nb - 1));
+  ivec2 a = min(ivec2(floor(u)), max(nb - 2, ivec2(0))); vec2 f = clamp(u - vec2(a), 0.0, 1.0);
+  ivec2 b = min(a + 1, nb - 1);
+  float z00 = texelFetch(t, a, 0)[ch], z10 = texelFetch(t, ivec2(b.x, a.y), 0)[ch], z01 = texelFetch(t, ivec2(a.x, b.y), 0)[ch], z11 = texelFetch(t, b, 0)[ch];
+  return mix(mix(z00, z10, f.x), mix(z01, z11, f.x), f.y);
 }
 void main() {
   vec2 p = v_uv * u_n - 0.5; vec2 f = fract(p); ivec2 b = ivec2(floor(p));
@@ -52,10 +45,10 @@ void main() {
   if (wt < 1e-4) discard;
   float h;
   if (u_fine == 1) {
-    ivec2 F = clamp(ivec2(floor(v_uv * u_nf)), ivec2(0), ivec2(u_nf) - 1);
-    if (texelFetch(u_b, F, 0).r > 0.5) discard;
-    h = ws / wt - groundAt(u_g, (vec2(F) + 0.5) / u_r);
-  } else h = ws / wt - groundAt(u_z, v_uv * u_n);
+    ivec2 nb = textureSize(u_b, 0);
+    if (texelFetch(u_b, clamp(ivec2(floor(v_uv * vec2(nb))), ivec2(0), nb - 1), 0).r > 0.5) discard;
+    h = ws / wt - groundAt(u_g, 0, v_uv * vec2(textureSize(u_g, 0)));
+  } else h = ws / wt - groundAt(u_z, 1, v_uv * u_n);
   if (h < u_k[0]) discard;
   int c = 0;
   for (int k = 1; k < 5; k++) if (h >= u_k[k]) c = k;
@@ -116,19 +109,18 @@ export class FloodLayer implements CustomLayerInterface {
       else gl.texImage2D(gl.TEXTURE_2D, 0, gl.R32F, w, h, 0, gl.RED, gl.FLOAT, data);
       return t;
     };
-    // ground with its channel flag (the flag only shapes the ground under coarse runs; fine runs use their 30 m base below)
-    const zc = new Float32Array(nx * ny * 2);
-    for (let c = 0; c < nx * ny; c++) { zc[2 * c] = this.g.z[c]; zc[2 * c + 1] = this.g.fine ? 0 : this.g.channel?.[c] ?? 0; }
+    // model ground (for the water surface) and the land surface (channels at bank level) of the run grid
+    const zc = new Float32Array(nx * ny * 2), lg = landGround(nx, ny, this.g.z, this.g.channel ?? new Uint8Array(nx * ny));
+    for (let c = 0; c < nx * ny; c++) { zc[2 * c] = this.g.z[c]; zc[2 * c + 1] = lg[c]; }
     this.tex.z = mk(zc, nx, ny, "rg32f");
     this.tex.d = mk(this.pending ?? new Float32Array(nx * ny));
     const fg = this.g.fine;
     if (fg) {
-      // buildings (fine cells, 0/255) and the 30 m ground with its channel flag; uploaded once
-      this.tex.b = mk(Uint8Array.from(fg.building, (v) => v * 255), fg.nx, fg.ny, "r8");
-      const gz = new Float32Array(fg.base.nx * fg.base.ny * 2);
-      for (let c = 0; c < fg.base.nx * fg.base.ny; c++) { gz[2 * c] = fg.base.z[c]; gz[2 * c + 1] = fg.base.channel[c]; }
-      this.tex.g = mk(gz, fg.base.nx, fg.base.ny, "rg32f");
-    } else { this.tex.b = mk(new Uint8Array(1), 1, 1, "r8"); this.tex.g = mk(new Float32Array(2), 1, 1, "rg32f"); }
+      // buildings (fine cells, 0/255) and the land surface of the 30 m cells; uploaded once
+      const bd = fg.draw ?? fg;
+      this.tex.b = mk(Uint8Array.from(bd.building, (v) => v * 255), bd.nx, bd.ny, "r8");
+      this.tex.g = mk(landGround(fg.base.nx, fg.base.ny, fg.base.z, fg.base.channel), fg.base.nx, fg.base.ny);
+    } else { this.tex.b = mk(new Uint8Array(1), 1, 1, "r8"); this.tex.g = mk(new Float32Array(1), 1, 1); }
     this.pending = null;
   }
 
@@ -153,8 +145,6 @@ export class FloodLayer implements CustomLayerInterface {
     gl.activeTexture(gl.TEXTURE1); gl.bindTexture(gl.TEXTURE_2D, this.tex.z); gl.uniform1i(gl.getUniformLocation(p, "u_z"), 1);
     const fg = this.g.fine;
     gl.uniform1i(gl.getUniformLocation(p, "u_fine"), fg ? 1 : 0);
-    gl.uniform2f(gl.getUniformLocation(p, "u_nf"), fg?.nx ?? 1, fg?.ny ?? 1);
-    gl.uniform1f(gl.getUniformLocation(p, "u_r"), fg?.r ?? 1);
     gl.activeTexture(gl.TEXTURE2); gl.bindTexture(gl.TEXTURE_2D, this.tex.b); gl.uniform1i(gl.getUniformLocation(p, "u_b"), 2);
     gl.activeTexture(gl.TEXTURE3); gl.bindTexture(gl.TEXTURE_2D, this.tex.g); gl.uniform1i(gl.getUniformLocation(p, "u_g"), 3);
     gl.activeTexture(gl.TEXTURE0);
@@ -175,7 +165,7 @@ export class FloodLayer implements CustomLayerInterface {
 /** The same depth rule on the CPU at any resolution (for PNG/GeoTIFF/HTML exports): returns depth per output pixel. */
 export function downscale(g: { nx: number; ny: number; channel?: Uint8Array }, z: Float32Array, d: Float32Array, mask: Uint8Array, f: number): Float32Array {
   const W = g.nx * f, H = g.ny * f, out = new Float32Array(W * H);
-  const base = { nx: g.nx, ny: g.ny, z, channel: g.channel ?? new Uint8Array(g.nx * g.ny) };
+  const lg = landGround(g.nx, g.ny, z, g.channel ?? new Uint8Array(g.nx * g.ny));
   for (let Y = 0; Y < H; Y++) for (let X = 0; X < W; X++) {
     const px = (X + 0.5) / f - 0.5, py = (Y + 0.5) / f - 0.5;
     const bx = Math.floor(px), by = Math.floor(py), fx = px - bx, fy = py - by;
@@ -186,7 +176,7 @@ export function downscale(g: { nx: number; ny: number; channel?: Uint8Array }, z
       const dd = mask[c] ? d[c] : 0;
       if (dd > 0.01) { ws += w * (z[c] + dd); wt += w; }
     }
-    out[Y * W + X] = wt < 1e-4 ? 0 : Math.max(0, ws / wt - groundAt(base, (X + 0.5) / f, (Y + 0.5) / f));
+    out[Y * W + X] = wt < 1e-4 ? 0 : Math.max(0, ws / wt - bilinearAt(g.nx, g.ny, lg, (X + 0.5) / f, (Y + 0.5) / f));
   }
   return out;
 }
@@ -194,10 +184,11 @@ export function downscale(g: { nx: number; ny: number; channel?: Uint8Array }, z
 /** Dual-grid result on its fine cells (CPU version of the map shader, for exports): ground, depth and draw mask per fine cell. */
 export function fineResult(g: FloodGeom, d: Float32Array): { grid: FloodGeom; depth: Float32Array } {
   const fg = g.fine!, W = fg.nx, H = fg.ny, s = fg.s, z = new Float32Array(W * H), depth = new Float32Array(W * H), mask = new Uint8Array(W * H);
+  const lg = landGround(fg.base.nx, fg.base.ny, fg.base.z, fg.base.channel);
   for (let J = 0; J < H; J++) {
     const py = (J + 0.5) / s - 0.5, by = Math.floor(py), fy = py - by;
     for (let I = 0; I < W; I++) {
-      const F = J * W + I, zf = fineGround(fg.base, fg.r, I, J);
+      const F = J * W + I, zf = bilinearAt(fg.base.nx, fg.base.ny, lg, (I + 0.5) / fg.r, (J + 0.5) / fg.r);
       z[F] = zf;
       const own = Math.floor(J / s) * g.nx + Math.floor(I / s);
       if (fg.building[F] || !g.mask[own]) continue;

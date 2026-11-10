@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { BUILDING_RAISE_M, buildDualRun, buildFineRun, buildRun, fineGround, groundAt, inflowSpread, packCellOf, parsePack, sealedPockets, openGroundN, STREET_N, sinkM, CHANNEL, CHANNEL_N, DOMAIN, type Pack } from "./pack";
+import { BUILDING_RAISE_M, bilinearAt, landGround, withFineDrawing, drawFactor, buildDualRun, buildFineRun, buildRun, fineGround, groundAt, inflowSpread, packCellOf, parsePack, sealedPockets, openGroundN, STREET_N, sinkM, CHANNEL, CHANNEL_N, DOMAIN, type Pack } from "./pack";
 import { fromUtm } from "../util";
 
 // 2 x 1 pack: one cell sinking 50 mm/year, one stable; terrain measured in 2013
@@ -167,5 +167,34 @@ describe("roughness between explicit buildings", () => {
     expect(buildDualRun(p, box, 6, 2, undefined, new Uint8Array(12 * 6)).n[0]).toBeCloseTo(p.n[0], 6);
     const b6 = new Uint8Array(12 * 6); b6[0] = 1;
     expect(buildDualRun(p, box, 6, 2, undefined, b6).n[0]).toBeCloseTo(openGroundN(p.n[0], 0.6), 6);
+  });
+  it("land surface for drawing: channel cells take the level of their banks, filled outwards; bilinear is continuous", () => {
+    // 4 x 3 grid, a 2-cell wide channel in columns 1-2 at bed 1 m, banks 5 m (left) and 7 m (right)
+    const ch = Uint8Array.from([0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0]), z = Float32Array.from([5, 1, 1, 7, 5, 1, 1, 7, 5, 1, 1, 7]);
+    const lg = landGround(4, 3, z, ch);
+    for (const c of [1, 5, 9]) expect(lg[c]).toBeCloseTo(5, 6);
+    for (const c of [2, 6, 10]) expect(lg[c]).toBeCloseTo(7, 6);
+    expect(lg[0]).toBe(5);
+    // no jump across a cell border
+    expect(bilinearAt(4, 3, lg, 1.999, 1.5)).toBeCloseTo(bilinearAt(4, 3, lg, 2.001, 1.5), 2);
+    expect(bilinearAt(4, 3, lg, 0.2, 1.5)).toBe(5); // clamped at the edge
+    // a box that is all channel keeps its own levels
+    expect([...landGround(2, 1, [3, 4], [1, 1])]).toEqual([3, 4]);
+  });
+  it("fine cells as a drawing grid keep the 30 m flow grid and only add the fine buildings (ADR 0018)", () => {
+    const p = { ...pack(null), z: Float32Array.from([2, 4]), flags: Uint8Array.from([DOMAIN, DOMAIN | CHANNEL]) };
+    const run30 = buildRun(p, null, 1), bld = new Uint8Array(6 * 3); bld[0] = 1; bld[4] = 1; // a roof in each pack cell
+    const g = withFineDrawing(run30, 3, bld);
+    expect([g.nx, g.ny, g.dx, g.r]).toEqual([2, 1, 30, 1]); // the flow grid is the 30 m run itself
+    expect(Array.from(g.z)).toEqual(Array.from(run30.z));
+    expect(g.fine!.s).toBe(3);
+    expect(g.fine!.building[0]).toBe(1);
+    expect(g.fine!.building[4]).toBe(0); // no building drawn on a channel cell
+    // drawing cells near 2 m: 10 m fine cells get 5 x 5 drawing cells, limited by the texture size
+    expect([drawFactor(3, 75, 75, 4096), drawFactor(6, 75, 75, 4096), drawFactor(15, 75, 75, 4096), drawFactor(3, 1000, 10, 4096)]).toEqual([5, 2, 1, 1]);
+    const bd = new Uint8Array(30 * 15); bd[2 * 30 + 2] = 1; // one 2 m roof at the centre of the first 10 m cell
+    const h = withFineDrawing(run30, 3, bd, 5);
+    expect(h.fine!.draw!.nx).toBe(30);
+    expect(h.fine!.building[0]).toBe(1);
   });
 });
