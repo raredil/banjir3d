@@ -270,6 +270,20 @@ def pump_rates(chan: np.ndarray, sea: np.ndarray, transform, gpkg: Path | None) 
     return rate, info
 
 
+def soil_geojson(hsg: np.ndarray, keep: np.ndarray, transform, crs, path: Path) -> dict:
+    """Map layer of the hydrologic soil group the engine uses (the same 30 m grid), polygons in WGS 84, simplified by half a cell."""
+    import geopandas as gpd
+    from shapely.geometry import shape
+
+    g = np.where(keep, hsg, 255).astype(np.uint8)
+    polys = [(shape(geom), int(v)) for geom, v in features.shapes(g, mask=keep, transform=transform) if v != 255]
+    gdf = gpd.GeoDataFrame({"hsg": [HSG[v] for _, v in polys]}, geometry=[p for p, _ in polys], crs=crs).dissolve(by="hsg").reset_index()
+    gdf["geometry"] = gdf.geometry.simplify(transform.a / 2)
+    gdf["share"] = [round(float(((g == HSG.index(h))).sum() / max(1, keep.sum())), 4) for h in gdf["hsg"]]
+    gdf.to_crs("EPSG:4326").to_file(path, driver="GeoJSON", COORDINATE_PRECISION=5)
+    return {"file": path.name, "groups": dict(zip(gdf["hsg"], gdf["share"])), "bytes": path.stat().st_size}
+
+
 def pd_full(n: int, v: float):
     import pandas as pd
     return pd.Series([v] * n)
@@ -489,6 +503,7 @@ def build(pack: Path, out: Path, region: str, soil: str, terrain_src: str = "fab
     flags[sea] |= 2
     flags[inside] |= 4
     zq = np.clip(np.round((zc + Z_OFFSET) * 100), 0, 65535).astype(np.uint16)
+    soil_info["map_layer"] = soil_geojson(hsg_cell, inside & ~sea, tr, crs, out / "soil_hsg.geojson")
     arrays = [
         ("z", "uint16", zq), ("n", "uint8", np.clip(np.round(n * 1000), 1, 255).astype(np.uint8)),
         ("cn", "uint8", np.clip(np.round(cn), 1, 100).astype(np.uint8)), ("flags", "uint8", flags),
