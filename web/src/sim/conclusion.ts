@@ -4,8 +4,8 @@ import data from "../../../data/methods/references.json";
 import { citeAuthors, refEntry, sortRefs, type Ref } from "../methods/cite";
 
 export type Rain =
-  | { kind: "design" | "hourly"; mm: number; h: number; peakMmH: number; r24?: number }
-  | { kind: "event"; id: string; wib: [string, string]; meanMm: number; maxMm: number; points: number; reportsN: number; hitRate: number; reportedKm2: number | null; reportedRw: number | null };
+  | { kind: "design" | "hourly"; mm: number; h: number; peakMmH: number }
+  | { kind: "event"; id: string; wib: [string, string]; meanMm: number; maxMm: number; points: number; reportsN: number; hitRate: number; randomRate?: number; reportedKm2: number | null; reportedRw: number | null };
 
 export type Facts = {
   area: { box: number[] | null; wKm: number; hKm: number };
@@ -15,7 +15,12 @@ export type Facts = {
   env: { km2: number; classesKm2: number[]; meanDepth: number; maxDepth: number; deepest: { lon: number; lat: number; kec: string | null } | null };
   peak: { km2: number; tSec: number }; endKm2: number; massError: number;
   expo: { buildings: number; people: number; units: number; top: { name: string; people: number; buildings: number }[] } | null;
+  comp?: { infiltration: boolean; amc: 1 | 2 | 3; subsidence: boolean };
+  water?: { rainM3: number; inflowM3: number; infilM3: number; outM3: number; seaM3: number };
+  skill?: Skill;
 };
+/** How well the tested set-up matched three recorded floods (data/skill.json, from verification/observed/scores-*.json). */
+export type Skill = { events: { id: string; hit: number; random: number; obsMedianM: number; modelMedianM: number; dkiKm2: number; reportedKm2: number | null }[] };
 
 const REFS = new Map((data.references as Ref[]).map((r) => [r.key, r]));
 
@@ -78,6 +83,14 @@ export function buildConclusion(f: Facts, lang: "id" | "en", startUtc: string | 
     dr.push(`Tertiary and micro drains have no recorded size and are not modelled one by one. Calibration on the 1 January 2020 flood showed that an extra drain sink on built-up land (1–40 mm/h) moved the results away from the citizen reports, so this extra sink is set to ${n(f.drainMmH)} mm/h.`);
   }
   p.push(dr.join(" "));
+  const cp = f.comp;
+  if (cp && (!cp.infiltration || cp.amc !== 2 || !cp.subsidence)) {
+    const off: string[] = [];
+    if (!cp.infiltration) off.push(id ? "resapan tanah dimatikan (seluruh hujan menjadi limpasan)" : "infiltration switched off (all rain runs off)");
+    if (cp.amc !== 2) off.push(id ? `kondisi tanah sebelum hujan ${cp.amc === 1 ? "kering (AMC I)" : "basah (AMC III)"}, Curve Number dikonversi dengan persamaan ${citeN("chow1988")}` : `antecedent condition ${cp.amc === 1 ? "dry (AMC I)" : "wet (AMC III)"}, curve numbers converted with the equations of ${citeN("chow1988")}`);
+    if (!cp.subsidence) off.push(id ? "penurunan tanah tidak diterapkan (medan seperti saat diukur)" : "no subsidence shift (terrain as surveyed)");
+    p.push(id ? `Pengaturan berbeda dari pengaturan yang diuji: ${off.join("; ")}.` : `Set-up differs from the tested one: ${off.join("; ")}.`);
+  }
 
   // 2. forcing
   const r = f.rain;
@@ -88,8 +101,8 @@ export function buildConclusion(f: Facts, lang: "id" | "en", startUtc: string | 
       : `Rain input is hourly GPM IMERG Final V07 satellite precipitation ${cite("huffman2023")} at ${r.points} grid points of 0.1° for ${wib(r.wib[0])} to ${wib(r.wib[1])}; each model cell takes the rain of its nearest point. The area-mean rain was ${n(r.meanMm)} mm${r.points > 1 ? ` and the wettest grid point received ${n(r.maxMm)} mm` : ""}.`;
   } else if (r.kind === "design") {
     rain = id
-      ? `Masukan hujan adalah hujan rencana${r.r24 != null ? ` dengan curah hujan harian (R24) ${n(r.r24)} mm` : ""}, ${n(r.mm)} mm selama ${n(r.h)} jam, yang didistribusikan dengan rumus intensitas Mononobe ${cite("maitsa2021")} dan metode blok bergantian ${cite("chow1988")}, dengan intensitas puncak ${n(r.peakMmH)} mm/jam, seragam di seluruh area.`
-      : `Rain input is a design storm${r.r24 != null ? ` with a 24-hour rain (R24) of ${n(r.r24)} mm` : ""}, ${n(r.mm)} mm over ${n(r.h)} h, distributed with the Mononobe intensity relation ${cite("maitsa2021")} and the alternating block method ${cite("chow1988")}, with a peak intensity of ${n(r.peakMmH)} mm/h, uniform over the area.`;
+      ? `Masukan hujan adalah hujan rencana ${n(r.mm)} mm selama ${n(r.h)} jam, dibentuk dengan rumus intensitas Mononobe ${cite("maitsa2021")} yang diskalakan ke lama hujan${r.h > 24 ? " (diperpanjang melewati 24 jam tempat rumus itu diturunkan: sebuah anggapan)" : ""} dan diurutkan dengan metode blok bergantian ${cite("chow1988")}, dengan intensitas puncak ${n(r.peakMmH)} mm/jam, seragam di seluruh area.`
+      : `Rain input is a design storm of ${n(r.mm)} mm over ${n(r.h)} h, shaped with the Mononobe intensity relation ${cite("maitsa2021")} scaled to the storm duration${r.h > 24 ? " (extended beyond the 24 h it was derived for: an assumption)" : ""} and ordered with the alternating block method ${cite("chow1988")}, with a peak intensity of ${n(r.peakMmH)} mm/h, uniform over the area.`;
   } else {
     rain = id
       ? `Masukan hujan adalah hietograf per jam yang ditentukan pengguna, total ${n(r.mm)} mm selama ${n(r.h)} jam dengan intensitas puncak ${n(r.peakMmH)} mm/jam, seragam di seluruh area.`
@@ -127,8 +140,8 @@ export function buildConclusion(f: Facts, lang: "id" | "en", startUtc: string | 
       ? id ? `Sebagai pembanding, Pemerintah Provinsi DKI Jakarta melaporkan genangan seluas ${n(r.reportedKm2)} km² di ${r.reportedRw ?? "?"} RW untuk seluruh DKI Jakarta (Antara, mengutip data Pemprov DKI). ` : `For comparison, the DKI Jakarta provincial government reported ${n(r.reportedKm2)} km² flooded in ${r.reportedRw ?? "?"} RW for all of DKI Jakarta (Antara, quoting provincial data). `
       : "";
     p.push(rep + (id
-      ? `Pada uji validasi model untuk seluruh wilayah (grid 90 m), ${n(r.hitRate * 100)} % dari ${n(r.reportsN)} laporan warga PetaBencana.id pada kejadian ini berada di sel yang tergenang.${b ? " Angka pembanding ini berlaku untuk seluruh wilayah, bukan hanya area terseleksi." : ""}`
-      : `In the model validation for the whole region (90 m grid), ${n(r.hitRate * 100)} % of ${n(r.reportsN)} PetaBencana.id citizen reports for this event fell in flooded cells.${b ? " These reference figures apply to the whole region, not only the selected area." : ""}`));
+      ? `Pada uji validasi model untuk seluruh wilayah (grid 90 m), ${n(r.hitRate * 100)} % dari ${n(r.reportsN)} laporan warga PetaBencana.id pada kejadian ini berada dalam ±270 m dari daratan yang tergenang model${r.randomRate != null ? `, dibanding ${n(r.randomRate * 100)} % untuk titik acak di daratan DKI` : ""}.${b ? " Angka pembanding ini berlaku untuk seluruh wilayah, bukan hanya area terseleksi." : ""}`
+      : `In the model validation for the whole region (90 m grid), ${n(r.hitRate * 100)} % of ${n(r.reportsN)} PetaBencana.id citizen reports for this event lay within about 270 m of land the model flooded${r.randomRate != null ? `, against ${n(r.randomRate * 100)} % for random points on DKI land` : ""}.${b ? " These reference figures apply to the whole region, not only the selected area." : ""}`));
   }
 
   // 6. limitations
@@ -137,6 +150,7 @@ export function buildConclusion(f: Facts, lang: "id" | "en", startUtc: string | 
     : `These are model results, not observations. The model does not yet include sluice gates or sea walls${f.pumpsM3s ? ", pumps are a lower bound (capacity spread over the polder)" : ""}, the channel bed below the water surface is not in the DEM, and population counts are residents, not people present during the flood.${r.kind === "event" ? " The 0.1° satellite rain smooths local rain peaks, so modelled depths at report points tend to be shallower than reported (see the Validation page)." : ""} The water balance error of the run was ${Math.abs(f.massError).toExponential(1)}.`);
 
   const refs = sortRefs([...used].map((k) => REFS.get(k)!));
+  const summary = plainSummary(f, id, n, when);
   const other = [
     `Esri / Impact Observatory 10 m Annual Land Use Land Cover ${f.landcoverYear}, CC BY 4.0. https://registry.opendata.aws/io-lulc/`,
     "OpenStreetMap contributors (ODbL). https://www.openstreetmap.org",
@@ -145,5 +159,52 @@ export function buildConclusion(f: Facts, lang: "id" | "en", startUtc: string | 
   ];
   const head = id ? ["Kesimpulan", "Daftar pustaka", "Sumber data lain"] : ["Conclusion", "References", "Other data sources"];
   const text = [p.join("\n\n"), `${head[1]}\n${refs.map((x) => refEntry(x).text).join("\n")}`, `${head[2]}\n${other.join("\n")}`].join("\n\n");
-  return { paragraphs: p, refs: refs.map((x) => refEntry(x).html), other, text, head };
+  const sHead = id ? "Ringkasan" : "Summary";
+  const text2 = `${sHead}\n${summary.map((x) => `- ${x}`).join("\n")}\n\n${id ? "Penjelasan ilmiah" : "Scientific detail"}\n${text}`;
+  return { summary, paragraphs: p, refs: refs.map((x) => refEntry(x).html), other, text: text2, head };
+}
+
+/** Plain-language summary (owner 2026-11-13: the research text alone was hard to follow): what was run, how big and how deep, who
+ *  is affected, where the water came from, and how far the numbers can be trusted. Every number comes from the run or skill.json. */
+function plainSummary(f: Facts, id: boolean, n: (v: number, d?: number) => string, when: (s: number) => string): string[] {
+  const out: string[] = [], r = f.rain, fm = n(f.floodM * 100);
+  const area = f.area.box ? (id ? `kotak ${n(f.area.wKm, 1)} × ${n(f.area.hKm, 1)} km` : `a ${n(f.area.wKm, 1)} × ${n(f.area.hKm, 1)} km box`) : id ? "seluruh Jakarta dan sekitarnya" : "all of Jakarta and its surroundings";
+  const rainTxt = r.kind === "event"
+    ? id ? `banjir nyata ${r.id} dengan hujan satelit rata-rata ${n(r.meanMm)} mm` : `the observed flood of ${r.id} with satellite rain of ${n(r.meanMm)} mm on average`
+    : id ? `hujan ${n(r.mm)} mm selama ${n(r.h)} jam (paling deras ${n(r.peakMmH)} mm per jam)` : `${n(r.mm)} mm of rain over ${n(r.h)} h (wettest hour ${n(r.peakMmH)} mm)`;
+  out.push(id ? `Yang dihitung: ${rainTxt} di ${area}, ${f.upstream ? "ditambah air sungai kiriman dari hulu" : "tanpa air kiriman dari hulu"}, selama ${n(f.hours)} jam.`
+    : `What was run: ${rainTxt} over ${area}, ${f.upstream ? "plus river water arriving from upstream" : "without river water from upstream"}, for ${n(f.hours)} h.`);
+  const e = f.env, [c1, c2, c3, c4] = e.classesKm2;
+  out.push(id ? `Luas: sekitar ${n(e.km2, 1)} km² pernah tergenang lebih dari ${fm} cm (${n(f.landKm2 > 0 ? (100 * e.km2) / f.landKm2 : 0, 1)} % daratan). Paling luas sekaligus ${n(f.peak.km2, 1)} km² pada ${when(f.peak.tSec)}; di akhir hitungan tersisa ${n(f.endKm2, 1)} km².`
+    : `Extent: about ${n(e.km2, 1)} km² flooded deeper than ${fm} cm at some time (${n(f.landKm2 > 0 ? (100 * e.km2) / f.landKm2 : 0, 1)} % of the land). Largest at one moment: ${n(f.peak.km2, 1)} km² at ${when(f.peak.tSec)}; ${n(f.endKm2, 1)} km² left at the end.`);
+  out.push(id ? `Kedalaman: ${n(c1, 1)} km² setinggi mata kaki sampai lutut (${fm}–50 cm), ${n(c2, 1)} km² setinggi lutut sampai pinggang (0,5–1 m), ${n(c3 + c4, 1)} km² lebih dari 1 m.${e.deepest ? ` Titik terdalam di luar sungai ${n(e.maxDepth, 1)} m${e.deepest.kec ? ` di ${e.deepest.kec}` : ""} (bisa juga kolam atau situ yang tidak tercatat sebagai sungai).` : ""}`
+    : `Depth: ${n(c1, 1)} km² ankle to knee deep (${fm}–50 cm), ${n(c2, 1)} km² knee to waist (0.5–1 m), ${n(c3 + c4, 1)} km² deeper than 1 m.${e.deepest ? ` Deepest point off the rivers ${n(e.maxDepth, 1)} m${e.deepest.kec ? ` in ${e.deepest.kec}` : ""} (may also be a pond or lake not mapped as a river).` : ""}`);
+  if (f.expo) {
+    const top = f.expo.top.slice(0, 3).map((u) => u.name).join(", ");
+    out.push(id ? `Dampak: sekitar ${n(round3(f.expo.buildings))} bangunan dan ${n(round3(f.expo.people))} penduduk tinggal di area yang tergenang lebih dari ${fm} cm${top ? `; terbanyak di ${top}` : ""}.`
+      : `Impact: about ${n(round3(f.expo.buildings))} buildings and ${n(round3(f.expo.people))} residents are in areas flooded deeper than ${fm} cm${top ? `; most in ${top}` : ""}.`);
+  }
+  const w = f.water;
+  if (w && w.rainM3 + w.inflowM3 > 0) {
+    const tot = w.rainM3 + w.inflowM3, up = (100 * w.inflowM3) / tot, soak = w.rainM3 > 0 ? (100 * w.infilM3) / w.rainM3 : 0;
+    out.push(id ? `Asal air: ${n(100 - up)} % dari hujan yang jatuh di area ini, ${n(up)} % ${f.area.box ? "air sungai yang masuk dari luar kotak (hulu)" : "kiriman sungai dari hulu"}. Dari hujan itu ${n(soak)} % meresap ke tanah; sisanya mengalir mengikuti kemiringan tanah ke tempat yang lebih rendah dan ke sungai. Sungai meluap hanya di tempat airnya melebihi tinggi tebing alurnya, karena itu tidak semua sungai meluap.`
+      : `Where the water came from: ${n(100 - up)} % rain on this area, ${n(up)} % ${f.area.box ? "river water entering from outside the box (upstream)" : "river water from upstream"}. Of the rain, ${n(soak)} % soaked into the ground; the rest flowed downhill to lower ground and to the rivers. A river spills only where its water rises above its banks, which is why not every river overflows.`);
+  }
+  if (f.fine?.drawOnly) out.push(id ? `Peta digambar per ${n(f.cellM)} m agar tepinya halus; semua angka di atas tetap dari hitungan 30 m (data medan tidak lebih rinci dari 30 m).`
+    : `The map is drawn on ${n(f.cellM)} m cells for smooth edges; all numbers above come from the 30 m run (the terrain data are no finer than 30 m).`);
+  const sk = f.skill?.events;
+  if (sk?.length) {
+    const hit = sk.map((x) => n(x.hit * 100)).join("/"), rnd = sk.map((x) => n(x.random * 100)).join("/");
+    const ob = sk.map((x) => n(x.obsMedianM * 100)).join("/"), mo = sk.map((x) => n(x.modelMedianM * 100)).join("/");
+    const e20 = sk.find((x) => x.reportedKm2);
+    // verdict from the skill numbers themselves, not fixed wording: better than random by at least 10 points counts as "better"
+    const yr = (xs: typeof sk) => xs.map((x) => x.id.slice(0, 4)).join(", ");
+    const clear = sk.filter((x) => x.hit - x.random >= 0.1), some = sk.filter((x) => x.hit - x.random >= 0.03 && x.hit - x.random < 0.1), none = sk.filter((x) => x.hit - x.random < 0.03);
+    const partsId = [clear.length ? `jelas lebih baik dari acak pada ${yr(clear)}` : "", some.length ? `sedikit lebih baik pada ${yr(some)}` : "", none.length ? `tidak lebih baik dari acak pada ${yr(none)}` : ""].filter(Boolean);
+    const partsEn = [clear.length ? `clearly better than random in ${yr(clear)}` : "", some.length ? `slightly better in ${yr(some)}` : "", none.length ? `no better than random in ${yr(none)}` : ""].filter(Boolean);
+    const verdictId = `letak genangan model ${partsId.join(", ")}`, verdictEn = `the modelled flood locations are ${partsEn.join(", ")}`;
+    out.push(id ? `Seberapa bisa dipercaya: pada uji tiga banjir nyata (2020, 2021, 2025) ${hit} % laporan warga jatuh dalam ±270 m dari genangan model, dibanding ${rnd} % bila titiknya disebar acak; jadi ${verdictId}. Di titik laporan model jauh lebih dangkal (tengah-tengahnya ${mo} cm, laporan warga ${ob} cm)${e20 ? ` dan luas banjir DKI 2020 ${n(e20.dkiKm2)} km² dibanding ${n(e20.reportedKm2!)} km² yang dilaporkan` : ""}. Artinya: peta ini menunjukkan pola genangan menurut fisika dan data terbuka (cocok untuk membandingkan skenario dan melihat kawasan dan koridor sungai yang rawan), belum ramalan banjir per lingkungan. Luas dan kedalaman kemungkinan terlalu kecil. Penyebab utama yang diketahui: hujan satelit lebih rendah dari hujan sebenarnya, dan galat tinggi tanah terbuka 30 m (sekitar 1 m di kawasan terbangun) lebih besar dari kedalaman banjir biasa. ${r.kind === "event" ? "" : "Hasil hujan rencana tidak bisa diuji langsung: ia menjawab \"bagaimana jika\"."}`.trim()
+      : `How far to trust it: on three recorded floods (2020, 2021, 2025) ${hit} % of citizen reports fell within about 270 m of modelled flooding, against ${rnd} % for points spread at random; so ${verdictEn}. At the reports the model is much shallower (median ${mo} cm vs ${ob} cm reported)${e20 ? ` and the 2020 DKI flooded area is ${n(e20.dkiKm2)} km² vs ${n(e20.reportedKm2!)} km² reported` : ""}. So this map shows the flooding pattern that physics and open data give (good for comparing scenarios and seeing flood-prone districts and river corridors), not a neighbourhood-level forecast. Extent and depth are likely too small. Known main causes: satellite rain is lower than the real rain, and the error of open 30 m terrain (about 1 m in built-up areas) is larger than typical flood depths. ${r.kind === "event" ? "" : "A design-storm result cannot be checked directly: it answers 'what if'."}`.trim());
+  }
+  return out;
 }

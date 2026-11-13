@@ -29,3 +29,8 @@
 | 2026-10-30 | Event mode with observed rain per catchment | Phase 4 | |
 | 2026-10-30 | SFINCS comparison with engine v2, EA benchmarks | Phase 2 | |
 | 2026-10-30 | Buildings / people flooded per kecamatan | Phase 3 | Overture + WorldPop |
+| **Owner 2026-11-13: other regions.** Pipeline is global except Jakarta-only layers (DSDA drains/pumps, subsidence, PetaBencana). Steps: (1) owner names the region (city + buffer); (2) `pipeline/make_domain.py` domain for it, `region-pack.yml` + `engine-pack.yml` + `exposure-pack.yml` with the region id; (3) app reads a region list (manifest per region) and a region menu; (4) no validation until flood records exist there: the app must say "belum diuji" for that region. DEMNAS may be shown, not used as terrain (ADR 0013) | 5 (needs owner's region choice) |
+| River bed depth (no open bathymetry): candidate = bankfull depth from catchment area by hydraulic geometry (e.g. Andreadis et al. 2013 width database, Leopold and Maddock 1953 form), applied below the DEM water surface as filled storage + conveyance; must be re-validated on the 3 floods before use | 4 |
+| Built-area curve number 98 assumes 100 % sealed built pixels (TR-55 urban districts 85–95 % sealed): sensitivity run with a residential composite CN on the 3 floods | 4 |
+| Gauge rain: hourly BMKG/ DSDA rain gauges for the 3 floods (IMERG 0.1° smooths peaks; Halim 377 vs 166 mm) to separate rain error from drain/pump error | 4 |
+| LiDAR 2012 DKI (used in studies, not open): use only if the owner obtains a file with permission; shift by subsidence since 2012 | owner |

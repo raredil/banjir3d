@@ -1,0 +1,41 @@
+{
+ "_about": "What each map layer does in the model, shown under its name on the Layers page (owner 2026-11-13). use: model = an input of the flood computation; scenario = input only when its switch is on; check = used to test the model against recorded floods; impact = used to count what a flood reaches; view = for looking only; no = not used, with the reason. Keep in step with pipeline/engine_pack.py, pipeline/exposure_pack.py, verification/observed/compare.py and web/src/sim/panel.ts.",
+ "tags": {
+  "model": {"id": "Dipakai menghitung", "en": "Used in the computation"},
+  "scenario": {"id": "Skenario", "en": "Scenario"},
+  "check": {"id": "Untuk menguji", "en": "Used to test"},
+  "impact": {"id": "Untuk dampak", "en": "Used for impact"},
+  "view": {"id": "Hanya tampilan", "en": "View only"},
+  "no": {"id": "Tidak dipakai", "en": "Not used"}
+ },
+ "layers": {
+  "s2": {"use": "view", "id": "Foto satelit untuk melihat keadaan nyata. Tidak masuk hitungan.", "en": "Satellite photo to see the real ground. Not in the computation."},
+  "relief-glo30": {"use": "view", "id": "Tinggi permukaan termasuk atap dan pohon. Tidak dipakai menghitung, karena air tidak mengalir di atas atap. Pembanding untuk FABDEM.", "en": "Surface height including roofs and trees. Not used: water does not flow over roofs. Comparison for FABDEM."},
+  "hs-glo30": {"use": "view", "id": "Bayangan bukit dari data yang sama (tampilan).", "en": "Hillshade of the same data (display)."},
+  "relief-fabdem": {"use": "model", "id": "Tinggi tanah yang dihitung: arah dan kecepatan air mengikuti tinggi rendahnya tanah ini (30 m, bangunan dan pohon sudah dihilangkan).", "en": "The ground the model computes on: water direction and speed follow it (30 m, buildings and trees removed)."},
+  "hs-fabdem": {"use": "view", "id": "Bayangan bukit dari FABDEM (tampilan).", "en": "Hillshade of FABDEM (display)."},
+  "relief-demnas": {"use": "no", "id": "Tidak dipakai menghitung: DEMNAS masih menyimpan sebagian tinggi bangunan (kawasan terbangun rata-rata +0,79 m lebih tinggi dari FABDEM), sehingga air akan tertahan di atas atap. Dipakai sebagai pembanding.", "en": "Not used: DEMNAS still holds part of the building heights (built-up land +0.79 m above FABDEM on average), so water would sit on roofs. Kept for comparison."},
+  "hs-demnas": {"use": "view", "id": "Bayangan bukit DEMNAS (tampilan).", "en": "DEMNAS hillshade (display)."},
+  "subsidence": {"use": "model", "id": "Dipakai: tanah diturunkan sesuai laju ini sampai tanggal simulasi (bisa dimatikan di Komponen model).", "en": "Used: the ground is lowered at this rate up to the run date (switch in Model components)."},
+  "lulc-io": {"use": "model", "id": "Dipakai: menentukan berapa hujan yang meresap (RTH, sawah, bangunan) dan seberapa kasar permukaan menahan aliran.", "en": "Used: how much rain soaks in (green space, fields, buildings) and how rough the surface is."},
+  "lulc-wc": {"use": "view", "id": "Peta tutupan lahan lain (2021) sebagai pembanding. Tidak dipakai menghitung.", "en": "Another land-cover map (2021) for comparison. Not used."},
+  "gsw": {"use": "view", "id": "Seberapa sering tempat ini berair menurut satelit 1984–2021. Tidak dipakai menghitung; berguna untuk melihat situ dan tambak.", "en": "How often water was seen here by satellites 1984-2021. Not used; helps to see lakes and ponds."},
+  "osm-water": {"use": "model", "id": "Dipakai: alur sungai dan kanal ditoreh ke medan supaya air bisa mengalir di dalamnya. Lebar dari peta; kedalaman dasar sungai tidak ada datanya.", "en": "Used: rivers and canals are carved into the terrain so water can flow in them. Width from the map; river-bed depth has no data."},
+  "js-drains": {"use": "model", "id": "Dipakai: saluran primer dan sekunder Dinas SDA ditoreh ke medan dengan lebar dan dalam yang tercatat.", "en": "Used: DSDA primary and secondary drains carved with their recorded width and depth."},
+  "tersier": {"use": "no", "id": "Tidak dipakai menghitung: tidak ada data lebar dan dalamnya. Pengaruhnya hanya bisa dicoba lewat \"Serapan saluran kecil\".", "en": "Not used: no width or depth data. Its effect can only be tried with \"Small-drain sink\"."},
+  "js-pumps": {"use": "scenario", "id": "Dipakai bila \"Pompa polder DKI\" dicentang: kapasitas tiap rumah pompa menguras polder tempatnya.", "en": "Used when \"Polder pumps\" is ticked: each station's capacity drains its polder."},
+  "js-polders": {"use": "scenario", "id": "Batas polder: kapasitas pompa dibagi rata ke daratan polder ini (hanya saat pompa dinyalakan).", "en": "Polder outlines: pump capacity is spread over this land (only with pumps on)."},
+  "js-walls": {"use": "no", "id": "Tidak dipakai menghitung: data tidak memuat tinggi puncak tanggul.", "en": "Not used: the data have no crest heights."},
+  "genangan": {"use": "check", "id": "Catatan genangan resmi Dinas SDA per RT: pembanding hasil model pada uji banjir nyata.", "en": "Official DSDA flood records per RT: compared with the model in the flood tests."},
+  "reports": {"use": "check", "id": "Laporan warga PetaBencana.id: dipakai menguji apakah model menggenangi tempat yang dilaporkan.", "en": "PetaBencana.id citizen reports: used to test whether the model floods the reported places."},
+  "rain-2020-01-01": {"use": "model", "id": "Dipakai pada mode \"Banjir nyata\" 1 Jan 2020: hujan satelit per kotak 0,1° (sekitar 11 km).", "en": "Used in observed-flood mode, 1 Jan 2020: satellite rain per 0.1° box (about 11 km)."},
+  "rain-2021-02-20": {"use": "model", "id": "Dipakai pada mode \"Banjir nyata\" 20 Feb 2021.", "en": "Used in observed-flood mode, 20 Feb 2021."},
+  "rain-2025-03-04": {"use": "model", "id": "Dipakai pada mode \"Banjir nyata\" 4 Mar 2025.", "en": "Used in observed-flood mode, 4 Mar 2025."},
+  "buildings": {"use": "impact", "id": "Dipakai menghitung jumlah bangunan di area tergenang. Tidak memengaruhi aliran air.", "en": "Used to count buildings in flooded areas. Does not change the flow."},
+  "pop": {"use": "impact", "id": "Dipakai menghitung jumlah penduduk (tempat tinggal) di area tergenang.", "en": "Used to count residents in flooded areas."},
+  "admin": {"use": "view", "id": "Batas kabupaten/kota untuk orientasi.", "en": "District boundaries for orientation."},
+  "demnas-grid": {"use": "view", "id": "Letak lembar peta DEMNAS (tampilan).", "en": "DEMNAS sheet layout (display)."},
+  "region-domain": {"use": "model", "id": "Batas area hitung: DKI Jakarta ditambah 10 km di sekelilingnya.", "en": "Computation area: DKI Jakarta plus 10 km around it."},
+  "region-dki": {"use": "check", "id": "Batas DKI: dipakai untuk menghitung luas banjir DKI saat diuji dengan laporan Pemprov.", "en": "DKI boundary: used for the DKI flooded area in the tests."}
+ }
+}

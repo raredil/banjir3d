@@ -1,0 +1,38 @@
+// Browser audit: errors, main-thread long tasks while the map loads, during a run and during playback. node audit.cjs <out> <base> [box|region|fine]
+const { chromium } = require("playwright");
+const out = process.argv[2], base = process.argv[3], what = process.argv[4] || "box";
+(async () => {
+  const b = await chromium.launch();
+  const p = await b.newPage({ viewport: { width: 1440, height: 900 } });
+  const errs = [];
+  p.on("pageerror", (e) => errs.push("pageerror " + e.message));
+  p.on("console", (m) => { if (m.type() === "error" && !/openfreemap|ERR_NAME|Failed to load resource|arcgis/.test(m.text())) errs.push(m.text()); });
+  await p.addInitScript(() => { window.__lt = []; new PerformanceObserver((l) => l.getEntries().forEach((e) => window.__lt.push([Math.round(e.startTime), Math.round(e.duration)]))).observe({ type: "longtask", buffered: true }); });
+  const lt = async (label) => { const v = await p.evaluate(() => { const x = window.__lt; window.__lt = []; return x; }); const tot = v.reduce((a, x) => a + x[1], 0), mx = Math.max(0, ...v.map((x) => x[1])); console.log(`${label}: long tasks ${v.length}, total ${tot} ms, worst ${mx} ms`); };
+  const t0 = Date.now();
+  const url = what === "region" ? "/#/sim" : "/#/sim?box=106.835,-6.245,106.875,-6.205";
+  await p.goto(base + url); await p.waitForTimeout(6000); await lt("load"); console.log("load wall", Date.now() - t0);
+  await p.screenshot({ path: out + "/panel.png" });
+  await p.evaluate(() => { const set = (id, v) => { const e = document.querySelector("#" + id); e.value = String(v); e.dispatchEvent(new Event("input")); }; set("s-r24", 150); set("s-dur", 6); set("s-hours", 12); });
+  // COMP: switches to change before the run, e.g. COMP=infil0,amc3,sub0,pumps1
+  for (const c of (process.env.COMP || "").split(",").filter(Boolean)) await p.evaluate((c) => {
+    const set = (id, v) => { const e = document.querySelector("#" + id); if (e.type === "checkbox") e.checked = v === "1"; else e.value = v; e.dispatchEvent(new Event("change")); };
+    const m = /^(infil|amc|sub|pumps|up)(\d)$/.exec(c); if (m) set({ infil: "s-infil", amc: "s-amc", sub: "s-sub", pumps: "s-pumps", up: "s-up" }[m[1]], m[2]);
+  }, c);
+  if (process.env.HOURS) await p.evaluate((h) => { const e = document.querySelector("#s-hours"); e.value = h; e.dispatchEvent(new Event("input")); }, process.env.HOURS);
+  if (what === "fine") await p.evaluate((s) => document.querySelector(s).click(), '#s-fine [data-r="3"]');
+  if (what === "region") await p.evaluate((s) => document.querySelector(s).click(), '#s-res [data-k="3"]');
+  const t1 = Date.now();
+  await p.evaluate(() => document.querySelector("#s-run").click());
+  await p.waitForFunction(() => /Selesai|Done|gagal|failed/.test(document.querySelector("#s-status")?.textContent || ""), null, { timeout: 280000, polling: 1000 });
+  console.log("run wall", Date.now() - t1, "status:", await p.textContent("#s-status"));
+  await lt("run");
+  await p.waitForTimeout(1500);
+  await p.screenshot({ path: out + "/result.png" });
+  await p.evaluate((s) => document.querySelector(s).click(), "#t-play"); await p.waitForTimeout(4000); await lt("playback 4s");
+  await p.evaluate((s) => document.querySelector(s).click(), '#t-show [data-m="max"]'); await p.waitForTimeout(800);
+  await p.screenshot({ path: out + "/max.png" });
+  console.log("kpis:", (await p.textContent(".kpis, #kpis").catch(() => "")).replace(/\s+/g, " ").slice(0, 200));
+  console.log("errors:", JSON.stringify(errs.slice(0, 8)));
+  await b.close();
+})();

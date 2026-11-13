@@ -45,3 +45,26 @@ describe("buildConclusion", () => {
     expect(round3(412.6)).toBe(413);
   });
 });
+
+describe("plain summary", () => {
+  it("says what ran, how big, how deep, where the water came from and how far to trust it", () => {
+    const skill = { events: [{ id: "2020-01-01", hit: 0.6, random: 0.4, obsMedianM: 0.7, modelMedianM: 0.33, dkiKm2: 83, reportedKm2: 156 }] };
+    const c = buildConclusion({ ...base, water: { rainM3: 3e7, inflowM3: 1e7, infilM3: 3e6, outM3: 0, seaM3: 0 }, skill }, "id", "2019-12-31T05:00:00Z");
+    const s = c.summary.join(" ");
+    expect(s).toContain("sekitar 40,0 km²");
+    expect(s).toContain("mata kaki");
+    expect(s).toContain("75 % dari hujan"); // 3e7 of 4e7
+    expect(s).toContain("25 % air sungai yang masuk dari luar kotak");
+    expect(s).toContain("10 % meresap");
+    expect(s).toContain("60 % laporan warga");
+    expect(s).toContain("40 % bila titiknya disebar acak");
+    expect(s).toContain("jelas lebih baik dari acak pada 2020");
+    expect(s).toContain("83 km² dibanding 156 km²");
+    expect(c.text.startsWith("Ringkasan")).toBe(true);
+  });
+  it("mentions changed components in the detail text", () => {
+    const c = buildConclusion({ ...base, comp: { infiltration: false, amc: 3, subsidence: true } }, "id", null);
+    expect(c.paragraphs.join(" ")).toContain("resapan tanah dimatikan");
+    expect(c.paragraphs.join(" ")).toContain("basah (AMC III)");
+  });
+});

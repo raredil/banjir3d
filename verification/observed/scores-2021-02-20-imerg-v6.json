@@ -1,0 +1,211 @@
+{
+ "event": "2021-02-20",
+ "source": "PetaBencana.id flood reports and flooded-area archive (aggregate scores only)",
+ "reported": {
+  "_about": "Impact the city reported; figures are used only after reported_excerpts.json (fetched by the Action) shows them in the page text.",
+  "pages": [
+   "https://rmol.id/nusantara/read/2021/02/21/476030/banjir-jakarta-dalam-angka-sejak-era-sutiyoso-hingga-anies-baswedan",
+   "https://www.cnnindonesia.com/nasional/20210221075059-20-608918/banjir-jakarta-33-rw-masih-tergenang",
+   "https://www.merahputih.com/post/read/75-rw-di-jakarta-tergenang-banjir-akibat-hujan-deras-sejak-jumat-malam"
+  ],
+  "flooded_km2": null,
+  "flooded_rw": null,
+  "status": "pages refused the Action (HTTP 403); search results only: 113 RW / 342 RT on 20 Feb 2021"
+ },
+ "n_flooded_area_records": 159,
+ "rw_shapes": 0,
+ "results": [
+  {
+   "run": "2021-02-20_imerg_k3_d0_amc3",
+   "drain_mm_h": 0,
+   "rain": "rain_imerg.json",
+   "rain_scale": 1,
+   "terrain_year": 2021.1348173515983,
+   "pumps": true,
+   "pump_m3s": 664.8,
+   "amc": 3,
+   "infiltration": true,
+   "mean_rain_mm": 50.87964066556293,
+   "flooded_km2": 147.5982,
+   "mass_error": 2.7001463927748953e-15,
+   "reports": {
+    "n_reports": 384,
+    "rule": "hit = model max depth >= 0.1 m on land (channels and sea excluded)",
+    "cell": {
+     "hit_rate": 0.20833333333333334,
+     "random_hit_rate": 0.08788926330467116,
+     "skill": 0.1320498325291548
+    },
+    "window_3x3_land": {
+     "hit_rate": 0.4661458333333333,
+     "random_hit_rate": 0.2253805484545666,
+     "skill": 0.3108175045158225
+    },
+    "legacy_window_with_channels": {
+     "hit_rate": 0.7447916666666666
+    },
+    "hit_rate": 0.4661458333333333,
+    "n_with_depth": 337,
+    "observed_median_m": 0.65,
+    "model_median_m": 0.09853474795818329,
+    "model_median_cell_m": 0.013850431889295578,
+    "depth_bias_m": -0.5199330288536163,
+    "depth_mae_m": 0.5601272326612377,
+    "depth_rmse_m": 0.6980869891602282,
+    "depth_note": "model depth = window_3x3_land value"
+   },
+   "dki_flooded_km2": 39.1635,
+   "dki_land_km2": 557.6688,
+   "genangan_dsda": {
+    "error": "DataLayerError: Layer 'genangan' could not be opened"
+   },
+   "rw_places": {
+    "error": "DataLayerError: Layer 'genangan' could not be opened"
+   }
+  },
+  {
+   "run": "2021-02-20_imerg_k3_d0_poff_amc3",
+   "drain_mm_h": 0,
+   "rain": "rain_imerg.json",
+   "rain_scale": 1,
+   "terrain_year": 2021.1348173515983,
+   "pumps": false,
+   "pump_m3s": 664.8,
+   "amc": 3,
+   "infiltration": true,
+   "mean_rain_mm": 50.87964066556293,
+   "flooded_km2": 155.4633,
+   "mass_error": 6.5371829128951484e-15,
+   "reports": {
+    "n_reports": 384,
+    "rule": "hit = model max depth >= 0.1 m on land (channels and sea excluded)",
+    "cell": {
+     "hit_rate": 0.21354166666666666,
+     "random_hit_rate": 0.10966186381594237,
+     "skill": 0.11667455164388178
+    },
+    "window_3x3_land": {
+     "hit_rate": 0.4765625,
+     "random_hit_rate": 0.2853968161747618,
+     "skill": 0.2675130592085205
+    },
+    "legacy_window_with_channels": {
+     "hit_rate": 0.7552083333333334
+    },
+    "hit_rate": 0.4765625,
+    "n_with_depth": 337,
+    "observed_median_m": 0.65,
+    "model_median_m": 0.1049937754869461,
+    "model_median_cell_m": 0.014946362003684044,
+    "depth_bias_m": -0.5148806579548103,
+    "depth_mae_m": 0.5557794732951976,
+    "depth_rmse_m": 0.6926051982968501,
+    "depth_note": "model depth = window_3x3_land value"
+   },
+   "dki_flooded_km2": 46.899,
+   "dki_land_km2": 557.6688,
+   "genangan_dsda": {
+    "error": "DataLayerError: Layer 'genangan' could not be opened"
+   },
+   "rw_places": {
+    "error": "DataLayerError: Layer 'genangan' could not be opened"
+   }
+  },
+  {
+   "run": "2021-02-20_imerg_k3_d0_poff",
+   "drain_mm_h": 0,
+   "rain": "rain_imerg.json",
+   "rain_scale": 1,
+   "terrain_year": 2021.1348173515983,
+   "pumps": false,
+   "pump_m3s": 664.8,
+   "amc": 2,
+   "infiltration": true,
+   "mean_rain_mm": 50.87964066556293,
+   "flooded_km2": 140.3973,
+   "mass_error": -3.8250962570026524e-15,
+   "reports": {
+    "n_reports": 384,
+    "rule": "hit = model max depth >= 0.1 m on land (channels and sea excluded)",
+    "cell": {
+     "hit_rate": 0.20833333333333334,
+     "random_hit_rate": 0.10494132000929585,
+     "skill": 0.11551422899458537
+    },
+    "window_3x3_land": {
+     "hit_rate": 0.4661458333333333,
+     "random_hit_rate": 0.2758976295607716,
+     "skill": 0.26273661230684875
+    },
+    "legacy_window_with_channels": {
+     "hit_rate": 0.7473958333333334
+    },
+    "hit_rate": 0.4661458333333333,
+    "n_with_depth": 337,
+    "observed_median_m": 0.65,
+    "model_median_m": 0.09941136837005615,
+    "model_median_cell_m": 0.013819873332977295,
+    "depth_bias_m": -0.5235588005469223,
+    "depth_mae_m": 0.5600385054717123,
+    "depth_rmse_m": 0.6964501094540865,
+    "depth_note": "model depth = window_3x3_land value"
+   },
+   "dki_flooded_km2": 44.6877,
+   "dki_land_km2": 557.6688,
+   "genangan_dsda": {
+    "error": "DataLayerError: Layer 'genangan' could not be opened"
+   },
+   "rw_places": {
+    "error": "DataLayerError: Layer 'genangan' could not be opened"
+   }
+  },
+  {
+   "run": "2021-02-20_imerg_k3_d0",
+   "drain_mm_h": 0,
+   "rain": "rain_imerg.json",
+   "rain_scale": 1,
+   "terrain_year": 2021.1348173515983,
+   "pumps": true,
+   "pump_m3s": 664.8,
+   "amc": 2,
+   "infiltration": true,
+   "mean_rain_mm": 50.87964066556293,
+   "flooded_km2": 133.1964,
+   "mass_error": 9.180529665107113e-15,
+   "reports": {
+    "n_reports": 384,
+    "rule": "hit = model max depth >= 0.1 m on land (channels and sea excluded)",
+    "cell": {
+     "hit_rate": 0.20052083333333334,
+     "random_hit_rate": 0.08467929351615153,
+     "skill": 0.12655841717181335
+    },
+    "window_3x3_land": {
+     "hit_rate": 0.453125,
+     "random_hit_rate": 0.21771148036253776,
+     "skill": 0.3009292783007482
+    },
+    "legacy_window_with_channels": {
+     "hit_rate": 0.734375
+    },
+    "hit_rate": 0.453125,
+    "n_with_depth": 337,
+    "observed_median_m": 0.65,
+    "model_median_m": 0.08751945197582245,
+    "model_median_cell_m": 0.012985347770154476,
+    "depth_bias_m": -0.5285078134287571,
+    "depth_mae_m": 0.5645357254717257,
+    "depth_rmse_m": 0.7015151595361925,
+    "depth_note": "model depth = window_3x3_land value"
+   },
+   "dki_flooded_km2": 37.584,
+   "dki_land_km2": 557.6688,
+   "genangan_dsda": {
+    "error": "DataLayerError: Layer 'genangan' could not be opened"
+   },
+   "rw_places": {
+    "error": "DataLayerError: Layer 'genangan' could not be opened"
+   }
+  }
+ ]
+}

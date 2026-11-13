@@ -1,4 +1,11 @@
 import "maplibre-gl/dist/maplibre-gl.css";
+import roles from "../../data/layer-roles.json";
+type Role = { use: keyof typeof roles.tags; id: string; en: string };
+// what a layer does in the model (data/layer-roles.json): tag and one plain sentence under its name
+const roleHtml = (id: string) => {
+  const r = (roles.layers as Record<string, Role>)[id];
+  return r ? `<small class="role"><i class="tag r-${r.use}">${esc(roles.tags[r.use][lang])}</i> ${esc(r[lang])}</small>` : "";
+};
 import { AttributionControl, Map as MlMap, NavigationControl, Popup, ScaleControl, type ExpressionSpecification, type FilterSpecification, type LayerSpecification, type StyleSpecification } from "maplibre-gl";
 import { ensurePmtiles } from "./pmtiles-init";
 import { lang, t, type Key } from "./i18n";
@@ -139,11 +146,12 @@ export async function createMapPage(root: HTMLElement, ctx: MapCtx): Promise<Map
       </div>
       <div class="dock-body" id="dock-layers">
         ${ctx.manifest ? "" : `<div class="note warn">${t("nopack")}</div>`}
+        <p class="help roles-intro">${t("roles.intro")}</p>
         <div class="sec"><h3>${t("basemap")}</h3><select id="basemap"><option value="sat">${t("basemap.sat")}</option><option value="light">${t("basemap.light")}</option><option value="none">${t("basemap.none")}</option></select></div>
         ${groups.map((g) => `<div class="sec"><h3>${t(g as Key)}</h3>${LAYERS.filter((l) => l.group === g).map((l) => `
           <div class="layer ${available(l) ? "" : "missing"}">
             <input type="checkbox" ${l.visible && available(l) ? "checked" : ""} ${available(l) ? "" : "disabled"} data-toggle="${l.id}" aria-label="${esc(l.name[lang])}">
-            <span title="${esc(l.title)}"><b>${esc(l.name[lang])}</b>${l.catalogId ? `<small><a href="#/data?d=${esc(l.catalogId)}">${t("source")}</a></small>` : ""}</span>
+            <span title="${esc(l.title)}"><b>${esc(l.name[lang])}</b>${roleHtml(l.id)}${l.catalogId ? `<small><a href="#/data?d=${esc(l.catalogId)}">${t("source")}</a></small>` : ""}</span>
             ${l.kind === "region" || l.kind === "demnas-grid" ? "<span></span>" : `<input type="range" min="0" max="1" step="0.05" value="${l.opacity}" data-opacity="${l.id}" style="width:70px" aria-label="${t("opacity")}">`}
             <div class="more">${l.id === "genangan" && available(l) ? `<select id="genangan-year" aria-label="${t("obs.year")}"><option value="">${t("obs.all")}</option>${Array.from({ length: 10 }, (_, i) => 2016 + i).map((y) => `<option>${y}</option>`).join("")}</select>` : ""}${legendHtml(l, l.file ? files.get(l.file) : undefined)}</div>
           </div>`).join("")}</div>`).join("")}
@@ -306,6 +314,8 @@ export async function createMapPage(root: HTMLElement, ctx: MapCtx): Promise<Map
     refresh();
   });
   el.querySelector("#lyr-min")!.addEventListener("click", () => { const m = lyr.classList.toggle("min"); el.querySelector("#lyr-min")!.textContent = m ? "+" : "–"; });
+  // phones: the card starts folded so the map and the result cards stay visible
+  if (matchMedia("(max-width: 760px)").matches) { lyr.classList.add("min"); el.querySelector("#lyr-min")!.textContent = "+"; }
   // focus mode: hide the floating cards (dock, figures, timeline, legend, conclusion) to look at the map; the button stays
   const focusBtn = el.querySelector<HTMLButtonElement>("#focus-btn")!;
   const setFocusLbl = () => { focusBtn.textContent = el.classList.contains("focus") ? t("focus.off") : t("focus.on"); };

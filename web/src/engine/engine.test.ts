@@ -166,3 +166,14 @@ describe("building porosity (dual-grid fine runs)", () => {
     for (let c = 5; c < N; c++) expect(e.h[c]).toBe(0);
   });
 });
+
+describe("soil wetness (antecedent runoff condition)", () => {
+  it("classes and curve numbers follow Chow et al. 1988", async () => {
+    const { amcClass, cnForAmc } = await import("./hydrology");
+    expect([amcClass(10), amcClass(40), amcClass(60)]).toEqual([1, 2, 3]);
+    expect(cnForAmc(75, 2)).toBe(75);
+    expect(cnForAmc(75, 1)).toBeCloseTo(55.75, 1); // 4.2*75/(10-4.35)
+    expect(cnForAmc(75, 3)).toBeCloseTo(87.3, 1); // 23*75/(10+9.75)
+    expect(cnForAmc(100, 1)).toBe(100);
+  });
+});

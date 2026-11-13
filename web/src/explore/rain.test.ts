@@ -30,3 +30,17 @@ describe("rain input", () => {
     expect(rainRate(c, 3 * 3600 + 1)).toBe(0);
   });
 });
+
+describe("designStorm", () => {
+  it("keeps the whole total, peak in the middle, equals alternatingBlock at 24 h", async () => {
+    const { designStorm, alternatingBlock, totalMm } = await import("./rain");
+    const s = designStorm(150, 6);
+    expect(totalMm(s)).toBeCloseTo(150, 6);
+    expect(s.mm.length).toBe(6);
+    expect(Math.max(...s.mm)).toBe(s.mm[2]);
+    const a = alternatingBlock(200, 24), b = designStorm(200, 24);
+    b.mm.forEach((v, i) => expect(v).toBeCloseTo(a.mm[i], 9));
+    expect(totalMm(designStorm(300, 72))).toBeCloseTo(300, 6);
+    expect(designStorm(300, 72).mm.length).toBe(72);
+  });
+});

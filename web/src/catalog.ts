@@ -60,7 +60,7 @@ export function renderCatalog(root: HTMLElement, ctx: Ctx) {
   }));
 }
 
-const STATUS: Record<string, [string, string]> = { pass: ["lolos", "pass"], partial: ["berjalan", "in progress"], fail: ["gagal", "fail"], todo: ["belum", "to do"] };
+const STATUS: Record<string, [string, string]> = { pass: ["lolos", "pass"], partial: ["sebagian", "partial"], weak: ["lemah", "weak"], fail: ["gagal", "fail"], todo: ["belum", "to do"] };
 export function renderValidation(root: HTMLElement, v: { tests: { id: string; status: string; file: string; id_txt: string; en_txt: string; metrics: string[][] }[] }) {
   root.innerHTML = `<div class="doc"><div class="doc-head"><h1>${t("va.title")}</h1><p>${t("va.lead")}</p></div>
     <div class="grid-cards">${v.tests.map((x) => `<article class="ds card"><div class="ds-top"><h2>${esc((lang === "id" ? x.id_txt : x.en_txt).split(":")[0])}</h2>

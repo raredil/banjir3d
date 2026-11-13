@@ -19,6 +19,19 @@ export function alternatingBlock(r24: number, stormHours: number): Hyetograph {
   return { blockSeconds: 3600, mm };
 }
 
+/** Design storm with a given total (mm) over a given duration (1-72 h), hourly blocks, alternating block order. Shape: the Mononobe
+ *  relation (depth of the most intense t hours grows as t^(1/3)) applied to the storm duration D: depth(t) = total (t/D)^(1/3).
+ *  For D = 24 h this equals alternatingBlock(total, 24). The whole total falls (alternatingBlock keeps only the most intense
+ *  part of a 24 h total). D > 24 h extends the Mononobe shape beyond the day it was derived for: a stated assumption. */
+export function designStorm(totalMm: number, hours: number): Hyetograph {
+  const n = Math.max(1, Math.min(MAX_BLOCKS, Math.round(hours)));
+  const dep = (t: number) => totalMm * Math.cbrt(t / n);
+  const inc = Array.from({ length: n }, (_, k) => dep(k + 1) - dep(k));
+  const mm = new Array<number>(n).fill(0), mid = Math.floor((n - 1) / 2);
+  inc.forEach((v, k) => { mm[k % 2 ? mid + (k + 1) / 2 : mid - k / 2] = v; });
+  return { blockSeconds: 3600, mm };
+}
+
 export const constantRain = (mmH: number, hours: number): Hyetograph => ({ blockSeconds: hours * 3600, mm: [mmH * hours] });
 
 /** Parse typed hourly rain depths ("12, 30.5 8"). Returns null if empty, not numeric, negative, too many or too large. */
