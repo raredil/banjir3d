@@ -22,6 +22,9 @@ export type EngineGrid = {
   phi?: ArrayLike<number>; psiX?: ArrayLike<number>; psiY?: ArrayLike<number>; rainW?: ArrayLike<number>;
 };
 // hMin: depth below which a face carries no flow; 0.001 m is the LISFLOOD-FP default, so thin runoff sheets still drain
+// Courant factor of the time step (Bates et al. 2010; LISFLOOD-FP default 0.7). 0.5 until 2026-11-13: 0.7 is about 30 % faster with the
+// same result (verification/speed/alpha-*.json: flooded area 3.249 vs 3.250 km² on a 4.4 km box, CSI 0.9994 on the whole region at 90 m).
+export const ALPHA = 0.7;
 export type EngineOptions = { alpha?: number; dtMax?: number; hMin?: number; seaLevel?: number; inflowCells?: number[] };
 export type EngineTotals = { rain: number; infiltration: number; inflow: number; outflow: number; sea: number; drain: number }; // m3
 
@@ -70,7 +73,7 @@ export class FloodEngine {
     this.h = new Float64Array(N); this.hMax = new Float64Array(N);
     this.qx = new Float64Array(N); this.qy = new Float64Array(N); this.qxN = new Float64Array(N); this.qyN = new Float64Array(N);
     this.bnd = new Float64Array(N); this.scale = new Float64Array(N);
-    this.alpha = o.alpha ?? 0.5; this.dtMax = o.dtMax ?? 15; this.hMin = o.hMin ?? 0.001; this.seaLevel = o.seaLevel ?? 0;
+    this.alpha = o.alpha ?? ALPHA; this.dtMax = o.dtMax ?? 15; this.hMin = o.hMin ?? 0.001; this.seaLevel = o.seaLevel ?? 0;
     this.inflowCells = o.inflowCells ?? [];
     this.area = g.dx * g.dx;
     this.s = g.cn ? Float64Array.from(g.cn, retention) : null;

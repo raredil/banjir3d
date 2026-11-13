@@ -54,9 +54,29 @@ def grid_of(summary: dict):
     return u["x0"], u["y0"], summary["dx"], summary["nx"], summary["ny"], Transformer.from_crs("EPSG:4326", f"EPSG:327{u['zone']}", always_xy=True)
 
 
-def report_scores(rep, h, summary, wet_mask):
+def land_window_max(h, land):
+    """Largest max depth over the land cells (no channel, no sea) of the 3 x 3 window around each cell; 0 where none."""
+    hl = np.where(land, h, 0.0).astype(np.float32)
+    p = np.pad(hl, 1)
+    out = np.zeros_like(hl)
+    for dj in range(3):
+        for di in range(3):
+            out = np.maximum(out, p[dj:dj + hl.shape[0], di:di + hl.shape[1]])
+    return out
+
+
+def report_scores(rep, h, summary, land, dki):
+    """Citizen reports against the model (2026-11-13, ADR 0019). A report counts as hit when the model is at least HIT_M deep on LAND
+    (river channels and sea excluded: a river always holds water, so counting it made every report next to a river a hit):
+    - cell: the land cell under the report;
+    - window: the deepest land cell in the 3 x 3 window (about 270 m at 90 m cells; report locations are approximate).
+    Random baseline: the hit rate that points placed at random on DKI land would get with the same rule (the share of DKI land
+    cells that pass it); skill = (hit - random) / (1 - random), 0 = no better than random, 1 = perfect.
+    Earlier scores (before 2026-11-13) used the window rule WITH channel cells: kept as legacy_window_with_channels for comparison."""
     x0, y0, dx, nx, ny, tr = grid_of(summary)
-    out, depths = [], []
+    win = land_window_max(h, land)
+    inside = land | (h >= 0)  # every cell (only used for the legacy rule's location check)
+    legacy, cell, wnd, depths = [], [], [], []
     for f in rep:
         g = f.get("geometry") or {}
         if g.get("type") != "Point":
@@ -66,19 +86,37 @@ def report_scores(rep, h, summary, wet_mask):
             continue
         x, y = tr.transform(*g["coordinates"][:2])
         i, j = int((x - x0) // dx), int((y0 - y) // dx)
-        if not (1 <= i < nx - 1 and 1 <= j < ny - 1) or not wet_mask[j, i]:
+        if not (1 <= i < nx - 1 and 1 <= j < ny - 1) or not inside[j, i]:
             continue
-        m = float(h[j - 1 : j + 2, i - 1 : i + 2].max())
+        legacy.append(float(h[j - 1 : j + 2, i - 1 : i + 2].max()))
+        c = float(h[j, i]) if land[j, i] else 0.0
+        w = float(win[j, i])
+        cell.append(c); wnd.append(w)
         d = (p.get("report_data") or {}).get("flood_depth")
-        out.append(m)
         if isinstance(d, (int, float)) and d > 0:
-            depths.append((d / 100.0, m))
-    out = np.array(out)
-    res = {"n_reports": int(len(out)), "hit_rate": float((out >= HIT_M).mean()) if len(out) else None}
+            depths.append((d / 100.0, c, w))
+    n = len(cell)
+    res = {"n_reports": n, "rule": f"hit = model max depth >= {HIT_M} m on land (channels and sea excluded)"}
+    if not n:
+        return res
+    cell, wnd, legacy = np.array(cell), np.array(wnd), np.array(legacy)
+    dl = dki & land
+    base_c = float((h[dl] >= HIT_M).mean()) if dl.any() else None
+    base_w = float((win[dl] >= HIT_M).mean()) if dl.any() else None
+    skill = lambda hit, b: None if b is None or b >= 1 else (hit - b) / (1 - b)
+    hc, hw = float((cell >= HIT_M).mean()), float((wnd >= HIT_M).mean())
+    res.update({
+        "cell": {"hit_rate": hc, "random_hit_rate": base_c, "skill": skill(hc, base_c)},
+        "window_3x3_land": {"hit_rate": hw, "random_hit_rate": base_w, "skill": skill(hw, base_w)},
+        "legacy_window_with_channels": {"hit_rate": float((legacy >= HIT_M).mean())},
+        "hit_rate": hw,  # the headline figure from now on: window on land only
+    })
     if depths:
-        o, m = np.array(depths).T
-        res.update({"n_with_depth": int(len(o)), "depth_bias_m": float((m - o).mean()), "depth_mae_m": float(np.abs(m - o).mean()),
-                    "depth_rmse_m": float(np.sqrt(((m - o) ** 2).mean())), "observed_median_m": float(np.median(o)), "model_median_m": float(np.median(m))})
+        o, mc, mw = np.array(depths).T
+        res.update({"n_with_depth": int(len(o)), "observed_median_m": float(np.median(o)),
+                    "model_median_m": float(np.median(mw)), "model_median_cell_m": float(np.median(mc)),
+                    "depth_bias_m": float((mw - o).mean()), "depth_mae_m": float(np.abs(mw - o).mean()),
+                    "depth_rmse_m": float(np.sqrt(((mw - o) ** 2).mean())), "depth_note": "model depth = window_3x3_land value"})
     return res
 
 
@@ -149,6 +187,19 @@ def rw_place_scores(rw_gpkg: Path, rep, js_gpkg: Path | None, ev: str, h, summar
         out[name] = {"n_observed": int(obs.sum()), "n_model": int(mod.sum()), "hits": hits, "hit_rate": hits / max(1, hits + miss),
                      "false_alarm_ratio": fa / max(1, hits + fa), "csi": hits / max(1, hits + fa + miss), "auc": auc(share[keep], obs)}
     return out
+
+
+def dki_mask(summary):
+    from rasterio import features as rf
+    from rasterio.transform import from_origin
+    import shapely
+    from shapely.geometry import shape
+
+    x0, y0, dx, nx, ny, tr = grid_of(summary)
+    dom = json.loads((Path(__file__).parents[2] / "data/regions/jakarta_domain.geojson").read_text())
+    adm = [f for f in dom["features"] if f["properties"].get("role") == "admin"][0]
+    g = shapely.transform(shape(adm["geometry"]), lambda xy: np.column_stack(tr.transform(xy[:, 0], xy[:, 1])))
+    return rf.rasterize([(g, 1)], out_shape=(ny, nx), transform=from_origin(x0, y0, dx, dx), dtype="uint8").astype(bool)
 
 
 def dki_flooded_km2(h, summary, land):
@@ -230,9 +281,9 @@ def main():
         m = np.frombuffer(gzip.decompress((rundir / sp.name.replace("_summary.json", "_mask.u8.gz")).read_bytes()), np.uint8).reshape(s["ny"], s["nx"])
         inside = (m & 1).astype(bool) & ~(m & 2).astype(bool)  # active, not sea
         land = inside & ~(m & 4).astype(bool)  # and not a mapped channel
-        r = {"run": sp.name.replace("_summary.json", ""), "drain_mm_h": s["drain_mm_h"], "rain": s["rain"], "rain_scale": s.get("rain_scale", 1), "terrain_year": s.get("terrain_year"), "pumps": s.get("pumps"), "pump_m3s": s.get("pump_m3s"),
+        r = {"run": sp.name.replace("_summary.json", ""), "drain_mm_h": s["drain_mm_h"], "rain": s["rain"], "rain_scale": s.get("rain_scale", 1), "terrain_year": s.get("terrain_year"), "pumps": s.get("pumps"), "pump_m3s": s.get("pump_m3s"), "amc": s.get("amc", 2), "infiltration": s.get("infiltration", True),
              "mean_rain_mm": s["mean_rain_mm"], "flooded_km2": s["flooded_km2_gt015_outside_channels"], "mass_error": s["massError"],
-             "reports": report_scores(rep, h, s, inside)}
+             "reports": report_scores(rep, h, s, land, dki_mask(s))}
         if areas:
             r["rw"] = rw_scores(areas, flooded, h, s, land)
         r["dki_flooded_km2"], r["dki_land_km2"] = dki_flooded_km2(h, s, land)

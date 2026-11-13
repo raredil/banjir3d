@@ -68,10 +68,18 @@ export function findEntries(st: Streams, isIn: (x: number, y: number) => boolean
   return entries.map((k) => ({ stream: k, effKm2: eff.get(k)! })).filter((e) => e.effKm2 >= minKm2).sort((a, b) => b.effKm2 - a.effKm2);
 }
 
-export function inflowsFor(st: Streams, isIn: (x: number, y: number) => boolean, cumRain: Float64Array, steps: number): Inflow[] {
+/** Antecedent runoff condition (soil wetness before the storm) from the rain of the 5 days before it, growing-season limits of
+ *  Chow, Maidment and Mays (1988, Table 5.5.1): I dry < 1.4 in (35.6 mm), II average, III wet > 2.1 in (53.3 mm). */
+export const amcClass = (p5mm: number): 1 | 2 | 3 => (p5mm < 35.6 ? 1 : p5mm > 53.3 ? 3 : 2);
+/** Curve number for condition I or III from the condition II value (Chow, Maidment and Mays 1988, eq. 5.5.10 and 5.5.11). */
+export const cnForAmc = (cn2: number, amc: 1 | 2 | 3): number =>
+  amc === 2 || cn2 >= 100 ? cn2 : amc === 1 ? (4.2 * cn2) / (10 - 0.058 * cn2) : Math.min(100, (23 * cn2) / (10 + 0.13 * cn2));
+
+// cnOf: curve number used for the runoff of each catchment (soil wetness, cnForAmc); the lag time keeps the condition II value
+export function inflowsFor(st: Streams, isIn: (x: number, y: number) => boolean, cumRain: Float64Array, steps: number, cnOf: (cn: number) => number = (c) => c): Inflow[] {
   return findEntries(st, isIn).map(({ stream: k, effKm2 }) => {
-    const lagH = nrcsLagHours(st.len[k], st.cn[k], st.slope[k]);
-    return { stream: k, x: st.x[st.down[k]], y: st.y[st.down[k]], areaKm2: effKm2, cn: st.cn[k], lagH, q: catchmentHydrograph(effKm2, st.cn[k], lagH, cumRain, steps) };
+    const lagH = nrcsLagHours(st.len[k], st.cn[k], st.slope[k]), cn = cnOf(st.cn[k]);
+    return { stream: k, x: st.x[st.down[k]], y: st.y[st.down[k]], areaKm2: effKm2, cn, lagH, q: catchmentHydrograph(effKm2, cn, lagH, cumRain, steps) };
   });
 }
 
@@ -91,7 +99,7 @@ export function entryMembers(st: Streams, isIn: (x: number, y: number) => boolea
 
 /** Upstream inflows with each catchment's own rain: cumRainOf(stream cell) gives the cumulative rain series (mm) at a stream cell;
  *  the catchment takes the mean over its stream cells (they cover the catchment evenly on the 90 m stream grid). */
-export function inflowsForSpatial(st: Streams, isIn: (x: number, y: number) => boolean, cumRainOf: (k: number) => Float64Array, steps: number): (Inflow & { rainMm: number })[] {
+export function inflowsForSpatial(st: Streams, isIn: (x: number, y: number) => boolean, cumRainOf: (k: number) => Float64Array, steps: number, cnOf: (cn: number) => number = (c) => c): (Inflow & { rainMm: number })[] {
   const ents = findEntries(st, isIn), mem = entryMembers(st, isIn, ents.map((e) => e.stream));
   const sum = ents.map(() => new Float64Array(steps + 1)), cnt = new Float64Array(ents.length);
   for (let k = 0; k < mem.length; k++) {
@@ -103,7 +111,7 @@ export function inflowsForSpatial(st: Streams, isIn: (x: number, y: number) => b
   }
   return ents.map(({ stream: k, effKm2 }, e) => {
     const cum = sum[e].map((v) => v / Math.max(1, cnt[e]));
-    const lagH = nrcsLagHours(st.len[k], st.cn[k], st.slope[k]);
-    return { stream: k, x: st.x[st.down[k]], y: st.y[st.down[k]], areaKm2: effKm2, cn: st.cn[k], lagH, rainMm: cum[steps], q: catchmentHydrograph(effKm2, st.cn[k], lagH, cum, steps) };
+    const lagH = nrcsLagHours(st.len[k], st.cn[k], st.slope[k]), cn = cnOf(st.cn[k]);
+    return { stream: k, x: st.x[st.down[k]], y: st.y[st.down[k]], areaKm2: effKm2, cn, lagH, rainMm: cum[steps], q: catchmentHydrograph(effKm2, cn, lagH, cum, steps) };
   });
 }

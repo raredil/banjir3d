@@ -1,5 +1,5 @@
 // Runs the flood engine off the main thread so the map stays smooth: WebGPU when the browser has it, else the CPU reference.
-import { FloodEngine, type EngineGrid } from "../engine/solver";
+import { ALPHA, FloodEngine, type EngineGrid } from "../engine/solver";
 import { GpuEngine } from "../engine/gpu";
 import { rainRate, type Hyetograph } from "../explore/rain";
 
@@ -59,7 +59,7 @@ self.onmessage = async (ev: MessageEvent<RunMsg>) => {
 
 /** The run on WebGPU. Returns null when it finished, else the reason it gave up (frames sent so far are replaced by the CPU run). */
 async function runGpu(m: RunMsg, total: number, N: number, frame: (t: number, d: ArrayLike<number>, stride: number) => void, t0: number): Promise<string | null> {
-  const gpu = await GpuEngine.create({ grid: m.grid, seaLevel: m.seaLevel, hMin: 0.001, alpha: 0.5, dtMax: 15, tEnd: total, rain: m.rain, inflowCells: m.inflowCells, inflowQ: m.inflowQ, inflowDt: m.inflowDt, zoneMm: m.zoneMm });
+  const gpu = await GpuEngine.create({ grid: m.grid, seaLevel: m.seaLevel, hMin: 0.001, alpha: ALPHA, dtMax: 15, tEnd: total, rain: m.rain, inflowCells: m.inflowCells, inflowQ: m.inflowQ, inflowDt: m.inflowDt, zoneMm: m.zoneMm });
   try {
     let st = await gpu.state(), batch = 20, nSteps = 0, next = 0, started = false;
     while (st.t < total - 1e-3) {
