@@ -6,7 +6,7 @@ import { fromUtm } from "../util";
 const pack = (sub: Int16Array | null): Pack => ({
   header: {} as Pack["header"], nx: 2, ny: 1, dx: 30, ox: 700000, oy: 9300000, zone: 48,
   z: Float32Array.from([2, 2]), n: Float32Array.from([0.03, 0.03]), cn: Uint8Array.from([80, 80]), flags: Uint8Array.from([DOMAIN, DOMAIN]),
-  built: null, sub, subEpoch: 2013, h0: null, pump: null,
+  built: null, sub, subEpoch: 2013, h0: null, pump: null, mdr: null,
   streams: { x: new Float32Array(), y: new Float32Array(), down: new Int32Array(), area: new Float32Array(), cn: new Float32Array(), slope: new Float32Array(), len: new Float32Array() },
 });
 

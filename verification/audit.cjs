@@ -10,14 +10,14 @@ const out = process.argv[2], base = process.argv[3], what = process.argv[4] || "
   await p.addInitScript(() => { window.__lt = []; new PerformanceObserver((l) => l.getEntries().forEach((e) => window.__lt.push([Math.round(e.startTime), Math.round(e.duration)]))).observe({ type: "longtask", buffered: true }); });
   const lt = async (label) => { const v = await p.evaluate(() => { const x = window.__lt; window.__lt = []; return x; }); const tot = v.reduce((a, x) => a + x[1], 0), mx = Math.max(0, ...v.map((x) => x[1])); console.log(`${label}: long tasks ${v.length}, total ${tot} ms, worst ${mx} ms`); };
   const t0 = Date.now();
-  const url = what === "region" ? "/#/sim" : "/#/sim?box=106.835,-6.245,106.875,-6.205";
+  const url = what === "region" ? "/#/sim" : "/#/sim?box=" + (process.env.BOX || "106.835,-6.245,106.875,-6.205");
   await p.goto(base + url); await p.waitForTimeout(6000); await lt("load"); console.log("load wall", Date.now() - t0);
   await p.screenshot({ path: out + "/panel.png" });
   await p.evaluate(() => { const set = (id, v) => { const e = document.querySelector("#" + id); e.value = String(v); e.dispatchEvent(new Event("input")); }; set("s-r24", 150); set("s-dur", 6); set("s-hours", 12); });
-  // COMP: switches to change before the run, e.g. COMP=infil0,amc3,sub0,pumps1
+  // COMP: switches to change before the run, e.g. COMP=infil0,amc3,sub0,pumps1,mdr1; BOX=W,S,E,N
   for (const c of (process.env.COMP || "").split(",").filter(Boolean)) await p.evaluate((c) => {
     const set = (id, v) => { const e = document.querySelector("#" + id); if (e.type === "checkbox") e.checked = v === "1"; else e.value = v; e.dispatchEvent(new Event("change")); };
-    const m = /^(infil|amc|sub|pumps|up)(\d)$/.exec(c); if (m) set({ infil: "s-infil", amc: "s-amc", sub: "s-sub", pumps: "s-pumps", up: "s-up" }[m[1]], m[2]);
+    const m = /^(infil|amc|sub|pumps|up|mdr)(\d)$/.exec(c); if (m) set({ infil: "s-infil", amc: "s-amc", sub: "s-sub", pumps: "s-pumps", up: "s-up", mdr: "s-mdr" }[m[1]], m[2]);
   }, c);
   if (process.env.HOURS) await p.evaluate((h) => { const e = document.querySelector("#s-hours"); e.value = h; e.dispatchEvent(new Event("input")); }, process.env.HOURS);
   if (what === "fine") await p.evaluate((s) => document.querySelector(s).click(), '#s-fine [data-r="3"]');

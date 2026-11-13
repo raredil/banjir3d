@@ -10,7 +10,7 @@ export type LayerDef = {
   catalogId: string;
   file?: string;
   role?: "domain" | "admin";
-  kind: "raster" | "hillshade" | "relief" | "water" | "buildings" | "admin" | "demnas-grid" | "region" | "js-drains" | "js-pumps" | "js-polders" | "js-walls" | "genangan" | "reports" | "tersier" | "rain";
+  kind: "raster" | "hillshade" | "relief" | "water" | "buildings" | "admin" | "demnas-grid" | "region" | "js-drains" | "js-pumps" | "mikro" | "js-polders" | "js-walls" | "genangan" | "reports" | "tersier" | "rain";
   visible: boolean;
   opacity: number;
   note?: string;
@@ -60,6 +60,8 @@ export const LAYERS: LayerDef[] = [
     legend: [{ label: "Primer / primary", color: "#0b7285" }, { label: "Sekunder / secondary", color: "#3bc9db" }] },
   { id: "tersier", url: "meta/drainase_tersier_dki.geojson", dl: { geojson: ["meta/drainase_tersier_dki.geojson"] }, group: "g.infra", name: { id: "Saluran tersier / penghubung (DKI, 1:5.000)", en: "Tertiary / link drains (DKI, 1:5,000)" }, title: "Tertiary drainage lines DRAINASE_LN_5K, Pemprov DKI Jakarta (1:5,000; line, name and kelurahan only, no size)", catalogId: "dki-drainase-tersier", kind: "tersier", visible: false, opacity: 1,
     note: "Map only: the source has no width or depth, so these lines are not carved into the model terrain.", legend: [{ label: "Tersier / tertiary", color: "#e8590c" }] },
+  { id: "mikro", url: "meta/saluran_mikro_jaksel.geojson", dl: { geojson: ["meta/saluran_mikro_jaksel.geojson"] }, group: "g.infra", name: { id: "Saluran mikro Jakarta Selatan (lebar, dalam)", en: "South Jakarta micro drains (width, depth)" }, title: "Micro drains Jakarta Selatan, Dinas SDA DKI (Jakarta Satu update 2024, cut 3 Nov 2026; width and depth per section)", catalogId: "dsda-saluran-mikro-jaksel", kind: "mikro", visible: false, opacity: 1,
+    note: "Sections with a width and depth enter the model as the switch 'Saluran mikro Jakarta Selatan' (capacity by Manning, spread over the land each drain network serves).", legend: [{ label: "≥ 1 m", color: "#1864ab" }, { label: "0,5–1 m", color: "#4dabf7" }, { label: "< 0,5 m", color: "#a5d8ff" }, { label: "tanpa ukuran / no size", color: "#adb5bd" }] },
   { id: "js-pumps", dl: { geojson: ["jakartasatu_pump.geojson"] },  group: "g.infra", name: { id: "Rumah pompa (DSDA)", en: "Pump stations (DSDA)" }, title: `Pump stations, capacity m³/s, ${JS_TITLE}`, catalogId: "jakartasatu-dsda", file: "jakartasatu.pmtiles", kind: "js-pumps", visible: false, opacity: 1,
     legend: [{ label: "Pompa (besar = kapasitas besar) / pump (size = capacity)", color: "#c2255c" }] },
   { id: "js-polders", dl: { geojson: ["jakartasatu_polder.geojson"] },  group: "g.infra", name: { id: "Sistem polder (DSDA)", en: "Polder systems (DSDA)" }, title: `Polder systems, ${JS_TITLE}`, catalogId: "jakartasatu-dsda", file: "jakartasatu.pmtiles", kind: "js-polders", visible: false, opacity: 0.8,

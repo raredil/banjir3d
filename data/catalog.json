@@ -823,6 +823,35 @@
       "checked": "2026-11-08",
       "in_region_pack": false,
       "notes": "1,844 lines, 1,105 km, 1,051 names (mostly 'Sal. Phb', saluran penghubung), 258 kelurahan in 43 kecamatan of the 5 mainland kota; KUGI FCODE HA02080620. Fields for size, year and material (REMARK, THNPBN, THNOPR, KONCOU, TJDRLG) are empty in every record, so the lines carry location and name only. Not carved into the engine terrain: without width and depth any carving would be an invented number; at 30 m the area-equivalent lowering of a ~1 m drain would be a few cm. Shown as a map layer and used to explain results."
+    },
+    {
+      "id": "dsda-saluran-mikro-jaksel",
+      "name": "Saluran mikro Jakarta Selatan (Dinas SDA DKI, pembaruan Jakarta Satu 2024)",
+      "theme": "water-bodies",
+      "role": "primary",
+      "provider": "Dinas Sumber Daya Air Provinsi DKI Jakarta (shapefile supplied by the project owner)",
+      "version": "cut 3 November 2026 (records 'UPDATE JAK SATU 2024')",
+      "doi": null,
+      "url": "https://jakartasatu.jakarta.go.id",
+      "licence": {
+        "id": "no licence text; published by owner decision (same basis as ADR 0014, Jakarta Satu verbal permission)",
+        "redistributable": "yes",
+        "attribution": "Saluran mikro: Dinas Sumber Daya Air Provinsi DKI Jakarta"
+      },
+      "resolution": "vector lines (survey of street drains)",
+      "crs": "EPSG:4326 (converted from EPSG:32748)",
+      "access": {
+        "method": "Shapefile from the owner, converted by pipeline/micro_drains.py convert to data/drains/saluran_mikro_jaksel.geojson (simplified 0.5 m, 1e-6 degree)",
+        "auth": "none"
+      },
+      "citation": {
+        "text": "Dinas Sumber Daya Air Provinsi DKI Jakarta (2026). Saluran Mikro Jakarta Selatan (pembaruan Jakarta Satu 2024), potongan 3 November 2026. Shapefile, received 13 November 2026.",
+        "bibtex": "@misc{dsda2026mikro,\n  author = {{Dinas Sumber Daya Air Provinsi DKI Jakarta}},\n  title = {Saluran Mikro Jakarta Selatan (pembaruan Jakarta Satu 2024)},\n  year = {2026},\n  note = {Shapefile, cut 3 November 2026, received 13 November 2026}\n}"
+      },
+      "status": "single-source",
+      "checked": "2026-11-13",
+      "in_region_pack": false,
+      "notes": "12,481 records, 2,606 km; 311 marked PENGHAPUSAN 2024 left out; 8,551 sections (about 1,900 km) with width and depth (median 0.5 x 0.5 m), the rest without. Fields kept: name, kelurahan, kecamatan, width, depth, open/closed, lining, condition, outlet name; SEGMEN (house numbers) and BGNLIAR left out. Used in the engine as the micro-drain sink (pipeline/micro_drains.py, Methods §4)."
     }
   ]
 }

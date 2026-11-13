@@ -65,13 +65,14 @@ def land_window_max(h, land):
     return out
 
 
-def report_scores(rep, h, summary, land, dki):
+def report_scores(rep, h, summary, land, dki, area=None):
     """Citizen reports against the model (2026-11-13, ADR 0019). A report counts as hit when the model is at least HIT_M deep on LAND
     (river channels and sea excluded: a river always holds water, so counting it made every report next to a river a hit):
     - cell: the land cell under the report;
     - window: the deepest land cell in the 3 x 3 window (about 270 m at 90 m cells; report locations are approximate).
     Random baseline: the hit rate that points placed at random on DKI land would get with the same rule (the share of DKI land
     cells that pass it); skill = (hit - random) / (1 - random), 0 = no better than random, 1 = perfect.
+    area: only reports inside this mask count, and the random baseline uses it instead of DKI (micro-drain area check).
     Earlier scores (before 2026-11-13) used the window rule WITH channel cells: kept as legacy_window_with_channels for comparison."""
     x0, y0, dx, nx, ny, tr = grid_of(summary)
     win = land_window_max(h, land)
@@ -86,7 +87,7 @@ def report_scores(rep, h, summary, land, dki):
             continue
         x, y = tr.transform(*g["coordinates"][:2])
         i, j = int((x - x0) // dx), int((y0 - y) // dx)
-        if not (1 <= i < nx - 1 and 1 <= j < ny - 1) or not inside[j, i]:
+        if not (1 <= i < nx - 1 and 1 <= j < ny - 1) or not inside[j, i] or (area is not None and not area[j, i]):
             continue
         legacy.append(float(h[j - 1 : j + 2, i - 1 : i + 2].max()))
         c = float(h[j, i]) if land[j, i] else 0.0
@@ -100,7 +101,7 @@ def report_scores(rep, h, summary, land, dki):
     if not n:
         return res
     cell, wnd, legacy = np.array(cell), np.array(wnd), np.array(legacy)
-    dl = dki & land
+    dl = (dki if area is None else area) & land
     base_c = float((h[dl] >= HIT_M).mean()) if dl.any() else None
     base_w = float((win[dl] >= HIT_M).mean()) if dl.any() else None
     skill = lambda hit, b: None if b is None or b >= 1 else (hit - b) / (1 - b)
@@ -284,6 +285,11 @@ def main():
         r = {"run": sp.name.replace("_summary.json", ""), "drain_mm_h": s["drain_mm_h"], "rain": s["rain"], "rain_scale": s.get("rain_scale", 1), "terrain_year": s.get("terrain_year"), "pumps": s.get("pumps"), "pump_m3s": s.get("pump_m3s"), "amc": s.get("amc", 2), "infiltration": s.get("infiltration", True),
              "mean_rain_mm": s["mean_rain_mm"], "flooded_km2": s["flooded_km2_gt015_outside_channels"], "mass_error": s["massError"],
              "reports": report_scores(rep, h, s, land, dki_mask(s))}
+        r["micro"] = s.get("micro", False)
+        served = (m & 8).astype(bool)
+        if served.any():  # land served by South Jakarta micro drains (pipeline/micro_drains.py), scored on its own
+            r["reports_micro_area"] = report_scores(rep, h, s, land, dki_mask(s), area=served)
+            r["micro_area_flooded_km2"] = round(float(((h >= 0.15) & land & served).sum() * s["dx"] ** 2 / 1e6), 2)
         if areas:
             r["rw"] = rw_scores(areas, flooded, h, s, land)
         r["dki_flooded_km2"], r["dki_land_km2"] = dki_flooded_km2(h, s, land)

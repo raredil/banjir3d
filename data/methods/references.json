@@ -418,11 +418,23 @@
    "authors": [
     "Dinas Sumber Daya Air Provinsi DKI Jakarta"
    ],
-   "year": 2026,
+   "year": "2026a",
    "title": "Saluran Drainase, Pompa, Polder, Tanggul dan Genangan",
    "publisher": "Jakarta Satu geoportal",
    "url": "https://jakartasatu.jakarta.go.id",
    "accessed": "2026-11-01"
+  },
+  {
+   "key": "dsda2026mikro",
+   "type": "dataset",
+   "authors": [
+    "Dinas Sumber Daya Air Provinsi DKI Jakarta"
+   ],
+   "year": "2026b",
+   "title": "Saluran Mikro Jakarta Selatan (pembaruan Jakarta Satu 2024, potongan 3 November 2026)",
+   "publisher": "Dinas Sumber Daya Air Provinsi DKI Jakarta; file supplied by the project owner",
+   "accessed": "2026-11-13",
+   "url": "https://jakartasatu.jakarta.go.id"
   },
   {
    "key": "schubert2012",

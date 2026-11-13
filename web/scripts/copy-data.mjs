@@ -7,7 +7,7 @@ const here = dirname(fileURLToPath(import.meta.url));
 const data = join(here, "..", "..", "data");
 const dest = join(here, "..", "public", "meta");
 mkdirSync(dest, { recursive: true });
-for (const f of ["catalog.json", "REFERENCES.bib", "regions.json", "demnas/jakarta_tiles.geojson", "regions/jakarta_domain.geojson", "drains/drainase_tersier_dki.geojson"]) {
+for (const f of ["catalog.json", "REFERENCES.bib", "regions.json", "demnas/jakarta_tiles.geojson", "regions/jakarta_domain.geojson", "drains/drainase_tersier_dki.geojson", "drains/saluran_mikro_jaksel.geojson"]) {
   copyFileSync(join(data, f), join(dest, f.split("/").pop()));
 }
 console.log("copied metadata to public/meta");
