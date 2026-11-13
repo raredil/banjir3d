@@ -69,8 +69,8 @@ body[data-page="doc"] #app { overflow-y: auto; }
   body { grid-template-columns: 1fr; }
   .rail { position: fixed; left: 0; top: 0; bottom: 0; width: var(--rail); z-index: 30; transform: translateX(calc(-100% + 10px)); transition: transform .18s ease .12s, box-shadow .18s; }
   .rail::after { content: ""; position: absolute; right: 3px; top: 50%; width: 3px; height: 44px; margin-top: -22px; border-radius: 2px; background: var(--faint); opacity: .6; }
-  .rail:hover, .rail:focus-within { transform: none; box-shadow: var(--shadow); transition-delay: .3s; }
-  .rail:hover::after, .rail:focus-within::after { display: none; }
+  .rail:hover, .rail:has(:focus-visible) { transform: none; box-shadow: var(--shadow); transition-delay: .3s; }
+  .rail:hover::after, .rail:has(:focus-visible)::after { display: none; }
   main#app { grid-column: 1; }
 }
 #map { position: absolute; inset: 0; }

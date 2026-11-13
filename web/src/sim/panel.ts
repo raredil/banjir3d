@@ -497,13 +497,22 @@ export function mountSim(page: MapPage, o: { packUrl: string; regionBbox: number
     };
     const c = buildConclusion(facts, lang === "id" ? "id" : "en", r.event?.start_utc ?? null);
     conclText = `${c.head[0]}\n\n${c.text}`;
-    concl.innerHTML = `<div class="concl-head"><b>${t("concl.title")}</b><button type="button" class="btn small" data-c="copy">${t("concl.copy")}</button><button type="button" class="btn small" data-c="md">.md</button><button type="button" class="btn small" data-c="x" aria-label="${t("concl.close")}">×</button></div>
+    // text to paste into another AI after the context file: the conclusion plus the run's settings and water balance as JSON
+    const aiText = () => [
+      lang === "id" ? "# Hasil simulasi Banjir3D (tempel setelah file konteks banjir3d-konteks-ai.md)" : "# Banjir3D run result (paste after the context file banjir3d-konteks-ai.md)",
+      "", conclText, "",
+      lang === "id" ? "## Data teknis simulasi ini (JSON)" : "## Technical record of this run (JSON)",
+      "```json", JSON.stringify({ scenario: r.scenario, grid_m: g.dx, cells: [g.nx, g.ny], device: r.gpu ? "WebGPU" : "CPU", wall_s: Math.round((r.wall ?? 0) / 1000), water_balance_m3: r.totals, mass_error: r.mass, upstream_rivers: r.inflows.length, peak_inflow_m3s: Math.round(peakInflow()), data_release: o.releaseTag, app_commit: import.meta.env.VITE_GIT_SHA ?? null }, null, 1), "```",
+    ].join("\n");
+    concl.innerHTML = `<div class="concl-head"><b>${t("concl.title")}</b><button type="button" class="btn small" data-c="ai" title="${t("concl.ai.h")}">${t("concl.ai")}</button><button type="button" class="btn small" data-c="copy">${t("concl.copy")}</button><button type="button" class="btn small" data-c="md">.md</button><button type="button" class="btn small" data-c="x" aria-label="${t("concl.close")}">×</button></div>
+      <p class="help concl-ai">${t("concl.ai.file")} <a href="${import.meta.env.BASE_URL}banjir3d-konteks-ai.md" download>banjir3d-konteks-ai.md</a></p>
       <div class="concl-body"><ul class="concl-sum">${c.summary.map((x) => `<li>${esc(x)}</li>`).join("")}</ul>
       <details><summary>${t("concl.detail")}</summary><p class="help">${t("concl.note")}</p>${c.paragraphs.map((x) => `<p>${esc(x)}</p>`).join("")}
       <h4>${esc(c.head[1])}</h4><ol class="refs">${c.refs.map((x) => `<li>${x}</li>`).join("")}</ol>
       <h4>${esc(c.head[2])}</h4><ul class="refs">${c.other.map((x) => `<li>${esc(x)}</li>`).join("")}</ul></details></div>`;
     concl.querySelectorAll<HTMLButtonElement>("[data-c]").forEach((b2) => b2.addEventListener("click", async () => {
       if (b2.dataset.c === "x") showConcl(false);
+      else if (b2.dataset.c === "ai") { try { await navigator.clipboard.writeText(aiText()); b2.textContent = t("concl.copied"); } catch { b2.textContent = "✗"; } setTimeout(() => (b2.textContent = t("concl.ai")), 1800); }
       else if (b2.dataset.c === "md") save(`banjir3d_kesimpulan_${stamp()}.md`, `# ${conclText}\n`, "text/markdown");
       else { try { await navigator.clipboard.writeText(conclText); b2.textContent = t("concl.copied"); } catch { b2.textContent = "✗"; } setTimeout(() => (b2.textContent = t("concl.copy")), 1800); }
     }));
