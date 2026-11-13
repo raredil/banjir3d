@@ -16,6 +16,7 @@ import { esc, fromUtm } from "../util";
 import { exportLayer, exportable, type Scope } from "../layer-export";
 import { LAYERS } from "../layers";
 import calibration from "../../../data/engine/calibration.json";
+import skill from "../../../data/engine/skill.json";
 
 const FLOOD_M = 0.15;
 // fine cells for a drawn box: run cells per 30 m pack cell side (10, 5, 2, 1 m); cell limits keep memory and run time in bounds
@@ -490,15 +491,17 @@ export function mountSim(page: MapPage, o: { packUrl: string; regionBbox: number
       upstream: r.inflows.length ? { n: r.inflows.length, peakM3s: peakInflow(), areaKm2: r.inflows.reduce((s2, f) => s2 + f.areaKm2, 0) } : null,
       env: { km2: wet * a, classesKm2: cls.map((v) => v * a), meanDepth: wet ? sum / wet : 0, maxDepth: dMax, deepest },
       peak: { km2: r.area[pk] ?? 0, tSec: r.times[pk] ?? 0 }, endKm2: r.area[r.area.length - 1] ?? 0, massError: r.mass ?? 0,
+      ...(r.totals ? { water: { rainM3: r.totals.rain, inflowM3: r.totals.inflow, infilM3: r.totals.infiltration, outM3: r.totals.outflow, seaM3: r.totals.sea } } : {}),
+      ...(skill.events?.length ? { skill: skill as Facts["skill"] } : {}),
       expo: ex ? { buildings: ex.buildings, people: ex.people, units: ex.perUnit.length, top: ex.perUnit.slice(0, 3).map((u) => ({ name: unitName(u.unit), people: u.people, buildings: u.buildings })) } : null,
     };
     const c = buildConclusion(facts, lang === "id" ? "id" : "en", r.event?.start_utc ?? null);
     conclText = `${c.head[0]}\n\n${c.text}`;
     concl.innerHTML = `<div class="concl-head"><b>${t("concl.title")}</b><button type="button" class="btn small" data-c="copy">${t("concl.copy")}</button><button type="button" class="btn small" data-c="md">.md</button><button type="button" class="btn small" data-c="x" aria-label="${t("concl.close")}">×</button></div>
-      <p class="help">${t("concl.note")}</p>
-      <div class="concl-body">${c.paragraphs.map((x) => `<p>${esc(x)}</p>`).join("")}
+      <div class="concl-body"><ul class="concl-sum">${c.summary.map((x) => `<li>${esc(x)}</li>`).join("")}</ul>
+      <details><summary>${t("concl.detail")}</summary><p class="help">${t("concl.note")}</p>${c.paragraphs.map((x) => `<p>${esc(x)}</p>`).join("")}
       <h4>${esc(c.head[1])}</h4><ol class="refs">${c.refs.map((x) => `<li>${x}</li>`).join("")}</ol>
-      <h4>${esc(c.head[2])}</h4><ul class="refs">${c.other.map((x) => `<li>${esc(x)}</li>`).join("")}</ul></div>`;
+      <h4>${esc(c.head[2])}</h4><ul class="refs">${c.other.map((x) => `<li>${esc(x)}</li>`).join("")}</ul></details></div>`;
     concl.querySelectorAll<HTMLButtonElement>("[data-c]").forEach((b2) => b2.addEventListener("click", async () => {
       if (b2.dataset.c === "x") showConcl(false);
       else if (b2.dataset.c === "md") save(`banjir3d_kesimpulan_${stamp()}.md`, `# ${conclText}\n`, "text/markdown");
