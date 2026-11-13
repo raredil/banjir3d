@@ -16,7 +16,7 @@ import { esc, fromUtm } from "../util";
 import { exportLayer, exportable, type Scope } from "../layer-export";
 import { LAYERS } from "../layers";
 import calibration from "../../../data/engine/calibration.json";
-import skill from "../../../data/engine/skill.json";
+import skill from "../../../data/skill.json";
 
 const FLOOD_M = 0.15;
 // fine cells for a drawn box: run cells per 30 m pack cell side (10, 5, 2, 1 m); cell limits keep memory and run time in bounds
@@ -48,6 +48,8 @@ const EVENTS = import.meta.glob<EventRain>("../../../data/events/*_imerg.json", 
 const decYear = (ms: number) => { const d = new Date(ms), y = d.getUTCFullYear(), a = Date.UTC(y, 0, 1); return y + (ms - a) / (Date.UTC(y + 1, 0, 1) - a); };
 const terrainName = (p: Pack) => (String((p.header.terrain as { source?: string } | undefined)?.source ?? "FABDEM").startsWith("DEMNAS") ? "DEMNAS (BIG)" : "FABDEM");
 const subName = (p: Pack) => String((p.header.subsidence as { label?: string } | undefined)?.label ?? "InSAR");
+// validation numbers per observed event (data/skill.json, land-only scoring of 2026-11-13); the event files keep the older figure
+const skillOf = (id: string) => (skill.events as { id: string; n?: number; hit: number; random: number }[]).find((e) => e.id === id);
 const eventIds = Object.keys(EVENTS).map((f) => /([\d-]+)_imerg\.json$/.exec(f)![1]).sort();
 const loadEvent = (id: string) => EVENTS[`../../../data/events/${id}_imerg.json`]();
 type Result = { run: RunGrid; grid: Grid; frames: Uint16Array[]; times: number[]; area: number[]; max: Float32Array | null; inflows: Inflow[]; hy: Hyetograph; scenario: Record<string, unknown>; event: EventRain | null; zone?: Uint16Array; count: Float32Array; cells?: ReturnType<typeof exposureCells>; totals?: Record<string, number>; mass?: number; wall?: number; gpu?: boolean };
@@ -123,7 +125,7 @@ export function mountSim(page: MapPage, o: { packUrl: string; regionBbox: number
     if (mode() !== "event" || $<HTMLSelectElement>("s-event").value !== id) return;
     if (evShown !== id) { evShown = id; setVal("s-hours", ev.hours); } // the observed rain covers the event window
     const tot = ev.mm.map((v) => v.reduce((a, x) => a + x, 0)), mean = tot.reduce((a, x) => a + x, 0) / tot.length;
-    $("s-rainsum").textContent = t("sim.event.info", { mm: fmt(mean), h: ev.hours, mx: fmt(Math.max(...tot)), n: ev.reports.n, p: Math.round(ev.reports.hit_rate * 100) })
+    $("s-rainsum").textContent = t("sim.event.info", { mm: fmt(mean), h: ev.hours, mx: fmt(Math.max(...tot)), n: skillOf(id)?.n ?? ev.reports.n, p: Math.round((skillOf(id)?.hit ?? ev.reports.hit_rate) * 100), r: skillOf(id) ? Math.round(skillOf(id)!.random * 100) : "?" })
       + (ev.reported_km2 ? ` ${t("sim.event.rep", { km2: ev.reported_km2, rw: ev.reported_rw ?? "?" })}` : "");
   };
   // recorded floods of the chosen event on the map (official DSDA polygons dated in the event window, PetaBencana reports)
@@ -392,7 +394,7 @@ export function mountSim(page: MapPage, o: { packUrl: string; regionBbox: number
     inflows: res!.inflows.map((f) => ({ catchment_km2: +f.areaKm2.toFixed(2), cn: +f.cn.toFixed(1), lag_h: +f.lagH.toFixed(2), peak_m3s: +Math.max(...f.q).toFixed(1), x_m: f.x, y_m: f.y })),
     totals_m3: res!.totals, mass_error: res!.mass, flooded_km2_series: res!.times.map((tt, i) => [tt, +res!.area[i].toFixed(3)]),
     drain_mm_h: res!.scenario.components ? (res!.scenario.components as { extraDrainMmH: number }).extraDrainMmH : calibration.drain_mm_h,
-    limitations: ["City drains: extra sink " + num("s-drain") + " mm/h (calibrated best value " + calibration.drain_mm_h + " mm/h (1 Jan 2020 flood with IMERG rain, Validation page); polder pumps " + (res!.scenario.polderPumps ? "on (lower bound)" : res!.run.pump ? "switched off" : "not in this pack") + "; no sea walls.", "Below-water channel shape not in the DEM; channels start at their mapped water level.", res!.event ? "Rain: GPM IMERG 0.1 degree hourly per point (nearest point per cell and per upstream catchment); satellites smooth local peaks (Halim gauge 377 mm/day vs 166 mm in its IMERG cell, 1 Jan 2020)." : "Upstream rain is spatially uniform and equal to the scenario rain when switched on.", "Checked on three observed floods at report points (about 80 % hit); modelled depths shallower than reported (Validation page)."],
+    limitations: ["City drains: extra sink " + num("s-drain") + " mm/h (calibrated best value " + calibration.drain_mm_h + " mm/h (1 Jan 2020 flood with IMERG rain, Validation page); polder pumps " + (res!.scenario.polderPumps ? "on (lower bound)" : res!.run.pump ? "switched off" : "not in this pack") + "; no sea walls.", "Below-water channel shape not in the DEM; channels start at their mapped water level.", res!.event ? "Rain: GPM IMERG 0.1 degree hourly per point (nearest point per cell and per upstream catchment); satellites smooth local peaks (Halim gauge 377 mm/day vs 166 mm in its IMERG cell, 1 Jan 2020)." : "Upstream rain is spatially uniform and equal to the scenario rain when switched on.", "Checked on three observed floods (data/skill.json): report hit rate within ~270 m on land 41-50 %, random points 28-43 %; modelled depths at reports much shallower than reported (Validation page)."],
     licence: "CC BY-NC-SA 4.0 (most restrictive input: FABDEM)",
   });
   // map data export: whole dataset, area on screen, or the drawn box
@@ -482,7 +484,7 @@ export function mountSim(page: MapPage, o: { packUrl: string; regionBbox: number
       const used = new Set<number>();
       for (let c = 0; c < r.zone.length; c++) if (r.grid.mask[c]) used.add(r.zone[c]);
       const tot = [...used].map((z) => r.event!.mm[z].reduce((s2, v) => s2 + v, 0));
-      rain = { kind: "event", id: r.event.id, wib: r.event.wib, meanMm: totalMm(hy), maxMm: Math.max(...tot), points: used.size, reportsN: r.event.reports.n, hitRate: r.event.reports.hit_rate, reportedKm2: r.event.reported_km2, reportedRw: r.event.reported_rw };
+      rain = { kind: "event", id: r.event.id, wib: r.event.wib, meanMm: totalMm(hy), maxMm: Math.max(...tot), points: used.size, reportsN: skillOf(r.event.id)?.n ?? r.event.reports.n, hitRate: skillOf(r.event.id)?.hit ?? r.event.reports.hit_rate, randomRate: skillOf(r.event.id)?.random, reportedKm2: r.event.reported_km2, reportedRw: r.event.reported_rw };
     } else rain = { kind: r.scenario.rainMode === "hourly" ? "hourly" : "design", mm: totalMm(hy), h, peakMmH };
     const box2 = (r.scenario.area as { box?: number[] }).box ?? null, [wKm, hKm] = box2 ? kmOf(box2) : [0, 0];
     const facts: Facts = {

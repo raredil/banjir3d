@@ -54,10 +54,11 @@ describe("plain summary", () => {
     expect(s).toContain("sekitar 40,0 km²");
     expect(s).toContain("mata kaki");
     expect(s).toContain("75 % dari hujan"); // 3e7 of 4e7
-    expect(s).toContain("25 % kiriman sungai");
+    expect(s).toContain("25 % air sungai yang masuk dari luar kotak");
     expect(s).toContain("10 % meresap");
     expect(s).toContain("60 % laporan warga");
-    expect(s).toContain("40 % bila titiknya diacak");
+    expect(s).toContain("40 % bila titiknya disebar acak");
+    expect(s).toContain("jelas lebih baik dari acak pada 2020");
     expect(s).toContain("83 km² dibanding 156 km²");
     expect(c.text.startsWith("Ringkasan")).toBe(true);
   });

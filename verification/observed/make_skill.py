@@ -1,4 +1,4 @@
-"""Summarise the three-flood scores into data/engine/skill.json (conclusion card, AI context file).
+"""Summarise the three-flood scores into data/skill.json (conclusion card, AI context file).
 Usage: python verification/observed/make_skill.py scores-2020-01-01-imerg-v6.json scores-2021-02-20-imerg-v6.json scores-2025-03-04-imerg-v6.json
 Tested set-up = pumps off, drains 0, AMC 2, rain scale 1, terrain year auto."""
 import json
@@ -35,5 +35,5 @@ for f in sys.argv[1:]:
     events.append(e)
 out = {"_about": "How the tested set-up (90 m, GPM IMERG, pumps off, small-drain sink 0, average soil, subsidence to the event date) matched three recorded floods; from " + ", ".join(Path(f).name for f in sys.argv[1:]) + " (verification/observed/make_skill.py). hit/random: 3 x 3 land window (about 270 m), cell: same land cell; random = points spread at random over DKI land with the same rule; legacyHit: the old rule that counted river channels.",
        "events": events}
-(root / "data/engine/skill.json").write_text(json.dumps(out, indent=1, ensure_ascii=False) + "\n")
+(root / "data/skill.json").write_text(json.dumps(out, indent=1, ensure_ascii=False) + "\n")
 print(json.dumps(out, indent=1))

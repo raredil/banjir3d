@@ -75,9 +75,13 @@ Model dijalankan pada seluruh wilayah dengan kotak 90 m untuk tiga banjir: 1 Jan
 
 Cara membaca: "kena" berarti model menggenangi daratan sedalam paling sedikit 10 cm di kotak laporan atau di kotak sekitarnya (sekitar 270 m, karena letak laporan tidak persis). "Acak" adalah skor yang didapat titik-titik yang disebar acak di daratan DKI dengan aturan yang sama; model hanya berguna bila skornya jelas di atas skor acak.
 
-Penting dan jujur: sebelum 13 November 2026 aplikasi menulis "sekitar 80 % laporan kena". Angka itu memakai aturan yang terlalu longgar: air di dalam alur sungai ikut dihitung, sehingga setiap laporan di dekat sungai otomatis "kena". Aturan itu sudah diganti dengan aturan di atas.
+Penting dan jujur: sebelum 13 November 2026 aplikasi menulis "sekitar 80 % laporan kena" (dan 72–77 % setelah perbaikan November). Angka itu memakai aturan yang terlalu longgar: air di dalam alur sungai ikut dihitung, sehingga setiap laporan di dekat sungai otomatis "kena". Aturan itu sudah diganti dengan aturan di atas.
 
-Kesimpulan uji: letak genangan model lebih baik dari acak, tetapi kedalaman di titik laporan lebih dangkal dan luas banjir 2020 di DKI lebih kecil dari yang dilaporkan. Penyebab utama yang paling mungkin: hujan satelit dirata-rata per kotak sekitar 11 km, sehingga puncak hujan setempat hilang (stasiun Halim mencatat 377 mm dalam sehari pada 1 Jan 2020, kotak satelitnya hanya 166 mm dalam tiga hari). Pada tingkat RW satu per satu kecocokannya lemah; hasil sebaiknya dibaca pada tingkat kecamatan dan koridor sungai.
+Kesimpulan uji (jujur): letak genangan model jelas lebih baik dari acak pada banjir 2021, sedikit lebih baik pada 2020, dan tidak lebih baik pada 2025 (hanya 49 laporan). Di titik laporan, model jauh lebih dangkal (sekitar 10 cm, laporan 55–70 cm), dan luas banjir DKI 2020 hanya 83 km² dari 156 km² yang dilaporkan. Jadi model ini menggambarkan pola genangan menurut fisika dan data terbuka, cocok untuk membandingkan skenario ("bagaimana jika hujan 200 mm", "bagaimana jika pompa bekerja penuh") dan melihat kawasan serta koridor sungai yang rawan, tetapi BELUM bisa dipakai sebagai ramalan jalan mana atau RW mana yang banjir.
+
+Dua penyebab utama yang diketahui:
+1. Hujan satelit dirata-rata per kotak sekitar 11 km, sehingga puncak hujan setempat hilang (stasiun Halim mencatat 377 mm dalam sehari pada 1 Jan 2020, kotak satelitnya hanya 166 mm dalam tiga hari).
+2. Galat tinggi tanah terbuka 30 m sekitar 1 m di kawasan terbangun (Hawker dkk. 2022), lebih besar dari kedalaman banjir biasa (30–70 cm). Jalan mana yang banjir duluan ditentukan beda tinggi puluhan sentimeter, yang tidak terlihat oleh data ini. LiDAR atau pengukuran tinggi tanah yang rapat akan sangat membantu.
 
 ## G. Pompa, saluran kecil, dan "pengaturan yang diuji"
 

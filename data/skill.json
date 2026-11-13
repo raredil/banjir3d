@@ -1,0 +1,58 @@
+{
+ "_about": "How the tested set-up (90 m, GPM IMERG, pumps off, small-drain sink 0, average soil, subsidence to the event date) matched three recorded floods; from scores-2020-01-01-imerg-v6.json, scores-2021-02-20-imerg-v6.json, scores-2025-03-04-imerg-v6.json (verification/observed/make_skill.py). hit/random: 3 x 3 land window (about 270 m), cell: same land cell; random = points spread at random over DKI land with the same rule; legacyHit: the old rule that counted river channels.",
+ "events": [
+  {
+   "id": "2020-01-01",
+   "n": 260,
+   "hit": 0.496,
+   "random": 0.428,
+   "hitCell": 0.231,
+   "randomCell": 0.193,
+   "legacyHit": 0.719,
+   "obsMedianM": 0.7,
+   "modelMedianM": 0.102,
+   "dkiKm2": 82.8,
+   "reportedKm2": 156,
+   "pumpsOnHit": 0.431,
+   "pumpsOnDkiKm2": 66.8,
+   "wetHit": 0.508,
+   "wetDkiKm2": 84.1,
+   "rwAuc": 0.6159588384993709
+  },
+  {
+   "id": "2021-02-20",
+   "n": 384,
+   "hit": 0.466,
+   "random": 0.276,
+   "hitCell": 0.208,
+   "randomCell": 0.105,
+   "legacyHit": 0.747,
+   "obsMedianM": 0.65,
+   "modelMedianM": 0.099,
+   "dkiKm2": 44.7,
+   "reportedKm2": null,
+   "pumpsOnHit": 0.453,
+   "pumpsOnDkiKm2": 37.6,
+   "wetHit": 0.477,
+   "wetDkiKm2": 46.9
+  },
+  {
+   "id": "2025-03-04",
+   "n": 49,
+   "hit": 0.408,
+   "random": 0.426,
+   "hitCell": 0.143,
+   "randomCell": 0.185,
+   "legacyHit": 0.735,
+   "obsMedianM": 0.55,
+   "modelMedianM": 0.069,
+   "dkiKm2": 77.4,
+   "reportedKm2": null,
+   "pumpsOnHit": 0.408,
+   "pumpsOnDkiKm2": 63.5,
+   "wetHit": 0.408,
+   "wetDkiKm2": 79.5,
+   "rwAuc": 0.6191019223364237
+  }
+ ]
+}

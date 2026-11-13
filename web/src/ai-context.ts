@@ -1,12 +1,12 @@
 // One Markdown file with everything another AI needs to explain Banjir3D (owner 2026-11-13): plain-language guide (docs/ai/panduan-id.md),
-// what each map layer does (data/layer-roles.json), validation figures (data/engine/skill.json), the full Methods text
+// what each map layer does (data/layer-roles.json), validation figures (data/skill.json), the full Methods text
 // (data/methods/methods.md, same as the Methods page) and the reference list. Built from the repository files, so it cannot drift
 // from the app: src/ai-context.test.ts fails when public/banjir3d-konteks-ai.md is not regenerated (npm run ai-context).
 import guide from "../../docs/ai/panduan-id.md?raw";
 import methods from "../../data/methods/methods.md?raw";
 import refsData from "../../data/methods/references.json";
 import roles from "../../data/layer-roles.json";
-import skill from "../../data/engine/skill.json";
+import skill from "../../data/skill.json";
 import calibration from "../../data/engine/calibration.json";
 import { citeAuthors, refEntry, sortRefs, type Ref } from "./methods/cite";
 import { LAYERS } from "./layers";

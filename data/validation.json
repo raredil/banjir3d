@@ -89,8 +89,8 @@
    "id": "fine-consistency",
    "status": "pass",
    "file": "docs/adr/0018-fine-cells-draw-the-30m-flood.md",
-   "id_txt": "Ukuran sel: sejak November 2026 (ADR 0018) sel 10, 5, 2 dan 1 m memakai aliran yang sama dengan 30 m dan hanya menggambar hasilnya lebih tajam dengan bentuk bangunan. Kotak 2,2 km di Kampung Melayu (Ciliwung), hujan 150 mm/6 jam: 30, 10, 5 dan 2 m semuanya 0,4 km², terdalam 0,80 m, 2.186 bangunan, 9.328 penduduk. Sebelumnya aliran dihitung ulang di sel kecil dan memberi hasil di tempat lain (kecocokan tempat dengan 30 m hanya 6–17 %, terdalam 4,5 m); cara itu tetap ada sebagai pilihan uji coba.",
-   "en_txt": "Cell size: since November 2026 (ADR 0018) 10, 5, 2 and 1 m cells use the same flow as 30 m and only draw the result more sharply with building shapes. A 2.2 km box at Kampung Melayu (Ciliwung), 150 mm in 6 h: 30, 10, 5 and 2 m all give 0.4 km², deepest 0.80 m, 2,186 buildings, 9,328 people. Before, the flow was solved again on the small cells and put the water elsewhere (place agreement with 30 m only 6–17 %, deepest 4.5 m); that method stays as a trial option.",
+   "id_txt": "Ukuran sel: sejak November 2026 (ADR 0018) sel 10, 5, 2 dan 1 m memakai aliran yang sama dengan 30 m dan hanya menggambar permukaan airnya lebih halus (sejak 13 Nov 2026 tanpa potongan bentuk bangunan). Kotak 2,2 km di Kampung Melayu (Ciliwung), hujan 150 mm/6 jam: 30, 10, 5 dan 2 m semuanya 0,4 km², terdalam 0,80 m, 2.186 bangunan, 9.328 penduduk. Sebelumnya aliran dihitung ulang di sel kecil dan memberi hasil di tempat lain (kecocokan tempat dengan 30 m hanya 6–17 %, terdalam 4,5 m); cara itu sudah dihapus dari aplikasi.",
+   "en_txt": "Cell size: since November 2026 (ADR 0018) 10, 5, 2 and 1 m cells use the same flow as 30 m and only draw the water surface more smoothly (since 13 Nov 2026 without building cut-outs). A 2.2 km box at Kampung Melayu (Ciliwung), 150 mm in 6 h: 30, 10, 5 and 2 m all give 0.4 km², deepest 0.80 m, 2,186 buildings, 9,328 people. Before, the flow was solved again on the small cells and put the water elsewhere (place agreement with 30 m only 6–17 %, deepest 4.5 m); that method is no longer in the app.",
    "metrics": [
     [
      "Flooded area > 0.15 m, 30 · 10 · 5 · 2 m (2.2 km box)",
@@ -116,38 +116,38 @@
   },
   {
    "id": "observed",
-   "status": "pass",
-   "file": "verification/observed/scores-2020-01-01-imerg-v5.json",
-   "id_txt": "Banjir nyata: dengan hujan satelit GPM IMERG, saluran primer/sekunder Dinas SDA DKI ditoreh ke medan dan kekasaran alur sungai 0,035 (November 2026), model mengenai 72–77 % laporan warga PetaBencana pada tiga banjir (sebelum perubahan kekasaran 72–81 %). Pada uji sebelumnya model mengenai 46–64 % poligon genangan resmi per RT Dinas SDA DKI (Jakarta Satu); data Jakarta Satu tidak bisa diunduh pada uji ulang ini, jadi bagian itu belum diperbarui. Luas genangan 1 Jan 2020 di Jakarta: model 83 km², laporan Pemprov DKI 156 km².",
-   "en_txt": "Observed floods: with GPM IMERG satellite rain, the DKI water agency's primary/secondary drains carved into the terrain and channel roughness 0.035 (November 2026), the model hits 72–77 % of PetaBencana citizen reports in three floods (72–81 % before the roughness change). In the previous test it hit 46–64 % of the official flood records per RT of the DKI water agency (Jakarta Satu); Jakarta Satu could not be downloaded in this re-run, so that part is not updated. Flooded area in Jakarta on 1 Jan 2020: model 83 km², city government report 156 km².",
+   "status": "partial",
+   "file": "verification/observed/scores-2020-01-01-imerg-v6.json",
+   "id_txt": "Banjir nyata (aturan skor baru, 13 Nov 2026): laporan warga PetaBencana dihitung \"kena\" bila model ≥ 10 cm di DARATAN dalam ±270 m (air di alur sungai tidak lagi dihitung). Hasil: 50 % (2020), 47 % (2021) dan 41 % (2025) laporan kena, dibanding 43, 28 dan 43 % untuk titik acak di daratan DKI. Model jelas lebih baik dari acak pada 2021, sedikit pada 2020, dan tidak pada 2025. Aturan lama (air sungai ikut dihitung) memberi 72–75 % dan terlalu menyanjung model. Luas banjir DKI 2020: model 83 km², laporan Pemprov 156 km².",
+   "en_txt": "Observed floods (new scoring rule, 13 Nov 2026): a PetaBencana citizen report counts as hit when the model reaches 0.10 m on LAND within about 270 m (water in river channels no longer counts). Result: 50 % (2020), 47 % (2021) and 41 % (2025) of reports hit, against 43, 28 and 43 % for random points on DKI land. The model is clearly better than random in 2021, slightly in 2020 and not in 2025. The old rule (river water counted) gave 72–75 % and flattered the model. 2020 DKI flooded area: model 83 km², city government 156 km².",
    "metrics": [
     [
-     "Reports hit (≥ 0.10 m), 1 Jan 2020",
-     "72 % of 259 (before: 72 %)"
+     "Reports hit within ~270 m (land) vs random, 2020 · 2021 · 2025",
+     "50 % vs 43 % · 47 % vs 28 % · 41 % vs 43 %"
     ],
     [
-     "20 Feb 2021",
-     "77 % of 372 (before: 78 %)"
+     "Same cell only, vs random",
+     "23 % vs 19 % · 21 % vs 10 % · 14 % vs 18 %"
     ],
     [
-     "4 Mar 2025",
-     "77 % of 47 (before: 81 %)"
+     "Reports scored",
+     "260 · 384 · 49"
     ],
     [
-     "Median depth at reports, model / reported, 2020 · 2021 · 2025",
-     "0.33 / 0.70 · 0.35 / 0.65 · 0.43 / 0.55 m"
+     "Old rule (river water counted), for comparison",
+     "72 % · 75 % · 74 %"
     ],
     [
-     "DSDA flood records per RT hit (previous test, Jakarta Satu not reachable in the re-run)",
-     "64 % of 148 · 46 % of 37 · 56 % of 130"
+     "Median depth at reports, model / reported",
+     "0.10 / 0.70 m · 0.10 / 0.65 m · 0.07 / 0.55 m"
     ],
     [
-     "Flooded area > 0.15 m, 2020: model / reported",
-     "83 / 156 km² (before: 87)"
+     "Flooded area > 0.15 m in DKI, 2020: model / reported",
+     "83 / 156 km²"
     ],
     [
-     "Drain sink on built cells (1–40 mm/h tested)",
-     "0 mm/h"
+     "Set-up",
+     "90 m, GPM IMERG, pumps off, small-drain sink 0, average soil, subsidence to the event date"
     ]
    ]
   },
@@ -155,8 +155,8 @@
    "id": "observed-depth",
    "status": "partial",
    "file": "verification/observed/scores-2020-01-01-imerg-scaled.json",
-   "id_txt": "Kedalaman: di titik laporan, genangan model lebih dangkal dari yang dilaporkan warga. Uji kepekaan dengan hujan satelit dikali 1,5 dan 2: kedalaman 2020 jadi pas pada ×1,5, tetapi luas genangan Jakarta naik ke 200 km² (laporan 156 km²); 2021 baru pas pada ×2, 2025 sudah terlalu dalam pada ×1,5. Tidak ada satu faktor yang cocok, jadi aplikasi tetap memakai hujan apa adanya.",
-   "en_txt": "Depth: at report points the modelled water is shallower than citizens reported. Sensitivity runs with satellite rain times 1.5 and 2: 2020 depths match at ×1.5, but the flooded area in Jakarta rises to 200 km² (reported 156 km²); 2021 matches only at ×2, 2025 is already too deep at ×1.5. No single factor fits, so the app keeps the rain as observed.",
+   "id_txt": "Kedalaman: di titik laporan, genangan model lebih dangkal dari yang dilaporkan warga. Uji kepekaan dengan hujan satelit dikali 1,5 dan 2: kedalaman 2020 jadi pas pada ×1,5, tetapi luas genangan Jakarta naik ke 200 km² (laporan 156 km²); 2021 baru pas pada ×2, 2025 sudah terlalu dalam pada ×1,5. Tidak ada satu faktor yang cocok, jadi aplikasi tetap memakai hujan apa adanya. (Uji kepekaan ini masih memakai aturan skor lama; arah hasilnya tetap berlaku, angkanya tidak.)",
+   "en_txt": "Depth: at report points the modelled water is shallower than citizens reported. Sensitivity runs with satellite rain times 1.5 and 2: 2020 depths match at ×1.5, but the flooded area in Jakarta rises to 200 km² (reported 156 km²); 2021 matches only at ×2, 2025 is already too deep at ×1.5. No single factor fits, so the app keeps the rain as observed. (This sensitivity test used the old scoring rule; its direction holds, its numbers do not.)",
    "metrics": [
     [
      "Median depth at reports, new pack (2020 · 2021 · 2025)",
@@ -191,29 +191,25 @@
   {
    "id": "observed-pumps-rw",
    "status": "partial",
-   "file": "verification/observed/scores-2020-01-01-imerg-v4.json",
-   "id_txt": "Pompa dan per-RW: menyalakan pompa polder Jakarta Satu (665 m³/detik) membuat model lebih kering dan menurunkan kecocokan, jadi aplikasi memulai dengan pompa mati (bisa dinyalakan). Per RW (2.610 RW, peta RW Sinking City): model menandai banjir di 26–44 % RW yang punya laporan warga atau catatan genangan resmi. Banyak RW yang ditandai model tidak punya catatan; karena catatan tidak lengkap, angka salah tanda ini adalah batas atas.",
-   "en_txt": "Pumps and RW places: switching on the Jakarta Satu polder pumps (665 m³/s) makes the model drier and lowers the agreement, so the app starts with the pumps off (they can be switched on). Per RW (2,610 RW, Sinking City RW map): the model flags flooding in 26–44 % of the RW with a citizen report or an official flood record. Many RW flagged by the model have no record; records are incomplete, so this false-alarm figure is an upper bound.",
+   "file": "verification/observed/scores-2020-01-01-imerg-v6.json",
+   "id_txt": "Pompa, tanah basah dan per-RW: menyalakan pompa polder Jakarta Satu (665 m³/detik) menurunkan skor laporan pada 2020 dan 2021 dan memperkecil luas banjir yang sudah terlalu kecil, jadi bawaannya mati (bisa dinyalakan sebagai skenario). Tanah basah (AMC III) menaikkan skor sedikit (2020: 50 → 51 %). Per RW (2.610 RW): kemampuan membedakan RW banjir dan tidak banjir lemah (AUC 0,62; 0,5 = acak).",
+   "en_txt": "Pumps, wet soil and RW places: switching on the Jakarta Satu polder pumps (665 m³/s) lowers the report score in 2020 and 2021 and shrinks a flooded area that is already too small, so they start off (available as a scenario). Wet soil (AMC III) raises the score a little (2020: 50 → 51 %). Per RW (2,610 RW): the ability to tell flooded from dry RW is weak (AUC 0.62; 0.5 = random).",
    "metrics": [
     [
      "Reports hit, pumps off / on (2020 · 2021 · 2025)",
-     "72/65 · 78/77 · 81/81 %"
+     "50 % / 43 % · 47 % / 45 % · 41 % / 41 %"
     ],
     [
-     "Flooded area 2020, pumps off / on vs reported",
-     "87 / 68 vs 156 km²"
+     "DKI flooded area, pumps off / on",
+     "83 / 67 km² · 45 / 38 km² · 77 / 64 km²"
     ],
     [
-     "RW hit rate, pumps off (2020 · 2021 · 2025)",
-     "44 · 26 · 44 %"
+     "Reports hit, soil average / wet",
+     "50 % / 51 % · 47 % / 48 % · 41 % / 41 %"
     ],
     [
-     "RW false-alarm ratio (upper bound)",
-     "82 · 86 · 91 %"
-    ],
-    [
-     "RW AUC (0.5 = chance)",
-     "0.57 · 0.61 · 0.60"
+     "RW AUC (0.5 = random), 2020 · 2025",
+     "0.62 · 0.62"
     ]
    ]
   }
