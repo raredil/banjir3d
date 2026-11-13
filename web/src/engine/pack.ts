@@ -16,6 +16,7 @@ export type Pack = {
   subEpoch: number; // decimal year the terrain was measured (subsidence is counted from here)
   h0: Float32Array | null; // initial depth (m) in carved drains; packs before 2026-11-01 do not have it
   pump: Float32Array | null; // polder pump sink (m/s) per cell; packs before 2026-11-02 do not have it
+  mdr: Float32Array | null; // micro-drain sink (m/s) per cell (pipeline/micro_drains.py); packs before 2026-11-13 do not have it
 };
 export const CHANNEL = 1, SEA = 2, DOMAIN = 4;
 /** Manning n of a mapped channel cell (river, canal, drain): the open-water value of the land-cover table (data/engine/
@@ -51,7 +52,7 @@ export function parsePack(buf: ArrayBuffer): Pack {
   return {
     header, nx, ny, dx, ox: origin[0], oy: origin[1], zone, z, n, cn: a.cn as Uint8Array, flags, built: (a.built as Uint8Array) ?? null,
     sub: (a.sub as Int16Array) ?? null, h0: a.h0 ? Float32Array.from(a.h0 as Uint16Array, (v) => v / 100) : null,
-    pump: a.pump ? Float32Array.from(a.pump as Uint16Array, (v) => v / 100 / 3.6e6) : null, subEpoch: Number((header.subsidence as { epoch?: number } | undefined)?.epoch ?? 0),
+    pump: a.pump ? Float32Array.from(a.pump as Uint16Array, (v) => v / 100 / 3.6e6) : null, mdr: a.mdr ? Float32Array.from(a.mdr as Uint16Array, (v) => v / 100 / 3.6e6) : null, subEpoch: Number((header.subsidence as { epoch?: number } | undefined)?.epoch ?? 0),
     streams: { x: a.st_x as Float32Array, y: a.st_y as Float32Array, down: a.st_down as Int32Array, area: a.st_area_km2 as Float32Array, cn: a.st_cn as Float32Array, slope: a.st_slope_pct as Float32Array, len: a.st_length_m as Float32Array },
   };
 }
@@ -75,6 +76,7 @@ export type RunGrid = {
   built: Float64Array; // built-area share 0..1 (0 where the pack has no share: no drains)
   h0: Float64Array | null; // initial depth (m), mean over the block (channel cells only in a block holding a channel)
   pump: Float64Array | null; // polder pump sink (m/s), mean over the block, so a coarse cell removes the same volume
+  mdr: Float64Array | null; // micro-drain sink (m/s), spread like the pump sink
   // dual-grid fine runs (buildDualRun): building porosity of each compute cell and the fine grid the result is shown on
   phi?: Float32Array; psiX?: Float32Array; psiY?: Float32Array; rainW?: Float32Array;
   fine?: FineGrid;
@@ -102,16 +104,16 @@ export function buildRun(p: Pack, box: number[] | null, k: number, year?: number
   const nx = Math.max(1, Math.ceil((i1 - i0) / k)), ny = Math.max(1, Math.ceil((j1 - j0) / k)), N = nx * ny;
   const z = new Float64Array(N), n = new Float64Array(N), cn = new Float64Array(N);
   const active = new Uint8Array(N), sea = new Uint8Array(N), channel = new Uint8Array(N), built = new Float64Array(N);
-  const h0 = p.h0 ? new Float64Array(N) : null, pump = p.pump ? new Float64Array(N) : null;
+  const h0 = p.h0 ? new Float64Array(N) : null, pump = p.pump ? new Float64Array(N) : null, mdr = p.mdr ? new Float64Array(N) : null;
   for (let J = 0; J < ny; J++) for (let I = 0; I < nx; I++) {
-    let cnt = 0, inDom = 0, nSea = 0, nCh = 0, zs = 0, zch = 0, ns = 0, nch = 0, cs = 0, bs = 0, hs = 0, hch = 0, ps = 0;
+    let cnt = 0, inDom = 0, nSea = 0, nCh = 0, zs = 0, zch = 0, ns = 0, nch = 0, cs = 0, bs = 0, hs = 0, hch = 0, ps = 0, ms = 0;
     for (let dj = 0; dj < k; dj++) for (let di = 0; di < k; di++) {
       const i = i0 + I * k + di, j = j0 + J * k + dj;
       if (i >= i1 || j >= j1) continue;
       const c = j * p.nx + i, f = p.flags[c];
       const zc = p.z[c] - sinkM(p, c, year);
       const hc = p.h0 ? p.h0[c] : 0;
-      cnt++; zs += zc; hs += hc; ps += p.pump ? p.pump[c] : 0; ns += p.n[c]; cs += p.cn[c]; bs += p.built ? p.built[c] / 100 : 0;
+      cnt++; zs += zc; hs += hc; ps += p.pump ? p.pump[c] : 0; ms += p.mdr ? p.mdr[c] : 0; ns += p.n[c]; cs += p.cn[c]; bs += p.built ? p.built[c] / 100 : 0;
       if (box || f & DOMAIN) inDom++;
       if (f & SEA) nSea++;
       if (f & CHANNEL) { nCh++; zch += zc; hch += hc; nch += p.n[c]; }
@@ -120,7 +122,7 @@ export function buildRun(p: Pack, box: number[] | null, k: number, year?: number
     if (!cnt) continue;
     // a block holding a mapped channel keeps the channel level and roughness so the river stays connected and conveys the
     // same discharge at coarse resolution
-    z[C] = nCh ? zch / nCh : zs / cnt; if (h0) h0[C] = nCh ? hch / nCh : hs / cnt; n[C] = nCh ? nch / nCh : ns / cnt; cn[C] = cs / cnt; built[C] = bs / cnt; if (pump) pump[C] = ps / cnt;
+    z[C] = nCh ? zch / nCh : zs / cnt; if (h0) h0[C] = nCh ? hch / nCh : hs / cnt; n[C] = nCh ? nch / nCh : ns / cnt; cn[C] = cs / cnt; built[C] = bs / cnt; if (pump) pump[C] = ps / cnt; if (mdr) mdr[C] = ms / cnt;
     active[C] = +(inDom * 2 > cnt); sea[C] = +(nSea * 2 > cnt); channel[C] = +(nCh > 0);
   }
   const dx = p.dx * k, x0 = p.ox + i0 * p.dx, y0 = p.oy - j0 * p.dx;
@@ -130,7 +132,7 @@ export function buildRun(p: Pack, box: number[] | null, k: number, year?: number
     return I >= 0 && J >= 0 && I < nx && J < ny ? J * nx + I : -1;
   };
   return {
-    nx, ny, dx, k, i0, j0, r: 1, building: null, z, n, cn, active, sea, channel, built, h0, pump,
+    nx, ny, dx, k, i0, j0, r: 1, building: null, z, n, cn, active, sea, channel, built, h0, pump, mdr,
     corners: [ll(x0, y0), ll(x0 + nx * dx, y0), ll(x0 + nx * dx, y0 - ny * dx), ll(x0, y0 - ny * dx)],
     utm: { zone: p.zone, x0, y0 },
     isIn: (x, y) => { const c = cell(x, y); return c >= 0 && active[c] === 1 && !sea[c]; },
@@ -252,7 +254,7 @@ export function buildFineRun(p: Pack, box: number[], r: number, year?: number, b
   const anyB = !!bld && bld.some((v) => v > 0); // footprints in the grid: the open ground between them gets street roughness
   const z = new Float64Array(N), n = new Float64Array(N), cn = new Float64Array(N), built = new Float64Array(N);
   const active = new Uint8Array(N), sea = new Uint8Array(N), channel = new Uint8Array(N), building = bld ? new Uint8Array(N) : null;
-  const h0 = base.h0 ? new Float64Array(N) : null, pump = base.pump ? new Float64Array(N) : null;
+  const h0 = base.h0 ? new Float64Array(N) : null, pump = base.pump ? new Float64Array(N) : null, mdr = base.mdr ? new Float64Array(N) : null;
   for (let J = 0; J < ny; J++) {
     const pj = Math.floor(J / r);
     for (let I = 0; I < nx; I++) {
@@ -268,13 +270,13 @@ export function buildFineRun(p: Pack, box: number[], r: number, year?: number, b
   // open cells sealed off by buildings (gaps narrower than the cell) are part of the block: their rain runs off to the street
   if (building) { const sp = sealedPockets(nx, ny, building, channel); for (let C = 0; C < N; C++) if (sp[C] && !sea[C]) building[C] = 1; }
   if (building) for (let C = 0; C < N; C++) if (building[C]) z[C] += BUILDING_RAISE_M;
-  // pump sink: the same volume per pack cell, spread over its cells that are not buildings
-  if (pump) for (let P = 0; P < pnx * pny; P++) {
-    if (!base.pump![P]) continue;
+  // pump and micro-drain sinks: the same volume per pack cell, spread over its cells that are not buildings
+  for (const [out, src] of [[pump, base.pump], [mdr, base.mdr]] as const) if (out && src) for (let P = 0; P < pnx * pny; P++) {
+    if (!src[P]) continue;
     const pi = P % pnx, pj = (P - pi) / pnx;
     let free = 0;
     for (let dj = 0; dj < r; dj++) for (let di = 0; di < r; di++) if (!building?.[(pj * r + dj) * nx + pi * r + di]) free++;
-    if (free) for (let dj = 0; dj < r; dj++) for (let di = 0; di < r; di++) { const C = (pj * r + dj) * nx + pi * r + di; if (!building?.[C]) pump[C] = (base.pump![P] * r * r) / free; }
+    if (free) for (let dj = 0; dj < r; dj++) for (let di = 0; di < r; di++) { const C = (pj * r + dj) * nx + pi * r + di; if (!building?.[C]) out[C] = (src[P] * r * r) / free; }
   }
   const x0 = base.utm.x0, y0 = base.utm.y0;
   const cell = (x: number, y: number) => {
@@ -282,7 +284,7 @@ export function buildFineRun(p: Pack, box: number[], r: number, year?: number, b
     return I >= 0 && J >= 0 && I < nx && J < ny ? J * nx + I : -1;
   };
   return {
-    nx, ny, dx, k: 1, i0, j0, r, building, z, n, cn, active, sea, channel, built, h0, pump, corners: base.corners, utm: { zone: p.zone, x0, y0 },
+    nx, ny, dx, k: 1, i0, j0, r, building, z, n, cn, active, sea, channel, built, h0, pump, mdr, corners: base.corners, utm: { zone: p.zone, x0, y0 },
     // drawn on its own cells (s = 1) with the fine-cell ground rule: building blocks are holes, not raised ground blended into the streets
     fine: { r, s: 1, nx, ny, dx, building: building ?? new Uint8Array(N), base: { nx: pnx, ny: pny, z: Float32Array.from(base.z), channel: base.channel } },
     isIn: (x, y) => { const c = cell(x, y); return c >= 0 && active[c] === 1 && !sea[c]; },
@@ -320,7 +322,7 @@ export function buildDualRun(p: Pack, box: number[], r: number, rc: number, year
   if (bld.length !== nfx * nfy) throw new Error("building mask size does not match the run grid");
   const z = new Float64Array(N), n = new Float64Array(N), cn = new Float64Array(N), built = new Float64Array(N);
   const active = new Uint8Array(N), sea = new Uint8Array(N), channel = new Uint8Array(N);
-  const h0 = base.h0 ? new Float64Array(N) : null, pump = base.pump ? new Float64Array(N) : null;
+  const h0 = base.h0 ? new Float64Array(N) : null, pump = base.pump ? new Float64Array(N) : null, mdr = base.mdr ? new Float64Array(N) : null;
   const phi = new Float32Array(N), psiX = new Float32Array(N), psiY = new Float32Array(N), rainW = new Float32Array(N).fill(1);
   const building = new Uint8Array(nfx * nfy), anyB = bld.some((v) => v > 0); // no footprints (not loaded): the 30 m roughness stays
   const bz = Float32Array.from(base.z), bch = base.channel;
@@ -360,13 +362,13 @@ export function buildDualRun(p: Pack, box: number[], r: number, rc: number, year
     if (Ic < nx - 1) psiX[C] = harm((k) => colOpen[Jc * nfx + Ic * s + h2 + k]);
     if (Jc < ny - 1) psiY[C] = harm((k) => rowOpen[Ic * nfy + Jc * s + h2 + k]);
   }
-  // pump sink: the same volume per 30 m cell, on the open ground of its compute cells
-  if (pump) for (let P = 0; P < pnx * pny; P++) {
-    if (!base.pump![P]) continue;
+  // pump and micro-drain sinks: the same volume per 30 m cell, on the open ground of its compute cells
+  for (const [out, src] of [[pump, base.pump], [mdr, base.mdr]] as const) if (out && src) for (let P = 0; P < pnx * pny; P++) {
+    if (!src[P]) continue;
     const pi = P % pnx, pj = (P - pi) / pnx;
     let open = 0;
     for (let dj = 0; dj < rc; dj++) for (let di = 0; di < rc; di++) open += phi[(pj * rc + dj) * nx + pi * rc + di];
-    if (open > 0) for (let dj = 0; dj < rc; dj++) for (let di = 0; di < rc; di++) pump[(pj * rc + dj) * nx + pi * rc + di] = (base.pump![P] * rc * rc) / open;
+    if (open > 0) for (let dj = 0; dj < rc; dj++) for (let di = 0; di < rc; di++) out[(pj * rc + dj) * nx + pi * rc + di] = (src[P] * rc * rc) / open;
   }
   // roof rain of cells that are almost all roof goes to the nearest ring (up to 3 cells) of cells with open ground
   const recv = (c: number) => active[c] === 1 && !sea[c] && phi[c] >= PHI_DONOR;
@@ -394,7 +396,7 @@ export function buildDualRun(p: Pack, box: number[], r: number, rc: number, year
     return I >= 0 && J >= 0 && I < nx && J < ny ? J * nx + I : -1;
   };
   return {
-    nx, ny, dx, k: 1, i0, j0, r: rc, building: null, z, n, cn, active, sea, channel, built, h0, pump, phi, psiX, psiY, rainW,
+    nx, ny, dx, k: 1, i0, j0, r: rc, building: null, z, n, cn, active, sea, channel, built, h0, pump, mdr, phi, psiX, psiY, rainW,
     fine: { r, s, nx: nfx, ny: nfy, dx: p.dx / r, building, base: { nx: pnx, ny: pny, z: bz, channel: bch } },
     corners: base.corners, utm: { zone: p.zone, x0, y0 },
     isIn: (x, y) => { const c = cell(x, y); return c >= 0 && active[c] === 1 && !sea[c]; },

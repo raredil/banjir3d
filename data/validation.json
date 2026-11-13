@@ -212,6 +212,31 @@
      "0.62 · 0.62"
     ]
    ]
+  },
+  {
+   "id": "observed-micro-drains",
+   "status": "partial",
+   "file": "verification/observed/scores-2021-02-20-imerg-micro.json",
+   "id_txt": "Saluran mikro Jakarta Selatan (data ukuran DSDA, 8.551 ruas): dinyalakan, model di Jakarta Selatan menjadi jauh lebih kering. Pada banjir 2021 (119 laporan warga di daerah yang dilayani) laporan yang terkena turun dari 50 % ke 28 % (titik acak 27 % → 10 %), dan kedalaman model di titik laporan turun dari 0,11 m ke hampir 0 m, padahal warga melaporkan sekitar 0,9 m. Jadi bawaannya mati, seperti pompa. Penyebab utama: hujan satelit IMERG lebih rendah dari hujan sebenarnya, dan saluran dihitung bekerja penuh (tidak tersumbat, tidak tertahan air sungai). 2020 (21 laporan) dan 2025 (3 laporan) terlalu sedikit untuk disimpulkan.",
+   "en_txt": "South Jakarta micro drains (DSDA size records, 8,551 sections): switched on, the model in South Jakarta becomes much drier. In the 2021 flood (119 citizen reports in the served area) the share of reports hit fell from 50 % to 28 % (random points 27 % → 10 %), and the model depth at the reports fell from 0.11 m to almost 0 m against about 0.9 m reported. So they start off, like the pumps. Main causes: IMERG satellite rain is lower than the real rain, and the drains are counted at full capacity (no blockage, no backwater from rivers). 2020 (21 reports) and 2025 (3 reports) are too few to conclude.",
+   "metrics": [
+    [
+     "Reports hit in the served area, micro off / on (2020 · 2021 · 2025)",
+     "33 % / 14 % · 50 % / 28 % · 1 of 3 / 0 of 3"
+    ],
+    [
+     "Random points in the served area, off / on",
+     "39 % / 17 % · 27 % / 10 % · 37 % / 17 %"
+    ],
+    [
+     "Flooded served land (> 0.15 m), off / on",
+     "12.1 / 4.5 km² · 6.5 / 2.2 km² · 11.0 / 4.2 km²"
+    ],
+    [
+     "Reports hit, all DKI, off / on",
+     "50 % / 48 % · 47 % / 40 % · 41 % / 39 %"
+    ]
+   ]
   }
  ]
 }

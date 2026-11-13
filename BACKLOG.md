@@ -33,4 +33,6 @@
 | River bed depth (no open bathymetry): candidate = bankfull depth from catchment area by hydraulic geometry (e.g. Andreadis et al. 2013 width database, Leopold and Maddock 1953 form), applied below the DEM water surface as filled storage + conveyance; must be re-validated on the 3 floods before use | 4 |
 | Built-area curve number 98 assumes 100 % sealed built pixels (TR-55 urban districts 85–95 % sealed): sensitivity run with a residential composite CN on the 3 floods | 4 |
 | Gauge rain: hourly BMKG/ DSDA rain gauges for the 3 floods (IMERG 0.1° smooths peaks; Halim 377 vs 166 mm) to separate rain error from drain/pump error | 4 |
+| FathomDEM (Uhe et al. 2025, 30 m, CC BY-NC-SA, Zenodo 14523356, files on request): owner requests access; then terrain probe vs FABDEM/DEMNAS and the 3-flood scores (research/2026-11-13-open-terrain-rain-soil.md) | owner + 4 |
+| Micro drains for the other kota (same DSDA layer with LEBAR/KEDALAMAN) and as river inflow instead of a sink | owner + 3 |
 | LiDAR 2012 DKI (used in studies, not open): use only if the owner obtains a file with permission; shift by subsidence since 2012 | owner |

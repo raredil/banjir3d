@@ -15,5 +15,7 @@
  "result": "every value above 0 lowered the share of reports hit and the flooded area fell below the reported 156 km2; 0 is used",
  "caveat": "IMERG averages rain over 0.1 degree cells (166 mm at the Halim cell vs 377 mm at the gauge): missing drains and smoothed rain can offset each other, one event cannot separate them",
  "pumps_default": false,
+ "micro_default": false,
+ "micro_note": "Validation 2026-11-13 (scores-*-imerg-micro.json, pack e13, pumps off): micro drains on lowered the share of reports hit in the served area (2021, 119 reports: 50 -> 28 %; 2020, 21 reports: 33 -> 14 %) and the flooded served land to about a third; model depth at reports 0.11 -> 0.00 m vs 0.92 m reported. Off by default, offered as a full-capacity scenario.",
  "pumps_note": "Validation 2026-11-01 (scores-*-imerg-v4.json): polder pumps on lowered the share of reports hit (2020: 72 -> 65 %, 2021: 78 -> 77 %, 2025: 81 -> 81 %) and the flooded area further below the reported one (2020: 87 -> 68 km2 vs 156 reported); the app starts with the pumps off and offers them as a switch."
 }

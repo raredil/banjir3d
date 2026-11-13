@@ -30,16 +30,23 @@ const dsdaFacts = (p: Pack): { dsdaDrains?: number } => {
   const r = (p.header.drains as { records?: Record<string, number> } | undefined)?.records;
   const n = r ? (r.drain_primary_line ?? 0) + (r.drain_secondary_line ?? 0) : 0;
   return n ? { dsdaDrains: n } : {};
+};
+// micro-drain summary from the pack header (pipeline/micro_drains.py), for the conclusion text
+const microFacts = (p: Pack): { drains?: number; mmH?: number } => {
+  const m = p.header.micro_drains as { drains_with_size?: number; rate_mm_h_area_mean?: number } | undefined;
+  return m ? { drains: m.drains_with_size, mmH: m.rate_mm_h_area_mean } : {};
 }; // flooded = deeper than the lower bound of the second depth class (BLUEPRINT §8)
 // city-drain sink (m/s) per cell: calibrated capacity x built share, none on channels and sea; plus the polder pumps (Jakarta Satu
-// capacities spread over each polder, engine_pack.pump_rates) when switched on; undefined when there is no sink at all
-const drainOf = (run: RunGrid, pumps: boolean, drainMmH: number): Float64Array | undefined => {
-  const usePump = pumps && !!run.pump;
-  if (!(drainMmH > 0) && !usePump) return undefined;
+// capacities spread over each polder, engine_pack.pump_rates) and the micro drains with recorded sizes (pipeline/micro_drains.py)
+// when switched on; undefined when there is no sink at all
+const drainOf = (run: RunGrid, pumps: boolean, drainMmH: number, micro = false): Float64Array | undefined => {
+  const usePump = pumps && !!run.pump, useMdr = micro && !!run.mdr;
+  if (!(drainMmH > 0) && !usePump && !useMdr) return undefined;
   const d = new Float64Array(run.nx * run.ny);
   for (let c = 0; c < d.length; c++) {
     if (!run.channel[c] && !run.sea[c]) d[c] = (drainMmH / 3.6e6) * run.built[c];
     if (usePump && !run.sea[c]) d[c] += run.pump![c];
+    if (useMdr && !run.channel[c] && !run.sea[c]) d[c] += run.mdr![c];
   }
   return d;
 };
@@ -82,7 +89,7 @@ export function mountSim(page: MapPage, o: { packUrl: string; regionBbox: number
     <div class="sec comp"><h3>${t("comp.title")} ${q("comp.title")}</h3>${tip("comp.title")}
       ${chk("s-up", "sim.up", true, "ok")}${chk("s-infil", "comp.infil", true, "ok")}
       <div class="field"><div class="lbl"><span>${t("comp.amc")} ${q("comp.amc")}</span></div><select id="s-amc"><option value="2">${t("comp.amc.2")}</option><option value="1">${t("comp.amc.1")}</option><option value="3">${t("comp.amc.3")}</option></select>${tip("comp.amc")}</div>
-      ${chk("s-sub", "comp.sub", true, "ok")}${chk("s-pumps", "sim.pumps", !!calibration.pumps_default, "sc")}
+      ${chk("s-sub", "comp.sub", true, "ok")}${chk("s-pumps", "sim.pumps", !!calibration.pumps_default, "sc")}${chk("s-mdr", "comp.mdr", !!calibration.micro_default, "sc")}
       ${sl("s-drain", "comp.drain", 0, 40, 1, calibration.drain_mm_h, "mm/h")}${sl("s-sea", "sim.sea", 0, 1.5, 0.1, 0, "m")}
       <p class="help comp-note"><b>${t("comp.fixed")}</b> ${t("comp.fixed.t")}</p><p class="help comp-note"><b>${t("comp.na")}</b> ${t("comp.na.t")}</p>
     </div>
@@ -118,7 +125,7 @@ export function mountSim(page: MapPage, o: { packUrl: string; regionBbox: number
   const amcOf = () => Number($<HTMLSelectElement>("s-amc").value) as 1 | 2 | 3;
   const infilOn = () => $<HTMLInputElement>("s-infil").checked, subOn = () => $<HTMLInputElement>("s-sub").checked;
   const mode = () => $<HTMLSelectElement>("s-mode").value;
-  const pumpsOn = () => $<HTMLInputElement>("s-pumps").checked;
+  const pumpsOn = () => $<HTMLInputElement>("s-pumps").checked, mdrOn = () => $<HTMLInputElement>("s-mdr").checked;
   let evShown = "";
   const summarizeEvent = async () => {
     const id = $<HTMLSelectElement>("s-event").value, ev = await loadEvent(id);
@@ -243,6 +250,7 @@ export function mountSim(page: MapPage, o: { packUrl: string; regionBbox: number
   const ensurePack = async () => {
     pack ??= await loadPack(o.packUrl);
     $("s-pumps-row").hidden = !pack.pump; // packs before the pump sink have no switch to offer
+    $("s-mdr-row").hidden = !pack.mdr;
     $("s-sub-row").hidden = !pack.sub;
     return pack;
   };
@@ -489,7 +497,7 @@ export function mountSim(page: MapPage, o: { packUrl: string; regionBbox: number
     const box2 = (r.scenario.area as { box?: number[] }).box ?? null, [wKm, hKm] = box2 ? kmOf(box2) : [0, 0];
     const facts: Facts = {
       area: { box: box2, wKm, hKm }, landKm2: land * a, cellM: g.fine ? g.fine.dx : g.dx, ...(r.scenario.fineCells ? { fine: { buildingShare: (r.scenario.fineCells as { buildings?: { share?: number } } | undefined)?.buildings?.share ?? null, ...(g.fine && g.fine.s > 1 ? { computeM: g.dx } : {}), ...(g.fine?.drawOnly ? { drawOnly: true } : {}) } } : {}), hours: r.scenario.hours as number, gpu: !!r.gpu, landcoverYear: pack.header.landcover_year, ...(r.scenario.terrainYear ? { terrainYear: r.scenario.terrainYear as number, subEpoch: r.scenario.terrainEpoch as number } : {}),
-      drainMmH: num("s-drain"), comp: { infiltration: r.scenario.components ? (r.scenario.components as { infiltration: boolean }).infiltration : true, amc: amcOf(), subsidence: subOn() }, ...dsdaFacts(pack), ...(r.scenario.polderPumps ? { pumpsM3s: r.scenario.pumpM3s as number, pumpPolders: (pack.header.pumps as { polders_served?: number } | undefined)?.polders_served } : r.run.pump ? { pumpsOff: true } : {}), seaM: r.scenario.seaLevel as number, floodM: FLOOD_M, rain,
+      drainMmH: num("s-drain"), comp: { infiltration: r.scenario.components ? (r.scenario.components as { infiltration: boolean }).infiltration : true, amc: amcOf(), subsidence: subOn() }, ...dsdaFacts(pack), ...(r.scenario.polderPumps ? { pumpsM3s: r.scenario.pumpM3s as number, pumpPolders: (pack.header.pumps as { polders_served?: number } | undefined)?.polders_served } : r.run.pump ? { pumpsOff: true } : {}), ...(r.scenario.microDrainM3s !== undefined ? { micro: { m3s: r.scenario.microDrainM3s as number, ...microFacts(pack) } } : r.run.mdr && r.run.mdr.some((v) => v > 0) ? { microOff: true } : {}), seaM: r.scenario.seaLevel as number, floodM: FLOOD_M, rain,
       upstream: r.inflows.length ? { n: r.inflows.length, peakM3s: peakInflow(), areaKm2: r.inflows.reduce((s2, f) => s2 + f.areaKm2, 0) } : null,
       env: { km2: wet * a, classesKm2: cls.map((v) => v * a), meanDepth: wet ? sum / wet : 0, maxDepth: dMax, deepest },
       peak: { km2: r.area[pk] ?? 0, tSec: r.times[pk] ?? 0 }, endKm2: r.area[r.area.length - 1] ?? 0, massError: r.mass ?? 0,
@@ -595,9 +603,10 @@ export function mountSim(page: MapPage, o: { packUrl: string; regionBbox: number
     const grid: Grid = { nx: run.nx, ny: run.ny, dx: run.dx, zone: run.utm.zone, x0: run.utm.x0, y0: run.utm.y0, z: Float32Array.from(run.z), mask, channel: run.channel, fine: run.fine };
     const scenario = {
       area: area === "box" ? { box: bbox } : "region", rainMode: mode(), ...(mode() === "design" ? { designTotalMm: num("s-r24"), designHours: num("s-dur") } : {}),
-      components: { upstream: up, infiltration: infilOn(), soilWetness: ["dry (AMC I)", "average (AMC II)", "wet (AMC III)"][amc - 1], subsidence: subOn() && !!p.sub, polderPumps: !!run.pump && pumpsOn(), extraDrainMmH: num("s-drain") }, rainMm: +totalMm(hy).toFixed(1), rainHours: (hy.mm.length * hy.blockSeconds) / 3600, upstreamRain: up, seaLevel: num("s-sea"), hours, cellM: run.fine ? run.fine.dx : run.dx,
+      components: { upstream: up, infiltration: infilOn(), soilWetness: ["dry (AMC I)", "average (AMC II)", "wet (AMC III)"][amc - 1], subsidence: subOn() && !!p.sub, polderPumps: !!run.pump && pumpsOn(), microDrains: !!run.mdr && mdrOn(), extraDrainMmH: num("s-drain") }, rainMm: +totalMm(hy).toFixed(1), rainHours: (hy.mm.length * hy.blockSeconds) / 3600, upstreamRain: up, seaLevel: num("s-sea"), hours, cellM: run.fine ? run.fine.dx : run.dx,
       ...(p.sub && tYear ? { terrainYear: +tYear.toFixed(2), terrainEpoch: p.subEpoch } : {}),
       ...(r > 1 ? { fineCells: { cellM: 30 / r, computeM: run.dx, terrain: "bilinear from the 30 m pack (no new terrain detail)", flow: run.fine?.drawOnly ? "the 30 m run (same numbers as 30 m); fine cells only draw its water surface as a smooth sheet, no building cut-outs (ADR 0018, 0019)" : "trial: flow solved among the buildings (ADR 0015/0016), not validated", buildings: bldInfo ? { method: run.fine?.drawOnly ? "footprints drawn dry on the fine cells (water surface of the 30 m run)" : run.phi ? "building porosity on the compute grid, result drawn on the fine cells (dual grid: Sanders et al. 2008; Sanders and Schubert 2019)" : "building block +10 m (Schubert and Sanders 2012)", source: "Overture Maps buildings, region pack tiles z14", cells: bldInfo.cells, share: +bldInfo.share.toFixed(3) } : "not loaded" } } : {}),
+      ...(run.mdr && mdrOn() ? { microDrainM3s: +(run.mdr.reduce((a, v, c) => a + (run.sea[c] || run.channel[c] ? 0 : v * (run.phi ? run.phi[c] : 1)), 0) * run.dx * run.dx).toFixed(1) } : {}),
       ...(run.pump ? { polderPumps: pumpsOn(), pumpM3s: Math.round(run.pump.reduce((a, v, c) => a + (run.sea[c] ? 0 : v * (run.phi ? run.phi[c] : 1)), 0) * run.dx * run.dx) } : {}),
       ...(ev ? { event: ev.id, eventStartUtc: ev.start_utc, rainSource: ev.source, rainPoints: ev.mm.length } : {}),
     };
@@ -660,7 +669,7 @@ export function mountSim(page: MapPage, o: { packUrl: string; regionBbox: number
     const inCells: number[] = [], inQ: Float64Array[] = [];
     for (const f of inflows) { const sp = inflowSpread(run, f.cell); sp.cells.forEach((c, m) => { inCells.push(c); inQ.push(sp.w[m] === 1 ? f.q : f.q.map((v) => v * sp.w[m])); }); }
     const msg: RunMsg = {
-      type: "run", grid: { nx: run.nx, ny: run.ny, dx: run.dx, z: run.z, n: run.n, cn: infilOn() ? run.cn : undefined, active: run.active, sea: run.sea, drain: drainOf(run, pumpsOn(), num("s-drain")), zone, ...(run.h0 ? { h0: run.h0 } : {}), ...(run.phi ? { phi: run.phi, psiX: run.psiX, psiY: run.psiY, rainW: run.rainW } : {}) }, zoneMm: ev?.mm, seaLevel: num("s-sea"), hours, rain: hy, frameS,
+      type: "run", grid: { nx: run.nx, ny: run.ny, dx: run.dx, z: run.z, n: run.n, cn: infilOn() ? run.cn : undefined, active: run.active, sea: run.sea, drain: drainOf(run, pumpsOn(), num("s-drain"), mdrOn()), zone, ...(run.h0 ? { h0: run.h0 } : {}), ...(run.phi ? { phi: run.phi, psiX: run.psiX, psiY: run.psiY, rainW: run.rainW } : {}) }, zoneMm: ev?.mm, seaLevel: num("s-sea"), hours, rain: hy, frameS,
       inflowCells: inCells, inflowQ: inQ, inflowDt: DT_S, floodM: FLOOD_M, count, preferGpu: gpuAvailable,
     };
     worker.postMessage(msg);

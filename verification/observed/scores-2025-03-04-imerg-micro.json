@@ -1,0 +1,255 @@
+{
+ "event": "2025-03-04",
+ "source": "PetaBencana.id flood reports and flooded-area archive (aggregate scores only)",
+ "reported": {
+  "_about": "Impact the city reported; figures are used only after reported_excerpts.json (fetched by the Action) shows them in the page text.",
+  "pages": [
+   "https://kabar24.bisnis.com/read/20250304/15/1845118/bpbd-jakarta-117-rt-masih-terendam-banjir-hingga-selasa-malam",
+   "https://www.akurat.co/megapolitan/1305720822/banjir-di-jakarta-meluas-121-rt-dan-lima-ruas-jalan-tergenang"
+  ],
+  "flooded_km2": null,
+  "flooded_rw": null,
+  "status": "checked in page text 2026-10-30: 121 RT and 5 roads at 15:00 WIB 4 Mar 2025 (BPBD via akurat.co); no area figure",
+  "flooded_rt": 121
+ },
+ "n_flooded_area_records": 5,
+ "rw_shapes": 0,
+ "results": [
+  {
+   "run": "2025-03-04_imerg_k3_d0_poff_mdr",
+   "drain_mm_h": 0,
+   "rain": "rain_imerg.json",
+   "rain_scale": 1,
+   "terrain_year": 2025.1663242009133,
+   "pumps": false,
+   "pump_m3s": 664.8,
+   "amc": 2,
+   "infiltration": true,
+   "mean_rain_mm": 99.08576445454118,
+   "flooded_km2": 265.2021,
+   "mass_error": -8.577660698373857e-16,
+   "reports": {
+    "n_reports": 49,
+    "rule": "hit = model max depth >= 0.1 m on land (channels and sea excluded)",
+    "cell": {
+     "hit_rate": 0.14285714285714285,
+     "random_hit_rate": 0.165640250987683,
+     "skill": -0.02730609686949775
+    },
+    "window_3x3_land": {
+     "hit_rate": 0.3877551020408163,
+     "random_hit_rate": 0.3785440390425285,
+     "skill": 0.014821746957091592
+    },
+    "legacy_window_with_channels": {
+     "hit_rate": 0.7346938775510204
+    },
+    "hit_rate": 0.3877551020408163,
+    "n_with_depth": 47,
+    "observed_median_m": 0.55,
+    "model_median_m": 0.06297564506530762,
+    "model_median_cell_m": 0.018303055316209793,
+    "depth_bias_m": -0.4994015553383592,
+    "depth_mae_m": 0.6679162831743188,
+    "depth_rmse_m": 0.8348040616518961,
+    "depth_note": "model depth = window_3x3_land value"
+   },
+   "micro": true,
+   "reports_micro_area": {
+    "n_reports": 3,
+    "rule": "hit = model max depth >= 0.1 m on land (channels and sea excluded)",
+    "cell": {
+     "hit_rate": 0.0,
+     "random_hit_rate": 0.04843383469021664,
+     "skill": -0.05089907192575406
+    },
+    "window_3x3_land": {
+     "hit_rate": 0.0,
+     "random_hit_rate": 0.17158824341106665,
+     "skill": -0.20712917464812194
+    },
+    "legacy_window_with_channels": {
+     "hit_rate": 1.0
+    },
+    "hit_rate": 0.0,
+    "n_with_depth": 3,
+    "observed_median_m": 1.13,
+    "model_median_m": 0.05273979902267456,
+    "model_median_cell_m": 0.0,
+    "depth_bias_m": -0.96808787326018,
+    "depth_mae_m": 0.96808787326018,
+    "depth_rmse_m": 1.0631661455292782,
+    "depth_note": "model depth = window_3x3_land value"
+   },
+   "micro_area_flooded_km2": 4.24,
+   "dki_flooded_km2": 69.5385,
+   "dki_land_km2": 557.6688,
+   "genangan_dsda": {
+    "source": "Jakarta Satu, Dinas SDA DKI, layer Genangan (aggregates only)",
+    "window_utc": [
+     "2025-03-01 17:00:00+00:00",
+     "2025-03-06 05:00:00+00:00"
+    ],
+    "n_polygons": 130,
+    "hit_rate": 0.5769230769230769,
+    "median_model_depth_m": 0.1704205572605133,
+    "n_with_depth": 128,
+    "median_observed_depth_m": 0.6,
+    "median_model_depth_at_observed_m": 0.16763895750045776,
+    "mean_error_m": -0.5002796079404652,
+    "share_model_ge_half_observed": 0.3515625
+   },
+   "rw_places": {
+    "source": "RW polygons: Shabrina et al. (2026), Zenodo 19456870, CC BY 4.0",
+    "n_rw": 2610,
+    "rw_share_threshold": 0.1,
+    "note": "RW without a record = not recorded (reports are incomplete): false_alarm_ratio is an upper bound",
+    "reports_or_dsda": {
+     "n_observed": 173,
+     "n_model": 684,
+     "hits": 66,
+     "hit_rate": 0.3815028901734104,
+     "false_alarm_ratio": 0.9035087719298246,
+     "csi": 0.08343868520859671,
+     "auc": 0.6048538784300797
+    },
+    "reports": {
+     "n_observed": 13,
+     "n_model": 684,
+     "hits": 6,
+     "hit_rate": 0.46153846153846156,
+     "false_alarm_ratio": 0.9912280701754386,
+     "csi": 0.008683068017366137,
+     "auc": 0.6510618761292616
+    },
+    "dsda": {
+     "n_observed": 169,
+     "n_model": 684,
+     "hits": 65,
+     "hit_rate": 0.38461538461538464,
+     "false_alarm_ratio": 0.9049707602339181,
+     "csi": 0.08248730964467005,
+     "auc": 0.6072797306371188
+    }
+   }
+  },
+  {
+   "run": "2025-03-04_imerg_k3_d0_poff",
+   "drain_mm_h": 0,
+   "rain": "rain_imerg.json",
+   "rain_scale": 1,
+   "terrain_year": 2025.1663242009133,
+   "pumps": false,
+   "pump_m3s": 664.8,
+   "amc": 2,
+   "infiltration": true,
+   "mean_rain_mm": 99.08576445454118,
+   "flooded_km2": 273.0672,
+   "mass_error": 6.776607083556347e-15,
+   "reports": {
+    "n_reports": 49,
+    "rule": "hit = model max depth >= 0.1 m on land (channels and sea excluded)",
+    "cell": {
+     "hit_rate": 0.14285714285714285,
+     "random_hit_rate": 0.18455147571461772,
+     "skill": -0.051130551611475006
+    },
+    "window_3x3_land": {
+     "hit_rate": 0.40816326530612246,
+     "random_hit_rate": 0.42563327910759935,
+     "skill": -0.030416131655980203
+    },
+    "legacy_window_with_channels": {
+     "hit_rate": 0.7346938775510204
+    },
+    "hit_rate": 0.40816326530612246,
+    "n_with_depth": 47,
+    "observed_median_m": 0.55,
+    "model_median_m": 0.06858662515878677,
+    "model_median_cell_m": 0.018301991745829582,
+    "depth_bias_m": -0.4967709054310429,
+    "depth_mae_m": 0.6654296748661138,
+    "depth_rmse_m": 0.8329484721418305,
+    "depth_note": "model depth = window_3x3_land value"
+   },
+   "micro": false,
+   "reports_micro_area": {
+    "n_reports": 3,
+    "rule": "hit = model max depth >= 0.1 m on land (channels and sea excluded)",
+    "cell": {
+     "hit_rate": 0.0,
+     "random_hit_rate": 0.12729405271146682,
+     "skill": -0.14586133291169262
+    },
+    "window_3x3_land": {
+     "hit_rate": 0.3333333333333333,
+     "random_hit_rate": 0.37429281081826965,
+     "skill": -0.06546109457125011
+    },
+    "legacy_window_with_channels": {
+     "hit_rate": 1.0
+    },
+    "hit_rate": 0.3333333333333333,
+    "n_with_depth": 3,
+    "observed_median_m": 1.13,
+    "model_median_m": 0.06858662515878677,
+    "model_median_cell_m": 0.0,
+    "depth_bias_m": -0.9451109858478107,
+    "depth_mae_m": 0.9451109858478107,
+    "depth_rmse_m": 1.0504210928840532,
+    "depth_note": "model depth = window_3x3_land value"
+   },
+   "micro_area_flooded_km2": 10.98,
+   "dki_flooded_km2": 77.3712,
+   "dki_land_km2": 557.6688,
+   "genangan_dsda": {
+    "source": "Jakarta Satu, Dinas SDA DKI, layer Genangan (aggregates only)",
+    "window_utc": [
+     "2025-03-01 17:00:00+00:00",
+     "2025-03-06 05:00:00+00:00"
+    ],
+    "n_polygons": 130,
+    "hit_rate": 0.6,
+    "median_model_depth_m": 0.18634101748466492,
+    "n_with_depth": 128,
+    "median_observed_depth_m": 0.6,
+    "median_model_depth_at_observed_m": 0.1766892671585083,
+    "mean_error_m": -0.4881127974274568,
+    "share_model_ge_half_observed": 0.3515625
+   },
+   "rw_places": {
+    "source": "RW polygons: Shabrina et al. (2026), Zenodo 19456870, CC BY 4.0",
+    "n_rw": 2610,
+    "rw_share_threshold": 0.1,
+    "note": "RW without a record = not recorded (reports are incomplete): false_alarm_ratio is an upper bound",
+    "reports_or_dsda": {
+     "n_observed": 173,
+     "n_model": 807,
+     "hits": 77,
+     "hit_rate": 0.44508670520231214,
+     "false_alarm_ratio": 0.9045848822800495,
+     "csi": 0.08527131782945736,
+     "auc": 0.6063244631772695
+    },
+    "reports": {
+     "n_observed": 13,
+     "n_model": 807,
+     "hits": 6,
+     "hit_rate": 0.46153846153846156,
+     "false_alarm_ratio": 0.9925650557620818,
+     "csi": 0.007371007371007371,
+     "auc": 0.6191019223364237
+    },
+    "dsda": {
+     "n_observed": 169,
+     "n_model": 807,
+     "hits": 76,
+     "hit_rate": 0.44970414201183434,
+     "false_alarm_ratio": 0.9058240396530359,
+     "csi": 0.08444444444444445,
+     "auc": 0.6098213701339784
+    }
+   }
+  }
+ ]
+}

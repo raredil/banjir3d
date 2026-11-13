@@ -431,7 +431,7 @@ def subsidence(path: Path | None, units: str, epoch: float, tr, crs, shape) -> t
 
 
 def build(pack: Path, out: Path, region: str, soil: str, terrain_src: str = "fabdem", sub_path: Path | None = None,
-          sub_units: str = "mm/yr", sub_epoch: float = 2013.0, drains: Path | None = None) -> dict:
+          sub_units: str = "mm/yr", sub_epoch: float = 2013.0, drains: Path | None = None, micro: Path | None = None) -> dict:
     t0 = time.time()
     out.mkdir(parents=True, exist_ok=True)
     years = sorted(int(p.stem.split("_")[-1]) for p in pack.glob("lulc_io_*.tif") if p.stem.split("_")[-1].isdigit())
@@ -464,6 +464,10 @@ def build(pack: Path, out: Path, region: str, soil: str, terrain_src: str = "fab
     # built area, n 0.15, when the river is narrower than the 10 m land-cover pixels); the web app does the same for older packs
     n = np.where(chan, PARAMS["classes"]["1"]["n"], n)
     pump, pump_info = pump_rates(chan, sea, tr, drains)
+    mdr, mdr_info = None, {}
+    if micro is not None:  # micro drains with width/depth (owner file, pipeline/micro_drains.py): sink per cell
+        from micro_drains import sink as micro_sink
+        mdr, mdr_info = micro_sink(json.loads(micro.read_text()), zc, chan, sea, (tr.c, tr.f), tr.a)
     # Stream network: GLO-90 D8 cells with at least STREAM_KM2 upstream, with their downstream cell (index into the same list).
     acc_km2 = up["area_km2"]
     Hs, Ws = acc_km2.shape
@@ -498,21 +502,25 @@ def build(pack: Path, out: Path, region: str, soil: str, terrain_src: str = "fab
         arrays.append(("h0", "uint16", np.clip(np.round(np.where(sea, 0, h0) * 100), 0, 65535).astype(np.uint16)))
     if pump is not None:
         arrays.append(("pump", "uint16", np.clip(np.round(pump * 3.6e6 * 100), 0, 65535).astype(np.uint16)))
+    if mdr is not None:
+        arrays.append(("mdr", "uint16", np.clip(np.round(mdr * 3.6e6 * 100), 0, 65535).astype(np.uint16)))
     inputs = {p: sha256(pack / p) for p in ["dem_fabdem.tif", f"lulc_io_{io_year}.tif", "water_osm.gpkg"]}
     if terrain_src != "fabdem":
         inputs[terrain_info["file"]] = sha256(pack / terrain_info["file"])
     if sub_path is not None:
         inputs[sub_path.name] = sha256(sub_path)
+    if micro is not None:
+        inputs[micro.name] = sha256(micro)
     lon_lat = lambda x, y: [round(v, 7) for v in rasterio.warp.transform(crs, "EPSG:4326", [x], [y])[0] + rasterio.warp.transform(crs, "EPSG:4326", [x], [y])[1]]
     W_, H_ = shape[1], shape[0]
     corners = [lon_lat(tr.c, tr.f), lon_lat(tr.c + W_ * tr.a, tr.f), lon_lat(tr.c + W_ * tr.a, tr.f + H_ * tr.e), lon_lat(tr.c, tr.f + H_ * tr.e)]
     header = {
         "type": "banjir3d-engine-pack", "version": 1, "region": region, "created": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
         "grid": {"crs": str(crs), "nx": W_, "ny": H_, "dx": tr.a, "dy": -tr.e, "origin": [tr.c, tr.f], "corners_lonlat": corners},
-        "encoding": {"z": f"(z + {Z_OFFSET} m) in cm", "n": "n x 1000", "cn": "curve number", "flags": "bit0 channel, bit1 sea, bit2 inside the region domain polygon", "sub": "land subsidence rate, mm/year, positive = sinking (optional)", "h0": "initial water depth in carved drains, cm (optional)", "pump": "polder pump sink, 0.01 mm/h (optional)", "built": "built-area share of the cell (%), IO land cover class 7", "st_*": "GLO-90 D8 stream cells (>= 1 km2 upstream): centre in metres east/south of the model origin, downstream index (-1 none), upstream area, area-mean CN, mean slope (%), longest flow path (m)"},
+        "encoding": {"z": f"(z + {Z_OFFSET} m) in cm", "n": "n x 1000", "cn": "curve number", "flags": "bit0 channel, bit1 sea, bit2 inside the region domain polygon", "sub": "land subsidence rate, mm/year, positive = sinking (optional)", "h0": "initial water depth in carved drains, cm (optional)", "pump": "polder pump sink, 0.01 mm/h (optional)", "mdr": "micro-drain sink, 0.01 mm/h (optional)", "built": "built-area share of the cell (%), IO land cover class 7", "st_*": "GLO-90 D8 stream cells (>= 1 km2 upstream): centre in metres east/south of the model origin, downstream index (-1 none), upstream area, area-mean CN, mean slope (%), longest flow path (m)"},
         "arrays": [], "inputs_sha256": inputs, "landcover_year": io_year, "landcover_share": share,
         "parameters": PARAMS, "channels": chan_info, "sea": {"cells": int(sea.sum()), "rule": "IO water, z <= 0.5 m, connected to the north edge"},
-        "soil": soil_info, "upstream": up_info, "terrain": terrain_info, **({"drains": drain_info} if drain_info else {}), **({"pumps": pump_info} if pump_info else {}),
+        "soil": soil_info, "upstream": up_info, "terrain": terrain_info, **({"drains": drain_info} if drain_info else {}), **({"pumps": pump_info} if pump_info else {}), **({"micro_drains": mdr_info} if mdr_info else {}),
         **({"subsidence": sub_info} if sub is not None else {}),
         "checks": {
             "dem_min_m": round(float(zc.min()), 2), "dem_max_m": round(float(zc.max()), 2),
@@ -551,6 +559,7 @@ if __name__ == "__main__":
     ap.add_argument("--sub-units", default="mm/yr", help="units of the raster: mm/yr, cm/yr, m/yr; prefix '-' when sinking is negative")
     ap.add_argument("--sub-epoch", type=float, default=2013.0, help="decimal year of the terrain measurement")
     ap.add_argument("--drains", type=Path, default=None, help="jakartasatu.gpkg from pipeline/jakartasatu.py")
+    ap.add_argument("--micro", type=Path, default=None, help="micro drains with width/depth (data/drains/saluran_mikro_jaksel.geojson)")
     a = ap.parse_args()
-    h = build(a.pack, a.out, a.region, a.soil, a.terrain, a.subsidence, a.sub_units, a.sub_epoch, a.drains)
-    print(json.dumps({k: h.get(k) for k in ("grid", "channels", "drains", "pumps", "sea", "checks", "terrain", "subsidence", "output")}, indent=1))
+    h = build(a.pack, a.out, a.region, a.soil, a.terrain, a.subsidence, a.sub_units, a.sub_epoch, a.drains, a.micro)
+    print(json.dumps({k: h.get(k) for k in ("grid", "channels", "drains", "pumps", "micro_drains", "sea", "checks", "terrain", "subsidence", "output")}, indent=1))
