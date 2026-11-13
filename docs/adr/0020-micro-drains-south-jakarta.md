@@ -23,6 +23,11 @@ ADR 0015) had no sizes, so the small drains were only a uniform calibrated sink 
 46.8 Mm³ rain, mass error 1e-14. Browser box Mampang–Kemang 4.4 km, 150 mm/6 h, 30 m: 5.0 → 3.2 km², no console errors
 (`previews/micro-drains/`).
 
+Three floods, whole region 90 m (releases validation-jakarta-*-v24..v26, pack e13, pumps off): reports inside the served land
+hit (3 × 3 land window) off/on 2020 33 → 14 % (21 reports), 2021 50 → 28 % (119; random 27 → 10 %), 2025 1/3 → 0/3; model depth at
+those reports 0.11 → 0.00 m (reported 0.92 m); flooded served land 12.1 → 4.5, 6.5 → 2.2, 11.0 → 4.2 km²; all DKI 50/47/41 → 48/40/39 %.
+**Default off** (`calibration.json micro_default`), offered as a full-capacity scenario.
+
 ## Consequences
 The model was already drier than reports (ADR 0019); the switch will likely lower hit rates unless rain improves. Its default is
 set by the score, not by preference. Other kota need the same size data.
