@@ -314,6 +314,8 @@ export async function createMapPage(root: HTMLElement, ctx: MapCtx): Promise<Map
     refresh();
   });
   el.querySelector("#lyr-min")!.addEventListener("click", () => { const m = lyr.classList.toggle("min"); el.querySelector("#lyr-min")!.textContent = m ? "+" : "–"; });
+  // phones: the card starts folded so the map and the result cards stay visible
+  if (matchMedia("(max-width: 760px)").matches) { lyr.classList.add("min"); el.querySelector("#lyr-min")!.textContent = "+"; }
   // focus mode: hide the floating cards (dock, figures, timeline, legend, conclusion) to look at the map; the button stays
   const focusBtn = el.querySelector<HTMLButtonElement>("#focus-btn")!;
   const setFocusLbl = () => { focusBtn.textContent = el.classList.contains("focus") ? t("focus.off") : t("focus.on"); };

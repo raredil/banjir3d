@@ -171,10 +171,12 @@ body[data-page="doc"] #app { overflow-y: auto; }
   .brand, .rail-foot { display: none; }
   .nav-item { flex-direction: column; gap: 2px; font-size: 11px; padding: 6px 10px; }
   .dock { left: 8px; right: 8px; top: auto; bottom: 8px; width: auto; max-height: 52%; }
-  .kpis { left: 8px; right: 8px; top: 8px; grid-template-columns: repeat(2, 1fr); }
+  .kpis { left: 8px; right: 150px; top: 8px; gap: 6px; }
+  .kpi { min-width: 0; padding: 4px 8px; } .kpi .v { font-size: 15px; } .kpi .k { font-size: 10px; }
   .kpi .v { font-size: 18px; }
   .timeline, .coords { display: none; }
-  .map-legend { bottom: auto; top: 8px; right: 8px; }
+  .map-legend { bottom: auto; top: 52px; right: 8px; width: 134px; padding: 5px 8px; }
+  .map-legend .lg-range, .map-legend .lg-area { display: none; }
   .map-tools { right: 8px; top: auto; bottom: calc(52% + 16px); }
   .doc { padding: 18px 16px 40px; }
 }
@@ -263,3 +265,4 @@ details.sec summary, details > summary { cursor: pointer; color: var(--muted); f
 .tag.r-impact { background: color-mix(in srgb, #9333ea 14%, transparent); color: #7e22ce; }
 .tag.r-view, .tag.r-no { background: var(--surface-2); color: var(--muted); }
 .roles-intro { margin: 2px 0 8px; }
+@media (max-width: 760px) { .lyr { top: 8px; right: 8px; width: 134px; } .lyr.min .lyr-head .focus-btn { display: none; } }
