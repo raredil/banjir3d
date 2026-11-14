@@ -100,6 +100,7 @@ function mlLayers(def: LayerDef, src: string, zoom: number): LayerSpecification[
       { id: `${def.id}-fill`, type: "fill", source: src, "source-layer": "js", filter: genanganFilter, layout: { visibility: vis }, paint: { "fill-color": obsColor() as string, "fill-opacity": o } },
       { id: `${def.id}-line`, type: "line", source: src, "source-layer": "js", filter: genanganFilter, layout: { visibility: vis }, paint: { "line-color": "#7f0000", "line-opacity": o, "line-width": 0.7 } },
     ];
+    case "soil": return [{ id: `${def.id}-fill`, type: "fill", source: src, layout: { visibility: vis }, paint: { "fill-color": ["match", ["get", "hsg"], "A", "#2f9e44", "B", "#94d82d", "C", "#fab005", "#e8590c"], "fill-opacity": o } }];
     case "mikro": return [{ id: def.id, type: "line", source: src, layout: { visibility: vis, "line-cap": "round", "line-join": "round" }, paint: { "line-color": ["case", ["!", ["has", "w_m"]], "#adb5bd", ["==", ["get", "w_m"], null], "#adb5bd", [">=", ["get", "w_m"], 1], "#1864ab", [">=", ["get", "w_m"], 0.5], "#4dabf7", "#a5d8ff"], "line-opacity": o, "line-width": ["interpolate", ["linear"], ["zoom"], 11, 0.6, 16, 3] } }];
     case "tersier": return [{ id: def.id, type: "line", source: src, layout: { visibility: vis, "line-cap": "round", "line-join": "round" }, paint: { "line-color": "#e8590c", "line-opacity": o, "line-width": ["interpolate", ["linear"], ["zoom"], 10, 0.8, 16, 3] } }];
     case "rain": return [
@@ -253,7 +254,7 @@ export async function createMapPage(root: HTMLElement, ctx: MapCtx): Promise<Map
   });
 
   // click on infrastructure or a recorded flood: what the source says about it (values escaped)
-  const POP: Record<string, string> = { "js-drains": "js-drains", "js-pumps": "js-pumps", "js-polders-fill": "js-polders", "js-walls": "js-walls", "genangan-fill": "genangan", reports: "reports", tersier: "tersier", mikro: "mikro", ...Object.fromEntries(LAYERS.filter((l) => l.kind === "rain").map((l) => [`${l.id}-fill`, l.id])) };
+  const POP: Record<string, string> = { "js-drains": "js-drains", "js-pumps": "js-pumps", "js-polders-fill": "js-polders", "js-walls": "js-walls", "genangan-fill": "genangan", reports: "reports", tersier: "tersier", mikro: "mikro", "soil-hsg-fill": "soil-hsg", ...Object.fromEntries(LAYERS.filter((l) => l.kind === "rain").map((l) => [`${l.id}-fill`, l.id])) };
   map.on("click", (ev) => {
     const ids = Object.keys(POP).filter((id) => map.getLayer(id) && map.getLayoutProperty(id, "visibility") !== "none");
     const f = ids.length ? map.queryRenderedFeatures(ev.point, { layers: ids })[0] : undefined;
@@ -263,6 +264,7 @@ export async function createMapPage(root: HTMLElement, ctx: MapCtx): Promise<Map
     const def = LAYERS.find((l) => l.id === kind)!;
     const body = def.kind === "rain" ? row(t("rain.total"), `${p.total_mm} mm / ${p.hours} ${lang === "id" ? "jam" : "h"}`) + row(t("rain.max"), `${p.max_mm_h} mm/${lang === "id" ? "jam" : "h"}`) + row("", `IMERG 0.1° · ${Number(p.lon).toFixed(2)}°, ${Number(p.lat).toFixed(2)}°`)
       : kind === "tersier" ? row("", p.name) + row("Kel.", p.kel) + row("Kec.", p.kec) + row(lang === "id" ? "Panjang" : "Length", p.len_m ? `${p.len_m} m` : "") + row("", t("tersier.note"))
+      : kind === "soil-hsg" ? row(lang === "id" ? "Kelompok" : "Group", p.hsg) + row("", t(`soil.${p.hsg}` as Key)) + row(lang === "id" ? "Bagian wilayah" : "Share of area", p.share ? `${Math.round(Number(p.share) * 100)} %` : "") + row("", t("soil.note"))
       : kind === "mikro" ? row("", p.name) + row("Kel.", p.kel) + row(lang === "id" ? "Lebar × dalam" : "Width × depth", p.w_m && p.d_m ? `${p.w_m} × ${p.d_m} m` : lang === "id" ? "tidak tercatat" : "not recorded") + row(lang === "id" ? "Jenis" : "Type", p.jenis) + row(lang === "id" ? "Bahan" : "Lining", p.konstruksi) + row(lang === "id" ? "Kondisi" : "Condition", p.kondisi) + row(lang === "id" ? "Bermuara ke" : "Empties into", p.hilir)
       : kind === "reports" ? row(t("obs.event"), p.event) + row(t("obs.time"), `${p.time_wib ?? ""} WIB`) + row(t("obs.depth"), p.depth_cm ? `${p.depth_cm} cm` : "") + row(t("obs.via"), p.source)
       : kind === "genangan" ? row(t("obs.date"), p.date) + row(t("obs.depth"), p.depth_cm ? `${p.depth_cm} cm` : "") + row("", p.info)

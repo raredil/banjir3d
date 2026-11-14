@@ -10,7 +10,7 @@ export type LayerDef = {
   catalogId: string;
   file?: string;
   role?: "domain" | "admin";
-  kind: "raster" | "hillshade" | "relief" | "water" | "buildings" | "admin" | "demnas-grid" | "region" | "js-drains" | "js-pumps" | "mikro" | "js-polders" | "js-walls" | "genangan" | "reports" | "tersier" | "rain";
+  kind: "raster" | "hillshade" | "relief" | "water" | "buildings" | "admin" | "demnas-grid" | "region" | "js-drains" | "js-pumps" | "mikro" | "soil" | "js-polders" | "js-walls" | "genangan" | "reports" | "tersier" | "rain";
   visible: boolean;
   opacity: number;
   note?: string;
@@ -51,6 +51,8 @@ export const LAYERS: LayerDef[] = [
   { id: "subsidence", dl: { file: "subsidence_insar.tif" },  group: "g.terrain", name: { id: "Laju penurunan tanah 2016–2024", en: "Land subsidence rate 2016–2024" }, title: "Land subsidence, Sentinel-1 InSAR mean 2016–2024, vertical (mm/year; Shabrina et al. 2026, CC BY 4.0)", catalogId: "jakarta-subsidence-sinking-city", file: "subsidence_insar.pmtiles", kind: "raster", visible: false, opacity: 0.85,
     ramp: { label: "Sinking", unit: "mm/yr", stops: [[5, "#fed976"], [15, "#fd8d3c"], [30, "#e31a1c"], [50, "#800026"]] } },
   { id: "lulc-io", dl: { file: "lulc_io_2024.tif" },  group: "g.landcover", name: { id: "Tutupan lahan 2024 (Esri/IO)", en: "Land cover 2024 (Esri/IO)" }, title: "Land use/land cover, Impact Observatory / Esri (10 m, newest year)", catalogId: "io-lulc-annual", file: "lulc_io_latest.pmtiles", kind: "raster", visible: false, opacity: 0.7 },
+  { id: "soil-hsg", url: "data/jakarta/soil_hsg.geojson", dl: { geojson: ["data/jakarta/soil_hsg.geojson"] }, group: "g.landcover", name: { id: "Kelompok tanah (daya serap, SoilGrids)", en: "Soil group (infiltration, SoilGrids)" }, title: "Hydrologic soil group A-D used by the engine, from SoilGrids 2.0 sand and clay 0-100 cm (Poggio et al. 2021; NRCS 2009 criteria), 30 m model grid", catalogId: "soilgrids-2", kind: "soil", visible: false, opacity: 0.6,
+    note: "The soil group sets how much rain soaks in on open land (curve number, Methods §4); built-up land counts as sealed whatever the soil.", legend: [{ label: "A pasir / sand", color: "#2f9e44" }, { label: "B", color: "#94d82d" }, { label: "C lempung / loam", color: "#fab005" }, { label: "D liat / clay", color: "#e8590c" }] },
   { id: "lulc-wc", dl: { file: "lulc_worldcover_2021.tif" },  group: "g.landcover", name: { id: "Tutupan lahan 2021 (ESA WorldCover)", en: "Land cover 2021 (ESA WorldCover)" }, title: "Land cover, ESA WorldCover 2021 v200 (10 m)", catalogId: "esa-worldcover-2021", file: "lulc_worldcover_2021.pmtiles", kind: "raster", visible: false, opacity: 0.7 },
   { id: "gsw", dl: { file: "water_gsw_occurrence.tif" },  group: "g.water", name: { id: "Frekuensi genangan air 1984–2021", en: "Surface-water frequency 1984–2021" }, title: "Surface-water occurrence 1984–2021, JRC GSW v1.4 (%)", catalogId: "jrc-gsw", file: "water_gsw_occurrence.pmtiles", kind: "raster", visible: false, opacity: 0.85,
     ramp: { label: "Water occurrence", unit: "%", stops: [[1, "#bdd7ee"], [50, "#4292c6"], [100, "#08306b"]] } },

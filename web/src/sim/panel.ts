@@ -44,7 +44,8 @@ const drainOf = (run: RunGrid, pumps: boolean, drainMmH: number, micro = false):
   if (!(drainMmH > 0) && !usePump && !useMdr) return undefined;
   const d = new Float64Array(run.nx * run.ny);
   for (let c = 0; c < d.length; c++) {
-    if (!run.channel[c] && !run.sea[c]) d[c] = (drainMmH / 3.6e6) * run.built[c];
+    // the uniform what-if sink stands for drains WITHOUT size data: not on land already served by the sized micro drains
+    if (!run.channel[c] && !run.sea[c] && !(useMdr && run.mdr![c] > 0)) d[c] = (drainMmH / 3.6e6) * run.built[c];
     if (usePump && !run.sea[c]) d[c] += run.pump![c];
     if (useMdr && !run.channel[c] && !run.sea[c]) d[c] += run.mdr![c];
   }
@@ -90,7 +91,8 @@ export function mountSim(page: MapPage, o: { packUrl: string; regionBbox: number
       ${chk("s-up", "sim.up", true, "ok")}${chk("s-infil", "comp.infil", true, "ok")}
       <div class="field"><div class="lbl"><span>${t("comp.amc")} ${q("comp.amc")}</span></div><select id="s-amc"><option value="2">${t("comp.amc.2")}</option><option value="1">${t("comp.amc.1")}</option><option value="3">${t("comp.amc.3")}</option></select>${tip("comp.amc")}</div>
       ${chk("s-sub", "comp.sub", true, "ok")}${chk("s-pumps", "sim.pumps", !!calibration.pumps_default, "sc")}${chk("s-mdr", "comp.mdr", !!calibration.micro_default, "sc")}
-      ${sl("s-drain", "comp.drain", 0, 40, 1, calibration.drain_mm_h, "mm/h")}${sl("s-sea", "sim.sea", 0, 1.5, 0.1, 0, "m")}
+      ${sl("s-sea", "sim.sea", 0, 1.5, 0.1, 0, "m")}
+      <details class="sens"><summary>${t("comp.sens")}</summary>${sl("s-drain", "comp.drain", 0, 40, 1, calibration.drain_mm_h, "mm/h")}</details>
       <p class="help comp-note"><b>${t("comp.fixed")}</b> ${t("comp.fixed.t")}</p><p class="help comp-note"><b>${t("comp.na")}</b> ${t("comp.na.t")}</p>
     </div>
     <div class="sec">${sl("s-hours", "sim.hours", 3, 120, 1, 12, "h")}

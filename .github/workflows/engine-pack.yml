@@ -68,7 +68,7 @@ jobs:
           python pipeline/engine_pack.py "$RUNNER_TEMP/pack" "$RUNNER_TEMP/engine" --region "$REGION" --soil soilgrids \
             --subsidence "$RUNNER_TEMP/pack/subsidence_insar.tif" --sub-units mm/yr --sub-epoch 2013.0 \
             --drains "$RUNNER_TEMP/js/jakartasatu.gpkg" --micro data/drains/saluran_mikro_jaksel.geojson
-          cp "$RUNNER_TEMP"/engine/engine_* "$RUNNER_TEMP/pack/"
+          cp "$RUNNER_TEMP"/engine/engine_* "$RUNNER_TEMP"/engine/soil_hsg.geojson "$RUNNER_TEMP/pack/"
           cd "$RUNNER_TEMP/pack" && rm -f SHA256SUMS && sha256sum -- * > SHA256SUMS && ls -la
       - name: Publish release
         env:

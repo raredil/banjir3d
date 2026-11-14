@@ -64,7 +64,7 @@ for (let m = 0; m < stPoint.length; m++) {
 const inflows = !upOn ? [] : inflowsForSpatial(pack.streams, run.isIn, (m) => cumOf[stPoint[m]], steps, cnOf).map((f) => ({ ...f, cell: run.cellAt(f.x, f.y) })).filter((f) => f.cell >= 0);
 const drain = new Float64Array(N);
 for (let c = 0; c < N; c++) {
-  if (!run.channel[c] && !run.sea[c]) drain[c] = (drainMmH / 3.6e6) * run.built[c];
+  if (!run.channel[c] && !run.sea[c] && !(microOn && (run.mdr?.[c] ?? 0) > 0)) drain[c] = (drainMmH / 3.6e6) * run.built[c]; // not where sized micro drains serve
   if (pumpsOn && run.pump && !run.sea[c]) drain[c] += run.pump[c]; // polder pumps (Jakarta Satu), see engine_pack.pump_rates
   if (microOn && run.mdr && !run.channel[c] && !run.sea[c]) drain[c] += run.mdr[c]; // micro drains (pipeline/micro_drains.py)
 }
