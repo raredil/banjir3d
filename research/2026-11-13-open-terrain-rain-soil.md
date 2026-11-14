@@ -17,6 +17,6 @@
 
 ## Soil
 - Already in the model: SoilGrids 2.0 sand/clay -> hydrologic soil group (83 % D, 17 % C in the region) -> curve number per 30 m
-  cell together with land cover (Methods §4). Built pixels CN 98 regardless of soil, so soil matters only on open/green land.
+  cell together with land cover (Methods §4). Model domain: 98 % D, 2 % C (83/17 % is the upstream box incl. Bogor). Built pixels CN 98 regardless of soil, so soil matters only on open/green land.
 - Infiltration acts on the rain falling on each cell (runoff = rain − infiltration, CN method); water flowing over a more
   permeable cell is not absorbed again (no run-on infiltration): conservative (wetter). A flood is not "cut" at a soil boundary.
