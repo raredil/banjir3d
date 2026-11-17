@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { FloodEngine, retention, scsRunoff, type EngineGrid } from "./solver";
-import { DT_S, catchmentHydrograph, entryMembers, findEntries, inflowsForSpatial, nrcsLagHours, uhRatio, type Streams } from "./hydrology";
+import { DT_S, arealReduction, catchmentHydrograph, entryMembers, findEntries, inflowsFor, inflowsForSpatial, nrcsLagHours, uhRatio, type Streams } from "./hydrology";
 import { fromUtm, toUtm } from "../util";
 
 function grid(nx: number, ny: number, dx: number, zf: (i: number, j: number) => number, extra: Partial<EngineGrid> = {}): EngineGrid {
@@ -83,6 +83,16 @@ describe("flood engine v2 (CPU reference)", () => {
 });
 
 describe("upstream hydrology", () => {
+  it("areal reduction factor (TP-29 fit) matches hand values and its range limits", () => {
+    // by hand: D = 6 h, A = 350 km2: e = 1.1 * 6^0.25 = 1.72158; 1 - exp(-e) + exp(-e - 1.365) = 1 - 0.17882 + 0.04566 = 0.8668
+    expect(arealReduction(350, 6)).toBeCloseTo(0.8668, 3);
+    // D = 24 h, A = 1000 km2: e = 2.43443; 1 - 0.08764 + 0.00178 = 0.9141
+    expect(arealReduction(1000, 24)).toBeCloseTo(0.9141, 3);
+    expect(arealReduction(0, 6)).toBe(1);
+    expect(arealReduction(5000, 24)).toBeCloseTo(arealReduction(1000, 24), 12); // beyond TP-29: held at 1,000 km2
+    expect(arealReduction(350, 72)).toBeCloseTo(arealReduction(350, 24), 12);
+  });
+
   it("unit hydrograph table peaks at t = Tp", () => {
     expect(uhRatio(1)).toBe(1);
     expect(uhRatio(0.55)).toBeCloseTo(0.565, 3);
@@ -107,6 +117,14 @@ describe("upstream hydrology", () => {
     };
     const e = findEntries(st, (x) => x === 1 || x === 3);
     expect(e.map((v) => [v.stream, v.effKm2])).toEqual([[2, 20], [0, 10]]);
+    // design rain: each entry's runoff volume equals the reduced depth over its area (ARF from the full catchment area)
+    const steps = 300, cum = Float64Array.from({ length: steps + 1 }, (_, s) => Math.min(150, (s * DT_S) / 3600 * 25));
+    const f = inflowsFor(st, (x) => x === 1 || x === 3, cum, steps, (c) => c, 6);
+    const g = f.find((v) => v.stream === 2)!;
+    expect(g.arf).toBeCloseTo(arealReduction(30, 6), 12);
+    const vol = g.q.reduce((a, v) => a + v * DT_S, 0);
+    expect(vol / ((scsRunoff(150 * g.arf, retention(80)) / 1000) * 20e6)).toBeCloseTo(1, 3);
+    expect(inflowsFor(st, (x) => x === 1 || x === 3, cum, steps).every((v) => v.arf === 1)).toBe(true);
   });
   it("gives each entry the rain of its own catchment", () => {
     // two tributaries 0 -> 1 and 2 -> 3 enter at 1 and 3 (cells 4 and 5 are inside)

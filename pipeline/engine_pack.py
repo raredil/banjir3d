@@ -12,6 +12,8 @@ Method (data/methods/methods.md, sections 3 to 5):
      DEM value within one cell (the mapped water surface); along each centre line, humps narrower than 150 m (bridges, culverts,
      embankments the DEM keeps as dams) are removed with a 1-D morphological opening. No depth is added: the channel volume below
      the water surface seen by the DEM is taken as already filled by base flow.
+     Permanent water bodies (lakes, reservoirs, ponds, fishponds: at least half of the cell is IO water) that are not sea are
+     flagged like channels: they always hold water, so the water in them is not a flood (2026-11-17).
   3. Sea: water pixels at or below 0.5 m connected to the north edge; held at the chosen sea level during a run.
   4. Manning n and SCS curve number per cell from the 10 m land-cover pixels and the soil group (data/engine/landcover-parameters.json).
   5. Upstream: D8 flow on GLO-90 (pysheds) over a box that holds every catchment draining into the region; for each channel cell the
@@ -174,11 +176,16 @@ def burn_channels(z: np.ndarray, transform, crs, water_gpkg: Path) -> tuple[np.n
 DRAIN_MAX_M = 10.0  # cap on the carved depth (deepest mapped primary drain is about 8 m)
 
 
-def carve_drains(z0: np.ndarray, zc: np.ndarray, chan: np.ndarray, transform, gpkg: Path | None) -> tuple[np.ndarray, np.ndarray, np.ndarray | None, dict]:
+def carve_drains(z0: np.ndarray, zc: np.ndarray, chan: np.ndarray, transform, gpkg: Path | None,
+                 water_seen: np.ndarray | None = None) -> tuple[np.ndarray, np.ndarray, np.ndarray | None, dict]:
     """Jakarta Satu primary and secondary drains (DSDA, width and depth per record) become channel cells. Where the record gives
     a depth, the bed is set to bank level minus the area-equivalent depth (depth x min(width, cell) / cell), unless the terrain is
     already lower; bank level = 3 x 3 median of the uncarved terrain. The carved part below the water surface the DEM recorded
-    (the conditioned terrain before carving) starts filled, as for the OSM channels (base flow), and is returned as initial depth."""
+    (the conditioned terrain before carving) starts filled, as for the OSM channels (base flow), and is returned as initial depth,
+    but ONLY where the satellite saw water in the cell (water_seen: at least half of the 30 m cell is IO water). Elsewhere the
+    drain is narrower than the cell, the DEM height there is the bank or the street, not a water surface, and the drain starts
+    empty (2026-11-17: before, 95 % of the carved cells started filled up to the bank level the DEM saw, median 3.2 m of water,
+    68 million m3, which left a median 0.28 m of free room and made the drains overflow at once)."""
     if gpkg is None:
         return zc, chan, None, {}
     import geopandas as gpd
@@ -217,12 +224,17 @@ def carve_drains(z0: np.ndarray, zc: np.ndarray, chan: np.ndarray, transform, gp
     surface = out.copy()  # recorded water surface: conditioned terrain before the depth is carved
     out = np.minimum(out, target)
     h0 = np.where(mask, surface - out, 0.0).clip(min=0)
+    h0_all = float(h0.sum() * dx * dx / 1e6)
+    if water_seen is not None:
+        h0 = np.where(water_seen, h0, 0.0)
     lowered = out < zc
     info = {"source": "Jakarta Satu, Dinas SDA DKI (raw vectors not published)", "records": counts,
             "channel_cells_added": int(newchan.sum()), "cells_with_depth": int((deff > 0).sum()), "cells_lowered": int(lowered.sum()),
             "mean_lowering_m": round(float((zc - out)[lowered].mean()), 3) if lowered.any() else 0.0,
             "initial_volume_million_m3": round(float(h0.sum() * dx * dx / 1e6), 2),
-            "rule": "bed = min(terrain, 3x3 median bank - depth x min(width, 30 m) / 30 m); carved part below the recorded water surface starts filled (h0)"}
+            "initial_volume_if_filled_everywhere_million_m3": round(h0_all, 2),
+            "rule": "bed = min(terrain, 3x3 median bank - depth x min(width, 30 m) / 30 m); carved part below the recorded water surface "
+                    "starts filled (h0) only where the satellite saw water (>= 50 % IO water in the cell), elsewhere it starts empty"}
     return out, chan | mask, h0, info
 
 
@@ -471,9 +483,14 @@ def build(pack: Path, out: Path, region: str, soil: str, terrain_src: str = "fab
     n, cn, share, built_share = lc_to_n_cn(lc, hsg_fine, f)
     water_cell = (lc == 1).reshape(shape[0], f, shape[1], f).mean(axis=(1, 3)) >= 0.5
     zc, chan, chan_info = burn_channels(z, tr, crs, pack / "water_osm.gpkg")
-    zc, chan, h0, drain_info = carve_drains(z, zc, chan, tr, drains)
+    zc, chan, h0, drain_info = carve_drains(z, zc, chan, tr, drains, water_cell)
     sea = sea_mask(zc, water_cell)
     chan &= ~sea
+    # permanent water bodies (lakes, reservoirs, ponds, fishponds) count as channels: the water in them is not a flood
+    lakes = water_cell & ~sea & ~chan
+    chan |= lakes
+    chan_info["water_body_cells"] = int(lakes.sum())
+    chan_info["water_body_rule"] = "cells with >= 50 % IO water that are not sea or mapped channel: flagged as channel (always wet, not counted as flood)"
     # a mapped channel conveys water with open-water roughness (class Water; Chow 1959), not the land cover around it (mostly
     # built area, n 0.15, when the river is narrower than the 10 m land-cover pixels); the web app does the same for older packs
     n = np.where(chan, PARAMS["classes"]["1"]["n"], n)
@@ -532,7 +549,7 @@ def build(pack: Path, out: Path, region: str, soil: str, terrain_src: str = "fab
     header = {
         "type": "banjir3d-engine-pack", "version": 1, "region": region, "created": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
         "grid": {"crs": str(crs), "nx": W_, "ny": H_, "dx": tr.a, "dy": -tr.e, "origin": [tr.c, tr.f], "corners_lonlat": corners},
-        "encoding": {"z": f"(z + {Z_OFFSET} m) in cm", "n": "n x 1000", "cn": "curve number", "flags": "bit0 channel, bit1 sea, bit2 inside the region domain polygon", "sub": "land subsidence rate, mm/year, positive = sinking (optional)", "h0": "initial water depth in carved drains, cm (optional)", "pump": "polder pump sink, 0.01 mm/h (optional)", "mdr": "micro-drain sink, 0.01 mm/h (optional)", "built": "built-area share of the cell (%), IO land cover class 7", "st_*": "GLO-90 D8 stream cells (>= 1 km2 upstream): centre in metres east/south of the model origin, downstream index (-1 none), upstream area, area-mean CN, mean slope (%), longest flow path (m)"},
+        "encoding": {"z": f"(z + {Z_OFFSET} m) in cm", "n": "n x 1000", "cn": "curve number", "flags": "bit0 channel (river, canal, drain or permanent water body), bit1 sea, bit2 inside the region domain polygon", "sub": "land subsidence rate, mm/year, positive = sinking (optional)", "h0": "initial water depth in carved drains, cm (optional)", "pump": "polder pump sink, 0.01 mm/h (optional)", "mdr": "micro-drain sink, 0.01 mm/h (optional)", "built": "built-area share of the cell (%), IO land cover class 7", "st_*": "GLO-90 D8 stream cells (>= 1 km2 upstream): centre in metres east/south of the model origin, downstream index (-1 none), upstream area, area-mean CN, mean slope (%), longest flow path (m)"},
         "arrays": [], "inputs_sha256": inputs, "landcover_year": io_year, "landcover_share": share,
         "parameters": PARAMS, "channels": chan_info, "sea": {"cells": int(sea.sum()), "rule": "IO water, z <= 0.5 m, connected to the north edge"},
         "soil": soil_info, "upstream": up_info, "terrain": terrain_info, **({"drains": drain_info} if drain_info else {}), **({"pumps": pump_info} if pump_info else {}), **({"micro_drains": mdr_info} if mdr_info else {}),

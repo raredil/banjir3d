@@ -22,6 +22,21 @@
    "doi": "10.1007/s11069-011-9866-9"
   },
   {
+   "key": "allen2005",
+   "type": "article",
+   "authors": [
+    "Allen, R.J.",
+    "DeGaetano, A.T."
+   ],
+   "year": 2005,
+   "title": "Areal reduction factors for two eastern United States regions with high rain-gauge density",
+   "journal": "Journal of Hydrologic Engineering",
+   "volume": "10",
+   "issue": "4",
+   "pages": "327–335",
+   "doi": "10.1061/(ASCE)1084-0699(2005)10:4(327)"
+  },
+  {
    "key": "bates2010",
    "type": "article",
    "authors": [

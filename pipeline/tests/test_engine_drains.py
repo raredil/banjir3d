@@ -26,6 +26,14 @@ def test_carve_drains_area_equivalent_depth(tmp_path):
     assert info["cells_lowered"] == 5 and info["records"]["drain_primary_line"] == 1
     assert np.allclose(h0[2], 2.0) and h0[0].sum() == 0  # flat terrain: recorded surface = ground, carved part starts full
     assert carve_drains(z, z, chan, tr, None)[3] == {}
+    # 2026-11-17: the carved part starts filled only where the satellite saw water in the cell; elsewhere the DEM height is the
+    # bank or street (drain narrower than the cell) and the drain starts empty
+    seen = np.zeros((5, 5), bool)
+    seen[2, :2] = True
+    out2, _, h02, info2 = carve_drains(z, z.copy(), np.zeros((5, 5), bool), tr, p, seen)
+    assert np.allclose(out2, out)  # same bed
+    assert np.allclose(h02[2, :2], 2.0) and h02[2, 2:].sum() == 0
+    assert info2["initial_volume_million_m3"] < info2["initial_volume_if_filled_everywhere_million_m3"]
 
 
 def test_pump_rates(tmp_path):
