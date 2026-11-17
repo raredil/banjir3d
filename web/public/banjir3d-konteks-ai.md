@@ -38,12 +38,13 @@ Hasil uji pada banjir 1 Januari 2020 (seluruh wilayah): hanya sekitar 17 % genan
 |---|---|---|
 | Medan FABDEM 30 m | selalu | Tinggi tanah tanpa bangunan dan pohon (dari radar satelit Copernicus 2011–2015, bangunan dihapus dengan pembelajaran mesin; Hawker dkk. 2022). |
 | Sungai dan kanal OpenStreetMap | selalu | Alur ditoreh ke medan. Lebar dari peta. **Kedalaman dasar sungai tidak ada datanya**: alur hanya sedalam permukaan air yang terekam satelit. Ini membuat kapasitas sungai di model kemungkinan lebih kecil dari kenyataan. |
-| Saluran primer dan sekunder Dinas SDA (Jakarta Satu) | selalu | Ditoreh dengan **lebar dan dalam yang tercatat**. |
+| Saluran primer dan sekunder Dinas SDA (Jakarta Satu) | selalu | Ditoreh dengan **lebar dan dalam yang tercatat**. Mulai kosong, kecuali di kotak yang memang terlihat berair oleh satelit (sejak 17 Nov 2026; sebelumnya mulai hampir penuh, keliru). |
+| Kolam, situ, waduk, tambak | selalu | Kotak yang lebih dari separuhnya air permanen diperlakukan seperti sungai: airnya **bukan banjir** dan tidak dihitung (sejak 17 Nov 2026). |
 | Saluran tersier (berkas pemilik) | tidak dipakai | Tidak ada data lebar dan dalam. Hanya tampil di peta. |
 | Resapan tanah (RTH, kebun, sawah) | diuji, bisa dimatikan | Dari peta tutupan lahan Esri 2024 dan tanah SoilGrids. sekitar 85 % daratan di area hitung adalah kawasan terbangun (rata-rata Curve Number 97 dari 100), jadi pengaruh RTH kecil di pusat kota tetapi besar di hulu. |
 | Kondisi tanah sebelum hujan | diuji "normal", bisa diganti | Kering / normal / basah menurut hujan 5 hari sebelumnya (< 36 mm, 36–53 mm, > 53 mm; Chow dkk. 1988). Ini cara hujan mingguan atau bulanan memengaruhi banjir. |
 | Penurunan tanah | diuji, bisa dimatikan | Laju dari satelit radar Sentinel-1 2016–2024 (hingga sekitar 4 cm/tahun), hanya di dalam DKI. |
-| Air kiriman dari hulu | diuji, bisa dimatikan | Debit dari daerah tangkapan di luar area. |
+| Air kiriman dari hulu | diuji, bisa dimatikan | Debit dari daerah tangkapan di luar area. Pada hujan rencana, hujan titik dikali faktor reduksi luas tiap daerah tangkapan (0,82–0,91 untuk tangkapan besar). |
 | Pompa polder DKI | skenario, bawaan mati | 263 rumah pompa, kapasitas tercatat; kapasitas dibagi rata ke polder. Lihat bagian G. |
 | Serapan saluran kecil (mm/jam) | skenario, bawaan 0 | Pengganti got/saluran tersier yang tidak ada ukurannya. Lihat bagian G. |
 | Muka laut | pengguna | 0 = rata-rata. Tanggul laut tidak ada di model. |
