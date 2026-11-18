@@ -75,11 +75,23 @@ export const amcClass = (p5mm: number): 1 | 2 | 3 => (p5mm < 35.6 ? 1 : p5mm > 5
 export const cnForAmc = (cn2: number, amc: 1 | 2 | 3): number =>
   amc === 2 || cn2 >= 100 ? cn2 : amc === 1 ? (4.2 * cn2) / (10 - 0.058 * cn2) : Math.min(100, (23 * cn2) / (10 + 0.13 * cn2));
 
-// cnOf: curve number used for the runoff of each catchment (soil wetness, cnForAmc); the lag time keeps the condition II value
-export function inflowsFor(st: Streams, isIn: (x: number, y: number) => boolean, cumRain: Float64Array, steps: number, cnOf: (cn: number) => number = (c) => c): Inflow[] {
+/** Areal reduction factor: a design rain is a POINT depth; the mean over a whole catchment in the same storm is smaller. US Weather
+ *  Bureau TP-29 curves as one equation (Leclerc and Schaake 1972, in the form given by Allen and DeGaetano 2005):
+ *  ARF = 1 - exp(-1.1 D^0.25) + exp(-1.1 D^0.25 - 0.0039 A), D storm duration (h), A area (km2). TP-29 covers 0.5-24 h and up to
+ *  about 1,000 km2: D is held inside that range and larger areas keep the 1,000 km2 value (a smaller reduction: on the safe side). */
+export function arealReduction(areaKm2: number, hours: number): number {
+  const d = Math.min(24, Math.max(0.5, hours)), a = Math.min(1000, Math.max(0, areaKm2)), e = 1.1 * d ** 0.25;
+  return 1 - Math.exp(-e) + Math.exp(-e - 0.0039 * a);
+}
+
+// cnOf: curve number used for the runoff of each catchment (soil wetness, cnForAmc); the lag time keeps the condition II value.
+// arfHours: design rain (a point depth) -> each catchment gets the depth times its areal reduction factor for a storm of that length
+// (2026-11-17; before, the full point depth fell on every catchment at once, up to 1,100 km2: river peaks too high)
+export function inflowsFor(st: Streams, isIn: (x: number, y: number) => boolean, cumRain: Float64Array, steps: number, cnOf: (cn: number) => number = (c) => c, arfHours?: number): (Inflow & { arf: number })[] {
   return findEntries(st, isIn).map(({ stream: k, effKm2 }) => {
     const lagH = nrcsLagHours(st.len[k], st.cn[k], st.slope[k]), cn = cnOf(st.cn[k]);
-    return { stream: k, x: st.x[st.down[k]], y: st.y[st.down[k]], areaKm2: effKm2, cn, lagH, q: catchmentHydrograph(effKm2, cn, lagH, cumRain, steps) };
+    const arf = arfHours ? arealReduction(st.area[k], arfHours) : 1, cum = arf < 1 ? cumRain.map((v) => v * arf) : cumRain;
+    return { stream: k, x: st.x[st.down[k]], y: st.y[st.down[k]], areaKm2: effKm2, cn, lagH, arf, q: catchmentHydrograph(effKm2, cn, lagH, cum, steps) };
   });
 }
 

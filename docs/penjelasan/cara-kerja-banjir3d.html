@@ -1,0 +1,205 @@
+<title>Cara Kerja banjir3d</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;700;800&family=Source+Sans+3:wght@400;600&display=swap">
+<style>
+/* Layout: one reading column with plain-language answers first, then the recipe, then the checks; blue like the banjir3d app. */
+:root {
+  --bg: #f3f5f8; --surface: #ffffff; --line: #dfe5ee; --text: #142030; --muted: #566579;
+  --water: #1d63d8; --water-soft: #e7effc; --ground: #9a7a52; --ground-soft: #f3ece2;
+  --ok: #1b8a5a; --ok-soft: #e4f4ec; --warn: #b8610b; --warn-soft: #fdf0e1;
+  --display: "Plus Jakarta Sans", "Segoe UI", system-ui, sans-serif;
+  --body: "Source Sans 3", "Segoe UI", system-ui, sans-serif;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #0d131b; --surface: #141c26; --line: #253244; --text: #e5ecf4; --muted: #9aa9bb;
+  --water: #5b97f3; --water-soft: #172a45; --ground: #c7a47a; --ground-soft: #2a2218;
+  --ok: #3fbf86; --ok-soft: #12291f; --warn: #e3963f; --warn-soft: #2c2113; color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #0d131b; --surface: #141c26; --line: #253244; --text: #e5ecf4; --muted: #9aa9bb;
+  --water: #5b97f3; --water-soft: #172a45; --ground: #c7a47a; --ground-soft: #2a2218;
+  --ok: #3fbf86; --ok-soft: #12291f; --warn: #e3963f; --warn-soft: #2c2113; color-scheme: dark }
+body { background: var(--bg); color: var(--text); font: 400 1.075rem/1.65 var(--body); }
+.wrap { max-width: 46rem; margin: 0 auto; padding-block: 2rem 4rem; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); display: grid; gap: 2.25rem; }
+h1, h2, h3 { font-family: var(--display); line-height: 1.2; text-wrap: balance; margin: 0; }
+h1 { font-size: clamp(1.9rem, 5vw, 2.6rem); font-weight: 800; letter-spacing: -0.01em; }
+h2 { font-size: 1.45rem; font-weight: 800; }
+h3 { font-size: 1.1rem; font-weight: 700; }
+p { margin: 0; }
+section { display: grid; gap: 0.9rem; min-width: 0; }
+.lead { color: var(--muted); font-size: 1.15rem; }
+.eyebrow { font: 700 0.78rem/1 var(--display); letter-spacing: 0.08em; text-transform: uppercase; color: var(--water); }
+.qa { display: grid; gap: 0.75rem; }
+.q { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 1rem 1.1rem; display: grid; gap: 0.4rem; }
+.q b.ask { font-family: var(--display); font-weight: 700; }
+.verdict { display: inline-block; font: 700 0.8rem/1 var(--display); padding: 0.3rem 0.55rem; border-radius: 99px; background: var(--water-soft); color: var(--water); margin-right: 0.4rem; }
+.verdict.fix { background: var(--ok-soft); color: var(--ok); }
+.verdict.half { background: var(--warn-soft); color: var(--warn); }
+ol.steps { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.9rem; counter-reset: s; }
+ol.steps li { counter-increment: s; display: grid; grid-template-columns: 2.2rem 1fr; gap: 0.75rem; align-items: start; }
+ol.steps li::before { content: counter(s); font: 800 1rem/2.2rem var(--display); text-align: center; width: 2.2rem; height: 2.2rem; border-radius: 50%; background: var(--water-soft); color: var(--water); }
+ol.steps li > div { min-width: 0; display: grid; gap: 0.2rem; }
+.like { color: var(--muted); }
+figure { margin: 0; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 0.75rem; overflow-x: auto; }
+figcaption { color: var(--muted); font-size: 0.95rem; padding: 0.5rem 0.25rem 0; }
+svg text { font-family: var(--body); }
+.tbl { overflow-x: auto; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; }
+table { border-collapse: collapse; width: 100%; font-variant-numeric: tabular-nums; font-size: 0.98rem; }
+th, td { padding: 0.55rem 0.8rem; text-align: left; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { font: 700 0.85rem/1.3 var(--display); color: var(--muted); }
+tr:last-child td { border-bottom: 0; }
+td.n { text-align: right; white-space: nowrap; }
+.fix-list { display: grid; gap: 0.75rem; }
+.fix-item { border-left: 4px solid var(--ok); background: var(--surface); padding: 0.8rem 1rem; border-radius: 0 10px 10px 0; display: grid; gap: 0.3rem; }
+.fix-item.open { border-left-color: var(--warn); }
+ul.plain { margin: 0; padding-left: 1.2rem; display: grid; gap: 0.35rem; }
+.note { color: var(--muted); font-size: 0.95rem; }
+a { color: var(--water); }
+</style>
+
+<div class="wrap">
+
+<header style="display:grid;gap:0.75rem">
+  <span class="eyebrow">Penjelasan untuk semua umur · 17 November 2026</span>
+  <h1>Bagaimana banjir3d menghitung banjir</h1>
+  <p class="lead">Ini jawaban untuk pertanyaanmu: kenapa sepanjang sungai selalu banjir, kenapa area padat kadang terlihat kering tapi lahan terbuka banjir parah, dan apakah ada pengolahan data yang salah. Ada, dan tiga sudah dibetulkan.</p>
+</header>
+
+<section>
+  <h2>Jawaban singkat</h2>
+  <div class="qa">
+    <div class="q">
+      <b class="ask">"Sungai selalu banjir. Masalahnya di sungainya atau di metodenya?"</b>
+      <p><span class="verdict half">Dua-duanya</span>Di dunia nyata, tanah di pinggir sungai memang paling rendah, jadi wajar paling dulu kebanjiran. Tapi di model ada dua hal yang membuat sungai meluap terlalu cepat. Pertama, saluran besar dari data Dinas SDA dianggap sudah hampir penuh air sejak awal. Itu salah: tanpa hujan pun model lama sudah "banjir" 14,6 km² di satu kotak 20 × 20 km. Sudah dibetulkan. Kedua, sungai kecil di model terlalu dangkal, karena peta satelit 30 meter tidak bisa melihat dasar sungai selebar 5 sampai 15 meter. Yang kedua ini belum bisa dibetulkan tanpa data kedalaman sungai.</p>
+    </div>
+    <div class="q">
+      <b class="ask">"Karena sungainya rendah, jadi kalau air tinggi otomatis terdeteksi banjir?"</b>
+      <p><span class="verdict">Tidak persis</span>Air di dalam sungai sendiri tidak dihitung sebagai banjir. Sejak 13 November, model hanya menghitung air di daratan. Yang dihitung adalah air yang keluar dari sungai ke daratan dan tingginya lebih dari 15 cm. Jadi bukan "sungai rendah = banjir", tapi "sungai penuh, airnya tumpah ke daratan = banjir".</p>
+    </div>
+    <div class="q">
+      <b class="ask">"Kenapa area padat malah tidak banjir, tapi area terbuka banjir parah?"</b>
+      <p><span class="verdict fix">Sebagian karena salah hitung</span>Kolam, situ, waduk dan tambak ikan ikut terhitung sebagai "banjir" karena selalu berisi air. Di peta, tempat-tempat itu muncul sebagai banjir paling dalam (rata-rata 1,3 meter) di lahan terbuka. Ini sudah dibetulkan. Sisanya karena hujan satelit terlalu kecil untuk satu titik, sehingga genangan di kampung padat yang terjadi karena hujan lokal deras tidak terlihat. Faktanya, 60 dari 83 km² banjir model tahun 2020 justru ada di area padat.</p>
+    </div>
+    <div class="q">
+      <b class="ask">"Tanahmu sebelumnya keliru?"</b>
+      <p><span class="verdict half">Sebagian benar</span>Peta geologimu menunjukkan hampir separuh Jakarta berdiri di atas endapan kipas gunung api yang lebih mudah menyerap air, padahal model menganggap 98 % tanahnya sulit menyerap. Tapi karena 85 % lahan Jakarta tertutup atap dan aspal, mengganti jenis tanah hanya mengubah air limpasan sekitar 1 %. Jadi tanah bukan penyebab pola yang kamu lihat.</p>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2>Resepnya: dari data sampai peta banjir</h2>
+  <p>Bayangkan Jakarta dipotong-potong jadi kotak kecil seperti ubin lantai. Satu kotak lebarnya 30 meter (untuk seluruh kota, 90 meter supaya cepat). Untuk tiap kotak, komputer melakukan langkah ini berulang-ulang, setiap beberapa detik waktu simulasi.</p>
+  <ol class="steps">
+    <li><div><h3>Tinggi tanah</h3><p>Dari peta satelit FABDEM, kita tahu tiap kotak setinggi berapa. Gedung dan pohon sudah dihapus dari peta ini, jadi yang tersisa permukaan tanah.</p><p class="like">Seperti tahu mana bagian lantai yang miring dan mana yang cekung.</p></div></li>
+    <li><div><h3>Sungai dan saluran</h3><p>Garis sungai dari OpenStreetMap dan saluran besar dari Dinas SDA "dicungkil" ke dalam peta tanah supaya air bisa mengalir di dalamnya.</p><p class="like">Seperti menggambar parit di pasir.</p></div></li>
+    <li><div><h3>Hujan turun</h3><p>Hujan bisa dari skenario yang kamu pilih, atau hujan sungguhan yang direkam satelit NASA (IMERG) saat banjir 2020, 2021 dan 2025.</p></div></li>
+    <li><div><h3>Sebagian meresap, sisanya mengalir</h3><p>Atap dan aspal hampir tidak menyerap air. Kebun, sawah dan lapangan menyerap sebagian. Berapa banyak yang meresap dihitung dengan rumus "Curve Number" dari Departemen Pertanian Amerika (USDA).</p><p class="like">Seperti menyiram air ke spons dan ke piring: spons menahan, piring tidak.</p></div></li>
+    <li><div><h3>Air dari hulu masuk</h3><p>Hujan di Bogor dan Depok mengalir lewat sungai ke Jakarta. Model menghitung berapa air yang masuk dari tiap sungai.</p></div></li>
+    <li><div><h3>Air mengalir ke tempat lebih rendah</h3><p>Tiap kotak mengirim air ke tetangganya yang lebih rendah. Semakin kasar permukaannya (misalnya banyak bangunan), semakin lambat airnya.</p><p class="like">Seperti kelereng di atas papan miring.</p></div></li>
+    <li><div><h3>Catat yang paling dalam</h3><p>Untuk tiap kotak, model mencatat air paling dalam selama banjir. Kotak daratan dengan air lebih dari 15 cm diwarnai biru di peta dan dihitung luasnya.</p></div></li>
+  </ol>
+</section>
+
+<section>
+  <h2>Kenapa pinggir sungai cepat banjir</h2>
+  <figure>
+    <svg viewBox="0 0 640 230" width="100%" role="img" aria-label="Potongan sungai: di dunia nyata sungai dalam, di model sungai dangkal sehingga cepat meluap">
+      <text x="160" y="20" text-anchor="middle" font-size="15" font-weight="700" fill="var(--text)">Dunia nyata</text>
+      <text x="480" y="20" text-anchor="middle" font-size="15" font-weight="700" fill="var(--text)">Di model (sungai kecil)</text>
+      <!-- real: deep channel -->
+      <path d="M20 90 L120 90 L130 200 L190 200 L200 90 L300 90 L300 220 L20 220 Z" fill="var(--ground-soft)" stroke="var(--ground)" stroke-width="2"/>
+      <path d="M126 150 L194 150 L190 200 L130 200 Z" fill="var(--water)" opacity="0.85"/>
+      <line x1="200" y1="90" x2="230" y2="60" stroke="var(--muted)" stroke-width="1"/>
+      <text x="234" y="56" font-size="13" fill="var(--muted)">masih banyak ruang</text>
+      <text x="160" y="215" text-anchor="middle" font-size="12" fill="var(--text)">dalam 3–6 m</text>
+      <!-- model: shallow -->
+      <path d="M340 90 L440 90 L450 115 L510 115 L520 90 L620 90 L620 220 L340 220 Z" fill="var(--ground-soft)" stroke="var(--ground)" stroke-width="2"/>
+      <path d="M446 105 L514 105 L510 115 L450 115 Z" fill="var(--water)" opacity="0.85"/>
+      <path d="M380 82 Q480 70 580 82 L580 90 L380 90 Z" fill="var(--water)" opacity="0.45"/>
+      <text x="480" y="62" text-anchor="middle" font-size="13" fill="var(--muted)">cepat tumpah ke daratan</text>
+      <text x="480" y="140" text-anchor="middle" font-size="12" fill="var(--text)">rata-rata hanya ~1 m</text>
+    </svg>
+    <figcaption>Satelit melihat permukaan air atau tepi sungai, bukan dasarnya. Sungai yang lebih sempit dari 30 meter jadi terlalu dangkal di model.</figcaption>
+  </figure>
+  <p>Kami mengukur langsung di data model berapa tinggi tepi sungai dari dasarnya:</p>
+  <div class="tbl"><table>
+    <thead><tr><th>Sungai</th><th class="n">Dasar ke tepi di model</th><th>Catatan</th></tr></thead>
+    <tbody>
+      <tr><td>Kali Baru</td><td class="n">0,3 m</td><td>terlalu dangkal, langsung tumpah</td></tr>
+      <tr><td>Kali Mampang</td><td class="n">0,8 m</td><td>terlalu dangkal</td></tr>
+      <tr><td>Kali Angke</td><td class="n">1,6 m</td><td>dangkal</td></tr>
+      <tr><td>Kali Krukut</td><td class="n">2,0 m</td><td>ada data Dinas SDA</td></tr>
+      <tr><td>Ciliwung</td><td class="n">6,8 m</td><td>ada data Dinas SDA</td></tr>
+      <tr><td>Banjir Kanal Barat</td><td class="n">8,1 m</td><td>lebar, terlihat satelit</td></tr>
+    </tbody>
+  </table></div>
+  <p><b>Kesalahan yang ditemukan:</b> untuk saluran yang punya data kedalaman dari Dinas SDA (Sunter, Cakung, Krukut, Cipinang, Grogol dan lainnya), model mengisi saluran itu dengan air sejak awal, setinggi permukaan yang "dilihat" satelit. Masalahnya, 95 % kotak saluran itu lebih sempit dari 30 meter, jadi yang dilihat satelit adalah tepi atau jalan, bukan air. Akibatnya saluran sudah terisi rata-rata 3,2 meter air pura-pura (total 68 juta m³) dan hanya tersisa sekitar 28 cm ruang kosong. Begitu hujan, langsung meluap. Sekarang saluran hanya diisi air di tempat yang memang terlihat berair oleh satelit, dan di Jakarta Utara yang dasarnya di bawah permukaan laut diisi sampai setinggi laut, karena saluran di sana memang selalu berisi air laut pasang.</p>
+</section>
+
+<section>
+  <h2>Kenapa area padat terlihat kering, lahan terbuka terlihat parah</h2>
+  <p>Kami hitung untuk banjir 1 Januari 2020 (seluruh Jakarta, kotak 90 m), sebelum perbaikan:</p>
+  <div class="tbl"><table>
+    <thead><tr><th>Jenis tempat</th><th class="n">Bagian yang banjir</th><th class="n">Dalam rata-rata</th><th class="n">Luas banjir</th></tr></thead>
+    <tbody>
+      <tr><td>Kolam, situ, waduk, tambak</td><td class="n">45 %</td><td class="n">1,29 m</td><td class="n">3,9 km²</td></tr>
+      <tr><td>Lahan terbuka (sawah, lapangan, kebun)</td><td class="n">22 %</td><td class="n">0,50 m</td><td class="n">6,5 km²</td></tr>
+      <tr><td>Permukiman padat</td><td class="n">14 %</td><td class="n">0,43 m</td><td class="n">60,5 km²</td></tr>
+    </tbody>
+  </table></div>
+  <p>Jadi di model, area padat sebenarnya juga banjir dan menyumbang luas terbesar. Yang membuat lahan terbuka tampak "parah" adalah tiga hal:</p>
+  <ul class="plain">
+    <li><b>Kolam dan situ ikut dihitung banjir</b> (salah hitung, sudah dibetulkan). Air yang memang selalu ada di sana sekarang tidak dihitung dan tidak digambar sebagai banjir.</li>
+    <li><b>Lahan terbuka di Jakarta memang sering lebih rendah</b>: bekas rawa, sawah dan bantaran sungai. Justru karena sering tergenang, tempat itu tidak dibangun.</li>
+    <li><b>Hujan satelit terlalu "rata"</b>. Satu kotak hujan satelit selebar 11 km. Tanggal 1 Januari 2020, alat ukur di Halim mencatat 377 mm dalam sehari, tapi satelit hanya 166 mm untuk tiga hari. Genangan di kampung padat sering terjadi karena hujan deras lokal plus got tersumbat, dan itu tidak tertangkap. Karena itu kedalaman model di titik laporan warga hanya sekitar 10 cm, sedangkan warga melaporkan 55–70 cm.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Dua file yang kamu kirim</h2>
+  <div class="tbl"><table>
+    <thead><tr><th>File</th><th>Isinya</th><th>Dipakai untuk</th></tr></thead>
+    <tbody>
+      <tr><td>geology.zip</td><td>Peta geologi (batuan dan endapan di bawah tanah) lembar Jakarta & Kep. Seribu, Karawang, Serang, Anyer. 34 bidang. Bukan DEMNAS.</td><td>Membandingkan jenis tanah model. Hasil: 48 % kipas aluvial, 22 % lempung dataran banjir, 20 % aluvium, 5 % tuf Banten, 2 % pasir pantai.</td></tr>
+      <tr><td>kemang_ca.rar</td><td>Batas 17 RT di Kelurahan Bangka, Mampang Prapatan, dengan label risiko banjir Tinggi/Sedang/Rendah, plus 1.197 bentuk bangunan. Bukan DEMNAS juga. DEMNAS itu peta ketinggian (gambar raster), bukan batas RT.</td><td>Cek lokal. Kotak model 90 m terlalu kasar untuk RT sekecil itu: model belum bisa membedakan RT risiko tinggi dan rendah di sana. Perlu dicek ulang dengan kotak 30 m di aplikasi.</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section>
+  <h2>Yang dibetulkan hari ini</h2>
+  <div class="fix-list">
+    <div class="fix-item"><h3>1. Saluran tidak lagi "penuh" sejak awal</h3><p>Saluran Dinas SDA hanya diisi air di kotak yang memang terlihat berair oleh satelit, atau sampai setinggi laut di Jakarta Utara. Air awal di seluruh saluran turun dari 87 juta m³ menjadi 43 juta m³.</p></div>
+    <div class="fix-item"><h3>2. Kolam, situ, waduk, tambak bukan banjir</h3><p>Kotak yang lebih dari separuhnya air permanen sekarang diperlakukan seperti sungai: airnya tidak dihitung dan tidak digambar sebagai banjir.</p></div>
+    <div class="fix-item"><h3>3. Hujan rencana di hulu dikurangi sesuai luasnya</h3><p>Hujan rencana (misalnya 150 mm) adalah hujan di satu titik. Di daerah tangkapan seluas 1.000 km², rata-ratanya pasti lebih kecil. Dulu angka titik dipakai penuh untuk seluruh hulu, sehingga air sungai dari hulu terlalu besar. Sekarang dikali "faktor reduksi luas" (rumus standar dari kurva TP-29 Amerika): sekitar 0,82–0,87 untuk hujan 6 jam.</p></div>
+    <div class="fix-item open"><h3>Belum bisa dibetulkan: kedalaman sungai kecil</h3><p>Butuh data penampang sungai (lebar dan dalam) dari Dinas SDA atau BBWS Ciliwung-Cisadane. Kalau kamu punya atau bisa minta, ini perbaikan berikutnya yang paling berpengaruh.</p></div>
+  </div>
+</section>
+
+<section id="hasil">
+  <h2>Hasil setelah perbaikan</h2>
+  <p><b>Bukti paling jelas:</b> kami jalankan model <b>tanpa hujan sama sekali</b> dan tanpa air dari hulu, di kotak 20 × 20 km Jakarta tengah-timur. Model lama tetap menunjukkan banjir <b>14,6 km²</b> (5,2 km² di antaranya lebih dalam dari setengah meter), padahal tidak ada hujan. Air itu datang dari saluran yang dianggap penuh sejak awal, lalu meluap di sepanjang saluran. Model baru: <b>0,1 km²</b>. Jadi kesanmu "sepanjang sungai selalu banjir" sebagian besar memang karena kesalahan ini.</p>
+  <div class="tbl"><table>
+    <thead><tr><th>Banjir</th><th class="n">Laporan warga kena (lama → baru)</th><th class="n">Titik acak kena (lama → baru)</th><th class="n">Luas banjir DKI (lama → baru)</th></tr></thead>
+    <tbody>
+      <tr><td>1 Jan 2020</td><td class="n">50 → 44 %</td><td class="n">43 → 37 %</td><td class="n">83 → 62 km²</td></tr>
+      <tr><td>20 Feb 2021</td><td class="n">47 → 33 %</td><td class="n">28 → 19 %</td><td class="n">45 → 20 km²</td></tr>
+      <tr><td>4 Mar 2025</td><td class="n">41 → 35 %</td><td class="n">43 → 36 %</td><td class="n">77 → 55 km²</td></tr>
+    </tbody>
+  </table></div>
+  <p>Cara membacanya: "titik acak" adalah nilai kalau kita menebak tanpa model. Model berguna kalau angkanya di atas titik acak. Setelah perbaikan, model masih lebih baik dari menebak pada 2020 dan 2021, tapi tidak pada 2025 (laporannya hanya 49). Angka "kena" turun karena sebagian kecocokan lama berasal dari air pura-pura. Model sekarang <b>lebih jujur tapi lebih kering</b>: tahun 2020 Pemprov melaporkan 156 km² banjir, model 62 km². Kekurangan itu sekarang terlihat jelas, dan penyebabnya bisa ditunjuk: hujan satelit terlalu rata dan sungai kecil terlalu dangkal.</p>
+  <p>Di Kemang (kotak 30 m, banjir 2020) perbaikan hampir tidak mengubah apa-apa: hanya 39 kotak berubah, paling banyak 7 cm. Di sana banjir datang dari air Kali Krukut dan Kali Mampang dari hulu yang tumpah karena alurnya dangkal di model. RT berlabel "Tinggi" di filemu memang lebih sering tergenang di model (42 % luasnya) daripada RT "Sedang" dan "Rendah" (27 %), tapi RT rendahnya hanya 2, terlalu sedikit untuk disimpulkan.</p>
+</section>
+
+<section>
+  <h2>Kemungkinan-kemungkinan, berdasarkan data yang ada</h2>
+  <ul class="plain">
+    <li><b>Peta banjir model bagus untuk melihat pola besar</b>: daerah mana yang airnya datang dari sungai, mana yang lebih rendah. Di 2 dari 3 banjir, model lebih baik daripada menebak acak.</li>
+    <li><b>Belum bisa dipakai untuk menjawab "rumah saya banjir atau tidak"</b>. Tinggi tanah satelit bisa meleset sekitar 1 meter, padahal banjir Jakarta biasanya 30–70 cm.</li>
+    <li><b>Kedalaman model cenderung terlalu dangkal</b> di tempat warga melapor, terutama karena hujan satelit terlalu rata.</li>
+    <li><b>Air dari hulu mungkin terlalu besar pada hujan rencana.</b> Tanah daerah hulu (Bogor, Depok) dianggap sulit menyerap (angka CN sekitar 92 untuk Ciliwung). Peta geologimu tidak sampai ke hulu, jadi ini belum bisa dicek.</li>
+    <li><b>Yang paling bisa memperbaiki</b>, urut dari yang paling berpengaruh: data hujan alat ukur BMKG per jam, data kedalaman sungai, peta tinggi tanah yang lebih teliti (LiDAR), lalu data saluran kota lain selain Jakarta Selatan.</li>
+  </ul>
+</section>
+
+</div>

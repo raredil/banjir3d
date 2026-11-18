@@ -36,3 +36,6 @@
 | FathomDEM (Uhe et al. 2025, 30 m, CC BY-NC-SA, Zenodo 14523356, files on request): owner requests access; then terrain probe vs FABDEM/DEMNAS and the 3-flood scores (research/2026-11-13-open-terrain-rain-soil.md) | owner + 4 |
 | Micro drains for the other kota (same DSDA layer with LEBAR/KEDALAMAN) and as river inflow instead of a sink | owner + 3 |
 | LiDAR 2012 DKI (used in studies, not open): use only if the owner obtains a file with permission; shift by subsidence since 2012 | owner |
+| River cross-sections (width/depth) for rivers without DSDA depth (Kali Baru 0.33 m, Mampang 0.8 m, Angke 1.6 m bed-to-bank in the model): ask owner for DSDA/BBWS Ciliwung-Cisadane data; otherwise hydraulic geometry with a stated relation (ADR 0021) | 4 |
+| Geology map (owner, 2026-11-17) as a map layer and as an upstream soil-group check; ask owner for the source/licence of the shapefile (Badan Geologi sheets) | 4 |
+| Kemang RT flood-risk labels (owner): compare with a 30 m box run in the app (90 m does not resolve RTs); ask who made the labels and how | 4 |

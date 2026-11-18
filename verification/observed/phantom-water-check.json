@@ -1,0 +1,6 @@
+{
+ "_about": "No-rain test of the drain start water (ADR 0021): verification/observed/run_event.ts --k 3 --box 106.80,-6.30,106.98,-6.12 --pumps off, event 2021-02-20 window (48 h). Flooded = land (not channel, sea or water body) deeper than 0.15 m. Hybrid packs: e16 with the flags and n of e14 (drain fix only) and e16 with the h0 of e14 (water bodies only).",
+ "date": "2026-11-18",
+ "no_rain_no_inflow": {"e14_flooded_km2": 14.6, "e14_flooded_gt05_km2": 5.2, "e14_water_out_mm3": 59.5, "e16_flooded_km2": 0.1, "e16_water_out_mm3": 9.9},
+ "with_2021_rain_common_land_km2": {"e14": 23.2, "drain_fix_only": 10.7, "water_bodies_only": 23.7, "e16": 10.6}
+}

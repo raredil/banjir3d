@@ -3,14 +3,14 @@
 > The AUTO part is rebuilt by `python3 tools/make_map.py`. Write by hand only below it.
 
 <!-- AUTO:START -->
-Files: 162 | Lines: 21195 | Fingerprint: 48685127d9896b63 | Generated: 2026-11-13
+Files: 180 | Lines: 24833 | Fingerprint: 369d6bd9743ab113 | Generated: 2026-11-18
 
 ### Files
 - `pipeline/catalog_tools.py` (67 lines): load, bib_entries, check, write_bib
 - `pipeline/demnas_ingest.py` (168 lines): gh, find_release, describe, qa_stats, main, covered
 - `pipeline/demnas_public.py` (63 lines): main
 - `pipeline/demnas_tiles.py` (103 lines): wc_tile, land_fraction, main
-- `pipeline/engine_pack.py` (581 lines): sha256, hsg_from_texture, soil_groups, class_tables, lc_to_n_cn, burn_channels, carve_drains, pump_rates (+11 more)
+- `pipeline/engine_pack.py` (601 lines): sha256, hsg_from_texture, soil_groups, class_tables, lc_to_n_cn, burn_channels, carve_drains, pump_rates (+11 more)
 - `pipeline/exposure_pack.py` (179 lines): engine_grid, overture_divisions, build
 - `pipeline/jakartasatu.py` (121 lines): fetch, num_range, channel_size, main
 - `pipeline/make_domain.py` (99 lines): _round, r, build
@@ -27,7 +27,7 @@ Files: 162 | Lines: 21195 | Fingerprint: 48685127d9896b63 | Generated: 2026-11-1
 - `pipeline/b3d/util.py` (144 lines): now_utc, sha256, http_get, download, write_cog, raster_info, output_record, software_versions (+1 more)
 - `pipeline/tests/test_catalog.py` (6 lines): test_catalog_valid
 - `pipeline/tests/test_domain.py` (19 lines): test_jakarta_domain
-- `pipeline/tests/test_engine_drains.py` (49 lines): test_channel_size_fields, test_carve_drains_area_equivalent_depth, test_pump_rates
+- `pipeline/tests/test_engine_drains.py` (61 lines): test_channel_size_fields, test_carve_drains_area_equivalent_depth, test_pump_rates
 - `pipeline/tests/test_engine_subsidence.py` (19 lines): test_subsidence_onto_grid
 - `pipeline/tests/test_grid.py` (26 lines): _crsless_tile, test_crsless_source
 - `pipeline/tests/test_map_layers.py` (37 lines): test_map_layers
@@ -65,12 +65,12 @@ Files: 162 | Lines: 21195 | Fingerprint: 48685127d9896b63 | Generated: 2026-11-1
   - data objects: FONT
 - `web/src/pmtiles-init.ts` (14 lines): ensurePmtiles
 - `web/src/util.ts` (93 lines): esc, safeUrl, fmtBytes, toUtm, rasterResampling, fromUtm
-- `web/src/engine/engine.test.ts` (180 lines): grid, run, isIn, mk
+- `web/src/engine/engine.test.ts` (198 lines): grid, run, isIn, mk
 - `web/src/engine/event-rain.ts` (46 lines): zoneGrid, cumAtSteps, meanHyetograph, nearest, pointAt
 - `web/src/engine/gpu.ts` (321 lines): GpuEngine, buf, off, group
-- `web/src/engine/hydrology.ts` (118 lines): nrcsLagHours, uhRatio, catchmentHydrograph, findEntries, inflowsFor, entryMembers, inflowsForSpatial, vol
+- `web/src/engine/hydrology.ts` (130 lines): nrcsLagHours, uhRatio, catchmentHydrograph, findEntries, arealReduction, inflowsFor, entryMembers, inflowsForSpatial (+1 more)
   - data objects: UH_Q, UH_T
-- Not listed one by one (102 files): data/ (7), data/demnas/ (1), data/engine/ (2), data/events/ (3), data/methods/ (1), data/roughness/ (1), verification/analytical-wave/ (2), verification/data-checks/ (2), verification/explore-vs-sfincs/ (3), verification/fine-consistency/ (3), verification/fine-speed/ (4), verification/gpu-parity/ (2), verification/observed/ (25), verification/speed/ (3), web/ (5), web/public/data/jakarta/ (3), web/public/meta/ (2), web/scripts/ (2), web/src/ (6), web/src/engine/ (4), web/src/explore/ (7), web/src/methods/ (3), web/src/sim/ (11)
+- Not listed one by one (120 files): data/ (7), data/demnas/ (1), data/engine/ (2), data/events/ (3), data/methods/ (1), data/roughness/ (1), docs/penjelasan/ (1), verification/analytical-wave/ (2), verification/data-checks/ (2), verification/explore-vs-sfincs/ (3), verification/fine-consistency/ (3), verification/fine-speed/ (4), verification/gpu-parity/ (2), verification/observed/ (29), verification/speed/ (3), web/ (5), web/public/data/jakarta/ (16), web/public/meta/ (2), web/scripts/ (2), web/src/ (6), web/src/engine/ (4), web/src/explore/ (7), web/src/methods/ (3), web/src/sim/ (11)
 
 ### Links (A -> B means A loads or uses B)
 - `pipeline/catalog_tools.py` -> pipeline/engine_pack.py, web/src/engine/gpu.ts
