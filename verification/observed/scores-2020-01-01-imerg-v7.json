@@ -1,0 +1,153 @@
+{
+ "event": "2020-01-01",
+ "source": "PetaBencana.id flood reports and flooded-area archive (aggregate scores only)",
+ "reported": {
+  "_about": "Impact the city reported; figures are used only after reported_excerpts.json (fetched by the Action) shows them in the page text.",
+  "pages": [
+   "https://sumut.antaranews.com/berita/270492/banjir-tahun-baru-2020-adalah-yang-terbaik-selama-siklus-banjir-besar-jakarta",
+   "https://www.antaranews.com/berita/1921596/banjir-dan-kenangan",
+   "https://www.mobil123.com/berita/pemprov-dki-jakarta-klaim-banjir-kali-ini-tidak-seluas-tahun-lalu/62890/amp/"
+  ],
+  "flooded_km2": 156,
+  "flooded_rw": 390,
+  "status": "checked in page text 2026-10-30 (reported_excerpts.json in release observed-jakarta-20261030-o8)",
+  "quote": "luas area tergenang 156 km persegi dengan jumlah RW tergenang sebanyak 390 (Antara, data Pemprov DKI, rapat koordinasi 7 Jan 2020)",
+  "context": {
+   "2007": {
+    "km2": 455,
+    "rw": 955,
+    "rain_mm_day": 340
+   },
+   "2013": {
+    "km2": 240,
+    "rw": 599
+   },
+   "2015": {
+    "km2": 281,
+    "rw": 702
+   }
+  }
+ },
+ "n_flooded_area_records": 482,
+ "rw_shapes": 0,
+ "results": [
+  {
+   "run": "2020-01-01_imerg_k3_d0_poff",
+   "drain_mm_h": 0,
+   "rain": "rain_imerg.json",
+   "rain_scale": 1,
+   "terrain_year": 2019.9978310502283,
+   "pumps": false,
+   "pump_m3s": 664.8,
+   "amc": 2,
+   "infiltration": true,
+   "mean_rain_mm": 142.87322662903097,
+   "flooded_km2": 248.0868,
+   "mass_error": 1.049381606713963e-14,
+   "reports": {
+    "n_reports": 260,
+    "rule": "hit = model max depth >= 0.1 m on land (channels and sea excluded)",
+    "cell": {
+     "hit_rate": 0.19230769230769232,
+     "random_hit_rate": 0.1547748905458512,
+     "skill": 0.04440568712645087
+    },
+    "window_3x3_land": {
+     "hit_rate": 0.4346153846153846,
+     "random_hit_rate": 0.36625674282384235,
+     "skill": 0.10786488221765972
+    },
+    "legacy_window_with_channels": {
+     "hit_rate": 0.7038461538461539
+    },
+    "hit_rate": 0.4346153846153846,
+    "n_with_depth": 212,
+    "observed_median_m": 0.7,
+    "model_median_m": 0.08694740757346153,
+    "model_median_cell_m": 0.01773209683597088,
+    "depth_bias_m": -0.603266012073266,
+    "depth_mae_m": 0.6358123083475907,
+    "depth_rmse_m": 0.762400883912405,
+    "depth_note": "model depth = window_3x3_land value"
+   },
+   "micro": false,
+   "reports_micro_area": {
+    "n_reports": 21,
+    "rule": "hit = model max depth >= 0.1 m on land (channels and sea excluded)",
+    "cell": {
+     "hit_rate": 0.09523809523809523,
+     "random_hit_rate": 0.11850152905198777,
+     "skill": -0.02639078181142362
+    },
+    "window_3x3_land": {
+     "hit_rate": 0.19047619047619047,
+     "random_hit_rate": 0.347789824854045,
+     "skill": -0.24120082815734986
+    },
+    "legacy_window_with_channels": {
+     "hit_rate": 0.7142857142857143
+    },
+    "hit_rate": 0.19047619047619047,
+    "n_with_depth": 11,
+    "observed_median_m": 0.85,
+    "model_median_m": 0.05271226167678833,
+    "model_median_cell_m": 0.01267031766474247,
+    "depth_bias_m": -0.9241822130571712,
+    "depth_mae_m": 0.9241822130571712,
+    "depth_rmse_m": 1.1144705724237205,
+    "depth_note": "model depth = window_3x3_land value"
+   },
+   "micro_area_flooded_km2": 10.15,
+   "dki_flooded_km2": 61.6005,
+   "dki_land_km2": 542.0763,
+   "genangan_dsda": {
+    "source": "Jakarta Satu, Dinas SDA DKI, layer Genangan (aggregates only)",
+    "window_utc": [
+     "2019-12-30 05:00:00+00:00",
+     "2020-01-04 05:00:00+00:00"
+    ],
+    "n_polygons": 148,
+    "hit_rate": 0.527027027027027,
+    "median_model_depth_m": 0.10498612746596336,
+    "n_with_depth": 147,
+    "median_observed_depth_m": 0.3,
+    "median_model_depth_at_observed_m": 0.10493732988834381,
+    "mean_error_m": -0.14200363031151345,
+    "share_model_ge_half_observed": 0.41496598639455784
+   },
+   "rw_places": {
+    "source": "RW polygons: Shabrina et al. (2026), Zenodo 19456870, CC BY 4.0",
+    "n_rw": 2610,
+    "rw_share_threshold": 0.1,
+    "note": "RW without a record = not recorded (reports are incomplete): false_alarm_ratio is an upper bound",
+    "reports_or_dsda": {
+     "n_observed": 380,
+     "n_model": 623,
+     "hits": 113,
+     "hit_rate": 0.29736842105263156,
+     "false_alarm_ratio": 0.8186195826645265,
+     "csi": 0.12696629213483146,
+     "auc": 0.568644677838093
+    },
+    "reports": {
+     "n_observed": 112,
+     "n_model": 623,
+     "hits": 40,
+     "hit_rate": 0.35714285714285715,
+     "false_alarm_ratio": 0.9357945425361156,
+     "csi": 0.05755395683453238,
+     "auc": 0.5856810448358687
+    },
+    "dsda": {
+     "n_observed": 283,
+     "n_model": 623,
+     "hits": 80,
+     "hit_rate": 0.2826855123674912,
+     "false_alarm_ratio": 0.8715890850722311,
+     "csi": 0.09685230024213075,
+     "auc": 0.5596986368350642
+    }
+   }
+  }
+ ]
+}

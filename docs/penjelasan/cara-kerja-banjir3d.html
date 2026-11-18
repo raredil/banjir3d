@@ -69,7 +69,7 @@ a { color: var(--water); }
   <div class="qa">
     <div class="q">
       <b class="ask">"Sungai selalu banjir. Masalahnya di sungainya atau di metodenya?"</b>
-      <p><span class="verdict half">Dua-duanya</span>Di dunia nyata, tanah di pinggir sungai memang paling rendah, jadi wajar paling dulu kebanjiran. Tapi di model ada dua hal yang membuat sungai meluap terlalu cepat. Pertama, saluran besar dari data Dinas SDA dianggap sudah hampir penuh air sejak awal. Itu salah dan sudah dibetulkan. Kedua, sungai kecil di model terlalu dangkal, karena peta satelit 30 meter tidak bisa melihat dasar sungai selebar 5 sampai 15 meter. Yang kedua ini belum bisa dibetulkan tanpa data kedalaman sungai.</p>
+      <p><span class="verdict half">Dua-duanya</span>Di dunia nyata, tanah di pinggir sungai memang paling rendah, jadi wajar paling dulu kebanjiran. Tapi di model ada dua hal yang membuat sungai meluap terlalu cepat. Pertama, saluran besar dari data Dinas SDA dianggap sudah hampir penuh air sejak awal. Itu salah: tanpa hujan pun model lama sudah "banjir" 14,6 km² di satu kotak 20 × 20 km. Sudah dibetulkan. Kedua, sungai kecil di model terlalu dangkal, karena peta satelit 30 meter tidak bisa melihat dasar sungai selebar 5 sampai 15 meter. Yang kedua ini belum bisa dibetulkan tanpa data kedalaman sungai.</p>
     </div>
     <div class="q">
       <b class="ask">"Karena sungainya rendah, jadi kalau air tinggi otomatis terdeteksi banjir?"</b>
@@ -133,7 +133,7 @@ a { color: var(--water); }
       <tr><td>Banjir Kanal Barat</td><td class="n">8,1 m</td><td>lebar, terlihat satelit</td></tr>
     </tbody>
   </table></div>
-  <p><b>Kesalahan yang ditemukan:</b> untuk saluran yang punya data kedalaman dari Dinas SDA (Sunter, Cakung, Krukut, Cipinang, Grogol dan lainnya), model mengisi saluran itu dengan air sejak awal, setinggi permukaan yang "dilihat" satelit. Masalahnya, 95 % kotak saluran itu lebih sempit dari 30 meter, jadi yang dilihat satelit adalah tepi atau jalan, bukan air. Akibatnya saluran sudah terisi rata-rata 3,2 meter air pura-pura (total 68 juta m³) dan hanya tersisa sekitar 28 cm ruang kosong. Begitu hujan, langsung meluap. Sekarang saluran hanya diisi air di tempat yang memang terlihat berair oleh satelit.</p>
+  <p><b>Kesalahan yang ditemukan:</b> untuk saluran yang punya data kedalaman dari Dinas SDA (Sunter, Cakung, Krukut, Cipinang, Grogol dan lainnya), model mengisi saluran itu dengan air sejak awal, setinggi permukaan yang "dilihat" satelit. Masalahnya, 95 % kotak saluran itu lebih sempit dari 30 meter, jadi yang dilihat satelit adalah tepi atau jalan, bukan air. Akibatnya saluran sudah terisi rata-rata 3,2 meter air pura-pura (total 68 juta m³) dan hanya tersisa sekitar 28 cm ruang kosong. Begitu hujan, langsung meluap. Sekarang saluran hanya diisi air di tempat yang memang terlihat berair oleh satelit, dan di Jakarta Utara yang dasarnya di bawah permukaan laut diisi sampai setinggi laut, karena saluran di sana memang selalu berisi air laut pasang.</p>
 </section>
 
 <section>
@@ -169,7 +169,7 @@ a { color: var(--water); }
 <section>
   <h2>Yang dibetulkan hari ini</h2>
   <div class="fix-list">
-    <div class="fix-item"><h3>1. Saluran tidak lagi "penuh" sejak awal</h3><p>Saluran Dinas SDA hanya diisi air di kotak yang memang terlihat berair oleh satelit. Air pura-pura yang hilang: sekitar 68 juta m³.</p></div>
+    <div class="fix-item"><h3>1. Saluran tidak lagi "penuh" sejak awal</h3><p>Saluran Dinas SDA hanya diisi air di kotak yang memang terlihat berair oleh satelit, atau sampai setinggi laut di Jakarta Utara. Air awal di seluruh saluran turun dari 87 juta m³ menjadi 43 juta m³.</p></div>
     <div class="fix-item"><h3>2. Kolam, situ, waduk, tambak bukan banjir</h3><p>Kotak yang lebih dari separuhnya air permanen sekarang diperlakukan seperti sungai: airnya tidak dihitung dan tidak digambar sebagai banjir.</p></div>
     <div class="fix-item"><h3>3. Hujan rencana di hulu dikurangi sesuai luasnya</h3><p>Hujan rencana (misalnya 150 mm) adalah hujan di satu titik. Di daerah tangkapan seluas 1.000 km², rata-ratanya pasti lebih kecil. Dulu angka titik dipakai penuh untuk seluruh hulu, sehingga air sungai dari hulu terlalu besar. Sekarang dikali "faktor reduksi luas" (rumus standar dari kurva TP-29 Amerika): sekitar 0,82–0,87 untuk hujan 6 jam.</p></div>
     <div class="fix-item open"><h3>Belum bisa dibetulkan: kedalaman sungai kecil</h3><p>Butuh data penampang sungai (lebar dan dalam) dari Dinas SDA atau BBWS Ciliwung-Cisadane. Kalau kamu punya atau bisa minta, ini perbaikan berikutnya yang paling berpengaruh.</p></div>
@@ -178,7 +178,17 @@ a { color: var(--water); }
 
 <section id="hasil">
   <h2>Hasil setelah perbaikan</h2>
-  <p class="note">Sedang dihitung ulang di server untuk tiga banjir (2020, 2021, 2025). Bagian ini diisi setelah selesai.</p>
+  <p><b>Bukti paling jelas:</b> kami jalankan model <b>tanpa hujan sama sekali</b> dan tanpa air dari hulu, di kotak 20 × 20 km Jakarta tengah-timur. Model lama tetap menunjukkan banjir <b>14,6 km²</b> (5,2 km² di antaranya lebih dalam dari setengah meter), padahal tidak ada hujan. Air itu datang dari saluran yang dianggap penuh sejak awal, lalu meluap di sepanjang saluran. Model baru: <b>0,1 km²</b>. Jadi kesanmu "sepanjang sungai selalu banjir" sebagian besar memang karena kesalahan ini.</p>
+  <div class="tbl"><table>
+    <thead><tr><th>Banjir</th><th class="n">Laporan warga kena (lama → baru)</th><th class="n">Titik acak kena (lama → baru)</th><th class="n">Luas banjir DKI (lama → baru)</th></tr></thead>
+    <tbody>
+      <tr><td>1 Jan 2020</td><td class="n">50 → 44 %</td><td class="n">43 → 37 %</td><td class="n">83 → 62 km²</td></tr>
+      <tr><td>20 Feb 2021</td><td class="n">47 → 33 %</td><td class="n">28 → 19 %</td><td class="n">45 → 20 km²</td></tr>
+      <tr><td>4 Mar 2025</td><td class="n">41 → 35 %</td><td class="n">43 → 36 %</td><td class="n">77 → 55 km²</td></tr>
+    </tbody>
+  </table></div>
+  <p>Cara membacanya: "titik acak" adalah nilai kalau kita menebak tanpa model. Model berguna kalau angkanya di atas titik acak. Setelah perbaikan, model masih lebih baik dari menebak pada 2020 dan 2021, tapi tidak pada 2025 (laporannya hanya 49). Angka "kena" turun karena sebagian kecocokan lama berasal dari air pura-pura. Model sekarang <b>lebih jujur tapi lebih kering</b>: tahun 2020 Pemprov melaporkan 156 km² banjir, model 62 km². Kekurangan itu sekarang terlihat jelas, dan penyebabnya bisa ditunjuk: hujan satelit terlalu rata dan sungai kecil terlalu dangkal.</p>
+  <p>Di Kemang (kotak 30 m, banjir 2020) perbaikan hampir tidak mengubah apa-apa: hanya 39 kotak berubah, paling banyak 7 cm. Di sana banjir datang dari air Kali Krukut dan Kali Mampang dari hulu yang tumpah karena alurnya dangkal di model. RT berlabel "Tinggi" di filemu memang lebih sering tergenang di model (42 % luasnya) daripada RT "Sedang" dan "Rendah" (27 %), tapi RT rendahnya hanya 2, terlalu sedikit untuk disimpulkan.</p>
 </section>
 
 <section>
@@ -187,6 +197,7 @@ a { color: var(--water); }
     <li><b>Peta banjir model bagus untuk melihat pola besar</b>: daerah mana yang airnya datang dari sungai, mana yang lebih rendah. Di 2 dari 3 banjir, model lebih baik daripada menebak acak.</li>
     <li><b>Belum bisa dipakai untuk menjawab "rumah saya banjir atau tidak"</b>. Tinggi tanah satelit bisa meleset sekitar 1 meter, padahal banjir Jakarta biasanya 30–70 cm.</li>
     <li><b>Kedalaman model cenderung terlalu dangkal</b> di tempat warga melapor, terutama karena hujan satelit terlalu rata.</li>
+    <li><b>Air dari hulu mungkin terlalu besar pada hujan rencana.</b> Tanah daerah hulu (Bogor, Depok) dianggap sulit menyerap (angka CN sekitar 92 untuk Ciliwung). Peta geologimu tidak sampai ke hulu, jadi ini belum bisa dicek.</li>
     <li><b>Yang paling bisa memperbaiki</b>, urut dari yang paling berpengaruh: data hujan alat ukur BMKG per jam, data kedalaman sungai, peta tinggi tanah yang lebih teliti (LiDAR), lalu data saluran kota lain selain Jakarta Selatan.</li>
   </ul>
 </section>

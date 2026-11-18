@@ -115,11 +115,44 @@
    ]
   },
   {
+   "id": "observed-corrected",
+   "status": "partial",
+   "file": "verification/observed/scores-2020-01-01-imerg-v7.json",
+   "id_txt": "Banjir nyata setelah perbaikan 17 Nov 2026: saluran tidak lagi penuh air pura-pura sejak awal, dan kolam/situ bukan banjir. Uji tanpa hujan: model lama sudah 'membanjiri' 14,6 km² di kotak 20 × 20 km Jakarta tengah-timur hanya dari air pura-pura di saluran; model baru 0,1 km². Skor baru: 44 % (2020), 33 % (2021), 35 % (2025) laporan kena, dibanding 37, 19 dan 36 % untuk titik acak. Masih lebih baik dari acak pada 2020 dan 2021, tidak pada 2025. Model sekarang lebih kering (luas DKI 2020: 62 km², laporan Pemprov 156 km²): sebagian kecocokan lama berasal dari air yang tidak ada. Penyebab utama yang tersisa: hujan satelit terlalu rata dan sungai kecil terlalu dangkal di model.",
+   "en_txt": "Observed floods after the fixes of 17 Nov 2026: drains no longer start full of phantom water, and ponds are not floods. No-rain test: the old model already 'flooded' 14.6 km² of a 20 × 20 km box of central-east Jakarta from phantom drain water alone; the new model 0.1 km². New scores: 44 % (2020), 33 % (2021), 35 % (2025) of reports hit, against 37, 19 and 36 % for random points. Still better than random in 2020 and 2021, not in 2025. The model is now drier (2020 DKI area 62 km², city report 156 km²): part of the old agreement came from water that was not there. Main remaining causes: smoothed satellite rain and too-shallow small rivers in the model.",
+   "metrics": [
+    [
+     "Reports hit within ~270 m (land) vs random, 2020 · 2021 · 2025",
+     "44 % vs 37 % · 33 % vs 19 % · 35 % vs 36 %"
+    ],
+    [
+     "Same cell only, vs random",
+     "19 % vs 16 % · 15 % vs 5 % · 12 % vs 14 %"
+    ],
+    [
+     "Median depth at reports, model / reported",
+     "0.09 / 0.70 m · 0.05 / 0.65 m · 0.06 / 0.55 m"
+    ],
+    [
+     "Flooded area > 0.15 m in DKI, model",
+     "62 · 20 · 55 km² (2020 reported: 156 km²)"
+    ],
+    [
+     "No rain, no inflow (20 × 20 km box, 90 m): flooded land, old / new pack",
+     "14.6 / 0.1 km²"
+    ],
+    [
+     "Set-up",
+     "90 m, GPM IMERG, pumps off, small-drain sink 0, average soil, subsidence to the event date; engine pack e16"
+    ]
+   ]
+  },
+  {
    "id": "observed",
    "status": "partial",
    "file": "verification/observed/scores-2020-01-01-imerg-v6.json",
-   "id_txt": "Banjir nyata (aturan skor baru, 13 Nov 2026): laporan warga PetaBencana dihitung \"kena\" bila model ≥ 10 cm di DARATAN dalam ±270 m (air di alur sungai tidak lagi dihitung). Hasil: 50 % (2020), 47 % (2021) dan 41 % (2025) laporan kena, dibanding 43, 28 dan 43 % untuk titik acak di daratan DKI. Model jelas lebih baik dari acak pada 2021, sedikit pada 2020, dan tidak pada 2025. Aturan lama (air sungai ikut dihitung) memberi 72–75 % dan terlalu menyanjung model. Luas banjir DKI 2020: model 83 km², laporan Pemprov 156 km².",
-   "en_txt": "Observed floods (new scoring rule, 13 Nov 2026): a PetaBencana citizen report counts as hit when the model reaches 0.10 m on LAND within about 270 m (water in river channels no longer counts). Result: 50 % (2020), 47 % (2021) and 41 % (2025) of reports hit, against 43, 28 and 43 % for random points on DKI land. The model is clearly better than random in 2021, slightly in 2020 and not in 2025. The old rule (river water counted) gave 72–75 % and flattered the model. 2020 DKI flooded area: model 83 km², city government 156 km².",
+   "id_txt": "Banjir nyata, versi lama sebelum perbaikan 17 Nov 2026: paket 14 Nov 2026 masih mengandung 2 kesalahan. Aturan skor baru (13 Nov 2026): laporan warga PetaBencana dihitung \"kena\" bila model ≥ 10 cm di DARATAN dalam ±270 m (air di alur sungai tidak lagi dihitung). Hasil: 50 % (2020), 47 % (2021) dan 41 % (2025) laporan kena, dibanding 43, 28 dan 43 % untuk titik acak di daratan DKI. Model jelas lebih baik dari acak pada 2021, sedikit pada 2020, dan tidak pada 2025. Aturan lama (air sungai ikut dihitung) memberi 72–75 % dan terlalu menyanjung model. Luas banjir DKI 2020: model 83 km², laporan Pemprov 156 km².",
+   "en_txt": "Observed floods, old version before the fixes of 17 Nov 2026: the pack of 14 Nov 2026 still had two errors. New scoring rule (13 Nov 2026): a PetaBencana citizen report counts as hit when the model reaches 0.10 m on LAND within about 270 m (water in river channels no longer counts). Result: 50 % (2020), 47 % (2021) and 41 % (2025) of reports hit, against 43, 28 and 43 % for random points on DKI land. The model is clearly better than random in 2021, slightly in 2020 and not in 2025. The old rule (river water counted) gave 72–75 % and flattered the model. 2020 DKI flooded area: model 83 km², city government 156 km².",
    "metrics": [
     [
      "Reports hit within ~270 m (land) vs random, 2020 · 2021 · 2025",

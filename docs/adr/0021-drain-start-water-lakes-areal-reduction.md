@@ -39,5 +39,5 @@ Audit on the e14 pack and the v21–v23 runs (scripts in the session scratchpad;
 - Plain-language page for the owner: `docs/penjelasan/cara-kerja-banjir3d.html` (published as an Artifact).
 
 ## Consequences
-- New engine pack (e15); validation runs on the three floods with pumps off, AMC II (see HANDOFF for the scores).
+- Engine pack e16. No-rain test (20 x 20 km box, 90 m): old pack floods 14.6 km2 from start water alone, e16 0.1 km2; the drain fix, not the water bodies, causes the change (hybrid packs). Scores v30-v32: window hit 44/33/35 % vs random 37/19/36 %, DKI flooded 62/20/55 km2 (was 83/45/77). Part of the old agreement came from phantom water; the model is now drier than reported (156 km2 in 2020).
 - Remaining: river depth for OSM-only rivers (needs DSDA/BBWS cross-sections), satellite rain smoothing (gauge rain).
