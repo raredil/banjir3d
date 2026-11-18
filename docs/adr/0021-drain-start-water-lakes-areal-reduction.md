@@ -26,8 +26,10 @@ Audit on the e14 pack and the v21–v23 runs (scripts in the session scratchpad;
    grid does not resolve RT-scale risk; not used as a score.
 
 ## Decision
-- `engine_pack.carve_drains(..., water_seen)`: start water only where the 30 m cell is ≥ 50 % IO water; elsewhere the carved
-  drain starts empty. Pack info keeps both volumes (`initial_volume_million_m3`, `..._if_filled_everywhere_...`).
+- `engine_pack.carve_drains(..., water_seen)`: start water up to the recorded surface where the 30 m cell is ≥ 50 % IO water;
+  elsewhere the carved drain starts empty above 0 m and filled up to 0 m below it (`START_SEA_M`, tidal drains of the north).
+  First version (e15) started them empty everywhere: 2020 DKI flood 82.8 -> 60.4 km2, 2021 44.7 -> 19.8, 2025 77.4 -> 54.3,
+  report skill 2021 0.26 -> 0.18; the below-sea-level drains then took rain as storage they never have in reality. Pack info keeps both volumes (`initial_volume_million_m3`, `..._if_filled_everywhere_...`).
 - Water bodies: cells with ≥ 50 % IO water that are not sea or channel get the channel flag (bit 0). Same treatment as rivers
   everywhere (not counted, not drawn, not scored, n 0.035, no drain sink). `channels.water_body_cells` in the pack header.
 - `hydrology.arealReduction(A, D)` = 1 − exp(−1.1 D^0.25) + exp(−1.1 D^0.25 − 0.0039 A) (Leclerc and Schaake fit of TP-29, as in

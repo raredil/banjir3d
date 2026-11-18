@@ -34,6 +34,10 @@ def test_carve_drains_area_equivalent_depth(tmp_path):
     assert np.allclose(out2, out)  # same bed
     assert np.allclose(h02[2, :2], 2.0) and h02[2, 2:].sum() == 0
     assert info2["initial_volume_million_m3"] < info2["initial_volume_if_filled_everywhere_million_m3"]
+    # land seen, bank at 0.5 m, bed 0.5 - 2 = -1.5 m: only the part below sea level (0 m) starts filled -> 1.5 m of water
+    z2 = np.full((5, 5), 0.5)
+    _, _, h03, _ = carve_drains(z2, z2.copy(), np.zeros((5, 5), bool), tr, p, np.zeros((5, 5), bool))
+    assert np.allclose(h03[2], 1.5) and h03[0].sum() == 0
 
 
 def test_pump_rates(tmp_path):

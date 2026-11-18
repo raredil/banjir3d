@@ -174,6 +174,7 @@ def burn_channels(z: np.ndarray, transform, crs, water_gpkg: Path) -> tuple[np.n
 
 
 DRAIN_MAX_M = 10.0  # cap on the carved depth (deepest mapped primary drain is about 8 m)
+START_SEA_M = 0.0  # start water level of carved drains below sea level where the satellite saw no water (model sea level default)
 
 
 def carve_drains(z0: np.ndarray, zc: np.ndarray, chan: np.ndarray, transform, gpkg: Path | None,
@@ -184,7 +185,7 @@ def carve_drains(z0: np.ndarray, zc: np.ndarray, chan: np.ndarray, transform, gp
     (the conditioned terrain before carving) starts filled, as for the OSM channels (base flow), and is returned as initial depth,
     but ONLY where the satellite saw water in the cell (water_seen: at least half of the 30 m cell is IO water). Elsewhere the
     drain is narrower than the cell, the DEM height there is the bank or the street, not a water surface, and the drain starts
-    empty (2026-11-17: before, 95 % of the carved cells started filled up to the bank level the DEM saw, median 3.2 m of water,
+    empty above sea level and filled up to sea level below it (tidal drains of the low north) (2026-11-17: before, 95 % of the carved cells started filled up to the bank level the DEM saw, median 3.2 m of water,
     68 million m3, which left a median 0.28 m of free room and made the drains overflow at once)."""
     if gpkg is None:
         return zc, chan, None, {}
@@ -226,7 +227,9 @@ def carve_drains(z0: np.ndarray, zc: np.ndarray, chan: np.ndarray, transform, gp
     h0 = np.where(mask, surface - out, 0.0).clip(min=0)
     h0_all = float(h0.sum() * dx * dx / 1e6)
     if water_seen is not None:
-        h0 = np.where(water_seen, h0, 0.0)
+        # where the satellite saw land, the drain starts empty above mean sea level and filled up to it below (drains in the low
+        # north are tidal and hold water at sea level; the model sea is held at 0 m by default)
+        h0 = np.where(water_seen, h0, (np.minimum(surface, START_SEA_M) - out).clip(min=0))
     lowered = out < zc
     info = {"source": "Jakarta Satu, Dinas SDA DKI (raw vectors not published)", "records": counts,
             "channel_cells_added": int(newchan.sum()), "cells_with_depth": int((deff > 0).sum()), "cells_lowered": int(lowered.sum()),
@@ -234,7 +237,7 @@ def carve_drains(z0: np.ndarray, zc: np.ndarray, chan: np.ndarray, transform, gp
             "initial_volume_million_m3": round(float(h0.sum() * dx * dx / 1e6), 2),
             "initial_volume_if_filled_everywhere_million_m3": round(h0_all, 2),
             "rule": "bed = min(terrain, 3x3 median bank - depth x min(width, 30 m) / 30 m); carved part below the recorded water surface "
-                    "starts filled (h0) only where the satellite saw water (>= 50 % IO water in the cell), elsewhere it starts empty"}
+                    "starts filled (h0) where the satellite saw water (>= 50 % IO water in the cell); elsewhere only the part below 0 m (sea level) starts filled"}
     return out, chan | mask, h0, info
 
 
