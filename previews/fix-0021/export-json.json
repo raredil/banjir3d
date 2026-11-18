@@ -1,0 +1,407 @@
+{
+ "id": "B3D-20261118T0252",
+ "created": "2026-11-18T02:52:35.492Z",
+ "app": "Banjir3D",
+ "data_release": "region-jakarta-20261117-e15",
+ "engine": {
+  "name": "Banjir3D flood engine v2 (local inertial, Bates et al. 2010; NRCS CN; NRCS unit hydrograph inflows)",
+  "device": "CPU float64",
+  "wall_s": 28.3425
+ },
+ "engine_pack": {
+  "created": "2026-11-17T04:58:41Z",
+  "inputs_sha256": {
+   "dem_fabdem.tif": "140ca7ca0211693ea8bbf971fb97cb32e27f6ce0b73645edd67df4908e0d9f85",
+   "lulc_io_2024.tif": "a98228a1e601acb4c215c1b2f1fde8918342241e00c4a1fe77d7360d215ba971",
+   "water_osm.gpkg": "7aaf5b47bc395d65a200cd9d796cb97c9ff965494110d04c81cece577029cfb7",
+   "subsidence_insar.tif": "bef00ec6db60f69c9009a3ab6325e5283ef6825ab3069eeb6107270ba6446222",
+   "saluran_mikro_jaksel.geojson": "b69e8fbf2eeffc8399a19e7796d314f0530d68932eb75fa5bb19d3166f9bdb11"
+  },
+  "landcover_year": 2024,
+  "soil": {
+   "source": "SoilGrids 2.0 (Poggio et al. 2021)",
+   "urls": [
+    "https://files.isric.org/soilgrids/latest/data/sand/sand_0-5cm_mean.vrt",
+    "https://files.isric.org/soilgrids/latest/data/sand/sand_5-15cm_mean.vrt",
+    "https://files.isric.org/soilgrids/latest/data/sand/sand_15-30cm_mean.vrt",
+    "https://files.isric.org/soilgrids/latest/data/sand/sand_30-60cm_mean.vrt",
+    "https://files.isric.org/soilgrids/latest/data/sand/sand_60-100cm_mean.vrt",
+    "https://files.isric.org/soilgrids/latest/data/clay/clay_0-5cm_mean.vrt",
+    "https://files.isric.org/soilgrids/latest/data/clay/clay_5-15cm_mean.vrt",
+    "https://files.isric.org/soilgrids/latest/data/clay/clay_15-30cm_mean.vrt",
+    "https://files.isric.org/soilgrids/latest/data/clay/clay_30-60cm_mean.vrt",
+    "https://files.isric.org/soilgrids/latest/data/clay/clay_60-100cm_mean.vrt"
+   ],
+   "depth_weighting": "0-100 cm, by layer thickness",
+   "share": {
+    "A": 0,
+    "B": 0,
+    "C": 0.1719,
+    "D": 0.8281
+   },
+   "map_layer": {
+    "file": "soil_hsg.geojson",
+    "groups": {
+     "C": 0.024,
+     "D": 0.976
+    },
+    "bytes": 197195
+   }
+  },
+  "channels": {
+   "channel_cells": 71360,
+   "polygons": 482,
+   "lines": 2170,
+   "cells_opened": 15563,
+   "opening_window_cells": 5,
+   "mean_lowering_m": 0.487,
+   "max_lowering_m": 18.83,
+   "water_body_cells": 66699,
+   "water_body_rule": "cells with >= 50 % IO water that are not sea or mapped channel: flagged as channel (always wet, not counted as flood)"
+  }
+ },
+ "scenario": {
+  "area": {
+   "box": [
+    106.835,
+    -6.245,
+    106.875,
+    -6.205
+   ]
+  },
+  "rainMode": "design",
+  "designTotalMm": 150,
+  "designHours": 3,
+  "components": {
+   "upstream": true,
+   "infiltration": true,
+   "soilWetness": "average (AMC II)",
+   "subsidence": true,
+   "polderPumps": false,
+   "microDrains": false,
+   "extraDrainMmH": 0
+  },
+  "rainMm": 150,
+  "rainHours": 3,
+  "upstreamRain": true,
+  "seaLevel": 0,
+  "hours": 8,
+  "cellM": 30,
+  "terrainYear": 2026.88,
+  "terrainEpoch": 2013,
+  "polderPumps": false,
+  "pumpM3s": 19
+ },
+ "rain_mm_per_block": {
+  "blockSeconds": 3600,
+  "mm": [
+   18.962930289555175,
+   104.0041911525952,
+   27.032878557849628
+  ]
+ },
+ "grid": {
+  "nx": 149,
+  "ny": 149,
+  "cell_m": 30,
+  "utm": {
+   "zone": 48,
+   "x0": 703020,
+   "y0": 9313800
+  },
+  "corners_lonlat": [
+   [
+    106.83486043475023,
+    -6.204843985901174
+   ],
+   [
+    106.87524500843111,
+    -6.204702507684065
+   ],
+   [
+    106.87538838986384,
+    -6.245117425122163
+   ],
+   [
+    106.8350007326445,
+    -6.245259831897022
+   ]
+  ]
+ },
+ "exposure": {
+  "flooded_m": 0.15,
+  "buildings": 23235,
+  "people": 111193,
+  "pack": "2026-11-01T14:42:38+00:00",
+  "sources": {
+   "buildings": "Overture Maps buildings (region pack buildings_overture.parquet)",
+   "people": "WorldPop Global2 constrained 2025 R2025A v1 (doi:10.5258/SOTON/WP00839)",
+   "kecamatan": "Overture Maps divisions 2026-10-21.0, division_area localadmin/county",
+   "kecamatan_licence": [
+    "ODbL-1.0"
+   ]
+  }
+ },
+ "inflows": [
+  {
+   "catchment_km2": 337.88,
+   "areal_reduction": 0.828,
+   "cn": 92,
+   "lag_h": 5.58,
+   "peak_m3s": 1245.4,
+   "x_m": 29667.365234375,
+   "y_m": 27444.978515625
+  },
+  {
+   "catchment_km2": 6.89,
+   "areal_reduction": 0.991,
+   "cn": 97.5,
+   "lag_h": 1.66,
+   "peak_m3s": 97.6,
+   "x_m": 26697.365234375,
+   "y_m": 23034.978515625
+  },
+  {
+   "catchment_km2": 2.45,
+   "areal_reduction": 0.998,
+   "cn": 98,
+   "lag_h": 0.79,
+   "peak_m3s": 53.7,
+   "x_m": 28857.365234375,
+   "y_m": 27444.978515625
+  },
+  {
+   "catchment_km2": 2.26,
+   "areal_reduction": 0.998,
+   "cn": 98,
+   "lag_h": 0.59,
+   "peak_m3s": 55.7,
+   "x_m": 26697.365234375,
+   "y_m": 27444.978515625
+  },
+  {
+   "catchment_km2": 1.08,
+   "areal_reduction": 0.997,
+   "cn": 97.9,
+   "lag_h": 0.75,
+   "peak_m3s": 24.2,
+   "x_m": 26697.365234375,
+   "y_m": 26634.978515625
+  }
+ ],
+ "totals_m3": {
+  "rain": 2996670.6666971003,
+  "infiltration": 125936.83893033359,
+  "inflow": 17761754.21798592,
+  "outflow": 12411913.620840978,
+  "sea": 0,
+  "drain": 0
+ },
+ "mass_error": 5.5183703635543474e-15,
+ "flooded_km2_series": [
+  [
+   15,
+   0
+  ],
+  [
+   600,
+   0
+  ],
+  [
+   1200,
+   0
+  ],
+  [
+   1800,
+   0
+  ],
+  [
+   2400.454997991794,
+   0
+  ],
+  [
+   3003.6696316186403,
+   0
+  ],
+  [
+   3601.2633286306473,
+   0
+  ],
+  [
+   4200.840603705172,
+   0.019
+  ],
+  [
+   4802.461670263893,
+   0.164
+  ],
+  [
+   5402.222503756852,
+   0.712
+  ],
+  [
+   6002.875139377095,
+   1.391
+  ],
+  [
+   6600.6022953943975,
+   2.022
+  ],
+  [
+   7200.053622349487,
+   2.513
+  ],
+  [
+   7803.079083439477,
+   2.562
+  ],
+  [
+   8401.278390430336,
+   2.567
+  ],
+  [
+   9001.334783176595,
+   2.546
+  ],
+  [
+   9601.206746896363,
+   2.534
+  ],
+  [
+   10202.1438462675,
+   2.518
+  ],
+  [
+   10800.72681077116,
+   2.503
+  ],
+  [
+   11401.90474829254,
+   2.408
+  ],
+  [
+   12002.635048852573,
+   2.288
+  ],
+  [
+   12602.189953632953,
+   2.198
+  ],
+  [
+   13202.16302208268,
+   2.136
+  ],
+  [
+   13800.104302985295,
+   2.054
+  ],
+  [
+   14400.026165153326,
+   1.95
+  ],
+  [
+   15002.496963584934,
+   1.879
+  ],
+  [
+   15601.571660969174,
+   1.823
+  ],
+  [
+   16202.229047111035,
+   1.822
+  ],
+  [
+   16801.887597460787,
+   1.893
+  ],
+  [
+   17401.31726660142,
+   1.966
+  ],
+  [
+   18000.360427723987,
+   2.017
+  ],
+  [
+   18601.89539806991,
+   2.094
+  ],
+  [
+   19200.964016555157,
+   2.192
+  ],
+  [
+   19801.425334029285,
+   2.26
+  ],
+  [
+   20400.671541253345,
+   2.344
+  ],
+  [
+   21001.12321772403,
+   2.442
+  ],
+  [
+   21600.9267606383,
+   2.546
+  ],
+  [
+   22200.49377740514,
+   2.652
+  ],
+  [
+   22800.09353734722,
+   2.784
+  ],
+  [
+   23400.123373296716,
+   2.915
+  ],
+  [
+   24001.036311616484,
+   3.051
+  ],
+  [
+   24601.0133606267,
+   3.143
+  ],
+  [
+   25200.452681284114,
+   3.241
+  ],
+  [
+   25801.889287852515,
+   3.32
+  ],
+  [
+   26401.452084433076,
+   3.397
+  ],
+  [
+   27001.63580857707,
+   3.458
+  ],
+  [
+   27600.642265061706,
+   3.498
+  ],
+  [
+   28200.876997923657,
+   3.54
+  ],
+  [
+   28800.49227292223,
+   3.581
+  ]
+ ],
+ "drain_mm_h": 0,
+ "limitations": [
+  "City drains: extra sink 0 mm/h (calibrated best value 0 mm/h (1 Jan 2020 flood with IMERG rain, Validation page); polder pumps switched off; no sea walls.",
+  "Below-water channel shape not in the DEM; channels start at their mapped water level.",
+  "Upstream rain is spatially uniform: the scenario rain (a point depth) times the areal reduction factor of each catchment (TP-29, Leclerc and Schaake 1972).",
+  "Checked on three observed floods (data/skill.json): report hit rate within ~270 m on land 41-50 %, random points 28-43 %; modelled depths at reports much shallower than reported (Validation page)."
+ ],
+ "licence": "CC BY-NC-SA 4.0 (most restrictive input: FABDEM)"
+}
