@@ -3,7 +3,7 @@
   python verification/observed/region_cellsize.py <runs dir> <reports_petabencana.geojson> <out.json>
 
 runs dir holds the run files of the validation releases (<event>_imerg_k<k>_d0_poff_{hmax.f32.gz,mask.u8.gz,landshare.u8.gz,summary.json})
-for k = 3 (90 m, v33-v35) and k = 2 (60 m, v42-v44). The headline score of compare.py uses the 3 x 3 window, which grows with
+for k = 3 (90 m, v33-v35), k = 2 (60 m, v42-v44) and k = 3 with the sub-grid channel (suffix _sub, v45-v47, ADR 0025). The headline score of compare.py uses the 3 x 3 window, which grows with
 the cell (about 270 m wide at 90 m, 180 m at 60 m), so it cannot compare cell sizes. Here, as in box_cellsize.py: hit = the deepest
 LAND cell whose centre lies within R_M of the report is at least HIT_M deep; also the land cell under the report. Only reports
 inside DKI Jakarta count. Random baseline: the same rule at N_RANDOM points spread uniformly over DKI land (the same points at
@@ -26,8 +26,8 @@ EVENTS = ["2020-01-01", "2021-02-20", "2025-03-04"]
 CLASSES = [("le100", 0, 100), ("100_500", 100, 500), ("gt500", 500, 1e9)]
 
 
-def load(d: Path, ev: str, k: int):
-    base = d / f"{ev}_imerg_k{k}_d0_poff"
+def load(d: Path, ev: str, k: int, suf: str = ""):
+    base = d / f"{ev}_imerg_k{k}_d0_poff{suf}"
     p = Path(f"{base}_summary.json")
     if not p.exists():
         return None
@@ -90,8 +90,8 @@ def main():
         rnd = [(x0 + (ii[p] + rng.random()) * dx, y0 - (jj[p] + rng.random()) * dx) for p in pick]
         dcls = [float(dist[jj[p], ii[p]]) for p in pick]
         out = {"event": ev, "n_reports_dki": len(rep), "sizes": {}}
-        for k, name in ((3, "90m"), (2, "60m")):
-            r = r90 if k == 3 else load(runs, ev, k)
+        for k, suf, name in ((3, "", "90m"), (2, "", "60m"), (3, "_sub", "90m_subgrid")):
+            r = r90 if (k, suf) == (3, "") else load(runs, ev, k, suf)
             if r is None:
                 continue
             s, h, m, inside, land, w = r
