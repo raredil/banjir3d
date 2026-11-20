@@ -14,6 +14,8 @@ import json
 import os
 import re
 import sys
+import time
+import urllib.error
 import urllib.request
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
@@ -25,13 +27,26 @@ FOLDERS = (("cogs/p05/", re.compile(r'href="(chirps-v2\.0\.(\d{4})\.(\d{2})\.(\d
            ("tifs/p05/", re.compile(r'href="(chirps-v2\.0\.(\d{4})\.(\d{2})\.(\d{2})\.tif)"')))
 BOX = (106.50, -6.65, 107.15, -5.95)  # lon0, lat0, lon1, lat1: DKI (without the Thousand Islands) plus a margin for nearby gauges
 os.environ.update({"GDAL_DISABLE_READDIR_ON_OPEN": "EMPTY_DIR", "CPL_VSIL_CURL_ALLOWED_EXTENSIONS": ".cog,.tif",
-                   "GDAL_HTTP_MAX_RETRY": "5", "GDAL_HTTP_RETRY_DELAY": "3", "VSI_CACHE": "FALSE"})
+                   "GDAL_HTTP_MAX_RETRY": "8", "GDAL_HTTP_RETRY_DELAY": "5", "VSI_CACHE": "FALSE", "GDAL_HTTP_USERAGENT": "banjir3d-design-rain (github.com/raredil/banjir3d)"})
+UA = {"User-Agent": os.environ["GDAL_HTTP_USERAGENT"]}  # the server answers 403 to the default Python agent
+WORKERS = int(os.environ.get("DR_WORKERS", "6"))  # polite: the server answers 429 when asked too fast
 
 
 def listing(url: str) -> str:
     assert url.startswith(BASE)
-    with urllib.request.urlopen(url, timeout=60) as r:
-        return r.read().decode("utf-8", "replace")
+    for attempt in range(6):
+        try:
+            with urllib.request.urlopen(urllib.request.Request(url, headers=UA), timeout=90) as r:
+                return r.read().decode("utf-8", "replace")
+        except urllib.error.HTTPError as e:
+            if e.code in (404,) or attempt == 5:
+                raise
+            time.sleep(10 * (attempt + 1))  # 403/429/5xx: back off
+        except OSError:
+            if attempt == 5:
+                raise
+            time.sleep(10 * (attempt + 1))
+    raise RuntimeError(url)
 
 
 def files_of_year(y: int) -> tuple[str, dict]:
@@ -50,7 +65,7 @@ def files_of_year(y: int) -> tuple[str, dict]:
 def read_window(url: str):
     import rasterio
     from rasterio.windows import from_bounds
-    for attempt in range(3):
+    for attempt in range(5):
         try:
             with rasterio.open("/vsicurl/" + url) as ds:
                 w = from_bounds(*BOX, transform=ds.transform).round_offsets().round_lengths()
@@ -63,6 +78,7 @@ def read_window(url: str):
             return a, tr
         except Exception as e:  # noqa: BLE001
             err = e
+            time.sleep(5 * (attempt + 1))
     print("failed", url, err)
     return None, None
 
@@ -72,13 +88,14 @@ def main(out: Path, y0: int, y1: int):
     urls, folders = {}, {}
     for y in range(y0, y1 + 1):
         folder, got = files_of_year(y)
+        time.sleep(2)
         folders[y] = folder
         urls.update(got)
         print(y, folder, len(got), "files")
     dates = sorted(urls)
-    if not dates:
-        sys.exit("no CHIRPS files found")
-    with ThreadPoolExecutor(24) as ex:
+    if len(dates) < 300 * (y1 - y0 + 1):
+        sys.exit(f"only {len(dates)} CHIRPS files listed")
+    with ThreadPoolExecutor(WORKERS) as ex:
         res = list(ex.map(lambda d: read_window(urls[d]), dates))
     ok = [(d, a, tr) for d, (a, tr) in zip(dates, res) if a is not None]
     shape = max((a.shape for _, a, _ in ok), key=lambda s: sum(1 for _, a, _ in ok if a.shape == s))
