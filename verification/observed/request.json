@@ -1,6 +1,6 @@
 {
  "_about": "What the 'Validate on observed floods' workflow runs on push. drains: mm/h on a fully built cell. scales: rain multipliers (sensitivity only, 1 = as observed). sens: sensitivity variants (web/src/engine/sensitivity.ts): none, n0.7, n1.3, cnb92, dem1..dem10. subgrid: sub-grid channel in coarse river blocks (ADR 0025), on|off. tiles (optional): region-wide 30 m in tiles, {box: [W,S,E,N], n: [columns, rows], buffer_km}, only with k 1 and one set-up (verification/observed/mosaic_tiles.py).",
- "event": "2020-01-01",
+ "event": "2021-02-20",
  "drains": [
   0
  ],
