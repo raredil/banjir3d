@@ -205,6 +205,39 @@
    ]
   },
   {
+   "id": "observed-cell-size",
+   "status": "partial",
+   "file": "verification/observed/cellsize-r04.json",
+   "id_txt": "Apakah ukuran sel mengubah hasil: lima kotak 4–5 km dengan banyak laporan warga (2 kotak banjir 2020, 3 kotak banjir 2021; 177 laporan) dihitung pada sel 30, 60 dan 90 m dengan hujan satelit yang sama. Pada banjir 2021, sel 30 m memberi kedalaman di lokasi laporan jauh lebih dekat ke laporan warga (nilai tengah 0,33–0,71 m lawan 0,83–1,01 m laporan; pada 90 m hanya 0,03–0,43 m) dan genangan 30–65 % lebih luas. Di sel yang sama dengan laporan, 30 m kena 19–31 % lawan 9–11 % titik acak; 90 m 2–24 % lawan 6–7 %. Pada dua kotak banjir 2020 model tetap dangkal di semua ukuran (0,08–0,27 m lawan 0,5–0,9 m); di kotak A tidak lebih baik dari acak pada ukuran mana pun, di kotak B hanya pada 30 m (peluang kebetulan 4 %, 21 laporan). Artinya: skor resmi di kartu lain (sel 90 m) kemungkinan meremehkan kedalaman; tetapi kedangkalan 2020 bukan soal ukuran sel. Uji kecil (lima kotak), belum untuk seluruh wilayah.",
+   "en_txt": "Does the cell size change the result: five 4–5 km boxes with many citizen reports (2 boxes for the 2020 flood, 3 for 2021; 177 reports) run at 30, 60 and 90 m with the same satellite rain. For the 2021 flood, 30 m cells give depths at the reports much closer to what citizens reported (median 0.33–0.71 m against 0.83–1.01 m reported; at 90 m only 0.03–0.43 m) and 30–65 % more flooded land. In the report's own cell, 30 m hits 19–31 % against 9–11 % for random points; 90 m 2–24 % against 6–7 %. In the two 2020 boxes the model stays shallow at every size (0.08–0.27 m against 0.5–0.9 m); box A is no better than random at any size, box B only at 30 m (chance 4 %, 21 reports). So the official scores on the other cards (90 m cells) probably understate depth, but the shallow 2020 result is not a cell-size effect. A small test (five boxes), not yet the whole region.",
+   "metrics": [
+    [
+     "Median model depth at reports, 30 · 60 · 90 m (reported)",
+     "2021 boxes C/D/E: 0.71 · 0.65 · 0.43 (0.83) | 0.33 · 0.13 · 0.03 (1.01) | 0.64 · 0.30 · 0.21 (0.93) m; 2020 boxes A/B: 0.14 · 0.10 · 0.08 (0.90) | 0.27 · 0.18 · 0.12 (0.50) m"
+    ],
+    [
+     "Report's own land cell >= 0.10 m vs random points, 30 · 60 · 90 m (one-sided binomial p < 0.05: C all sizes, D 60 m, E all sizes, B 30 m)",
+     "C 31/9 · 36/7 · 24/7 % | D 19/11 · 23/9 · 2/6 % | E 28/10 · 18/7 · 15/6 % | A 26/20 · 19/18 · 22/19 % | B 48/28 · 29/26 · 29/21 %"
+    ],
+    [
+     "Deepest land cell within 200 m >= 0.10 m vs random, 30 · 60 · 90 m",
+     "C 90/78 · 76/48 · 71/34 % | D 98/93 · 69/55 · 10/32 % | E 92/83 · 77/45 · 72/30 % | A 70/79 · 52/60 · 41/50 % | B 90/85 · 67/70 · 57/57 % (at 30 m almost any point has a wet cell within 200 m: this rule cannot tell model from chance there)"
+    ],
+    [
+     "Flooded land > 0.15 m, 30 · 60 · 90 m",
+     "C 2.04 · 1.71 · 1.55 | D 2.30 · 1.95 · 1.39 | E 1.82 · 1.42 · 1.18 | A 2.35 · 2.35 · 2.43 | B 5.59 · 5.33 · 3.92 km²"
+    ],
+    [
+     "Set-up",
+     "boxes A 106.74–106.78 E, 6.14–6.18 S; B 106.695–106.745, 6.135–6.185; C 106.815–106.865, 6.255–6.305; D 106.775–106.825, 6.215–6.265; E 106.815–106.865, 6.215–6.265; GPM IMERG, 48 h, pumps off, drains 0, AMC II, river inflow at the box edge from the catchments; reports at least 300 m inside the box; 4,000 random points per box, the same at every size; mass error below 2e-14"
+    ],
+    [
+     "Code",
+     "verification/observed/box_cellsize.py, run_event.ts --box --k; review 05 R-04"
+    ]
+   ]
+  },
+  {
    "id": "observed-corrected",
    "status": "old",
    "file": "verification/observed/scores-2020-01-01-imerg-v7.json",

@@ -93,6 +93,8 @@ describe("plain summary", () => {
     expect(s).toContain("model kena 50 % laporan, titik acak yang sama dekatnya ke sungai 43 %"); // (57 x 0.53 + 54 x 0.46) / 111
     expect(s).toContain("Lebih dari 500 m dari sungai: 66 % lawan 47 %. Jadi genangan hujan");
     expect(s).toContain("Dugaan penyebab (belum diuji satu per satu)");
+    expect(s).toContain("sedangkan hitungan ini memakai sel 30 m"); // base run is 30 m: scores were computed at 90 m (review R-04)
+    expect(buildConclusion({ ...base, cellM: 90, skill }, "id", null).summary.join(" ")).not.toContain("memakai sel");
     const few = { ...bd, gt500: { ...bd.gt500, n: 4 } }; // too few far reports: no sentence
     const s2 = buildConclusion({ ...base, skill: { events: [{ ...skill.events[0], byDistance: few }] } }, "en", null).summary.join(" ");
     expect(s2).not.toContain("Where the model is weakest");
