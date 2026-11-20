@@ -1,0 +1,3015 @@
+{
+ "event": "2021-02-20",
+ "source": "PetaBencana.id flood reports and flooded-area archive (aggregate scores only)",
+ "reported": {
+  "_about": "Impact the city reported; figures are used only after reported_excerpts.json (fetched by the Action) shows them in the page text.",
+  "pages": [
+   "https://rmol.id/nusantara/read/2021/02/21/476030/banjir-jakarta-dalam-angka-sejak-era-sutiyoso-hingga-anies-baswedan",
+   "https://www.cnnindonesia.com/nasional/20210221075059-20-608918/banjir-jakarta-33-rw-masih-tergenang",
+   "https://www.merahputih.com/post/read/75-rw-di-jakarta-tergenang-banjir-akibat-hujan-deras-sejak-jumat-malam"
+  ],
+  "flooded_km2": null,
+  "flooded_rw": null,
+  "status": "pages refused the Action (HTTP 403); search results only: 113 RW / 342 RT on 20 Feb 2021"
+ },
+ "n_flooded_area_records": 159,
+ "rw_shapes": 0,
+ "results": [
+  {
+   "run": "2021-02-20_imerg_k3_d0_poff_cnb92",
+   "drain_mm_h": 0,
+   "rain": "rain_imerg.json",
+   "rain_scale": 1,
+   "terrain_year": 2021.1348173515983,
+   "pumps": false,
+   "pump_m3s": 664.8,
+   "amc": 2,
+   "infiltration": true,
+   "sens": "cnb92",
+   "mean_rain_mm": 50.87964066556293,
+   "flooded_km2": 77.57100024493933,
+   "mass_error": 1.565263605955917e-14,
+   "reports": {
+    "n_reports": 384,
+    "rule": "hit = model max depth >= 0.1 m on land (channels and sea excluded)",
+    "cell": {
+     "hit_rate": 0.14322916666666666,
+     "random_hit_rate": 0.054471115800580325,
+     "skill": 0.09387132677732829
+    },
+    "window_3x3_land": {
+     "hit_rate": 0.3203125,
+     "random_hit_rate": 0.17152466367713004,
+     "skill": 0.17959235453315292
+    },
+    "legacy_window_with_channels": {
+     "hit_rate": 0.3229166666666667
+    },
+    "hit_rate": 0.3203125,
+    "fair": {
+     "hit_rate": 0.3203125,
+     "n": 384,
+     "wilson95": [
+      0.27562054871669794,
+      0.368564087485298
+     ],
+     "block_bootstrap95": [
+      0.24813325545871148,
+      0.39578418991347747
+     ],
+     "random_domain_land": 0.21964635424322748,
+     "random_near_reports": 0.21560454827977038,
+     "p_vs_domain_land": 3.321530963837795e-06,
+     "p_vs_near_reports": 1.2624546522389387e-06,
+     "inside_dki": {
+      "n": 265,
+      "hit_rate": 0.2490566037735849,
+      "random_dki": 0.17152466367713004,
+      "p_vs_dki": 0.000892867214136861
+     },
+     "verdict": "better",
+     "rule": "verdict 'better' = p < 0.05 against both fair baselines; 'too_few' = fewer than 100 reports (a 10-point gain cannot be told from chance)"
+    },
+    "n_with_depth": 337,
+    "observed_median_m": 0.65,
+    "model_median_m": 0.03888259455561638,
+    "model_median_cell_m": 0.0095590865239501,
+    "depth_bias_m": -0.591871686065763,
+    "depth_mae_m": 0.6258975369100754,
+    "depth_rmse_m": 0.7701009178658524,
+    "depth_note": "model depth = window_3x3_land value"
+   },
+   "reports_by_distance": {
+    "rule": "hit = deepest land cell of the 3 x 3 window >= 0.1 m; random = same rule on all cells of the class",
+    "distance": "model grid, cell centre to nearest river/water block (channel flag), exact to 500 m",
+    "n_reports": 372,
+    "classes": {
+     "water": {
+      "label": "in a river or water block of the model",
+      "n": 91,
+      "share_of_reports": 0.2446236559139785,
+      "share_of_cells": 0.13506270525125252,
+      "hit_rate": 0.21978021978021978,
+      "wilson95": [
+       0.14702013817844428,
+       0.315241148008208
+      ],
+      "random_same_class": 0.22101900117706408,
+      "p_vs_random_same_class": 0.5522980551561152,
+      "n_with_depth": 81,
+      "observed_median_m": 0.84,
+      "model_median_m": 0.02102872170507908
+     },
+     "le100": {
+      "label": "land within 100 m of a river or water block",
+      "n": 99,
+      "share_of_reports": 0.2661290322580645,
+      "share_of_cells": 0.14964320916436907,
+      "hit_rate": 0.31313131313131315,
+      "wilson95": [
+       0.23020651977353207,
+       0.41001689176421147
+      ],
+      "random_same_class": 0.21587494308696312,
+      "p_vs_random_same_class": 0.015573135632256358,
+      "n_with_depth": 91,
+      "observed_median_m": 0.71,
+      "model_median_m": 0.02886779047548771
+     },
+     "100_500": {
+      "label": "land 100-500 m from a river or water block",
+      "n": 138,
+      "share_of_reports": 0.3709677419354839,
+      "share_of_cells": 0.48508110121413356,
+      "hit_rate": 0.34782608695652173,
+      "wilson95": [
+       0.27345711642211845,
+       0.43043793270310293
+      ],
+      "random_same_class": 0.2001329662715134,
+      "p_vs_random_same_class": 3.6955374189266745e-05,
+      "n_with_depth": 115,
+      "observed_median_m": 0.53,
+      "model_median_m": 0.05670642480254173
+     },
+     "gt500": {
+      "label": "land more than 500 m from a river or water block",
+      "n": 44,
+      "share_of_reports": 0.11827956989247312,
+      "share_of_cells": 0.23021298437024487,
+      "hit_rate": 0.5454545454545454,
+      "wilson95": [
+       0.4006593217065349,
+       0.6829499221314639
+      ],
+      "random_same_class": 0.25503620543377464,
+      "p_vs_random_same_class": 3.811540396469348e-05,
+      "n_with_depth": 38,
+      "observed_median_m": 0.52,
+      "model_median_m": 0.16242524981498718
+     }
+    }
+   },
+   "micro": false,
+   "reports_micro_area": {
+    "n_reports": 119,
+    "rule": "hit = model max depth >= 0.1 m on land (channels and sea excluded)",
+    "cell": {
+     "hit_rate": 0.058823529411764705,
+     "random_hit_rate": 0.04025196850393701,
+     "skill": 0.019350454805182767
+    },
+    "window_3x3_land": {
+     "hit_rate": 0.2605042016806723,
+     "random_hit_rate": 0.17996850393700786,
+     "skill": 0.09821049329241609
+    },
+    "legacy_window_with_channels": {
+     "hit_rate": 0.2689075630252101
+    },
+    "hit_rate": 0.2605042016806723,
+    "n_with_depth": 104,
+    "observed_median_m": 0.915,
+    "model_median_m": 0.02415803913027048,
+    "model_median_cell_m": 0.006985981483012438,
+    "depth_bias_m": -0.848446798326197,
+    "depth_mae_m": 0.863613802242057,
+    "depth_rmse_m": 0.9964916822607794,
+    "depth_note": "model depth = window_3x3_land value"
+   },
+   "micro_area_flooded_km2": 3.79,
+   "dki_flooded_km2": 24.296283529411767,
+   "dki_land_km2": 600.881474117647,
+   "genangan_dsda": {
+    "source": "Jakarta Satu, Dinas SDA DKI, layer Genangan (aggregates only)",
+    "window_utc": [
+     "2021-02-18 05:00:00+00:00",
+     "2021-02-22 05:00:00+00:00"
+    ],
+    "n_polygons": 37,
+    "hit_rate": 0.43243243243243246,
+    "median_model_depth_m": 0.027570800855755806,
+    "n_with_depth": 34,
+    "median_observed_depth_m": 0.4,
+    "median_model_depth_at_observed_m": 0.038795432075858116,
+    "mean_error_m": -0.22357628147172579,
+    "share_model_ge_half_observed": 0.3235294117647059
+   },
+   "rw_places": {
+    "source": "RW polygons: Shabrina et al. (2026), Zenodo 19456870, CC BY 4.0",
+    "n_rw": 2672,
+    "rw_share_threshold": 0.1,
+    "note": "RW without a record = not recorded (reports are incomplete): false_alarm_ratio is an upper bound",
+    "reports_or_dsda": {
+     "n_observed": 247,
+     "n_model": 195,
+     "hits": 26,
+     "hit_rate": 0.10526315789473684,
+     "false_alarm_ratio": 0.8666666666666667,
+     "csi": 0.0625,
+     "auc": 0.5883576109186527
+    },
+    "reports": {
+     "n_observed": 157,
+     "n_model": 195,
+     "hits": 19,
+     "hit_rate": 0.12101910828025478,
+     "false_alarm_ratio": 0.9025641025641026,
+     "csi": 0.057057057057057055,
+     "auc": 0.5929543756568867
+    },
+    "dsda": {
+     "n_observed": 107,
+     "n_model": 195,
+     "hits": 8,
+     "hit_rate": 0.07476635514018691,
+     "false_alarm_ratio": 0.958974358974359,
+     "csi": 0.027210884353741496,
+     "auc": 0.5764132553606238
+    }
+   }
+  },
+  {
+   "run": "2021-02-20_imerg_k3_d0_poff_dem10",
+   "drain_mm_h": 0,
+   "rain": "rain_imerg.json",
+   "rain_scale": 1,
+   "terrain_year": 2021.1348173515983,
+   "pumps": false,
+   "pump_m3s": 664.8,
+   "amc": 2,
+   "infiltration": true,
+   "sens": "dem10",
+   "mean_rain_mm": 50.87964066556293,
+   "flooded_km2": 118.27890034769476,
+   "mass_error": -2.0570090239866323e-14,
+   "reports": {
+    "n_reports": 384,
+    "rule": "hit = model max depth >= 0.1 m on land (channels and sea excluded)",
+    "cell": {
+     "hit_rate": 0.18489583333333334,
+     "random_hit_rate": 0.09430229490899499,
+     "skill": 0.1000262426581234
+    },
+    "window_3x3_land": {
+     "hit_rate": 0.3932291666666667,
+     "random_hit_rate": 0.23170667370087047,
+     "skill": 0.21023544971274238
+    },
+    "legacy_window_with_channels": {
+     "hit_rate": 0.4088541666666667
+    },
+    "hit_rate": 0.3932291666666667,
+    "fair": {
+     "hit_rate": 0.3932291666666667,
+     "n": 384,
+     "wilson95": [
+      0.34566093214284066,
+      0.4429125473395048
+     ],
+     "block_bootstrap95": [
+      0.3219885710637211,
+      0.46134227790210464
+     ],
+     "random_domain_land": 0.2631052354556188,
+     "random_near_reports": 0.2637929143358561,
+     "p_vs_domain_land": 1.8459129095614434e-08,
+     "p_vs_near_reports": 2.211497145774405e-08,
+     "inside_dki": {
+      "n": 265,
+      "hit_rate": 0.3132075471698113,
+      "random_dki": 0.23170667370087047,
+      "p_vs_dki": 0.0014470634587069346
+     },
+     "verdict": "better",
+     "rule": "verdict 'better' = p < 0.05 against both fair baselines; 'too_few' = fewer than 100 reports (a 10-point gain cannot be told from chance)"
+    },
+    "n_with_depth": 337,
+    "observed_median_m": 0.65,
+    "model_median_m": 0.049176596105098724,
+    "model_median_cell_m": 0.01330622285604477,
+    "depth_bias_m": -0.5268132051997695,
+    "depth_mae_m": 0.6268366112044629,
+    "depth_rmse_m": 0.7709140943260826,
+    "depth_note": "model depth = window_3x3_land value"
+   },
+   "reports_by_distance": {
+    "rule": "hit = deepest land cell of the 3 x 3 window >= 0.1 m; random = same rule on all cells of the class",
+    "distance": "model grid, cell centre to nearest river/water block (channel flag), exact to 500 m",
+    "n_reports": 372,
+    "classes": {
+     "water": {
+      "label": "in a river or water block of the model",
+      "n": 91,
+      "share_of_reports": 0.2446236559139785,
+      "share_of_cells": 0.13506270525125252,
+      "hit_rate": 0.27472527472527475,
+      "wilson95": [
+       0.19355049670786545,
+       0.3741497529716002
+      ],
+      "random_same_class": 0.2618463090633933,
+      "p_vs_random_same_class": 0.42912862204905017,
+      "n_with_depth": 81,
+      "observed_median_m": 0.84,
+      "model_median_m": 0.02633965201675892
+     },
+     "le100": {
+      "label": "land within 100 m of a river or water block",
+      "n": 99,
+      "share_of_reports": 0.2661290322580645,
+      "share_of_cells": 0.14964320916436907,
+      "hit_rate": 0.3838383838383838,
+      "wilson95": [
+       0.29408494593454726,
+       0.48227014772404997
+      ],
+      "random_same_class": 0.26173926240704204,
+      "p_vs_random_same_class": 0.005190685333952703,
+      "n_with_depth": 91,
+      "observed_median_m": 0.71,
+      "model_median_m": 0.049176596105098724
+     },
+     "100_500": {
+      "label": "land 100-500 m from a river or water block",
+      "n": 138,
+      "share_of_reports": 0.3709677419354839,
+      "share_of_cells": 0.48508110121413356,
+      "hit_rate": 0.42028985507246375,
+      "wilson95": [
+       0.3411867089821718,
+       0.503710697702468
+      ],
+      "random_same_class": 0.24094986609734628,
+      "p_vs_random_same_class": 2.6630418169927144e-06,
+      "n_with_depth": 115,
+      "observed_median_m": 0.53,
+      "model_median_m": 0.08538148552179337
+     },
+     "gt500": {
+      "label": "land more than 500 m from a river or water block",
+      "n": 44,
+      "share_of_reports": 0.11827956989247312,
+      "share_of_cells": 0.23021298437024487,
+      "hit_rate": 0.6818181818181818,
+      "wilson95": [
+       0.5344282746687306,
+       0.8000087006832644
+      ],
+      "random_same_class": 0.301698794467573,
+      "p_vs_random_same_class": 2.270991880061636e-07,
+      "n_with_depth": 38,
+      "observed_median_m": 0.52,
+      "model_median_m": 0.25704559683799744
+     }
+    }
+   },
+   "micro": false,
+   "reports_micro_area": {
+    "n_reports": 119,
+    "rule": "hit = model max depth >= 0.1 m on land (channels and sea excluded)",
+    "cell": {
+     "hit_rate": 0.06722689075630252,
+     "random_hit_rate": 0.05266141732283464,
+     "skill": 0.015375150658707528
+    },
+    "window_3x3_land": {
+     "hit_rate": 0.2773109243697479,
+     "random_hit_rate": 0.21896062992125984,
+     "skill": 0.07470851878133303
+    },
+    "legacy_window_with_channels": {
+     "hit_rate": 0.31932773109243695
+    },
+    "hit_rate": 0.2773109243697479,
+    "n_with_depth": 104,
+    "observed_median_m": 0.915,
+    "model_median_m": 0.0359796155244112,
+    "model_median_cell_m": 0.010450602043420076,
+    "depth_bias_m": -0.8158168922427398,
+    "depth_mae_m": 0.847097617978624,
+    "depth_rmse_m": 0.9867132933872043,
+    "depth_note": "model depth = window_3x3_land value"
+   },
+   "micro_area_flooded_km2": 4.98,
+   "dki_flooded_km2": 47.40777529411764,
+   "dki_land_km2": 600.881474117647,
+   "genangan_dsda": {
+    "source": "Jakarta Satu, Dinas SDA DKI, layer Genangan (aggregates only)",
+    "window_utc": [
+     "2021-02-18 05:00:00+00:00",
+     "2021-02-22 05:00:00+00:00"
+    ],
+    "n_polygons": 37,
+    "hit_rate": 0.40540540540540543,
+    "median_model_depth_m": 0.03738686442375183,
+    "n_with_depth": 34,
+    "median_observed_depth_m": 0.4,
+    "median_model_depth_at_observed_m": 0.041178932413458824,
+    "mean_error_m": -0.20731078414794277,
+    "share_model_ge_half_observed": 0.3235294117647059
+   },
+   "rw_places": {
+    "source": "RW polygons: Shabrina et al. (2026), Zenodo 19456870, CC BY 4.0",
+    "n_rw": 2672,
+    "rw_share_threshold": 0.1,
+    "note": "RW without a record = not recorded (reports are incomplete): false_alarm_ratio is an upper bound",
+    "reports_or_dsda": {
+     "n_observed": 247,
+     "n_model": 354,
+     "hits": 42,
+     "hit_rate": 0.1700404858299595,
+     "false_alarm_ratio": 0.8813559322033898,
+     "csi": 0.07513416815742398,
+     "auc": 0.5911590633999749
+    },
+    "reports": {
+     "n_observed": 157,
+     "n_model": 354,
+     "hits": 31,
+     "hit_rate": 0.19745222929936307,
+     "false_alarm_ratio": 0.9124293785310734,
+     "csi": 0.06458333333333334,
+     "auc": 0.6006761975915209
+    },
+    "dsda": {
+     "n_observed": 107,
+     "n_model": 354,
+     "hits": 14,
+     "hit_rate": 0.1308411214953271,
+     "false_alarm_ratio": 0.96045197740113,
+     "csi": 0.03131991051454139,
+     "auc": 0.5847242717385364
+    }
+   }
+  },
+  {
+   "run": "2021-02-20_imerg_k3_d0_poff_dem1",
+   "drain_mm_h": 0,
+   "rain": "rain_imerg.json",
+   "rain_scale": 1,
+   "terrain_year": 2021.1348173515983,
+   "pumps": false,
+   "pump_m3s": 664.8,
+   "amc": 2,
+   "infiltration": true,
+   "sens": "dem1",
+   "mean_rain_mm": 50.87964066556293,
+   "flooded_km2": 92.35710027001127,
+   "mass_error": -1.5653139937250385e-14,
+   "reports": {
+    "n_reports": 384,
+    "rule": "hit = model max depth >= 0.1 m on land (channels and sea excluded)",
+    "cell": {
+     "hit_rate": 0.16927083333333334,
+     "random_hit_rate": 0.051332102347665526,
+     "skill": 0.1243203562358655
+    },
+    "window_3x3_land": {
+     "hit_rate": 0.3307291666666667,
+     "random_hit_rate": 0.18371142178844632,
+     "skill": 0.1801051108669543
+    },
+    "legacy_window_with_channels": {
+     "hit_rate": 0.3385416666666667
+    },
+    "hit_rate": 0.3307291666666667,
+    "fair": {
+     "hit_rate": 0.3307291666666667,
+     "n": 384,
+     "wilson95": [
+      0.2855520611214142,
+      0.37925955269206035
+     ],
+     "block_bootstrap95": [
+      0.2553191489361702,
+      0.40703689211082733
+     ],
+     "random_domain_land": 0.24313738506987087,
+     "random_near_reports": 0.23127125150817154,
+     "p_vs_domain_land": 6.745396184746656e-05,
+     "p_vs_near_reports": 5.783089980179352e-06,
+     "inside_dki": {
+      "n": 265,
+      "hit_rate": 0.23773584905660378,
+      "random_dki": 0.18371142178844632,
+      "p_vs_dki": 0.016330337362597775
+     },
+     "verdict": "better",
+     "rule": "verdict 'better' = p < 0.05 against both fair baselines; 'too_few' = fewer than 100 reports (a 10-point gain cannot be told from chance)"
+    },
+    "n_with_depth": 337,
+    "observed_median_m": 0.65,
+    "model_median_m": 0.04468896985054016,
+    "model_median_cell_m": 0.012290749698877335,
+    "depth_bias_m": -0.558869542431208,
+    "depth_mae_m": 0.6036343553117324,
+    "depth_rmse_m": 0.7512767830738422,
+    "depth_note": "model depth = window_3x3_land value"
+   },
+   "reports_by_distance": {
+    "rule": "hit = deepest land cell of the 3 x 3 window >= 0.1 m; random = same rule on all cells of the class",
+    "distance": "model grid, cell centre to nearest river/water block (channel flag), exact to 500 m",
+    "n_reports": 372,
+    "classes": {
+     "water": {
+      "label": "in a river or water block of the model",
+      "n": 91,
+      "share_of_reports": 0.2446236559139785,
+      "share_of_cells": 0.13506270525125252,
+      "hit_rate": 0.21978021978021978,
+      "wilson95": [
+       0.14702013817844428,
+       0.315241148008208
+      ],
+      "random_same_class": 0.2282159071800908,
+      "p_vs_random_same_class": 0.616273169294872,
+      "n_with_depth": 81,
+      "observed_median_m": 0.84,
+      "model_median_m": 0.026888638734817505
+     },
+     "le100": {
+      "label": "land within 100 m of a river or water block",
+      "n": 99,
+      "share_of_reports": 0.2661290322580645,
+      "share_of_cells": 0.14964320916436907,
+      "hit_rate": 0.2828282828282828,
+      "wilson95": [
+       0.20351825976230095,
+       0.3783630022950766
+      ],
+      "random_same_class": 0.22561845500075883,
+      "p_vs_random_same_class": 0.10901600302244072,
+      "n_with_depth": 91,
+      "observed_median_m": 0.71,
+      "model_median_m": 0.04409899562597275
+     },
+     "100_500": {
+      "label": "land 100-500 m from a river or water block",
+      "n": 138,
+      "share_of_reports": 0.3709677419354839,
+      "share_of_cells": 0.48508110121413356,
+      "hit_rate": 0.38405797101449274,
+      "wilson95": [
+       0.307093687332327,
+       0.46730254057260356
+      ],
+      "random_same_class": 0.2210423806580894,
+      "p_vs_random_same_class": 1.1081155806503507e-05,
+      "n_with_depth": 115,
+      "observed_median_m": 0.53,
+      "model_median_m": 0.0654032975435257
+     },
+     "gt500": {
+      "label": "land more than 500 m from a river or water block",
+      "n": 44,
+      "share_of_reports": 0.11827956989247312,
+      "share_of_cells": 0.23021298437024487,
+      "hit_rate": 0.5909090909090909,
+      "wilson95": [
+       0.44409492646606574,
+       0.7231235612099317
+      ],
+      "random_same_class": 0.2980091944044354,
+      "p_vs_random_same_class": 5.196008620701455e-05,
+      "n_with_depth": 38,
+      "observed_median_m": 0.52,
+      "model_median_m": 0.24986999481916428
+     }
+    }
+   },
+   "micro": false,
+   "reports_micro_area": {
+    "n_reports": 119,
+    "rule": "hit = model max depth >= 0.1 m on land (channels and sea excluded)",
+    "cell": {
+     "hit_rate": 0.09243697478991597,
+     "random_hit_rate": 0.054551181102362206,
+     "skill": 0.04007175526616803
+    },
+    "window_3x3_land": {
+     "hit_rate": 0.29411764705882354,
+     "random_hit_rate": 0.21845669291338582,
+     "skill": 0.09680967575230304
+    },
+    "legacy_window_with_channels": {
+     "hit_rate": 0.31932773109243695
+    },
+    "hit_rate": 0.29411764705882354,
+    "n_with_depth": 104,
+    "observed_median_m": 0.915,
+    "model_median_m": 0.03562217578291893,
+    "model_median_cell_m": 0.009993860498070717,
+    "depth_bias_m": -0.8077032858754796,
+    "depth_mae_m": 0.8334636760150226,
+    "depth_rmse_m": 0.9791426465443969,
+    "depth_note": "model depth = window_3x3_land value"
+   },
+   "micro_area_flooded_km2": 5.29,
+   "dki_flooded_km2": 22.296123529411762,
+   "dki_land_km2": 600.881474117647,
+   "genangan_dsda": {
+    "source": "Jakarta Satu, Dinas SDA DKI, layer Genangan (aggregates only)",
+    "window_utc": [
+     "2021-02-18 05:00:00+00:00",
+     "2021-02-22 05:00:00+00:00"
+    ],
+    "n_polygons": 37,
+    "hit_rate": 0.3783783783783784,
+    "median_model_depth_m": 0.04689374938607216,
+    "n_with_depth": 34,
+    "median_observed_depth_m": 0.4,
+    "median_model_depth_at_observed_m": 0.07653519883751869,
+    "mean_error_m": -0.19731583753600715,
+    "share_model_ge_half_observed": 0.35294117647058826
+   },
+   "rw_places": {
+    "source": "RW polygons: Shabrina et al. (2026), Zenodo 19456870, CC BY 4.0",
+    "n_rw": 2672,
+    "rw_share_threshold": 0.1,
+    "note": "RW without a record = not recorded (reports are incomplete): false_alarm_ratio is an upper bound",
+    "reports_or_dsda": {
+     "n_observed": 247,
+     "n_model": 246,
+     "hits": 35,
+     "hit_rate": 0.1417004048582996,
+     "false_alarm_ratio": 0.8577235772357723,
+     "csi": 0.07641921397379912,
+     "auc": 0.5885771526357527
+    },
+    "reports": {
+     "n_observed": 157,
+     "n_model": 246,
+     "hits": 21,
+     "hit_rate": 0.1337579617834395,
+     "false_alarm_ratio": 0.9146341463414634,
+     "csi": 0.0549738219895288,
+     "auc": 0.5776829469045599
+    },
+    "dsda": {
+     "n_observed": 107,
+     "n_model": 246,
+     "hits": 19,
+     "hit_rate": 0.17757009345794392,
+     "false_alarm_ratio": 0.9227642276422764,
+     "csi": 0.05688622754491018,
+     "auc": 0.6073709715618225
+    }
+   }
+  },
+  {
+   "run": "2021-02-20_imerg_k3_d0_poff_dem2",
+   "drain_mm_h": 0,
+   "rain": "rain_imerg.json",
+   "rain_scale": 1,
+   "terrain_year": 2021.1348173515983,
+   "pumps": false,
+   "pump_m3s": 664.8,
+   "amc": 2,
+   "infiltration": true,
+   "sens": "dem2",
+   "mean_rain_mm": 50.87964066556293,
+   "flooded_km2": 94.03920027439669,
+   "mass_error": 1.2936495351542044e-16,
+   "reports": {
+    "n_reports": 384,
+    "rule": "hit = model max depth >= 0.1 m on land (channels and sea excluded)",
+    "cell": {
+     "hit_rate": 0.140625,
+     "random_hit_rate": 0.05110788710102875,
+     "skill": 0.09433855723121828
+    },
+    "window_3x3_land": {
+     "hit_rate": 0.328125,
+     "random_hit_rate": 0.183038776048536,
+     "skill": 0.17759254625294632
+    },
+    "legacy_window_with_channels": {
+     "hit_rate": 0.3359375
+    },
+    "hit_rate": 0.328125,
+    "fair": {
+     "hit_rate": 0.328125,
+     "n": 384,
+     "wilson95": [
+      0.28306675698127914,
+      0.37658811242932566
+     ],
+     "block_bootstrap95": [
+      0.2579787234042553,
+      0.40322970235312444
+     ],
+     "random_domain_land": 0.24324644718311528,
+     "random_near_reports": 0.23216701400314432,
+     "p_vs_domain_land": 0.00010755742382078592,
+     "p_vs_near_reports": 1.1676936878044484e-05,
+     "inside_dki": {
+      "n": 265,
+      "hit_rate": 0.2339622641509434,
+      "random_dki": 0.183038776048536,
+      "p_vs_dki": 0.02188357750730799
+     },
+     "verdict": "better",
+     "rule": "verdict 'better' = p < 0.05 against both fair baselines; 'too_few' = fewer than 100 reports (a 10-point gain cannot be told from chance)"
+    },
+    "n_with_depth": 337,
+    "observed_median_m": 0.65,
+    "model_median_m": 0.04269808158278465,
+    "model_median_cell_m": 0.012397555634379387,
+    "depth_bias_m": -0.5698645956393122,
+    "depth_mae_m": 0.6076821998874892,
+    "depth_rmse_m": 0.752695317617664,
+    "depth_note": "model depth = window_3x3_land value"
+   },
+   "reports_by_distance": {
+    "rule": "hit = deepest land cell of the 3 x 3 window >= 0.1 m; random = same rule on all cells of the class",
+    "distance": "model grid, cell centre to nearest river/water block (channel flag), exact to 500 m",
+    "n_reports": 372,
+    "classes": {
+     "water": {
+      "label": "in a river or water block of the model",
+      "n": 91,
+      "share_of_reports": 0.2446236559139785,
+      "share_of_cells": 0.13506270525125252,
+      "hit_rate": 0.21978021978021978,
+      "wilson95": [
+       0.14702013817844428,
+       0.315241148008208
+      ],
+      "random_same_class": 0.22996468807802253,
+      "p_vs_random_same_class": 0.6312806962153198,
+      "n_with_depth": 81,
+      "observed_median_m": 0.84,
+      "model_median_m": 0.023570911958813667
+     },
+     "le100": {
+      "label": "land within 100 m of a river or water block",
+      "n": 99,
+      "share_of_reports": 0.2661290322580645,
+      "share_of_cells": 0.14964320916436907,
+      "hit_rate": 0.31313131313131315,
+      "wilson95": [
+       0.23020651977353207,
+       0.41001689176421147
+      ],
+      "random_same_class": 0.23141599635756563,
+      "p_vs_random_same_class": 0.03851021185104817,
+      "n_with_depth": 91,
+      "observed_median_m": 0.71,
+      "model_median_m": 0.03332165256142616
+     },
+     "100_500": {
+      "label": "land 100-500 m from a river or water block",
+      "n": 138,
+      "share_of_reports": 0.3709677419354839,
+      "share_of_cells": 0.48508110121413356,
+      "hit_rate": 0.37681159420289856,
+      "wilson95": [
+       0.30032908378052925,
+       0.45996690836845955
+      ],
+      "random_same_class": 0.2204805513418357,
+      "p_vs_random_same_class": 2.2899444721038016e-05,
+      "n_with_depth": 115,
+      "observed_median_m": 0.53,
+      "model_median_m": 0.06732234358787537
+     },
+     "gt500": {
+      "label": "land more than 500 m from a river or water block",
+      "n": 44,
+      "share_of_reports": 0.11827956989247312,
+      "share_of_cells": 0.23021298437024487,
+      "hit_rate": 0.5227272727272727,
+      "wilson95": [
+       0.379352201361717,
+       0.6624524205572824
+      ],
+      "random_same_class": 0.2953850403488349,
+      "p_vs_random_same_class": 0.0013110890712296752,
+      "n_with_depth": 38,
+      "observed_median_m": 0.52,
+      "model_median_m": 0.19712860882282257
+     }
+    }
+   },
+   "micro": false,
+   "reports_micro_area": {
+    "n_reports": 119,
+    "rule": "hit = model max depth >= 0.1 m on land (channels and sea excluded)",
+    "cell": {
+     "hit_rate": 0.07563025210084033,
+     "random_hit_rate": 0.055244094488188976,
+     "skill": 0.021578227237020953
+    },
+    "window_3x3_land": {
+     "hit_rate": 0.2857142857142857,
+     "random_hit_rate": 0.21744881889763779,
+     "skill": 0.08723450742286772
+    },
+    "legacy_window_with_channels": {
+     "hit_rate": 0.31092436974789917
+    },
+    "hit_rate": 0.2857142857142857,
+    "n_with_depth": 104,
+    "observed_median_m": 0.915,
+    "model_median_m": 0.034614309668540955,
+    "model_median_cell_m": 0.0109641682356596,
+    "depth_bias_m": -0.8156719272676856,
+    "depth_mae_m": 0.8459547273965122,
+    "depth_rmse_m": 0.9883953249915794,
+    "depth_note": "model depth = window_3x3_land value"
+   },
+   "micro_area_flooded_km2": 5.39,
+   "dki_flooded_km2": 21.806724705882353,
+   "dki_land_km2": 600.881474117647,
+   "genangan_dsda": {
+    "source": "Jakarta Satu, Dinas SDA DKI, layer Genangan (aggregates only)",
+    "window_utc": [
+     "2021-02-18 05:00:00+00:00",
+     "2021-02-22 05:00:00+00:00"
+    ],
+    "n_polygons": 37,
+    "hit_rate": 0.3783783783783784,
+    "median_model_depth_m": 0.050323449075222015,
+    "n_with_depth": 34,
+    "median_observed_depth_m": 0.4,
+    "median_model_depth_at_observed_m": 0.050504397600889206,
+    "mean_error_m": -0.19893860746284617,
+    "share_model_ge_half_observed": 0.29411764705882354
+   },
+   "rw_places": {
+    "source": "RW polygons: Shabrina et al. (2026), Zenodo 19456870, CC BY 4.0",
+    "n_rw": 2672,
+    "rw_share_threshold": 0.1,
+    "note": "RW without a record = not recorded (reports are incomplete): false_alarm_ratio is an upper bound",
+    "reports_or_dsda": {
+     "n_observed": 247,
+     "n_model": 234,
+     "hits": 30,
+     "hit_rate": 0.1214574898785425,
+     "false_alarm_ratio": 0.8717948717948718,
+     "csi": 0.06651884700665188,
+     "auc": 0.5877883050210777
+    },
+    "reports": {
+     "n_observed": 157,
+     "n_model": 234,
+     "hits": 18,
+     "hit_rate": 0.11464968152866242,
+     "false_alarm_ratio": 0.9230769230769231,
+     "csi": 0.04825737265415549,
+     "auc": 0.5813108609489559
+    },
+    "dsda": {
+     "n_observed": 107,
+     "n_model": 234,
+     "hits": 15,
+     "hit_rate": 0.14018691588785046,
+     "false_alarm_ratio": 0.9358974358974359,
+     "csi": 0.046012269938650305,
+     "auc": 0.5944927219398444
+    }
+   }
+  },
+  {
+   "run": "2021-02-20_imerg_k3_d0_poff_dem3",
+   "drain_mm_h": 0,
+   "rain": "rain_imerg.json",
+   "rain_scale": 1,
+   "terrain_year": 2021.1348173515983,
+   "pumps": false,
+   "pump_m3s": 664.8,
+   "amc": 2,
+   "infiltration": true,
+   "sens": "dem3",
+   "mean_rain_mm": 50.87964066556293,
+   "flooded_km2": 101.63790028466285,
+   "mass_error": 1.0219310642829178e-14,
+   "reports": {
+    "n_reports": 384,
+    "rule": "hit = model max depth >= 0.1 m on land (channels and sea excluded)",
+    "cell": {
+     "hit_rate": 0.17708333333333334,
+     "random_hit_rate": 0.06407280400949618,
+     "skill": 0.12074713696532417
+    },
+    "window_3x3_land": {
+     "hit_rate": 0.3619791666666667,
+     "random_hit_rate": 0.1983909258770773,
+     "skill": 0.2040748365636689
+    },
+    "legacy_window_with_channels": {
+     "hit_rate": 0.3671875
+    },
+    "hit_rate": 0.3619791666666667,
+    "fair": {
+     "hit_rate": 0.3619791666666667,
+     "n": 384,
+     "wilson95": [
+      0.31549809213829316,
+      0.4111944545096168
+     ],
+     "block_bootstrap95": [
+      0.29545031581321907,
+      0.4326672084404621
+     ],
+     "random_domain_land": 0.24973327200565226,
+     "random_near_reports": 0.24483565500347337,
+     "p_vs_domain_land": 6.806724096137955e-07,
+     "p_vs_near_reports": 2.0658536650863494e-07,
+     "inside_dki": {
+      "n": 265,
+      "hit_rate": 0.2830188679245283,
+      "random_dki": 0.1983909258770773,
+      "p_vs_dki": 0.0005899546662176637
+     },
+     "verdict": "better",
+     "rule": "verdict 'better' = p < 0.05 against both fair baselines; 'too_few' = fewer than 100 reports (a 10-point gain cannot be told from chance)"
+    },
+    "n_with_depth": 337,
+    "observed_median_m": 0.65,
+    "model_median_m": 0.05099835619330406,
+    "model_median_cell_m": 0.01299908198416233,
+    "depth_bias_m": -0.5469125024989823,
+    "depth_mae_m": 0.606681111109407,
+    "depth_rmse_m": 0.753741293357347,
+    "depth_note": "model depth = window_3x3_land value"
+   },
+   "reports_by_distance": {
+    "rule": "hit = deepest land cell of the 3 x 3 window >= 0.1 m; random = same rule on all cells of the class",
+    "distance": "model grid, cell centre to nearest river/water block (channel flag), exact to 500 m",
+    "n_reports": 372,
+    "classes": {
+     "water": {
+      "label": "in a river or water block of the model",
+      "n": 91,
+      "share_of_reports": 0.2446236559139785,
+      "share_of_cells": 0.13506270525125252,
+      "hit_rate": 0.3076923076923077,
+      "wilson95": [
+       0.22226672658950442,
+       0.40869690118564916
+      ],
+      "random_same_class": 0.2401546998486632,
+      "p_vs_random_same_class": 0.08548302953164136,
+      "n_with_depth": 81,
+      "observed_median_m": 0.84,
+      "model_median_m": 0.03302142024040222
+     },
+     "le100": {
+      "label": "land within 100 m of a river or water block",
+      "n": 99,
+      "share_of_reports": 0.2661290322580645,
+      "share_of_cells": 0.14964320916436907,
+      "hit_rate": 0.32323232323232326,
+      "wilson95": [
+       0.23919862826396276,
+       0.4204721664339027
+      ],
+      "random_same_class": 0.2409773865533465,
+      "p_vs_random_same_class": 0.039343891637904485,
+      "n_with_depth": 91,
+      "observed_median_m": 0.71,
+      "model_median_m": 0.04102493077516556
+     },
+     "100_500": {
+      "label": "land 100-500 m from a river or water block",
+      "n": 138,
+      "share_of_reports": 0.3709677419354839,
+      "share_of_cells": 0.48508110121413356,
+      "hit_rate": 0.39855072463768115,
+      "wilson95": [
+       0.3206773965935992,
+       0.48191930282321505
+      ],
+      "random_same_class": 0.2270820458078169,
+      "p_vs_random_same_class": 4.86119910410556e-06,
+      "n_with_depth": 115,
+      "observed_median_m": 0.53,
+      "model_median_m": 0.06856407970190048
+     },
+     "gt500": {
+      "label": "land more than 500 m from a river or water block",
+      "n": 44,
+      "share_of_reports": 0.11827956989247312,
+      "share_of_cells": 0.23021298437024487,
+      "hit_rate": 0.5454545454545454,
+      "wilson95": [
+       0.4006593217065349,
+       0.6829499221314639
+      ],
+      "random_same_class": 0.2962926425034035,
+      "p_vs_random_same_class": 0.0004840970111929297,
+      "n_with_depth": 38,
+      "observed_median_m": 0.52,
+      "model_median_m": 0.19634653627872467
+     }
+    }
+   },
+   "micro": false,
+   "reports_micro_area": {
+    "n_reports": 119,
+    "rule": "hit = model max depth >= 0.1 m on land (channels and sea excluded)",
+    "cell": {
+     "hit_rate": 0.06722689075630252,
+     "random_hit_rate": 0.05404724409448819,
+     "skill": 0.013932669025524569
+    },
+    "window_3x3_land": {
+     "hit_rate": 0.2857142857142857,
+     "random_hit_rate": 0.22009448818897637,
+     "skill": 0.08413813793023872
+    },
+    "legacy_window_with_channels": {
+     "hit_rate": 0.29411764705882354
+    },
+    "hit_rate": 0.2857142857142857,
+    "n_with_depth": 104,
+    "observed_median_m": 0.915,
+    "model_median_m": 0.033357150852680206,
+    "model_median_cell_m": 0.010952077340334654,
+    "depth_bias_m": -0.8092609071475454,
+    "depth_mae_m": 0.833036165441064,
+    "depth_rmse_m": 0.9779619402354612,
+    "depth_note": "model depth = window_3x3_land value"
+   },
+   "micro_area_flooded_km2": 5.04,
+   "dki_flooded_km2": 29.38667294117647,
+   "dki_land_km2": 600.881474117647,
+   "genangan_dsda": {
+    "source": "Jakarta Satu, Dinas SDA DKI, layer Genangan (aggregates only)",
+    "window_utc": [
+     "2021-02-18 05:00:00+00:00",
+     "2021-02-22 05:00:00+00:00"
+    ],
+    "n_polygons": 37,
+    "hit_rate": 0.3783783783783784,
+    "median_model_depth_m": 0.05642617493867874,
+    "n_with_depth": 34,
+    "median_observed_depth_m": 0.4,
+    "median_model_depth_at_observed_m": 0.07200194522738457,
+    "mean_error_m": -0.20038564911879164,
+    "share_model_ge_half_observed": 0.38235294117647056
+   },
+   "rw_places": {
+    "source": "RW polygons: Shabrina et al. (2026), Zenodo 19456870, CC BY 4.0",
+    "n_rw": 2672,
+    "rw_share_threshold": 0.1,
+    "note": "RW without a record = not recorded (reports are incomplete): false_alarm_ratio is an upper bound",
+    "reports_or_dsda": {
+     "n_observed": 247,
+     "n_model": 297,
+     "hits": 31,
+     "hit_rate": 0.12550607287449392,
+     "false_alarm_ratio": 0.8956228956228957,
+     "csi": 0.06042884990253411,
+     "auc": 0.5713176676822905
+    },
+    "reports": {
+     "n_observed": 157,
+     "n_model": 297,
+     "hits": 25,
+     "hit_rate": 0.1592356687898089,
+     "false_alarm_ratio": 0.9158249158249159,
+     "csi": 0.05827505827505827,
+     "auc": 0.5757328639627205
+    },
+    "dsda": {
+     "n_observed": 107,
+     "n_model": 297,
+     "hits": 9,
+     "hit_rate": 0.08411214953271028,
+     "false_alarm_ratio": 0.9696969696969697,
+     "csi": 0.02278481012658228,
+     "auc": 0.568787232879707
+    }
+   }
+  },
+  {
+   "run": "2021-02-20_imerg_k3_d0_poff_dem4",
+   "drain_mm_h": 0,
+   "rain": "rain_imerg.json",
+   "rain_scale": 1,
+   "terrain_year": 2021.1348173515983,
+   "pumps": false,
+   "pump_m3s": 664.8,
+   "amc": 2,
+   "infiltration": true,
+   "sens": "dem4",
+   "mean_rain_mm": 50.87964066556293,
+   "flooded_km2": 95.22810026714131,
+   "mass_error": -3.8807889105363585e-16,
+   "reports": {
+    "n_reports": 384,
+    "rule": "hit = model max depth >= 0.1 m on land (channels and sea excluded)",
+    "cell": {
+     "hit_rate": 0.17708333333333334,
+     "random_hit_rate": 0.058467422843576894,
+     "skill": 0.1259817380382049
+    },
+    "window_3x3_land": {
+     "hit_rate": 0.375,
+     "random_hit_rate": 0.19117647058823528,
+     "skill": 0.2272727272727273
+    },
+    "legacy_window_with_channels": {
+     "hit_rate": 0.3828125
+    },
+    "hit_rate": 0.375,
+    "fair": {
+     "hit_rate": 0.375,
+     "n": 384,
+     "wilson95": [
+      0.3280402625161953,
+      0.42443600614606286
+     ],
+     "block_bootstrap95": [
+      0.30768716577540106,
+      0.44681400846665564
+     ],
+     "random_domain_land": 0.2459350653661405,
+     "random_near_reports": 0.24298928741179482,
+     "p_vs_domain_land": 1.3771735823317792e-08,
+     "p_vs_near_reports": 6.0838183137797215e-09,
+     "inside_dki": {
+      "n": 265,
+      "hit_rate": 0.2981132075471698,
+      "random_dki": 0.19117647058823528,
+      "p_vs_dki": 1.8923028364888294e-05
+     },
+     "verdict": "better",
+     "rule": "verdict 'better' = p < 0.05 against both fair baselines; 'too_few' = fewer than 100 reports (a 10-point gain cannot be told from chance)"
+    },
+    "n_with_depth": 337,
+    "observed_median_m": 0.65,
+    "model_median_m": 0.05958303436636925,
+    "model_median_cell_m": 0.012890689074993134,
+    "depth_bias_m": -0.5565758044618937,
+    "depth_mae_m": 0.6068987446629031,
+    "depth_rmse_m": 0.7570082147599977,
+    "depth_note": "model depth = window_3x3_land value"
+   },
+   "reports_by_distance": {
+    "rule": "hit = deepest land cell of the 3 x 3 window >= 0.1 m; random = same rule on all cells of the class",
+    "distance": "model grid, cell centre to nearest river/water block (channel flag), exact to 500 m",
+    "n_reports": 372,
+    "classes": {
+     "water": {
+      "label": "in a river or water block of the model",
+      "n": 91,
+      "share_of_reports": 0.2446236559139785,
+      "share_of_cells": 0.13506270525125252,
+      "hit_rate": 0.26373626373626374,
+      "wilson95": [
+       0.18410473382523007,
+       0.3625077231556729
+      ],
+      "random_same_class": 0.23457205313603496,
+      "p_vs_random_same_class": 0.2917566897905689,
+      "n_with_depth": 81,
+      "observed_median_m": 0.84,
+      "model_median_m": 0.028660591691732407
+     },
+     "le100": {
+      "label": "land within 100 m of a river or water block",
+      "n": 99,
+      "share_of_reports": 0.2661290322580645,
+      "share_of_cells": 0.14964320916436907,
+      "hit_rate": 0.3434343434343434,
+      "wilson95": [
+       0.25731989006284084,
+       0.44124567095526857
+      ],
+      "random_same_class": 0.23530125967521626,
+      "p_vs_random_same_class": 0.009735636337769532,
+      "n_with_depth": 91,
+      "observed_median_m": 0.71,
+      "model_median_m": 0.04617089033126831
+     },
+     "100_500": {
+      "label": "land 100-500 m from a river or water block",
+      "n": 138,
+      "share_of_reports": 0.3709677419354839,
+      "share_of_cells": 0.48508110121413356,
+      "hit_rate": 0.4420289855072464,
+      "wilson95": [
+       0.36185323323863894,
+       0.5253448807138263
+      ],
+      "random_same_class": 0.2233833361424799,
+      "p_vs_random_same_class": 9.974712199206946e-09,
+      "n_with_depth": 115,
+      "observed_median_m": 0.53,
+      "model_median_m": 0.09458991140127182
+     },
+     "gt500": {
+      "label": "land more than 500 m from a river or water block",
+      "n": 44,
+      "share_of_reports": 0.11827956989247312,
+      "share_of_cells": 0.23021298437024487,
+      "hit_rate": 0.5681818181818182,
+      "wilson95": [
+       0.42223890740554393,
+       0.7031749583514542
+      ],
+      "random_same_class": 0.2947339344553401,
+      "p_vs_random_same_class": 0.000142919774523702,
+      "n_with_depth": 38,
+      "observed_median_m": 0.52,
+      "model_median_m": 0.14378200471401215
+     }
+    }
+   },
+   "micro": false,
+   "reports_micro_area": {
+    "n_reports": 119,
+    "rule": "hit = model max depth >= 0.1 m on land (channels and sea excluded)",
+    "cell": {
+     "hit_rate": 0.1092436974789916,
+     "random_hit_rate": 0.05411023622047244,
+     "skill": 0.058287406598227995
+    },
+    "window_3x3_land": {
+     "hit_rate": 0.29411764705882354,
+     "random_hit_rate": 0.2190236220472441,
+     "skill": 0.0961540286383952
+    },
+    "legacy_window_with_channels": {
+     "hit_rate": 0.31932773109243695
+    },
+    "hit_rate": 0.29411764705882354,
+    "n_with_depth": 104,
+    "observed_median_m": 0.915,
+    "model_median_m": 0.0329275019466877,
+    "model_median_cell_m": 0.0100697698071599,
+    "depth_bias_m": -0.8288987632292825,
+    "depth_mae_m": 0.8368641910039318,
+    "depth_rmse_m": 0.9809973156112953,
+    "depth_note": "model depth = window_3x3_land value"
+   },
+   "micro_area_flooded_km2": 5.18,
+   "dki_flooded_km2": 26.493924705882357,
+   "dki_land_km2": 600.881474117647,
+   "genangan_dsda": {
+    "source": "Jakarta Satu, Dinas SDA DKI, layer Genangan (aggregates only)",
+    "window_utc": [
+     "2021-02-18 05:00:00+00:00",
+     "2021-02-22 05:00:00+00:00"
+    ],
+    "n_polygons": 37,
+    "hit_rate": 0.4864864864864865,
+    "median_model_depth_m": 0.07365522533655167,
+    "n_with_depth": 34,
+    "median_observed_depth_m": 0.4,
+    "median_model_depth_at_observed_m": 0.09051405638456345,
+    "mean_error_m": -0.20519103244604434,
+    "share_model_ge_half_observed": 0.2647058823529412
+   },
+   "rw_places": {
+    "source": "RW polygons: Shabrina et al. (2026), Zenodo 19456870, CC BY 4.0",
+    "n_rw": 2672,
+    "rw_share_threshold": 0.1,
+    "note": "RW without a record = not recorded (reports are incomplete): false_alarm_ratio is an upper bound",
+    "reports_or_dsda": {
+     "n_observed": 247,
+     "n_model": 275,
+     "hits": 37,
+     "hit_rate": 0.14979757085020243,
+     "false_alarm_ratio": 0.8654545454545455,
+     "csi": 0.07628865979381444,
+     "auc": 0.6046880086814975
+    },
+    "reports": {
+     "n_observed": 157,
+     "n_model": 275,
+     "hits": 23,
+     "hit_rate": 0.1464968152866242,
+     "false_alarm_ratio": 0.9163636363636364,
+     "csi": 0.05623471882640587,
+     "auc": 0.5987830975927873
+    },
+    "dsda": {
+     "n_observed": 107,
+     "n_model": 275,
+     "hits": 16,
+     "hit_rate": 0.14953271028037382,
+     "false_alarm_ratio": 0.9418181818181818,
+     "csi": 0.04371584699453552,
+     "auc": 0.6091599715800404
+    }
+   }
+  },
+  {
+   "run": "2021-02-20_imerg_k3_d0_poff_dem5",
+   "drain_mm_h": 0,
+   "rain": "rain_imerg.json",
+   "rain_scale": 1,
+   "terrain_year": 2021.1348173515983,
+   "pumps": false,
+   "pump_m3s": 664.8,
+   "amc": 2,
+   "infiltration": true,
+   "sens": "dem5",
+   "mean_rain_mm": 50.87964066556293,
+   "flooded_km2": 107.46540031245053,
+   "mass_error": -5.304200655354579e-15,
+   "reports": {
+    "n_reports": 384,
+    "rule": "hit = model max depth >= 0.1 m on land (channels and sea excluded)",
+    "cell": {
+     "hit_rate": 0.18489583333333334,
+     "random_hit_rate": 0.07017937219730942,
+     "skill": 0.12337482919379471
+    },
+    "window_3x3_land": {
+     "hit_rate": 0.3567708333333333,
+     "random_hit_rate": 0.20238723292007385,
+     "skill": 0.19355708281659087
+    },
+    "legacy_window_with_channels": {
+     "hit_rate": 0.3671875
+    },
+    "hit_rate": 0.3567708333333333,
+    "fair": {
+     "hit_rate": 0.3567708333333333,
+     "n": 384,
+     "wilson95": [
+      0.31049170116508257,
+      0.40588735667708814
+     ],
+     "block_bootstrap95": [
+      0.2822888428048521,
+      0.43099806963609055
+     ],
+     "random_domain_land": 0.2563765772515399,
+     "random_near_reports": 0.24929618661109282,
+     "p_vs_domain_land": 8.521582348652436e-06,
+     "p_vs_near_reports": 1.8096115259859e-06,
+     "inside_dki": {
+      "n": 265,
+      "hit_rate": 0.27547169811320754,
+      "random_dki": 0.20238723292007385,
+      "p_vs_dki": 0.0026328139868261055
+     },
+     "verdict": "better",
+     "rule": "verdict 'better' = p < 0.05 against both fair baselines; 'too_few' = fewer than 100 reports (a 10-point gain cannot be told from chance)"
+    },
+    "n_with_depth": 337,
+    "observed_median_m": 0.65,
+    "model_median_m": 0.05548379197716713,
+    "model_median_cell_m": 0.013628111220896244,
+    "depth_bias_m": -0.5501052881889764,
+    "depth_mae_m": 0.614440849560675,
+    "depth_rmse_m": 0.7623955058614891,
+    "depth_note": "model depth = window_3x3_land value"
+   },
+   "reports_by_distance": {
+    "rule": "hit = deepest land cell of the 3 x 3 window >= 0.1 m; random = same rule on all cells of the class",
+    "distance": "model grid, cell centre to nearest river/water block (channel flag), exact to 500 m",
+    "n_reports": 372,
+    "classes": {
+     "water": {
+      "label": "in a river or water block of the model",
+      "n": 91,
+      "share_of_reports": 0.2446236559139785,
+      "share_of_cells": 0.13506270525125252,
+      "hit_rate": 0.26373626373626374,
+      "wilson95": [
+       0.18410473382523007,
+       0.3625077231556729
+      ],
+      "random_same_class": 0.24355137043887676,
+      "p_vs_random_same_class": 0.36508329258151595,
+      "n_with_depth": 81,
+      "observed_median_m": 0.84,
+      "model_median_m": 0.02532452717423439
+     },
+     "le100": {
+      "label": "land within 100 m of a river or water block",
+      "n": 99,
+      "share_of_reports": 0.2661290322580645,
+      "share_of_cells": 0.14964320916436907,
+      "hit_rate": 0.32323232323232326,
+      "wilson95": [
+       0.23919862826396276,
+       0.4204721664339027
+      ],
+      "random_same_class": 0.24577325846107148,
+      "p_vs_random_same_class": 0.0501539312860802,
+      "n_with_depth": 91,
+      "observed_median_m": 0.71,
+      "model_median_m": 0.032527513802051544
+     },
+     "100_500": {
+      "label": "land 100-500 m from a river or water block",
+      "n": 138,
+      "share_of_reports": 0.3709677419354839,
+      "share_of_cells": 0.48508110121413356,
+      "hit_rate": 0.39855072463768115,
+      "wilson95": [
+       0.3206773965935992,
+       0.48191930282321505
+      ],
+      "random_same_class": 0.23798153454313914,
+      "p_vs_random_same_class": 2.063878170882151e-05,
+      "n_with_depth": 115,
+      "observed_median_m": 0.53,
+      "model_median_m": 0.06792427599430084
+     },
+     "gt500": {
+      "label": "land more than 500 m from a river or water block",
+      "n": 44,
+      "share_of_reports": 0.11827956989247312,
+      "share_of_cells": 0.23021298437024487,
+      "hit_rate": 0.5909090909090909,
+      "wilson95": [
+       0.44409492646606574,
+       0.7231235612099317
+      ],
+      "random_same_class": 0.2970029398417615,
+      "p_vs_random_same_class": 4.874391436194895e-05,
+      "n_with_depth": 38,
+      "observed_median_m": 0.52,
+      "model_median_m": 0.23474930971860886
+     }
+    }
+   },
+   "micro": false,
+   "reports_micro_area": {
+    "n_reports": 119,
+    "rule": "hit = model max depth >= 0.1 m on land (channels and sea excluded)",
+    "cell": {
+     "hit_rate": 0.1092436974789916,
+     "random_hit_rate": 0.05177952755905512,
+     "skill": 0.06060211901142573
+    },
+    "window_3x3_land": {
+     "hit_rate": 0.29411764705882354,
+     "random_hit_rate": 0.21045669291338584,
+     "skill": 0.10596119730802804
+    },
+    "legacy_window_with_channels": {
+     "hit_rate": 0.31932773109243695
+    },
+    "hit_rate": 0.29411764705882354,
+    "n_with_depth": 104,
+    "observed_median_m": 0.915,
+    "model_median_m": 0.03206549398601055,
+    "model_median_cell_m": 0.010947627481073141,
+    "depth_bias_m": -0.8101834114137679,
+    "depth_mae_m": 0.8292975015606945,
+    "depth_rmse_m": 0.9751653594137021,
+    "depth_note": "model depth = window_3x3_land value"
+   },
+   "micro_area_flooded_km2": 4.71,
+   "dki_flooded_km2": 33.05273294117647,
+   "dki_land_km2": 600.881474117647,
+   "genangan_dsda": {
+    "source": "Jakarta Satu, Dinas SDA DKI, layer Genangan (aggregates only)",
+    "window_utc": [
+     "2021-02-18 05:00:00+00:00",
+     "2021-02-22 05:00:00+00:00"
+    ],
+    "n_polygons": 37,
+    "hit_rate": 0.3783783783783784,
+    "median_model_depth_m": 0.04944939911365509,
+    "n_with_depth": 34,
+    "median_observed_depth_m": 0.4,
+    "median_model_depth_at_observed_m": 0.06382385455071926,
+    "mean_error_m": -0.18392722996718744,
+    "share_model_ge_half_observed": 0.35294117647058826
+   },
+   "rw_places": {
+    "source": "RW polygons: Shabrina et al. (2026), Zenodo 19456870, CC BY 4.0",
+    "n_rw": 2672,
+    "rw_share_threshold": 0.1,
+    "note": "RW without a record = not recorded (reports are incomplete): false_alarm_ratio is an upper bound",
+    "reports_or_dsda": {
+     "n_observed": 247,
+     "n_model": 295,
+     "hits": 43,
+     "hit_rate": 0.17408906882591094,
+     "false_alarm_ratio": 0.8542372881355932,
+     "csi": 0.08617234468937876,
+     "auc": 0.5898626820818899
+    },
+    "reports": {
+     "n_observed": 157,
+     "n_model": 295,
+     "hits": 30,
+     "hit_rate": 0.1910828025477707,
+     "false_alarm_ratio": 0.8983050847457628,
+     "csi": 0.07109004739336493,
+     "auc": 0.602780767623558
+    },
+    "dsda": {
+     "n_observed": 107,
+     "n_model": 295,
+     "hits": 16,
+     "hit_rate": 0.14953271028037382,
+     "false_alarm_ratio": 0.9457627118644067,
+     "csi": 0.04145077720207254,
+     "auc": 0.5710717603978794
+    }
+   }
+  },
+  {
+   "run": "2021-02-20_imerg_k3_d0_poff_dem6",
+   "drain_mm_h": 0,
+   "rain": "rain_imerg.json",
+   "rain_scale": 1,
+   "terrain_year": 2021.1348173515983,
+   "pumps": false,
+   "pump_m3s": 664.8,
+   "amc": 2,
+   "infiltration": true,
+   "sens": "dem6",
+   "mean_rain_mm": 50.87964066556293,
+   "flooded_km2": 100.9980003029488,
+   "mass_error": 6.3388561878997364e-15,
+   "reports": {
+    "n_reports": 384,
+    "rule": "hit = model max depth >= 0.1 m on land (channels and sea excluded)",
+    "cell": {
+     "hit_rate": 0.15885416666666666,
+     "random_hit_rate": 0.06587971511474545,
+     "skill": 0.09953156253676902
+    },
+    "window_3x3_land": {
+     "hit_rate": 0.359375,
+     "random_hit_rate": 0.2006726457399103,
+     "skill": 0.19854488078541374
+    },
+    "legacy_window_with_channels": {
+     "hit_rate": 0.3619791666666667
+    },
+    "hit_rate": 0.359375,
+    "fair": {
+     "hit_rate": 0.359375,
+     "n": 384,
+     "wilson95": [
+      0.312994141427048,
+      0.4085416608179923
+     ],
+     "block_bootstrap95": [
+      0.2948529411764706,
+      0.4308195877712848
+     ],
+     "random_domain_land": 0.25026909890985305,
+     "random_near_reports": 0.25055756645095245,
+     "p_vs_domain_land": 1.327340320927122e-06,
+     "p_vs_near_reports": 1.4184330885656838e-06,
+     "inside_dki": {
+      "n": 265,
+      "hit_rate": 0.25660377358490566,
+      "random_dki": 0.2006726457399103,
+      "p_vs_dki": 0.0159596947398668
+     },
+     "verdict": "better",
+     "rule": "verdict 'better' = p < 0.05 against both fair baselines; 'too_few' = fewer than 100 reports (a 10-point gain cannot be told from chance)"
+    },
+    "n_with_depth": 337,
+    "observed_median_m": 0.65,
+    "model_median_m": 0.05424800515174866,
+    "model_median_cell_m": 0.01284105610102415,
+    "depth_bias_m": -0.5451992242978693,
+    "depth_mae_m": 0.6179566648380019,
+    "depth_rmse_m": 0.7620844715308838,
+    "depth_note": "model depth = window_3x3_land value"
+   },
+   "reports_by_distance": {
+    "rule": "hit = deepest land cell of the 3 x 3 window >= 0.1 m; random = same rule on all cells of the class",
+    "distance": "model grid, cell centre to nearest river/water block (channel flag), exact to 500 m",
+    "n_reports": 372,
+    "classes": {
+     "water": {
+      "label": "in a river or water block of the model",
+      "n": 91,
+      "share_of_reports": 0.2446236559139785,
+      "share_of_cells": 0.13506270525125252,
+      "hit_rate": 0.2857142857142857,
+      "wilson95": [
+       0.2030608259873361,
+       0.3857272163906922
+      ],
+      "random_same_class": 0.24002017824112998,
+      "p_vs_random_same_class": 0.18344559920500228,
+      "n_with_depth": 81,
+      "observed_median_m": 0.84,
+      "model_median_m": 0.02603023871779442
+     },
+     "le100": {
+      "label": "land within 100 m of a river or water block",
+      "n": 99,
+      "share_of_reports": 0.2661290322580645,
+      "share_of_cells": 0.14964320916436907,
+      "hit_rate": 0.31313131313131315,
+      "wilson95": [
+       0.23020651977353207,
+       0.41001689176421147
+      ],
+      "random_same_class": 0.24049172863864016,
+      "p_vs_random_same_class": 0.06078940121019891,
+      "n_with_depth": 91,
+      "observed_median_m": 0.71,
+      "model_median_m": 0.03429423272609711
+     },
+     "100_500": {
+      "label": "land 100-500 m from a river or water block",
+      "n": 138,
+      "share_of_reports": 0.3709677419354839,
+      "share_of_cells": 0.48508110121413356,
+      "hit_rate": 0.41304347826086957,
+      "wilson95": [
+       0.33433263817940195,
+       0.49646453274929603
+      ],
+      "random_same_class": 0.22961027773095866,
+      "p_vs_random_same_class": 1.2501435803294035e-06,
+      "n_with_depth": 115,
+      "observed_median_m": 0.53,
+      "model_median_m": 0.08084166049957275
+     },
+     "gt500": {
+      "label": "land more than 500 m from a river or water block",
+      "n": 44,
+      "share_of_reports": 0.11827956989247312,
+      "share_of_cells": 0.23021298437024487,
+      "hit_rate": 0.5454545454545454,
+      "wilson95": [
+       0.4006593217065349,
+       0.6829499221314639
+      ],
+      "random_same_class": 0.2944971686758874,
+      "p_vs_random_same_class": 0.0004385490386936217,
+      "n_with_depth": 38,
+      "observed_median_m": 0.52,
+      "model_median_m": 0.19540216773748398
+     }
+    }
+   },
+   "micro": false,
+   "reports_micro_area": {
+    "n_reports": 119,
+    "rule": "hit = model max depth >= 0.1 m on land (channels and sea excluded)",
+    "cell": {
+     "hit_rate": 0.05042016806722689,
+     "random_hit_rate": 0.05360629921259843,
+     "skill": -0.0033666022319470937
+    },
+    "window_3x3_land": {
+     "hit_rate": 0.24369747899159663,
+     "random_hit_rate": 0.21398425196850393,
+     "skill": 0.03780233042086846
+    },
+    "legacy_window_with_channels": {
+     "hit_rate": 0.25210084033613445
+    },
+    "hit_rate": 0.24369747899159663,
+    "n_with_depth": 104,
+    "observed_median_m": 0.915,
+    "model_median_m": 0.02828314993530512,
+    "model_median_cell_m": 0.009945143014192581,
+    "depth_bias_m": -0.8204479035418123,
+    "depth_mae_m": 0.8464296812189814,
+    "depth_rmse_m": 0.989848716553121,
+    "depth_note": "model depth = window_3x3_land value"
+   },
+   "micro_area_flooded_km2": 5.34,
+   "dki_flooded_km2": 30.768818823529408,
+   "dki_land_km2": 600.881474117647,
+   "genangan_dsda": {
+    "source": "Jakarta Satu, Dinas SDA DKI, layer Genangan (aggregates only)",
+    "window_utc": [
+     "2021-02-18 05:00:00+00:00",
+     "2021-02-22 05:00:00+00:00"
+    ],
+    "n_polygons": 37,
+    "hit_rate": 0.40540540540540543,
+    "median_model_depth_m": 0.046502772718667984,
+    "n_with_depth": 34,
+    "median_observed_depth_m": 0.4,
+    "median_model_depth_at_observed_m": 0.05652426928281784,
+    "mean_error_m": -0.19041574582567108,
+    "share_model_ge_half_observed": 0.35294117647058826
+   },
+   "rw_places": {
+    "source": "RW polygons: Shabrina et al. (2026), Zenodo 19456870, CC BY 4.0",
+    "n_rw": 2672,
+    "rw_share_threshold": 0.1,
+    "note": "RW without a record = not recorded (reports are incomplete): false_alarm_ratio is an upper bound",
+    "reports_or_dsda": {
+     "n_observed": 247,
+     "n_model": 302,
+     "hits": 36,
+     "hit_rate": 0.145748987854251,
+     "false_alarm_ratio": 0.8807947019867549,
+     "csi": 0.07017543859649122,
+     "auc": 0.5807713176676823
+    },
+    "reports": {
+     "n_observed": 157,
+     "n_model": 302,
+     "hits": 23,
+     "hit_rate": 0.1464968152866242,
+     "false_alarm_ratio": 0.9238410596026491,
+     "csi": 0.052752293577981654,
+     "auc": 0.5845956110470932
+    },
+    "dsda": {
+     "n_observed": 107,
+     "n_model": 302,
+     "hits": 16,
+     "hit_rate": 0.14953271028037382,
+     "false_alarm_ratio": 0.9470198675496688,
+     "csi": 0.04071246819338423,
+     "auc": 0.5810588256726968
+    }
+   }
+  },
+  {
+   "run": "2021-02-20_imerg_k3_d0_poff_dem7",
+   "drain_mm_h": 0,
+   "rain": "rain_imerg.json",
+   "rain_scale": 1,
+   "terrain_year": 2021.1348173515983,
+   "pumps": false,
+   "pump_m3s": 664.8,
+   "amc": 2,
+   "infiltration": true,
+   "sens": "dem7",
+   "mean_rain_mm": 50.87964066556293,
+   "flooded_km2": 102.79890029512346,
+   "mass_error": 4.398156460787646e-15,
+   "reports": {
+    "n_reports": 384,
+    "rule": "hit = model max depth >= 0.1 m on land (channels and sea excluded)",
+    "cell": {
+     "hit_rate": 0.1796875,
+     "random_hit_rate": 0.06946715906093379,
+     "skill": 0.11844863081654927
+    },
+    "window_3x3_land": {
+     "hit_rate": 0.3802083333333333,
+     "random_hit_rate": 0.20356106568187812,
+     "skill": 0.22179637388357124
+    },
+    "legacy_window_with_channels": {
+     "hit_rate": 0.3802083333333333
+    },
+    "hit_rate": 0.3802083333333333,
+    "fair": {
+     "hit_rate": 0.3802083333333333,
+     "n": 384,
+     "wilson95": [
+      0.333067471384499,
+      0.4297222860834983
+     ],
+     "block_bootstrap95": [
+      0.3038600039463299,
+      0.45846576298582026
+     ],
+     "random_domain_land": 0.2492733143976215,
+     "random_near_reports": 0.248930569266206,
+     "p_vs_domain_land": 9.84027832349331e-09,
+     "p_vs_near_reports": 8.954989182743022e-09,
+     "inside_dki": {
+      "n": 265,
+      "hit_rate": 0.2830188679245283,
+      "random_dki": 0.20356106568187812,
+      "p_vs_dki": 0.0012464321659190283
+     },
+     "verdict": "better",
+     "rule": "verdict 'better' = p < 0.05 against both fair baselines; 'too_few' = fewer than 100 reports (a 10-point gain cannot be told from chance)"
+    },
+    "n_with_depth": 337,
+    "observed_median_m": 0.65,
+    "model_median_m": 0.055143363773822784,
+    "model_median_cell_m": 0.01270141452550888,
+    "depth_bias_m": -0.536332982718193,
+    "depth_mae_m": 0.6297273034633355,
+    "depth_rmse_m": 0.7738451747041721,
+    "depth_note": "model depth = window_3x3_land value"
+   },
+   "reports_by_distance": {
+    "rule": "hit = deepest land cell of the 3 x 3 window >= 0.1 m; random = same rule on all cells of the class",
+    "distance": "model grid, cell centre to nearest river/water block (channel flag), exact to 500 m",
+    "n_reports": 372,
+    "classes": {
+     "water": {
+      "label": "in a river or water block of the model",
+      "n": 91,
+      "share_of_reports": 0.2446236559139785,
+      "share_of_cells": 0.13506270525125252,
+      "hit_rate": 0.3076923076923077,
+      "wilson95": [
+       0.22226672658950442,
+       0.40869690118564916
+      ],
+      "random_same_class": 0.23965024382041367,
+      "p_vs_random_same_class": 0.08368297003229162,
+      "n_with_depth": 81,
+      "observed_median_m": 0.84,
+      "model_median_m": 0.02937956340610981
+     },
+     "le100": {
+      "label": "land within 100 m of a river or water block",
+      "n": 99,
+      "share_of_reports": 0.2661290322580645,
+      "share_of_cells": 0.14964320916436907,
+      "hit_rate": 0.3939393939393939,
+      "wilson95": [
+       0.30338069048726835,
+       0.49242178633145084
+      ],
+      "random_same_class": 0.2412505691303688,
+      "p_vs_random_same_class": 0.0005387536485959987,
+      "n_with_depth": 91,
+      "observed_median_m": 0.71,
+      "model_median_m": 0.0383622981607914
+     },
+     "100_500": {
+      "label": "land 100-500 m from a river or water block",
+      "n": 138,
+      "share_of_reports": 0.3709677419354839,
+      "share_of_cells": 0.48508110121413356,
+      "hit_rate": 0.37681159420289856,
+      "wilson95": [
+       0.30032908378052925,
+       0.45996690836845955
+      ],
+      "random_same_class": 0.2280746109331985,
+      "p_vs_random_same_class": 5.9472858764617275e-05,
+      "n_with_depth": 115,
+      "observed_median_m": 0.53,
+      "model_median_m": 0.08049539476633072
+     },
+     "gt500": {
+      "label": "land more than 500 m from a river or water block",
+      "n": 44,
+      "share_of_reports": 0.11827956989247312,
+      "share_of_cells": 0.23021298437024487,
+      "hit_rate": 0.6136363636363636,
+      "wilson95": [
+       0.46623309846201666,
+       0.7427900111329802
+      ],
+      "random_same_class": 0.2941814809699505,
+      "p_vs_random_same_class": 1.0952743847970682e-05,
+      "n_with_depth": 38,
+      "observed_median_m": 0.52,
+      "model_median_m": 0.18236643821001053
+     }
+    }
+   },
+   "micro": false,
+   "reports_micro_area": {
+    "n_reports": 119,
+    "rule": "hit = model max depth >= 0.1 m on land (channels and sea excluded)",
+    "cell": {
+     "hit_rate": 0.10084033613445378,
+     "random_hit_rate": 0.05278740157480315,
+     "skill": 0.05073088622294698
+    },
+    "window_3x3_land": {
+     "hit_rate": 0.3025210084033613,
+     "random_hit_rate": 0.22185826771653544,
+     "skill": 0.10366073086726796
+    },
+    "legacy_window_with_channels": {
+     "hit_rate": 0.3025210084033613
+    },
+    "hit_rate": 0.3025210084033613,
+    "n_with_depth": 104,
+    "observed_median_m": 0.915,
+    "model_median_m": 0.0333518385887146,
+    "model_median_cell_m": 0.01040634186938405,
+    "depth_bias_m": -0.8230905096626913,
+    "depth_mae_m": 0.844053417506556,
+    "depth_rmse_m": 0.986789151293544,
+    "depth_note": "model depth = window_3x3_land value"
+   },
+   "micro_area_flooded_km2": 5.05,
+   "dki_flooded_km2": 32.76907411764705,
+   "dki_land_km2": 600.881474117647,
+   "genangan_dsda": {
+    "source": "Jakarta Satu, Dinas SDA DKI, layer Genangan (aggregates only)",
+    "window_utc": [
+     "2021-02-18 05:00:00+00:00",
+     "2021-02-22 05:00:00+00:00"
+    ],
+    "n_polygons": 37,
+    "hit_rate": 0.43243243243243246,
+    "median_model_depth_m": 0.05300216004252434,
+    "n_with_depth": 34,
+    "median_observed_depth_m": 0.4,
+    "median_model_depth_at_observed_m": 0.06766130030155182,
+    "mean_error_m": -0.19192602472270237,
+    "share_model_ge_half_observed": 0.29411764705882354
+   },
+   "rw_places": {
+    "source": "RW polygons: Shabrina et al. (2026), Zenodo 19456870, CC BY 4.0",
+    "n_rw": 2672,
+    "rw_share_threshold": 0.1,
+    "note": "RW without a record = not recorded (reports are incomplete): false_alarm_ratio is an upper bound",
+    "reports_or_dsda": {
+     "n_observed": 247,
+     "n_model": 276,
+     "hits": 39,
+     "hit_rate": 0.15789473684210525,
+     "false_alarm_ratio": 0.8586956521739131,
+     "csi": 0.08057851239669421,
+     "auc": 0.5888551275094954
+    },
+    "reports": {
+     "n_observed": 157,
+     "n_model": 276,
+     "hits": 27,
+     "hit_rate": 0.17197452229299362,
+     "false_alarm_ratio": 0.9021739130434783,
+     "csi": 0.0665024630541872,
+     "auc": 0.5885021083688949
+    },
+    "dsda": {
+     "n_observed": 107,
+     "n_model": 276,
+     "hits": 17,
+     "hit_rate": 0.1588785046728972,
+     "false_alarm_ratio": 0.9384057971014492,
+     "csi": 0.04644808743169399,
+     "auc": 0.5915851414621704
+    }
+   }
+  },
+  {
+   "run": "2021-02-20_imerg_k3_d0_poff_dem8",
+   "drain_mm_h": 0,
+   "rain": "rain_imerg.json",
+   "rain_scale": 1,
+   "terrain_year": 2021.1348173515983,
+   "pumps": false,
+   "pump_m3s": 664.8,
+   "amc": 2,
+   "infiltration": true,
+   "sens": "dem8",
+   "mean_rain_mm": 50.87964066556293,
+   "flooded_km2": 101.74860028518587,
+   "mass_error": -5.303908676892025e-15,
+   "reports": {
+    "n_reports": 384,
+    "rule": "hit = model max depth >= 0.1 m on land (channels and sea excluded)",
+    "cell": {
+     "hit_rate": 0.17708333333333334,
+     "random_hit_rate": 0.0670139804800844,
+     "skill": 0.11797535070234715
+    },
+    "window_3x3_land": {
+     "hit_rate": 0.3802083333333333,
+     "random_hit_rate": 0.20052756528620416,
+     "skill": 0.22474917238572872
+    },
+    "legacy_window_with_channels": {
+     "hit_rate": 0.3828125
+    },
+    "hit_rate": 0.3802083333333333,
+    "fair": {
+     "hit_rate": 0.3802083333333333,
+     "n": 384,
+     "wilson95": [
+      0.333067471384499,
+      0.4297222860834983
+     ],
+     "block_bootstrap95": [
+      0.3149510643011056,
+      0.44866124599175444
+     ],
+     "random_domain_land": 0.24771799382613602,
+     "random_near_reports": 0.2445980037292969,
+     "p_vs_domain_land": 6.398784642841882e-09,
+     "p_vs_near_reports": 2.644858271565582e-09,
+     "inside_dki": {
+      "n": 265,
+      "hit_rate": 0.29056603773584905,
+      "random_dki": 0.20052756528620416,
+      "p_vs_dki": 0.0002966644680761229
+     },
+     "verdict": "better",
+     "rule": "verdict 'better' = p < 0.05 against both fair baselines; 'too_few' = fewer than 100 reports (a 10-point gain cannot be told from chance)"
+    },
+    "n_with_depth": 337,
+    "observed_median_m": 0.65,
+    "model_median_m": 0.04713498800992966,
+    "model_median_cell_m": 0.012716906145215034,
+    "depth_bias_m": -0.5347881003074592,
+    "depth_mae_m": 0.6120534205243258,
+    "depth_rmse_m": 0.7568125828665095,
+    "depth_note": "model depth = window_3x3_land value"
+   },
+   "reports_by_distance": {
+    "rule": "hit = deepest land cell of the 3 x 3 window >= 0.1 m; random = same rule on all cells of the class",
+    "distance": "model grid, cell centre to nearest river/water block (channel flag), exact to 500 m",
+    "n_reports": 372,
+    "classes": {
+     "water": {
+      "label": "in a river or water block of the model",
+      "n": 91,
+      "share_of_reports": 0.2446236559139785,
+      "share_of_cells": 0.13506270525125252,
+      "hit_rate": 0.2857142857142857,
+      "wilson95": [
+       0.2030608259873361,
+       0.3857272163906922
+      ],
+      "random_same_class": 0.23719522448293257,
+      "p_vs_random_same_class": 0.16678655931514264,
+      "n_with_depth": 81,
+      "observed_median_m": 0.84,
+      "model_median_m": 0.02342173457145691
+     },
+     "le100": {
+      "label": "land within 100 m of a river or water block",
+      "n": 99,
+      "share_of_reports": 0.2661290322580645,
+      "share_of_cells": 0.14964320916436907,
+      "hit_rate": 0.36363636363636365,
+      "wilson95": [
+       0.27561748409823283,
+       0.4618428432401205
+      ],
+      "random_same_class": 0.23715283047503416,
+      "p_vs_random_same_class": 0.0032033236923003907,
+      "n_with_depth": 91,
+      "observed_median_m": 0.71,
+      "model_median_m": 0.04713498800992966
+     },
+     "100_500": {
+      "label": "land 100-500 m from a river or water block",
+      "n": 138,
+      "share_of_reports": 0.3709677419354839,
+      "share_of_cells": 0.48508110121413356,
+      "hit_rate": 0.41304347826086957,
+      "wilson95": [
+       0.33433263817940195,
+       0.49646453274929603
+      ],
+      "random_same_class": 0.22801842800157313,
+      "p_vs_random_same_class": 9.879852293895716e-07,
+      "n_with_depth": 115,
+      "observed_median_m": 0.53,
+      "model_median_m": 0.07447066903114319
+     },
+     "gt500": {
+      "label": "land more than 500 m from a river or water block",
+      "n": 44,
+      "share_of_reports": 0.11827956989247312,
+      "share_of_cells": 0.23021298437024487,
+      "hit_rate": 0.6136363636363636,
+      "wilson95": [
+       0.46623309846201666,
+       0.7427900111329802
+      ],
+      "random_same_class": 0.29057080283329717,
+      "p_vs_random_same_class": 8.511865522013175e-06,
+      "n_with_depth": 38,
+      "observed_median_m": 0.52,
+      "model_median_m": 0.1880287453532219
+     }
+    }
+   },
+   "micro": false,
+   "reports_micro_area": {
+    "n_reports": 119,
+    "rule": "hit = model max depth >= 0.1 m on land (channels and sea excluded)",
+    "cell": {
+     "hit_rate": 0.07563025210084033,
+     "random_hit_rate": 0.054173228346456694,
+     "skill": 0.022685997475913437
+    },
+    "window_3x3_land": {
+     "hit_rate": 0.2773109243697479,
+     "random_hit_rate": 0.21385826771653543,
+     "skill": 0.0807140163757811
+    },
+    "legacy_window_with_channels": {
+     "hit_rate": 0.2773109243697479
+    },
+    "hit_rate": 0.2773109243697479,
+    "n_with_depth": 104,
+    "observed_median_m": 0.915,
+    "model_median_m": 0.031402054242789745,
+    "model_median_cell_m": 0.009758316911756992,
+    "depth_bias_m": -0.8209964991849847,
+    "depth_mae_m": 0.8357800879016016,
+    "depth_rmse_m": 0.9814385764697329,
+    "depth_note": "model depth = window_3x3_land value"
+   },
+   "micro_area_flooded_km2": 5.14,
+   "dki_flooded_km2": 31.461194117647057,
+   "dki_land_km2": 600.881474117647,
+   "genangan_dsda": {
+    "source": "Jakarta Satu, Dinas SDA DKI, layer Genangan (aggregates only)",
+    "window_utc": [
+     "2021-02-18 05:00:00+00:00",
+     "2021-02-22 05:00:00+00:00"
+    ],
+    "n_polygons": 37,
+    "hit_rate": 0.4594594594594595,
+    "median_model_depth_m": 0.04300656169652939,
+    "n_with_depth": 34,
+    "median_observed_depth_m": 0.4,
+    "median_model_depth_at_observed_m": 0.07527173310518265,
+    "mean_error_m": -0.205620954777388,
+    "share_model_ge_half_observed": 0.3235294117647059
+   },
+   "rw_places": {
+    "source": "RW polygons: Shabrina et al. (2026), Zenodo 19456870, CC BY 4.0",
+    "n_rw": 2672,
+    "rw_share_threshold": 0.1,
+    "note": "RW without a record = not recorded (reports are incomplete): false_alarm_ratio is an upper bound",
+    "reports_or_dsda": {
+     "n_observed": 247,
+     "n_model": 283,
+     "hits": 41,
+     "hit_rate": 0.1659919028340081,
+     "false_alarm_ratio": 0.8551236749116607,
+     "csi": 0.08384458077709611,
+     "auc": 0.5966459368087149
+    },
+    "reports": {
+     "n_observed": 157,
+     "n_model": 283,
+     "hits": 31,
+     "hit_rate": 0.19745222929936307,
+     "false_alarm_ratio": 0.8904593639575972,
+     "csi": 0.07579462102689487,
+     "auc": 0.6013663243469122
+    },
+    "dsda": {
+     "n_observed": 107,
+     "n_model": 283,
+     "hits": 14,
+     "hit_rate": 0.1308411214953271,
+     "false_alarm_ratio": 0.950530035335689,
+     "csi": 0.03723404255319149,
+     "auc": 0.5869140660581881
+    }
+   }
+  },
+  {
+   "run": "2021-02-20_imerg_k3_d0_poff_dem9",
+   "drain_mm_h": 0,
+   "rain": "rain_imerg.json",
+   "rain_scale": 1,
+   "terrain_year": 2021.1348173515983,
+   "pumps": false,
+   "pump_m3s": 664.8,
+   "amc": 2,
+   "infiltration": true,
+   "sens": "dem9",
+   "mean_rain_mm": 50.87964066556293,
+   "flooded_km2": 101.42730030144006,
+   "mass_error": -8.796838859610108e-15,
+   "reports": {
+    "n_reports": 384,
+    "rule": "hit = model max depth >= 0.1 m on land (channels and sea excluded)",
+    "cell": {
+     "hit_rate": 0.16666666666666666,
+     "random_hit_rate": 0.06688208915853337,
+     "skill": 0.1069367293766225
+    },
+    "window_3x3_land": {
+     "hit_rate": 0.3880208333333333,
+     "random_hit_rate": 0.20346874175679242,
+     "skill": 0.23169472593402102
+    },
+    "legacy_window_with_channels": {
+     "hit_rate": 0.3958333333333333
+    },
+    "hit_rate": 0.3880208333333333,
+    "fair": {
+     "hit_rate": 0.3880208333333333,
+     "n": 384,
+     "wilson95": [
+      0.3406192144169819,
+      0.43764077625962433
+     ],
+     "block_bootstrap95": [
+      0.31593372423596305,
+      0.4623425282727608
+     ],
+     "random_domain_land": 0.2543660409030343,
+     "random_near_reports": 0.25627947789843153,
+     "p_vs_domain_land": 6.043951885644603e-09,
+     "p_vs_near_reports": 1.0206076492256188e-08,
+     "inside_dki": {
+      "n": 265,
+      "hit_rate": 0.30943396226415093,
+      "random_dki": 0.20346874175679242,
+      "p_vs_dki": 3.078870428136371e-05
+     },
+     "verdict": "better",
+     "rule": "verdict 'better' = p < 0.05 against both fair baselines; 'too_few' = fewer than 100 reports (a 10-point gain cannot be told from chance)"
+    },
+    "n_with_depth": 337,
+    "observed_median_m": 0.65,
+    "model_median_m": 0.05622822046279907,
+    "model_median_cell_m": 0.01351796742528677,
+    "depth_bias_m": -0.5322339621012152,
+    "depth_mae_m": 0.6302796704243062,
+    "depth_rmse_m": 0.778357079270174,
+    "depth_note": "model depth = window_3x3_land value"
+   },
+   "reports_by_distance": {
+    "rule": "hit = deepest land cell of the 3 x 3 window >= 0.1 m; random = same rule on all cells of the class",
+    "distance": "model grid, cell centre to nearest river/water block (channel flag), exact to 500 m",
+    "n_reports": 372,
+    "classes": {
+     "water": {
+      "label": "in a river or water block of the model",
+      "n": 91,
+      "share_of_reports": 0.2446236559139785,
+      "share_of_cells": 0.13506270525125252,
+      "hit_rate": 0.31868131868131866,
+      "wilson95": [
+       0.23195859191577634,
+       0.4200928285579399
+      ],
+      "random_same_class": 0.24745249705733985,
+      "p_vs_random_same_class": 0.07578742048460765,
+      "n_with_depth": 81,
+      "observed_median_m": 0.84,
+      "model_median_m": 0.02802124433219433
+     },
+     "le100": {
+      "label": "land within 100 m of a river or water block",
+      "n": 99,
+      "share_of_reports": 0.2661290322580645,
+      "share_of_cells": 0.14964320916436907,
+      "hit_rate": 0.36363636363636365,
+      "wilson95": [
+       0.27561748409823283,
+       0.4618428432401205
+      ],
+      "random_same_class": 0.24601608741842465,
+      "p_vs_random_same_class": 0.006035359805264991,
+      "n_with_depth": 91,
+      "observed_median_m": 0.71,
+      "model_median_m": 0.04564285650849342
+     },
+     "100_500": {
+      "label": "land 100-500 m from a river or water block",
+      "n": 138,
+      "share_of_reports": 0.3709677419354839,
+      "share_of_cells": 0.48508110121413356,
+      "hit_rate": 0.41304347826086957,
+      "wilson95": [
+       0.33433263817940195,
+       0.49646453274929603
+      ],
+      "random_same_class": 0.23212914583216285,
+      "p_vs_random_same_class": 1.8030576564986147e-06,
+      "n_with_depth": 115,
+      "observed_median_m": 0.53,
+      "model_median_m": 0.07193799316883087
+     },
+     "gt500": {
+      "label": "land more than 500 m from a river or water block",
+      "n": 44,
+      "share_of_reports": 0.11827956989247312,
+      "share_of_cells": 0.23021298437024487,
+      "hit_rate": 0.6136363636363636,
+      "wilson95": [
+       0.46623309846201666,
+       0.7427900111329802
+      ],
+      "random_same_class": 0.2995481719708778,
+      "p_vs_random_same_class": 1.5802575909066484e-05,
+      "n_with_depth": 38,
+      "observed_median_m": 0.52,
+      "model_median_m": 0.16569796204566956
+     }
+    }
+   },
+   "micro": false,
+   "reports_micro_area": {
+    "n_reports": 119,
+    "rule": "hit = model max depth >= 0.1 m on land (channels and sea excluded)",
+    "cell": {
+     "hit_rate": 0.06722689075630252,
+     "random_hit_rate": 0.05177952755905512,
+     "skill": 0.016290898210077887
+    },
+    "window_3x3_land": {
+     "hit_rate": 0.29411764705882354,
+     "random_hit_rate": 0.21253543307086614,
+     "skill": 0.10360112367481192
+    },
+    "legacy_window_with_channels": {
+     "hit_rate": 0.3025210084033613
+    },
+    "hit_rate": 0.29411764705882354,
+    "n_with_depth": 104,
+    "observed_median_m": 0.915,
+    "model_median_m": 0.03427785821259022,
+    "model_median_cell_m": 0.01047080522403121,
+    "depth_bias_m": -0.8226605191045943,
+    "depth_mae_m": 0.8364473511070873,
+    "depth_rmse_m": 0.9825460409380797,
+    "depth_note": "model depth = window_3x3_land value"
+   },
+   "micro_area_flooded_km2": 4.77,
+   "dki_flooded_km2": 30.662915294117646,
+   "dki_land_km2": 600.881474117647,
+   "genangan_dsda": {
+    "source": "Jakarta Satu, Dinas SDA DKI, layer Genangan (aggregates only)",
+    "window_utc": [
+     "2021-02-18 05:00:00+00:00",
+     "2021-02-22 05:00:00+00:00"
+    ],
+    "n_polygons": 37,
+    "hit_rate": 0.43243243243243246,
+    "median_model_depth_m": 0.04430120065808296,
+    "n_with_depth": 34,
+    "median_observed_depth_m": 0.4,
+    "median_model_depth_at_observed_m": 0.044820431619882584,
+    "mean_error_m": -0.21582052807926255,
+    "share_model_ge_half_observed": 0.35294117647058826
+   },
+   "rw_places": {
+    "source": "RW polygons: Shabrina et al. (2026), Zenodo 19456870, CC BY 4.0",
+    "n_rw": 2672,
+    "rw_share_threshold": 0.1,
+    "note": "RW without a record = not recorded (reports are incomplete): false_alarm_ratio is an upper bound",
+    "reports_or_dsda": {
+     "n_observed": 247,
+     "n_model": 280,
+     "hits": 35,
+     "hit_rate": 0.1417004048582996,
+     "false_alarm_ratio": 0.875,
+     "csi": 0.07113821138211382,
+     "auc": 0.5864092825243123
+    },
+    "reports": {
+     "n_observed": 157,
+     "n_model": 280,
+     "hits": 24,
+     "hit_rate": 0.15286624203821655,
+     "false_alarm_ratio": 0.9142857142857143,
+     "csi": 0.05811138014527845,
+     "auc": 0.5957541375948133
+    },
+    "dsda": {
+     "n_observed": 107,
+     "n_model": 280,
+     "hits": 14,
+     "hit_rate": 0.1308411214953271,
+     "false_alarm_ratio": 0.95,
+     "csi": 0.03753351206434316,
+     "auc": 0.5732141881182707
+    }
+   }
+  },
+  {
+   "run": "2021-02-20_imerg_k3_d0_poff_n0.7",
+   "drain_mm_h": 0,
+   "rain": "rain_imerg.json",
+   "rain_scale": 1,
+   "terrain_year": 2021.1348173515983,
+   "pumps": false,
+   "pump_m3s": 664.8,
+   "amc": 2,
+   "infiltration": true,
+   "sens": "n0.7",
+   "mean_rain_mm": 50.87964066556293,
+   "flooded_km2": 96.92370028140395,
+   "mass_error": 8.796905582697243e-15,
+   "reports": {
+    "n_reports": 384,
+    "rule": "hit = model max depth >= 0.1 m on land (channels and sea excluded)",
+    "cell": {
+     "hit_rate": 0.18489583333333334,
+     "random_hit_rate": 0.07003429174360327,
+     "skill": 0.12351158819080037
+    },
+    "window_3x3_land": {
+     "hit_rate": 0.375,
+     "random_hit_rate": 0.20720126615668688,
+     "skill": 0.21165363500249543
+    },
+    "legacy_window_with_channels": {
+     "hit_rate": 0.3776041666666667
+    },
+    "hit_rate": 0.375,
+    "fair": {
+     "hit_rate": 0.375,
+     "n": 384,
+     "wilson95": [
+      0.3280402625161953,
+      0.42443600614606286
+     ],
+     "block_bootstrap95": [
+      0.30140410363415054,
+      0.45301487198795176
+     ],
+     "random_domain_land": 0.25431862259292803,
+     "random_near_reports": 0.2530072026616943,
+     "p_vs_domain_land": 1.2378172036003893e-07,
+     "p_vs_near_reports": 8.888599162501003e-08,
+     "inside_dki": {
+      "n": 265,
+      "hit_rate": 0.2830188679245283,
+      "random_dki": 0.20720126615668688,
+      "p_vs_dki": 0.0020432190903268634
+     },
+     "verdict": "better",
+     "rule": "verdict 'better' = p < 0.05 against both fair baselines; 'too_few' = fewer than 100 reports (a 10-point gain cannot be told from chance)"
+    },
+    "n_with_depth": 337,
+    "observed_median_m": 0.65,
+    "model_median_m": 0.054016128182411194,
+    "model_median_cell_m": 0.011688644997775555,
+    "depth_bias_m": -0.5647950122108302,
+    "depth_mae_m": 0.6096258559428122,
+    "depth_rmse_m": 0.7566707230464588,
+    "depth_note": "model depth = window_3x3_land value"
+   },
+   "reports_by_distance": {
+    "rule": "hit = deepest land cell of the 3 x 3 window >= 0.1 m; random = same rule on all cells of the class",
+    "distance": "model grid, cell centre to nearest river/water block (channel flag), exact to 500 m",
+    "n_reports": 372,
+    "classes": {
+     "water": {
+      "label": "in a river or water block of the model",
+      "n": 91,
+      "share_of_reports": 0.2446236559139785,
+      "share_of_cells": 0.13506270525125252,
+      "hit_rate": 0.26373626373626374,
+      "wilson95": [
+       0.18410473382523007,
+       0.3625077231556729
+      ],
+      "random_same_class": 0.24627543299142424,
+      "p_vs_random_same_class": 0.3882443778573042,
+      "n_with_depth": 81,
+      "observed_median_m": 0.84,
+      "model_median_m": 0.030117610469460487
+     },
+     "le100": {
+      "label": "land within 100 m of a river or water block",
+      "n": 99,
+      "share_of_reports": 0.2661290322580645,
+      "share_of_cells": 0.14964320916436907,
+      "hit_rate": 0.36363636363636365,
+      "wilson95": [
+       0.27561748409823283,
+       0.4618428432401205
+      ],
+      "random_same_class": 0.246501745333131,
+      "p_vs_random_same_class": 0.0062388731131989535,
+      "n_with_depth": 91,
+      "observed_median_m": 0.71,
+      "model_median_m": 0.03336989879608154
+     },
+     "100_500": {
+      "label": "land 100-500 m from a river or water block",
+      "n": 138,
+      "share_of_reports": 0.3709677419354839,
+      "share_of_cells": 0.48508110121413356,
+      "hit_rate": 0.4057971014492754,
+      "wilson95": [
+       0.32749615411428507,
+       0.48920078105847103
+      ],
+      "random_same_class": 0.23385208906867427,
+      "p_vs_random_same_class": 5.3642700734576415e-06,
+      "n_with_depth": 115,
+      "observed_median_m": 0.53,
+      "model_median_m": 0.07564728707075119
+     },
+     "gt500": {
+      "label": "land more than 500 m from a river or water block",
+      "n": 44,
+      "share_of_reports": 0.11827956989247312,
+      "share_of_cells": 0.23021298437024487,
+      "hit_rate": 0.6363636363636364,
+      "wilson95": [
+       0.48866107278891047,
+       0.7621666587250857
+      ],
+      "random_same_class": 0.29694374839689835,
+      "p_vs_random_same_class": 3.2986080461593894e-06,
+      "n_with_depth": 38,
+      "observed_median_m": 0.52,
+      "model_median_m": 0.20506060123443604
+     }
+    }
+   },
+   "micro": false,
+   "reports_micro_area": {
+    "n_reports": 119,
+    "rule": "hit = model max depth >= 0.1 m on land (channels and sea excluded)",
+    "cell": {
+     "hit_rate": 0.10084033613445378,
+     "random_hit_rate": 0.049700787401574804,
+     "skill": 0.05381415458931816
+    },
+    "window_3x3_land": {
+     "hit_rate": 0.3025210084033613,
+     "random_hit_rate": 0.20806299212598425,
+     "skill": 0.11927465863851106
+    },
+    "legacy_window_with_channels": {
+     "hit_rate": 0.31092436974789917
+    },
+    "hit_rate": 0.3025210084033613,
+    "n_with_depth": 104,
+    "observed_median_m": 0.915,
+    "model_median_m": 0.03938993439078331,
+    "model_median_cell_m": 0.008978551719337702,
+    "depth_bias_m": -0.8240494369607992,
+    "depth_mae_m": 0.8427229110617191,
+    "depth_rmse_m": 0.9822663959170396,
+    "depth_note": "model depth = window_3x3_land value"
+   },
+   "micro_area_flooded_km2": 4.75,
+   "dki_flooded_km2": 31.658325882352944,
+   "dki_land_km2": 600.881474117647,
+   "genangan_dsda": {
+    "source": "Jakarta Satu, Dinas SDA DKI, layer Genangan (aggregates only)",
+    "window_utc": [
+     "2021-02-18 05:00:00+00:00",
+     "2021-02-22 05:00:00+00:00"
+    ],
+    "n_polygons": 37,
+    "hit_rate": 0.43243243243243246,
+    "median_model_depth_m": 0.036771249026060104,
+    "n_with_depth": 34,
+    "median_observed_depth_m": 0.4,
+    "median_model_depth_at_observed_m": 0.04337455704808235,
+    "mean_error_m": -0.20183413920047527,
+    "share_model_ge_half_observed": 0.3235294117647059
+   },
+   "rw_places": {
+    "source": "RW polygons: Shabrina et al. (2026), Zenodo 19456870, CC BY 4.0",
+    "n_rw": 2672,
+    "rw_share_threshold": 0.1,
+    "note": "RW without a record = not recorded (reports are incomplete): false_alarm_ratio is an upper bound",
+    "reports_or_dsda": {
+     "n_observed": 247,
+     "n_model": 265,
+     "hits": 36,
+     "hit_rate": 0.145748987854251,
+     "false_alarm_ratio": 0.8641509433962264,
+     "csi": 0.07563025210084033,
+     "auc": 0.5888492841938311
+    },
+    "reports": {
+     "n_observed": 157,
+     "n_model": 265,
+     "hits": 26,
+     "hit_rate": 0.16560509554140126,
+     "false_alarm_ratio": 0.9018867924528302,
+     "csi": 0.06565656565656566,
+     "auc": 0.6017563409352801
+    },
+    "dsda": {
+     "n_observed": 107,
+     "n_model": 265,
+     "hits": 13,
+     "hit_rate": 0.12149532710280374,
+     "false_alarm_ratio": 0.9509433962264151,
+     "csi": 0.036211699164345405,
+     "auc": 0.566162030205316
+    }
+   }
+  },
+  {
+   "run": "2021-02-20_imerg_k3_d0_poff_n1.3",
+   "drain_mm_h": 0,
+   "rain": "rain_imerg.json",
+   "rain_scale": 1,
+   "terrain_year": 2021.1348173515983,
+   "pumps": false,
+   "pump_m3s": 664.8,
+   "amc": 2,
+   "infiltration": true,
+   "sens": "n1.3",
+   "mean_rain_mm": 50.87964066556293,
+   "flooded_km2": 89.5653002591081,
+   "mass_error": 1.0349063288207693e-15,
+   "reports": {
+    "n_reports": 384,
+    "rule": "hit = model max depth >= 0.1 m on land (channels and sea excluded)",
+    "cell": {
+     "hit_rate": 0.17447916666666666,
+     "random_hit_rate": 0.05185966763386969,
+     "skill": 0.12932631894984792
+    },
+    "window_3x3_land": {
+     "hit_rate": 0.375,
+     "random_hit_rate": 0.18881561593247165,
+     "skill": 0.22952165712799166
+    },
+    "legacy_window_with_channels": {
+     "hit_rate": 0.3854166666666667
+    },
+    "hit_rate": 0.375,
+    "fair": {
+     "hit_rate": 0.375,
+     "n": 384,
+     "wilson95": [
+      0.3280402625161953,
+      0.42443600614606286
+     ],
+     "block_bootstrap95": [
+      0.300531914893617,
+      0.454072049436371
+     ],
+     "random_domain_land": 0.25552778950063776,
+     "random_near_reports": 0.2455851705604914,
+     "p_vs_domain_land": 1.6731790666268307e-07,
+     "p_vs_near_reports": 1.25138781508195e-08,
+     "inside_dki": {
+      "n": 265,
+      "hit_rate": 0.2528301886792453,
+      "random_dki": 0.18881561593247165,
+      "p_vs_dki": 0.006125480796234785
+     },
+     "verdict": "better",
+     "rule": "verdict 'better' = p < 0.05 against both fair baselines; 'too_few' = fewer than 100 reports (a 10-point gain cannot be told from chance)"
+    },
+    "n_with_depth": 337,
+    "observed_median_m": 0.65,
+    "model_median_m": 0.05330432206392288,
+    "model_median_cell_m": 0.013815884478390217,
+    "depth_bias_m": -0.5761865742550473,
+    "depth_mae_m": 0.6003805120388261,
+    "depth_rmse_m": 0.749621598277355,
+    "depth_note": "model depth = window_3x3_land value"
+   },
+   "reports_by_distance": {
+    "rule": "hit = deepest land cell of the 3 x 3 window >= 0.1 m; random = same rule on all cells of the class",
+    "distance": "model grid, cell centre to nearest river/water block (channel flag), exact to 500 m",
+    "n_reports": 372,
+    "classes": {
+     "water": {
+      "label": "in a river or water block of the model",
+      "n": 91,
+      "share_of_reports": 0.2446236559139785,
+      "share_of_cells": 0.13506270525125252,
+      "hit_rate": 0.27472527472527475,
+      "wilson95": [
+       0.19355049670786545,
+       0.3741497529716002
+      ],
+      "random_same_class": 0.237464267697999,
+      "p_vs_random_same_class": 0.23495099085928622,
+      "n_with_depth": 81,
+      "observed_median_m": 0.84,
+      "model_median_m": 0.027785012498497963
+     },
+     "le100": {
+      "label": "land within 100 m of a river or water block",
+      "n": 99,
+      "share_of_reports": 0.2661290322580645,
+      "share_of_cells": 0.14964320916436907,
+      "hit_rate": 0.32323232323232326,
+      "wilson95": [
+       0.23919862826396276,
+       0.4204721664339027
+      ],
+      "random_same_class": 0.23888298679617545,
+      "p_vs_random_same_class": 0.03523249469147469,
+      "n_with_depth": 91,
+      "observed_median_m": 0.71,
+      "model_median_m": 0.030353154987096786
+     },
+     "100_500": {
+      "label": "land 100-500 m from a river or water block",
+      "n": 138,
+      "share_of_reports": 0.3709677419354839,
+      "share_of_cells": 0.48508110121413356,
+      "hit_rate": 0.427536231884058,
+      "wilson95": [
+       0.3480582395159687,
+       0.5109394029246129
+      ],
+      "random_same_class": 0.23419855048036406,
+      "p_vs_random_same_class": 4.125696259304412e-07,
+      "n_with_depth": 115,
+      "observed_median_m": 0.53,
+      "model_median_m": 0.08903712034225464
+     },
+     "gt500": {
+      "label": "land more than 500 m from a river or water block",
+      "n": 44,
+      "share_of_reports": 0.11827956989247312,
+      "share_of_cells": 0.23021298437024487,
+      "hit_rate": 0.6363636363636364,
+      "wilson95": [
+       0.48866107278891047,
+       0.7621666587250857
+      ],
+      "random_same_class": 0.30897934218574274,
+      "p_vs_random_same_class": 7.740604847219375e-06,
+      "n_with_depth": 38,
+      "observed_median_m": 0.52,
+      "model_median_m": 0.182802714407444
+     }
+    }
+   },
+   "micro": false,
+   "reports_micro_area": {
+    "n_reports": 119,
+    "rule": "hit = model max depth >= 0.1 m on land (channels and sea excluded)",
+    "cell": {
+     "hit_rate": 0.10084033613445378,
+     "random_hit_rate": 0.054803149606299215,
+     "skill": 0.04870645359109988
+    },
+    "window_3x3_land": {
+     "hit_rate": 0.31092436974789917,
+     "random_hit_rate": 0.22500787401574804,
+     "skill": 0.11086112084433872
+    },
+    "legacy_window_with_channels": {
+     "hit_rate": 0.31932773109243695
+    },
+    "hit_rate": 0.31092436974789917,
+    "n_with_depth": 104,
+    "observed_median_m": 0.915,
+    "model_median_m": 0.03765909932553768,
+    "model_median_cell_m": 0.011257624719291925,
+    "depth_bias_m": -0.820694089113878,
+    "depth_mae_m": 0.8408283750544517,
+    "depth_rmse_m": 0.9823213054742914,
+    "depth_note": "model depth = window_3x3_land value"
+   },
+   "micro_area_flooded_km2": 5.05,
+   "dki_flooded_km2": 20.24151882352941,
+   "dki_land_km2": 600.881474117647,
+   "genangan_dsda": {
+    "source": "Jakarta Satu, Dinas SDA DKI, layer Genangan (aggregates only)",
+    "window_utc": [
+     "2021-02-18 05:00:00+00:00",
+     "2021-02-22 05:00:00+00:00"
+    ],
+    "n_polygons": 37,
+    "hit_rate": 0.43243243243243246,
+    "median_model_depth_m": 0.0471024326980114,
+    "n_with_depth": 34,
+    "median_observed_depth_m": 0.4,
+    "median_model_depth_at_observed_m": 0.050429580733180046,
+    "mean_error_m": -0.19609097548048285,
+    "share_model_ge_half_observed": 0.3235294117647059
+   },
+   "rw_places": {
+    "source": "RW polygons: Shabrina et al. (2026), Zenodo 19456870, CC BY 4.0",
+    "n_rw": 2672,
+    "rw_share_threshold": 0.1,
+    "note": "RW without a record = not recorded (reports are incomplete): false_alarm_ratio is an upper bound",
+    "reports_or_dsda": {
+     "n_observed": 247,
+     "n_model": 203,
+     "hits": 29,
+     "hit_rate": 0.11740890688259109,
+     "false_alarm_ratio": 0.8571428571428571,
+     "csi": 0.0688836104513064,
+     "auc": 0.5845686380900705
+    },
+    "reports": {
+     "n_observed": 157,
+     "n_model": 203,
+     "hits": 18,
+     "hit_rate": 0.11464968152866242,
+     "false_alarm_ratio": 0.9113300492610837,
+     "csi": 0.05263157894736842,
+     "auc": 0.5800129161337706
+    },
+    "dsda": {
+     "n_observed": 107,
+     "n_model": 203,
+     "hits": 14,
+     "hit_rate": 0.1308411214953271,
+     "false_alarm_ratio": 0.9310344827586207,
+     "csi": 0.0472972972972973,
+     "auc": 0.5912991200743292
+    }
+   }
+  },
+  {
+   "run": "2021-02-20_imerg_k3_d0_poff",
+   "drain_mm_h": 0,
+   "rain": "rain_imerg.json",
+   "rain_scale": 1,
+   "terrain_year": 2021.1348173515983,
+   "pumps": false,
+   "pump_m3s": 664.8,
+   "amc": 2,
+   "infiltration": true,
+   "sens": "none",
+   "mean_rain_mm": 50.87964066556293,
+   "flooded_km2": 98.54730028414652,
+   "mass_error": 2.1085642026084194e-14,
+   "reports": {
+    "n_reports": 384,
+    "rule": "hit = model max depth >= 0.1 m on land (channels and sea excluded)",
+    "cell": {
+     "hit_rate": 0.19010416666666666,
+     "random_hit_rate": 0.06970456343972567,
+     "skill": 0.12942082535856902
+    },
+    "window_3x3_land": {
+     "hit_rate": 0.3932291666666667,
+     "random_hit_rate": 0.20935109469796886,
+     "skill": 0.23256602359862327
+    },
+    "legacy_window_with_channels": {
+     "hit_rate": 0.4010416666666667
+    },
+    "hit_rate": 0.3932291666666667,
+    "fair": {
+     "hit_rate": 0.3932291666666667,
+     "n": 384,
+     "wilson95": [
+      0.34566093214284066,
+      0.4429125473395048
+     ],
+     "block_bootstrap95": [
+      0.32180851063829785,
+      0.470274438963385
+     ],
+     "random_domain_land": 0.2598902740304141,
+     "random_near_reports": 0.26017330262147637,
+     "p_vs_domain_land": 7.80394350868606e-09,
+     "p_vs_near_reports": 8.427481706470584e-09,
+     "inside_dki": {
+      "n": 265,
+      "hit_rate": 0.29056603773584905,
+      "random_dki": 0.20935109469796886,
+      "p_vs_dki": 0.001097147745014003
+     },
+     "verdict": "better",
+     "rule": "verdict 'better' = p < 0.05 against both fair baselines; 'too_few' = fewer than 100 reports (a 10-point gain cannot be told from chance)"
+    },
+    "n_with_depth": 337,
+    "observed_median_m": 0.65,
+    "model_median_m": 0.057283587753772736,
+    "model_median_cell_m": 0.01334602851420641,
+    "depth_bias_m": -0.5596919770973241,
+    "depth_mae_m": 0.6039204562856686,
+    "depth_rmse_m": 0.7535127583815365,
+    "depth_note": "model depth = window_3x3_land value"
+   },
+   "reports_by_distance": {
+    "rule": "hit = deepest land cell of the 3 x 3 window >= 0.1 m; random = same rule on all cells of the class",
+    "distance": "model grid, cell centre to nearest river/water block (channel flag), exact to 500 m",
+    "n_reports": 372,
+    "classes": {
+     "water": {
+      "label": "in a river or water block of the model",
+      "n": 91,
+      "share_of_reports": 0.2446236559139785,
+      "share_of_cells": 0.13506270525125252,
+      "hit_rate": 0.2967032967032967,
+      "wilson95": [
+       0.212633552714673,
+       0.39724228236191794
+      ],
+      "random_same_class": 0.2482932571044224,
+      "p_vs_random_same_class": 0.17102568361452739,
+      "n_with_depth": 81,
+      "observed_median_m": 0.84,
+      "model_median_m": 0.03023923560976982
+     },
+     "le100": {
+      "label": "land within 100 m of a river or water block",
+      "n": 99,
+      "share_of_reports": 0.2661290322580645,
+      "share_of_cells": 0.14964320916436907,
+      "hit_rate": 0.36363636363636365,
+      "wilson95": [
+       0.27561748409823283,
+       0.4618428432401205
+      ],
+      "random_same_class": 0.2497799362573987,
+      "p_vs_random_same_class": 0.007772470041318408,
+      "n_with_depth": 91,
+      "observed_median_m": 0.71,
+      "model_median_m": 0.03278736770153046
+     },
+     "100_500": {
+      "label": "land 100-500 m from a river or water block",
+      "n": 138,
+      "share_of_reports": 0.3709677419354839,
+      "share_of_cells": 0.48508110121413356,
+      "hit_rate": 0.43478260869565216,
+      "wilson95": [
+       0.35494711514772304,
+       0.5181507630488004
+      ],
+      "random_same_class": 0.2388710976272075,
+      "p_vs_random_same_class": 3.364843275191841e-07,
+      "n_with_depth": 115,
+      "observed_median_m": 0.53,
+      "model_median_m": 0.09055198729038239
+     },
+     "gt500": {
+      "label": "land more than 500 m from a river or water block",
+      "n": 44,
+      "share_of_reports": 0.11827956989247312,
+      "share_of_cells": 0.23021298437024487,
+      "hit_rate": 0.6363636363636364,
+      "wilson95": [
+       0.48866107278891047,
+       0.7621666587250857
+      ],
+      "random_same_class": 0.30558569934692104,
+      "p_vs_random_same_class": 6.115464537975202e-06,
+      "n_with_depth": 38,
+      "observed_median_m": 0.52,
+      "model_median_m": 0.21873194724321365
+     }
+    }
+   },
+   "micro": false,
+   "reports_micro_area": {
+    "n_reports": 119,
+    "rule": "hit = model max depth >= 0.1 m on land (channels and sea excluded)",
+    "cell": {
+     "hit_rate": 0.09243697478991597,
+     "random_hit_rate": 0.05278740157480315,
+     "skill": 0.041859212262413785
+    },
+    "window_3x3_land": {
+     "hit_rate": 0.31092436974789917,
+     "random_hit_rate": 0.21744881889763779,
+     "skill": 0.11944976010206064
+    },
+    "legacy_window_with_channels": {
+     "hit_rate": 0.31932773109243695
+    },
+    "hit_rate": 0.31092436974789917,
+    "n_with_depth": 104,
+    "observed_median_m": 0.915,
+    "model_median_m": 0.03549997694790363,
+    "model_median_cell_m": 0.010205441620200872,
+    "depth_bias_m": -0.823370786543864,
+    "depth_mae_m": 0.8428863120820517,
+    "depth_rmse_m": 0.9842758710195341,
+    "depth_note": "model depth = window_3x3_land value"
+   },
+   "micro_area_flooded_km2": 4.88,
+   "dki_flooded_km2": 30.683689411764703,
+   "dki_land_km2": 600.881474117647,
+   "genangan_dsda": {
+    "source": "Jakarta Satu, Dinas SDA DKI, layer Genangan (aggregates only)",
+    "window_utc": [
+     "2021-02-18 05:00:00+00:00",
+     "2021-02-22 05:00:00+00:00"
+    ],
+    "n_polygons": 37,
+    "hit_rate": 0.43243243243243246,
+    "median_model_depth_m": 0.043570324778556824,
+    "n_with_depth": 34,
+    "median_observed_depth_m": 0.4,
+    "median_model_depth_at_observed_m": 0.04704584740102291,
+    "mean_error_m": -0.19800980140400282,
+    "share_model_ge_half_observed": 0.3235294117647059
+   },
+   "rw_places": {
+    "source": "RW polygons: Shabrina et al. (2026), Zenodo 19456870, CC BY 4.0",
+    "n_rw": 2672,
+    "rw_share_threshold": 0.1,
+    "note": "RW without a record = not recorded (reports are incomplete): false_alarm_ratio is an upper bound",
+    "reports_or_dsda": {
+     "n_observed": 247,
+     "n_model": 258,
+     "hits": 39,
+     "hit_rate": 0.15789473684210525,
+     "false_alarm_ratio": 0.8488372093023255,
+     "csi": 0.08369098712446352,
+     "auc": 0.59020576818732
+    },
+    "reports": {
+     "n_observed": 157,
+     "n_model": 258,
+     "hits": 28,
+     "hit_rate": 0.17834394904458598,
+     "false_alarm_ratio": 0.8914728682170543,
+     "csi": 0.07235142118863049,
+     "auc": 0.5996277114383761
+    },
+    "dsda": {
+     "n_observed": 107,
+     "n_model": 258,
+     "hits": 14,
+     "hit_rate": 0.1308411214953271,
+     "false_alarm_ratio": 0.9457364341085271,
+     "csi": 0.039886039886039885,
+     "auc": 0.5724344610227542
+    }
+   }
+  }
+ ]
+}

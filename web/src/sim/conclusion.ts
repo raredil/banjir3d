@@ -22,7 +22,21 @@ export type Facts = {
   places?: Place[]; // largest flooded places with computed reasons (places.ts)
 };
 /** How well the tested set-up matched three recorded floods (data/skill.json, from verification/observed/scores-*.json). */
-export type Skill = { events: { id: string; n?: number; hit: number; random: number; randomNear?: number; ci95?: number[]; verdict?: "better" | "not_better" | "too_few"; obsMedianM: number; modelMedianM: number; dkiKm2: number; reportedKm2: number | null }[] };
+export type Skill = { events: { id: string; n?: number; hit: number; random: number; randomNear?: number; ci95?: number[]; verdict?: "better" | "not_better" | "too_few"; obsMedianM: number; modelMedianM: number; dkiKm2: number; reportedKm2: number | null; byDistance?: Record<string, DistClass> }[] };
+/** Report hits per distance to the nearest river/water block (skill.json byDistance, review MT-06). */
+export type DistClass = { n: number; hit: number | null; random: number | null; p?: number | null; shareReports: number | null; shareCells: number | null };
+
+/** Reports in a river block or within 100 m of one, pooled, against those more than 500 m away (null when a side has fewer than 20 reports). */
+export function nearFar(bd?: Record<string, DistClass>) {
+  if (!bd) return null;
+  const pool = (ks: string[]) => {
+    const cs = ks.map((k) => bd[k]).filter((c): c is DistClass => !!c && c.n > 0 && c.hit != null && c.random != null);
+    const n = cs.reduce((a, c) => a + c.n, 0);
+    return n ? { n, hit: cs.reduce((a, c) => a + c.n * c.hit!, 0) / n, random: cs.reduce((a, c) => a + c.n * c.random!, 0) / n, share: cs.reduce((a, c) => a + (c.shareReports ?? 0), 0), cells: cs.reduce((a, c) => a + (c.shareCells ?? 0), 0) } : null;
+  };
+  const near = pool(["water", "le100"]), far = pool(["gt500"]);
+  return near && far && near.n >= 20 && far.n >= 20 ? { near, far } : null;
+}
 
 const REFS = new Map((data.references as Ref[]).map((r) => [r.key, r]));
 
@@ -236,11 +250,19 @@ function plainSummary(f: Facts, id: boolean, n: (v: number, d?: number) => strin
     const ev = sk.find((x) => r.kind === "event" && x.id === r.id) ?? sk[0];
     out.push(id ? `Model juga terlalu dangkal: di lokasi laporan warga banjir ${eventDate(ev.id, loc)}, nilai tengah kedalaman model ${n(ev.modelMedianM * 100)} cm, sedangkan warga melaporkan ${n(ev.obsMedianM * 100)} cm.`
       : `The model is also too shallow: at the citizen reports of the ${eventDate(ev.id, loc)} flood, the median model depth is ${n(ev.modelMedianM * 100)} cm, against ${n(ev.obsMedianM * 100)} cm reported.`);
+    const nf = nearFar(ev.byDistance);
+    if (nf) {
+      const P = (v: number) => n(100 * v), gN = nf.near.hit - nf.near.random, gF = nf.far.hit - nf.far.random;
+      out.push(id ? `Di mana model paling lemah (banjir ${eventDate(ev.id, loc)}): ${P(nf.near.share)} % laporan warga ada di sungai atau kurang dari 100 m darinya, padahal zona itu hanya ${P(nf.near.cells)} % dari peta. Di zona itu model kena ${P(nf.near.hit)} % laporan, titik acak yang sama dekatnya ke sungai ${P(nf.near.random)} %. Lebih dari 500 m dari sungai: ${P(nf.far.hit)} % lawan ${P(nf.far.random)} %.${gF - gN >= 0.1 ? " Jadi genangan hujan di tanah rendah lebih tertangkap daripada luapan sungai ke permukiman di tepinya." : ""}`
+        : `Where the model is weakest (the ${eventDate(ev.id, loc)} flood): ${P(nf.near.share)} % of citizen reports lie in a river or within 100 m of one, a zone that is only ${P(nf.near.cells)} % of the map. There the model hit ${P(nf.near.hit)} % of reports, random points equally close to a river ${P(nf.near.random)} %. More than 500 m from a river: ${P(nf.far.hit)} % against ${P(nf.far.random)} %.${gF - gN >= 0.1 ? " So rain ponding on low ground is caught better than rivers spilling into the neighbourhoods along their banks." : ""}`);
+    }
+    if (f.cellM !== 90) out.push(id ? `Catatan: angka uji di atas dihitung dengan sel 90 m untuk seluruh wilayah, sedangkan hitungan ini memakai sel ${n(f.cellM)} m. Pada uji lima kotak, sel yang lebih kecil memberi genangan yang lebih dalam dan lebih luas, lebih dekat ke laporan warga pada banjir 2021.`
+      : `Note: the check figures above were computed with 90 m cells for the whole region, while this run uses ${n(f.cellM)} m cells. In a test on five boxes, smaller cells gave deeper and wider flooding, closer to the citizen reports for the 2021 flood.`);
     const e20 = sk.find((x) => x.reportedKm2);
     if (e20) out.push(id ? `Luas genangan model di DKI pada banjir ${eventDate(e20.id, loc)} adalah ${n(e20.dkiKm2)} km², sedangkan Pemprov DKI melaporkan ${n(e20.reportedKm2!)} km² (cara Pemprov menghitung luas itu tidak diketahui).`
       : `The modelled flooded area in DKI for the ${eventDate(e20.id, loc)} flood is ${n(e20.dkiKm2)} km², against ${n(e20.reportedKm2!)} km² reported by the provincial government (how that figure was measured is not known).`);
-    out.push(id ? "Penyebab utama yang diketahui: hujan satelit lebih kecil dari hujan terukur (Halim, 1 Januari 2020: alat ukur 377 mm dalam sehari, satelit 166 mm), banyak sungai kecil terlalu dangkal di peta tinggi tanah, dan galat peta tinggi tanah (sekitar 1 m di kawasan terbangun) lebih besar dari kedalaman banjir biasa."
-      : "Known main causes: satellite rain is lower than gauged rain (Halim, 1 January 2020: gauge 377 mm in one day, satellite 166 mm), many small rivers are too shallow in the terrain data, and the terrain error (about 1 m in built-up areas) is larger than typical flood depths.");
+    out.push(id ? "Dugaan penyebab (belum diuji satu per satu): hujan satelit lebih kecil dari hujan terukur (Halim, 1 Januari 2020: alat ukur 377 mm dalam sehari, satelit 166 mm), banyak sungai kecil terlalu dangkal di peta tinggi tanah, dan galat peta tinggi tanah (sekitar 1 m di kawasan terbangun) lebih besar dari kedalaman banjir biasa."
+      : "Likely causes (not yet tested one by one): satellite rain is lower than gauged rain (Halim, 1 January 2020: gauge 377 mm in one day, satellite 166 mm), many small rivers are too shallow in the terrain data, and the terrain error (about 1 m in built-up areas) is larger than typical flood depths.");
   }
   out.push(id ? `Jadi: peta ini cocok untuk membandingkan skenario (misalnya hujan lebih besar, atau pompa menyala) dan melihat pola umum. Peta ini belum bisa memastikan apakah satu kawasan atau rumah tertentu kebanjiran, dan luas serta kedalamannya kemungkinan terlalu kecil.${r.kind === "event" ? "" : " Hasil hujan rencana tidak bisa dicek dengan kejadian nyata; ia menjawab pertanyaan \"bagaimana jika\"."}`
     : `In short: this map is suited to comparing scenarios (for example more rain, or pumps running) and to seeing the general pattern. It cannot yet tell whether a given neighbourhood or house floods, and its extent and depth are probably too small.${r.kind === "event" ? "" : " A design-storm result cannot be checked against a real event; it answers a \"what if\" question."}`);

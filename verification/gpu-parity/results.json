@@ -32,5 +32,26 @@
    "mass_error_cpu": 8.4e-16,
    "mass_error_gpu": 1.2e-06
   }
+ },
+ "recheck_2026_11_20": {
+  "date": "2026-11-20",
+  "why": "re-check after free outflow at the edges (ADR 0022, M-03), engine pack e16",
+  "how": "same two cases as above (hours=2; hours=1&zones=1&drain=20), Chromium SwiftShader WebGPU",
+  "result_design": {
+   "rmse_max_depth_m": 7.7e-05,
+   "max_abs_diff_max_depth_m": 0.0028,
+   "csi_flooded_gt_0.15m": 1.0,
+   "mass_error_cpu": -1.4e-15,
+   "mass_error_gpu": -8.5e-08
+  },
+  "result_zones_drains": {
+   "rmse_max_depth_m": 2.7e-06,
+   "max_abs_diff_max_depth_m": 0.00021,
+   "drain_m3_cpu": 22578.9,
+   "drain_m3_gpu": 22578.9,
+   "mass_error_cpu": 1.2e-15,
+   "mass_error_gpu": 1.4e-06
+  },
+  "verdict": "GPU and CPU give the same flood (float32 vs float64 rounding only)"
  }
 }

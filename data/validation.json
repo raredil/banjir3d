@@ -164,6 +164,125 @@
    ]
   },
   {
+   "id": "observed-by-distance",
+   "status": "partial",
+   "file": "verification/observed/scores-2021-02-20-imerg-v8.json",
+   "id_txt": "Di mana model meleset: laporan warga dipilah menurut jarak ke sungai atau badan air terdekat di model (hasil terbaru, 20 Nov 2026, sama dengan kartu di atas). Hampir separuh laporan (43 % pada 2020, 51 % pada 2021, 56 % pada 2025) berada di blok sungai atau kurang dari 100 m darinya, padahal wilayah itu hanya 29 % dari peta. Justru di situ model paling lemah: hampir tidak lebih baik dari titik acak yang sama dekatnya ke sungai, dan kedalamannya hanya 3–12 cm lawan 60–84 cm laporan. Jauh dari sungai (lebih dari 500 m) model lebih baik: 66 % dan 64 % laporan kena pada 2020 dan 2021, lawan 47 % dan 31 % acak. Artinya: genangan karena hujan di dataran rendah tertangkap, luapan sungai ke permukiman di tepinya belum. Penyebabnya belum diuji (dugaan: hujan satelit terlalu rata di hulu, bentuk dan kedalaman sungai kecil, pintu air dan tanggul yang tidak ada di model).",
+   "en_txt": "Where the model misses: citizen reports split by distance to the nearest river or water block of the model (newest results, 20 Nov 2026, same runs as the card above). Almost half of the reports (43 % in 2020, 51 % in 2021, 56 % in 2025) lie in a river block or within 100 m of one, while that zone is only 29 % of the map. That is exactly where the model is weakest: hardly better than random points equally close to a river, and only 3-12 cm deep against 60-84 cm reported. Far from rivers (more than 500 m) the model does better: 66 % and 64 % of reports hit in 2020 and 2021, against 47 % and 31 % at random. In short: rain ponding in low-lying land is caught, rivers spilling into the neighbourhoods along their banks are not yet. The cause is not tested (guesses: satellite rain too smooth upstream, shape and depth of small rivers, gates and embankments missing from the model).",
+   "metrics": [
+    [
+     "Share of reports in or within 100 m of a river/water block vs share of the map, 2020 · 2021 · 2025",
+     "43 % · 51 % · 56 % vs 29 %"
+    ],
+    [
+     "In a river/water block: hit vs random in the same zone",
+     "53 % vs 43 % (p 0.08) · 30 % vs 25 % (p 0.17) · 31 % vs 41 % (13 reports)"
+    ],
+    [
+     "Land within 100 m: hit vs random in the same zone",
+     "46 % vs 43 % (p 0.34) · 36 % vs 25 % (p 0.01) · 38 % vs 42 % (13 reports)"
+    ],
+    [
+     "Land 100–500 m: hit vs random in the same zone",
+     "42 % vs 41 % (p 0.45) · 43 % vs 24 % (p < 0.001) · 41 % vs 40 % (17 reports)"
+    ],
+    [
+     "Land more than 500 m: hit vs random in the same zone",
+     "66 % vs 47 % (p 0.01) · 64 % vs 31 % (p < 0.001) · 75 % vs 47 % (4 reports)"
+    ],
+    [
+     "Median depth at reports within 100 m (incl. river blocks), model / reported",
+     "0.12 / 0.60 and 0.10 / 0.71 m · 0.03 / 0.84 and 0.03 / 0.71 m · 0.08 / 0.63 and 0.03 / 0.85 m"
+    ],
+    [
+     "Rule",
+     "hit = deepest land cell of the 3 × 3 window (about 270 m) at least 0.10 m deep; random = all cells of the same distance class; distance on the 90 m model grid (cell centres); reports in sea cells left out (1, 12, 2)"
+    ],
+    [
+     "Code",
+     "compare.distance_class_scores, rescore_distance.py; review 02 MT-06"
+    ]
+   ]
+  },
+  {
+   "id": "observed-cell-size",
+   "status": "partial",
+   "file": "verification/observed/cellsize-r04.json",
+   "id_txt": "Apakah ukuran sel mengubah hasil: lima kotak 4–5 km dengan banyak laporan warga (2 kotak banjir 2020, 3 kotak banjir 2021; 177 laporan) dihitung pada sel 30, 60 dan 90 m dengan hujan satelit yang sama. Pada banjir 2021, sel 30 m memberi kedalaman di lokasi laporan jauh lebih dekat ke laporan warga (nilai tengah 0,33–0,71 m lawan 0,83–1,01 m laporan; pada 90 m hanya 0,03–0,43 m) dan genangan 30–65 % lebih luas. Di sel yang sama dengan laporan, 30 m kena 19–31 % lawan 9–11 % titik acak; 90 m 2–24 % lawan 6–7 %. Pada dua kotak banjir 2020 model tetap dangkal di semua ukuran (0,08–0,27 m lawan 0,5–0,9 m); di kotak A tidak lebih baik dari acak pada ukuran mana pun, di kotak B hanya pada 30 m (peluang kebetulan 4 %, 21 laporan). Artinya: skor resmi di kartu lain (sel 90 m) kemungkinan meremehkan kedalaman; tetapi kedangkalan 2020 bukan soal ukuran sel. Uji kecil (lima kotak), belum untuk seluruh wilayah.",
+   "en_txt": "Does the cell size change the result: five 4–5 km boxes with many citizen reports (2 boxes for the 2020 flood, 3 for 2021; 177 reports) run at 30, 60 and 90 m with the same satellite rain. For the 2021 flood, 30 m cells give depths at the reports much closer to what citizens reported (median 0.33–0.71 m against 0.83–1.01 m reported; at 90 m only 0.03–0.43 m) and 30–65 % more flooded land. In the report's own cell, 30 m hits 19–31 % against 9–11 % for random points; 90 m 2–24 % against 6–7 %. In the two 2020 boxes the model stays shallow at every size (0.08–0.27 m against 0.5–0.9 m); box A is no better than random at any size, box B only at 30 m (chance 4 %, 21 reports). So the official scores on the other cards (90 m cells) probably understate depth, but the shallow 2020 result is not a cell-size effect. A small test (five boxes), not yet the whole region.",
+   "metrics": [
+    [
+     "Median model depth at reports, 30 · 60 · 90 m (reported)",
+     "2021 boxes C/D/E: 0.71 · 0.65 · 0.43 (0.83) | 0.33 · 0.13 · 0.03 (1.01) | 0.64 · 0.30 · 0.21 (0.93) m; 2020 boxes A/B: 0.14 · 0.10 · 0.08 (0.90) | 0.27 · 0.18 · 0.12 (0.50) m"
+    ],
+    [
+     "Report's own land cell >= 0.10 m vs random points, 30 · 60 · 90 m (one-sided binomial p < 0.05: C all sizes, D 60 m, E all sizes, B 30 m)",
+     "C 31/9 · 36/7 · 24/7 % | D 19/11 · 23/9 · 2/6 % | E 28/10 · 18/7 · 15/6 % | A 26/20 · 19/18 · 22/19 % | B 48/28 · 29/26 · 29/21 %"
+    ],
+    [
+     "Deepest land cell within 200 m >= 0.10 m vs random, 30 · 60 · 90 m",
+     "C 90/78 · 76/48 · 71/34 % | D 98/93 · 69/55 · 10/32 % | E 92/83 · 77/45 · 72/30 % | A 70/79 · 52/60 · 41/50 % | B 90/85 · 67/70 · 57/57 % (at 30 m almost any point has a wet cell within 200 m: this rule cannot tell model from chance there)"
+    ],
+    [
+     "Flooded land > 0.15 m, 30 · 60 · 90 m",
+     "C 2.04 · 1.71 · 1.55 | D 2.30 · 1.95 · 1.39 | E 1.82 · 1.42 · 1.18 | A 2.35 · 2.35 · 2.43 | B 5.59 · 5.33 · 3.92 km²"
+    ],
+    [
+     "Set-up",
+     "boxes A 106.74–106.78 E, 6.14–6.18 S; B 106.695–106.745, 6.135–6.185; C 106.815–106.865, 6.255–6.305; D 106.775–106.825, 6.215–6.265; E 106.815–106.865, 6.215–6.265; GPM IMERG, 48 h, pumps off, drains 0, AMC II, river inflow at the box edge from the catchments; reports at least 300 m inside the box; 4,000 random points per box, the same at every size; mass error below 2e-14"
+    ],
+    [
+     "Code",
+     "verification/observed/box_cellsize.py, run_event.ts --box --k; review 05 R-04"
+    ]
+   ]
+  },
+  {
+   "id": "observed-sensitivity",
+   "status": "partial",
+   "file": "verification/observed/sensitivity-r08.json",
+   "id_txt": "Uji kepekaan: ketiga banjir dihitung ulang dengan 13 variasi masukan yang tidak pasti (20 Nov 2026): kekasaran permukaan 30 % lebih kecil dan 30 % lebih besar, kawasan terbangun sedikit menyerap air (CN 92, bukan 98), dan sepuluh peta tinggi tanah dengan galat acak yang halus (simpangan 0,5 m, asumsi). Hasil tanpa variasi sama persis dengan kartu resmi, jadi hitungan bisa diulang. Putusan tidak berubah pada variasi mana pun: 2021 tetap lebih baik dari acak, 2020 tetap tidak, 2025 tetap terlalu sedikit laporan. Kedalaman di lokasi laporan tetap 4–11 cm pada semua variasi (laporan 55–70 cm), jadi ketiga hal ini bukan penyebab model terlalu dangkal. Yang paling menggeser hasil adalah galat tinggi tanah: luas genangan DKI 2021 berkisar 22–47 km² (tanpa variasi 31 km²).",
+   "en_txt": "Sensitivity test: the three floods were run again with 13 variants of uncertain inputs (20 Nov 2026): surface roughness 30 % lower and 30 % higher, built-up land soaking in a little (CN 92 instead of 98), and ten terrain maps with a smooth random error (0.5 m standard deviation, an assumption). The run without changes matches the official card exactly, so the result can be repeated. No variant changes any verdict: 2021 stays better than random, 2020 stays not better, 2025 stays too few reports. The depth at the reports stays 4–11 cm in every variant (reported 55–70 cm), so none of these three inputs explains why the model is too shallow. The terrain error moves the results most: the 2021 DKI flooded area ranges 22–47 km² (31 km² without changes).",
+   "metrics": [
+    [
+     "Report hit (~270 m window) vs fair random near reports, 2020 · 2021 · 2025: as tested",
+     "49 vs 45 % · 39 vs 26 % · 39 vs 35 %"
+    ],
+    [
+     "Manning n x 0.7 / x 1.3",
+     "44 / 49 % · 38 / 38 % · 37 / 41 % (verdicts unchanged)"
+    ],
+    [
+     "Built-area CN 92 instead of 98",
+     "45 % · 32 % · 37 % (verdicts unchanged)"
+    ],
+    [
+     "Terrain error, 10 members (median, min–max)",
+     "46 (42–49) % · 37 (33–39) % · 34 (29–45) %; verdict the same in all 10 members of every flood"
+    ],
+    [
+     "DKI flooded > 0.15 m, km²: as tested · n x0.7 · n x1.3 · CN 92 · terrain (min–max)",
+     "2020 73 · 66 · 71 · 67 · 66–84 | 2021 31 · 32 · 20 · 24 · 22–47 | 2025 66 · 62 · 60 · 57 · 57–78"
+    ],
+    [
+     "Median model depth at reports, all variants (reported)",
+     "0.08–0.11 m (0.70) · 0.04–0.06 m (0.65) · 0.04–0.09 m (0.55)"
+    ],
+    [
+     "Hit near rivers (in a river block or within 100 m) / more than 500 m away, range over variants",
+     "2020 41–50 / 49–66 % · 2021 25–35 / 52–68 % (the near-river gap remains in every variant)"
+    ],
+    [
+     "Set-up",
+     "as the newest card (90 m, IMERG, pumps off, drains 0, AMC II, e16), releases validation-jakarta-*-v36..v38; terrain error: 0.5 m standard deviation smoothed over about 250 m, seeds 1–10 (assumption, web/src/engine/sensitivity.ts)"
+    ],
+    [
+     "Code",
+     "run_event.ts --sens, validate.yml sens axis, make_sens.py; review 05 R-08"
+    ]
+   ]
+  },
+  {
    "id": "observed-corrected",
    "status": "old",
    "file": "verification/observed/scores-2020-01-01-imerg-v7.json",

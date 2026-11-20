@@ -171,6 +171,77 @@
      "csi": 0.09496567505720824,
      "auc": 0.5540888281877385
     }
+   },
+   "reports_by_distance": {
+    "rule": "hit = deepest land cell of the 3 x 3 window >= 0.1 m; random = same rule on all cells of the class",
+    "distance": "model grid, cell centre to nearest river/water block (channel flag), exact to 500 m",
+    "n_reports": 259,
+    "classes": {
+     "water": {
+      "label": "in a river or water block of the model",
+      "n": 57,
+      "share_of_reports": 0.22007722007722008,
+      "share_of_cells": 0.13506270525125252,
+      "hit_rate": 0.5263157894736842,
+      "wilson95": [
+       0.3991779445222314,
+       0.6501304234365335
+      ],
+      "random_same_class": 0.4260299310576761,
+      "p_vs_random_same_class": 0.08181574215430172,
+      "n_with_depth": 44,
+      "observed_median_m": 0.6,
+      "model_median_m": 0.11514811217784882
+     },
+     "le100": {
+      "label": "land within 100 m of a river or water block",
+      "n": 54,
+      "share_of_reports": 0.2084942084942085,
+      "share_of_cells": 0.14964320916436907,
+      "hit_rate": 0.46296296296296297,
+      "wilson95": [
+       0.33689688992410527,
+       0.5939487298374504
+      ],
+      "random_same_class": 0.42604340567612686,
+      "p_vs_random_same_class": 0.3386370323604536,
+      "n_with_depth": 48,
+      "observed_median_m": 0.715,
+      "model_median_m": 0.10097218677401543
+     },
+     "100_500": {
+      "label": "land 100-500 m from a river or water block",
+      "n": 101,
+      "share_of_reports": 0.38996138996138996,
+      "share_of_cells": 0.48508110121413356,
+      "hit_rate": 0.4158415841584158,
+      "wilson95": [
+       0.3245300069399352,
+       0.5133206172397795
+      ],
+      "random_same_class": 0.40547221754031126,
+      "p_vs_random_same_class": 0.45336714296952074,
+      "n_with_depth": 84,
+      "observed_median_m": 0.785,
+      "model_median_m": 0.09926580637693405
+     },
+     "gt500": {
+      "label": "land more than 500 m from a river or water block",
+      "n": 47,
+      "share_of_reports": 0.18146718146718147,
+      "share_of_cells": 0.23021298437024487,
+      "hit_rate": 0.6595744680851063,
+      "wilson95": [
+       0.5167065950530297,
+       0.7783273928623781
+      ],
+      "random_same_class": 0.47268314819564744,
+      "p_vs_random_same_class": 0.0075825016427202175,
+      "n_with_depth": 35,
+      "observed_median_m": 0.6,
+      "model_median_m": 0.13482767343521118
+     }
+    }
    }
   }
  ]

@@ -84,6 +84,21 @@ describe("plain summary", () => {
     for (const x of c.summary) expect(x.split(/\s+/).length).toBeLessThanOrEqual(60); // short items
     expect(c.text.startsWith("Ringkasan")).toBe(true);
   });
+  it("says where the model is weakest from the distance-to-river scores (review MT-06)", () => {
+    const bd = { water: { n: 57, hit: 0.53, random: 0.43, shareReports: 0.22, shareCells: 0.14 }, le100: { n: 54, hit: 0.46, random: 0.43, shareReports: 0.21, shareCells: 0.15 },
+      "100_500": { n: 101, hit: 0.42, random: 0.41, shareReports: 0.39, shareCells: 0.49 }, gt500: { n: 47, hit: 0.66, random: 0.47, shareReports: 0.18, shareCells: 0.23 } };
+    const skill = { events: [{ id: "2020-01-01", hit: 0.49, random: 0.38, verdict: "not_better" as const, obsMedianM: 0.7, modelMedianM: 0.1, dkiKm2: 73, reportedKm2: 156, byDistance: bd }] };
+    const s = buildConclusion({ ...base, skill }, "id", null).summary.join(" ");
+    expect(s).toContain("43 % laporan warga ada di sungai atau kurang dari 100 m darinya, padahal zona itu hanya 29 % dari peta");
+    expect(s).toContain("model kena 50 % laporan, titik acak yang sama dekatnya ke sungai 43 %"); // (57 x 0.53 + 54 x 0.46) / 111
+    expect(s).toContain("Lebih dari 500 m dari sungai: 66 % lawan 47 %. Jadi genangan hujan");
+    expect(s).toContain("Dugaan penyebab (belum diuji satu per satu)");
+    expect(s).toContain("sedangkan hitungan ini memakai sel 30 m"); // base run is 30 m: scores were computed at 90 m (review R-04)
+    expect(buildConclusion({ ...base, cellM: 90, skill }, "id", null).summary.join(" ")).not.toContain("memakai sel");
+    const few = { ...bd, gt500: { ...bd.gt500, n: 4 } }; // too few far reports: no sentence
+    const s2 = buildConclusion({ ...base, skill: { events: [{ ...skill.events[0], byDistance: few }] } }, "en", null).summary.join(" ");
+    expect(s2).not.toContain("Where the model is weakest");
+  });
   it("mentions changed components in the detail text", () => {
     const c = buildConclusion({ ...base, comp: { infiltration: false, amc: 3, subsidence: true } }, "id", null);
     expect(c.paragraphs.join(" ")).toContain("resapan tanah dimatikan");
