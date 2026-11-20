@@ -1,5 +1,5 @@
 {
- "_about": "Region-wide report scores at 90 m and 60 m cells with ONE rule for both (review 2026-11-20, R-04; ADR 0025).\n\n  python verification/observed/region_cellsize.py <runs dir> <reports_petabencana.geojson> <out.json>\n\nruns dir holds the run files of the validation releases (<event>_imerg_k<k>_d0_poff_{hmax.f32.gz,mask.u8.gz,landshare.u8.gz,summary.json})\nfor k = 3 (90 m, v33-v35), k = 2 (60 m, v42-v44) and k = 3 with the sub-grid channel (suffix _sub, v45-v47, ADR 0025). The headline score of compare.py uses the 3 x 3 window, which grows with\nthe cell (about 270 m wide at 90 m, 180 m at 60 m), so it cannot compare cell sizes. Here, as in box_cellsize.py: hit = the deepest\nLAND cell whose centre lies within R_M of the report is at least HIT_M deep; also the land cell under the report. Only reports\ninside DKI Jakarta count. Random baseline: the same rule at N_RANDOM points spread uniformly over DKI land (the same points at\nboth sizes). Distance classes (to the nearest river/water block) come from the 90 m grid for both sizes, so the same reports\nfall in the same class. Wilson 95 % intervals; p = one-sided binomial against the random rate of the same class.\n",
+ "_about": "Region-wide report scores at 90 m and 60 m cells with ONE rule for both (review 2026-11-20, R-04; ADR 0025).\n\n  python verification/observed/region_cellsize.py <runs dir> <reports_petabencana.geojson> <out.json>\n\nruns dir holds the run files of the validation releases (<event>_imerg_k<k>_d0_poff_{hmax.f32.gz,mask.u8.gz,landshare.u8.gz,summary.json})\nfor k = 3 (90 m, v33-v35), k = 2 (60 m, v42-v44), k = 3 with the sub-grid channel (suffix _sub, v45-v47, ADR 0025) and, where present, k = 1 region-wide in 5 x 4 tiles (suffix _sub_tiles5x4, v48-v50, mosaic_tiles.py). The headline score of compare.py uses the 3 x 3 window, which grows with\nthe cell (about 270 m wide at 90 m, 180 m at 60 m), so it cannot compare cell sizes. Here, as in box_cellsize.py: hit = the deepest\nLAND cell whose centre lies within R_M of the report is at least HIT_M deep; also the land cell under the report. Only reports\ninside DKI Jakarta count. Random baseline: the same rule at N_RANDOM points spread uniformly over DKI land (the same points at\nboth sizes). Distance classes (to the nearest river/water block) come from the 90 m grid for both sizes, so the same reports\nfall in the same class. Wilson 95 % intervals; p = one-sided binomial against the random rate of the same class.\n",
  "radius_m": 200.0,
  "hit_m": 0.1,
  "events": [
@@ -172,6 +172,62 @@
        "hit_cell": 0.2916666666666667,
        "random_cell": 0.17691154422788605,
        "model_median_m": 0.21586644649505615
+      }
+     }
+    },
+    "30m_tiles": {
+     "n": 188,
+     "hit_radius": 0.8404255319148937,
+     "hit_radius_wilson95": [
+      0.7813398947856832,
+      0.8858772260056363
+     ],
+     "random_radius": 0.8747093774218548,
+     "p_radius_vs_random": 0.9330488014860592,
+     "hit_cell": 0.2765957446808511,
+     "random_cell": 0.2273314389046758,
+     "model_median_m": 0.2509544640779495,
+     "dki_flooded_land_km2_gt015": 111.93,
+     "mass_error": 8.77480656235472e-14,
+     "by_distance": {
+      "le100": {
+       "n": 87,
+       "hit_radius": 0.7471264367816092,
+       "hit_radius_wilson95": [
+        0.6466822904287989,
+        0.8266691256625073
+       ],
+       "random_radius": 0.8676607642124884,
+       "p_radius_vs_random": 0.9992444022477852,
+       "hit_cell": 0.25287356321839083,
+       "random_cell": 0.2721342031686859,
+       "model_median_m": 0.20285184681415558
+      },
+      "100_500": {
+       "n": 77,
+       "hit_radius": 0.922077922077922,
+       "hit_radius_wilson95": [
+        0.840241945501405,
+        0.9637995380912008
+       ],
+       "random_radius": 0.8718911309244486,
+       "p_radius_vs_random": 0.12177806388365021,
+       "hit_cell": 0.24675324675324675,
+       "random_cell": 0.20835288596902862,
+       "model_median_m": 0.24835076928138733
+      },
+      "gt500": {
+       "n": 24,
+       "hit_radius": 0.9166666666666666,
+       "hit_radius_wilson95": [
+        0.741507847985494,
+        0.9768416721570266
+       ],
+       "random_radius": 0.8950524737631185,
+       "p_radius_vs_random": 0.5317015943354813,
+       "hit_cell": 0.4583333333333333,
+       "random_cell": 0.2158920539730135,
+       "model_median_m": 0.2959156483411789
       }
      }
     }
@@ -348,6 +404,62 @@
        "model_median_m": 0.10968457907438278
       }
      }
+    },
+    "30m_tiles": {
+     "n": 265,
+     "hit_radius": 0.8339622641509434,
+     "hit_radius_wilson95": [
+      0.7844528609288148,
+      0.8739273897466759
+     ],
+     "random_radius": 0.7111801242236024,
+     "p_radius_vs_random": 2.4633942275119996e-06,
+     "hit_cell": 0.21509433962264152,
+     "random_cell": 0.10222567287784678,
+     "model_median_m": 0.25460582971572876,
+     "dki_flooded_land_km2_gt015": 47.49,
+     "mass_error": 1.0002418587999107e-13,
+     "by_distance": {
+      "le100": {
+       "n": 139,
+       "hit_radius": 0.8345323741007195,
+       "hit_radius_wilson95": [
+        0.7639342515803135,
+        0.8871365849266984
+       ],
+       "random_radius": 0.6698024459078081,
+       "p_radius_vs_random": 9.856011500880459e-06,
+       "hit_cell": 0.1510791366906475,
+       "random_cell": 0.11759172154280338,
+       "model_median_m": 0.2281055897474289
+      },
+      "100_500": {
+       "n": 101,
+       "hit_radius": 0.8118811881188119,
+       "hit_radius_wilson95": [
+        0.7247767973823279,
+        0.8761297130104934
+       ],
+       "random_radius": 0.7085474077533863,
+       "p_radius_vs_random": 0.012306251715793007,
+       "hit_cell": 0.2376237623762376,
+       "random_cell": 0.09248014946286783,
+       "model_median_m": 0.30022308230400085
+      },
+      "gt500": {
+       "n": 25,
+       "hit_radius": 0.92,
+       "hit_radius_wilson95": [
+        0.7503348787704218,
+        0.977780066308908
+       ],
+       "random_radius": 0.7863636363636364,
+       "p_radius_vs_random": 0.0735791602587015,
+       "hit_cell": 0.48,
+       "random_cell": 0.10909090909090909,
+       "model_median_m": 0.33085212111473083
+      }
+     }
     }
    }
   },
@@ -487,6 +599,52 @@
        "hit_cell": 0.25,
        "random_cell": 0.15450236966824646,
        "model_median_m": 0.26911449432373047
+      },
+      "gt500": {
+       "n": 0
+      }
+     }
+    },
+    "30m_tiles": {
+     "n": 17,
+     "hit_radius": 0.7647058823529411,
+     "hit_radius_wilson95": [
+      0.5273775411082839,
+      0.9044511092832406
+     ],
+     "random_radius": 0.8755844155844156,
+     "p_radius_vs_random": 0.9490354046726288,
+     "hit_cell": 0.11764705882352941,
+     "random_cell": 0.21558441558441557,
+     "model_median_m": 0.316393107175827,
+     "dki_flooded_land_km2_gt015": 100.38,
+     "mass_error": 7.498619737671812e-14,
+     "by_distance": {
+      "le100": {
+       "n": 13,
+       "hit_radius": 0.7692307692307693,
+       "hit_radius_wilson95": [
+        0.49743126004873084,
+        0.918206209075343
+       ],
+       "random_radius": 0.8633484162895928,
+       "p_radius_vs_random": 0.9099195705072683,
+       "hit_cell": 0.0,
+       "random_cell": 0.2407239819004525,
+       "model_median_m": 0.2583920359611511
+      },
+      "100_500": {
+       "n": 4,
+       "hit_radius": 0.75,
+       "hit_radius_wilson95": [
+        0.3006360524426366,
+        0.9544139373553637
+       ],
+       "random_radius": 0.8701421800947867,
+       "p_radius_vs_random": 0.9154869867497555,
+       "hit_cell": 0.5,
+       "random_cell": 0.20616113744075829,
+       "model_median_m": 0.37687085568904877
       },
       "gt500": {
        "n": 0

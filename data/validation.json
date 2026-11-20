@@ -164,6 +164,43 @@
    ]
   },
   {
+   "id": "observed-30m",
+   "status": "partial",
+   "file": "verification/observed/scores-2021-02-20-imerg-30m-tiles.json",
+   "id_txt": "Banjir nyata dengan sel 30 m untuk seluruh DKI (20 Nov 2026). Ukuran sel 30 m adalah bawaan aplikasi, tetapi sebelumnya hanya diuji di kotak kecil. Sekarang seluruh DKI dihitung dalam 20 petak (masing-masing ditambah 2 km di tepi, lalu disambung). Dengan aturan yang sama untuk semua ukuran sel (genangan ≥ 10 cm dalam 200 m dari laporan, di dalam DKI): 2021 jelas lebih baik dari acak (83 lawan 71 %); 2020 tidak (84 lawan 88 %), karena sel halus membasahi hampir semua tempat; 2025 laporannya terlalu sedikit. Kedalaman di sekitar laporan naik dari 0,13 ke 0,25 m (2020), tetapi warga melaporkan 0,70 m. Jadi sel lebih halus tidak menutup kekurangan kedalaman.",
+   "en_txt": "Observed floods with 30 m cells over all of DKI (20 Nov 2026). 30 m is the app's default cell size but had only been tested in small boxes. DKI was now run in 20 tiles (each with a 2 km margin, then stitched). With one rule for every cell size (≥ 10 cm within 200 m of a report, inside DKI): 2021 is clearly better than random (83 vs 71 %); 2020 is not (84 vs 88 %), because the fine grid wets almost everywhere; 2025 has too few reports. The depth near the reports rose from 0.13 to 0.25 m (2020), against 0.70 m reported. Finer cells therefore do not close the depth gap.",
+   "metrics": [
+    [
+     "Same rule for all cell sizes: reports in DKI with ≥ 0.10 m within 200 m vs random DKI land, 2020 · 2021 · 2025",
+     "30 m: 84 vs 88 % · 83 vs 71 % (p < 0.001) · 76 vs 88 % (17 reports) | 90 m sub-grid: 54 vs 55 % · 41 vs 31 % · 53 vs 54 %"
+    ],
+    [
+     "Same cell only (DKI), 30 m",
+     "28 vs 23 % · 22 vs 10 % · 12 vs 22 %"
+    ],
+    [
+     "Deepest land within 200 m of a report, median, 30 m / 90 m sub-grid / reported",
+     "0.25 / 0.13 / 0.70 m · 0.26 / 0.07 / 0.65 m · 0.32 / 0.15 / 0.55 m"
+    ],
+    [
+     "Flooded area > 0.15 m in DKI, 30 m",
+     "112 · 47 · 100 km² (2020 reported: 156 km²)"
+    ],
+    [
+     "Headline rule of compare.py at 30 m (3 × 3 window = ±45 m; not comparable with 90 m) vs fair random near reports",
+     "52 vs 44 % (p = 0.01) · 50 vs 28 % · 55 vs 39 % (49 reports)"
+    ],
+    [
+     "Tile seams: cells a neighbouring tile also computed, same wet/dry (0.1 m)",
+     "94 · 95 · 93 %"
+    ],
+    [
+     "Set-up",
+     "30 m, sub-grid off (30 m needs none), GPM IMERG, pumps off, drains 0, AMC 2; box 106.60–107.05 E, 6.08–6.42 S in 5 × 4 tiles with 2 km margins (verification/observed/mosaic_tiles.py); releases validation-jakarta-*-v48..v50; same-rule scores in cellsize-region-r04.json"
+    ]
+   ]
+  },
+  {
    "id": "observed-review",
    "status": "old",
    "file": "verification/observed/scores-2020-01-01-imerg-v8.json",
