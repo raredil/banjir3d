@@ -2,13 +2,14 @@
 import type { GeoJSONSource, MapMouseEvent } from "maplibre-gl";
 import { lang, t, type Key } from "../i18n";
 import type { MapPage } from "../map";
-import { buildDualRun, buildFineRun, buildRun, chooseCompute, inflowSpread, withFineDrawing, loadPack, packCellOf, landSurface, CHANNEL, type Pack, type RunGrid } from "../engine/pack";
+import { buildDualRun, buildFineRun, buildRun, chooseCompute, inflowSpread, withFineDrawing, loadPack, packCellOf, landSurface, sinkM, CHANNEL, type Pack, type RunGrid } from "../engine/pack";
 import { buildingMask } from "./buildings";
 import { DT_S, cnForAmc, inflowsFor, inflowsForSpatial, type Inflow } from "../engine/hydrology";
 import { cumAtSteps, meanHyetograph, pointAt, zoneGrid, type EventRain } from "../engine/event-rain";
 import { designStorm, parseHourly, totalMm, type Hyetograph } from "../explore/rain";
 import { CLASSES, CLASS_COLORS, FloodLayer, fineResult } from "./flood-layer";
 import { buildConclusion, type Facts } from "./conclusion";
+import { floodPlaces } from "./places";
 import { exposureCells, exposureSums, loadExposure, type Exposure, type ExposureSums } from "./exposure";
 import { colourTiff, depthTiff, htmlMap, mapPng, mercatorPng, save, type Grid } from "./export";
 import type { OutMsg, RunMsg } from "./worker";
@@ -57,7 +58,7 @@ const decYear = (ms: number) => { const d = new Date(ms), y = d.getUTCFullYear()
 const terrainName = (p: Pack) => (String((p.header.terrain as { source?: string } | undefined)?.source ?? "FABDEM").startsWith("DEMNAS") ? "DEMNAS (BIG)" : "FABDEM");
 const subName = (p: Pack) => String((p.header.subsidence as { label?: string } | undefined)?.label ?? "InSAR");
 // validation numbers per observed event (data/skill.json, land-only scoring of 2026-11-13); the event files keep the older figure
-const skillOf = (id: string) => (skill.events as { id: string; n?: number; hit: number; random: number }[]).find((e) => e.id === id);
+const skillOf = (id: string) => (skill.events as { id: string; n?: number; hit: number; random: number; randomNear?: number }[]).find((e) => e.id === id);
 const eventIds = Object.keys(EVENTS).map((f) => /([\d-]+)_imerg\.json$/.exec(f)![1]).sort();
 const loadEvent = (id: string) => EVENTS[`../../../data/events/${id}_imerg.json`]();
 type Result = { run: RunGrid; grid: Grid; frames: Uint16Array[]; times: number[]; area: number[]; max: Float32Array | null; inflows: Inflow[]; hy: Hyetograph; scenario: Record<string, unknown>; event: EventRain | null; zone?: Uint16Array; count: Float32Array; cells?: ReturnType<typeof exposureCells>; landOff?: Float32Array; totals?: Record<string, number>; mass?: number; wall?: number; gpu?: boolean };
@@ -462,6 +463,21 @@ export function mountSim(page: MapPage, o: { packUrl: string; regionBbox: number
   const showConcl = (on: boolean) => { concl.hidden = !on || concl.innerHTML === ""; cBtn.hidden = !concl.innerHTML; cBtn.classList.toggle("on", !concl.hidden); };
   cBtn.addEventListener("click", () => showConcl(concl.hidden !== false));
   let conclText = "";
+  // largest flooded places (kecamatan when the exposure pack is loaded) with computed reasons (places.ts, review 2026-11-20)
+  const placesOf = (r: Result, mx: Float32Array) => {
+    if (!pack) return [];
+    const g = r.run, land = r.grid.land ?? Float32Array.from(g.z), p = pack, ty = r.scenario.terrainYear as number | undefined;
+    const pc = (c: number) => { const [pi, pj] = packCellOf(g, c); return pi < p.nx && pj < p.ny ? pj * p.nx + pi : -1; };
+    const kecOf = (c: number) => { if (!expoNow) return 0; const [pi, pj] = packCellOf(g, c); return pi < expoNow.nx && pj < expoNow.ny ? expoNow.kec[pj * expoNow.nx + pi] : 0; };
+    try {
+      return floodPlaces({ nx: g.nx, ny: g.ny, dx: g.dx, z: land, channel: g.channel, land: r.count, max: mx }, {
+        floodM: FLOOD_M, top: 3,
+        ...(expoNow ? { groupOf: kecOf, nameOf: (u: number) => { const unit = expoNow!.units[u - 1]; return unit ? (unit.name ? `${lang === "id" ? "Kec." : "Kecamatan"} ${unit.name}${unit.kota ? `, ${unit.kota}` : ""}` : unitName(unit)) : null; } } : {}),
+        ...(p.sub && ty ? { loweredM: (c: number) => { const k = pc(c); return k >= 0 ? sinkM(p, k, ty) : 0; } } : {}),
+        lonLat: (c: number) => { const i = c % g.nx, j = Math.floor(c / g.nx); return fromUtm(g.utm.x0 + (i + 0.5) * g.dx, g.utm.y0 - (j + 0.5) * g.dx, g.utm.zone, true); },
+      });
+    } catch { return []; }
+  };
   const conclude = () => {
     if (!res?.max || !pack) return;
     const r = res, g = r.run, mx = over(r, r.max!), a = g.dx * g.dx / 1e6;
@@ -496,7 +512,7 @@ export function mountSim(page: MapPage, o: { packUrl: string; regionBbox: number
       const used = new Set<number>();
       for (let c = 0; c < r.zone.length; c++) if (r.grid.mask[c]) used.add(r.zone[c]);
       const tot = [...used].map((z) => r.event!.mm[z].reduce((s2, v) => s2 + v, 0));
-      rain = { kind: "event", id: r.event.id, wib: r.event.wib, meanMm: totalMm(hy), maxMm: Math.max(...tot), points: used.size, reportsN: skillOf(r.event.id)?.n ?? r.event.reports.n, hitRate: skillOf(r.event.id)?.hit ?? r.event.reports.hit_rate, randomRate: skillOf(r.event.id)?.random, reportedKm2: r.event.reported_km2, reportedRw: r.event.reported_rw };
+      rain = { kind: "event", id: r.event.id, wib: r.event.wib, meanMm: totalMm(hy), maxMm: Math.max(...tot), points: used.size, reportsN: skillOf(r.event.id)?.n ?? r.event.reports.n, hitRate: skillOf(r.event.id)?.hit ?? r.event.reports.hit_rate, randomRate: skillOf(r.event.id)?.randomNear ?? skillOf(r.event.id)?.random, reportedKm2: r.event.reported_km2, reportedRw: r.event.reported_rw };
     } else rain = { kind: r.scenario.rainMode === "hourly" ? "hourly" : "design", mm: totalMm(hy), h, peakMmH };
     const box2 = (r.scenario.area as { box?: number[] }).box ?? null, [wKm, hKm] = box2 ? kmOf(box2) : [0, 0];
     const facts: Facts = {
@@ -505,7 +521,9 @@ export function mountSim(page: MapPage, o: { packUrl: string; regionBbox: number
       upstream: r.inflows.length ? { n: r.inflows.length, peakM3s: peakInflow(), areaKm2: r.inflows.reduce((s2, f) => s2 + f.areaKm2, 0) } : null,
       env: { km2: wet * a, classesKm2: cls.map((v) => v * a), meanDepth: wet ? sum / wet : 0, maxDepth: dMax, deepest },
       peak: { km2: r.area[pk] ?? 0, tSec: r.times[pk] ?? 0 }, endKm2: r.area[r.area.length - 1] ?? 0, massError: r.mass ?? 0,
-      ...(r.totals ? { water: { rainM3: r.totals.rain, inflowM3: r.totals.inflow, infilM3: r.totals.infiltration, outM3: r.totals.outflow, seaM3: r.totals.sea } } : {}),
+      ...(r.totals ? { water: { rainM3: r.totals.rain, inflowM3: r.totals.inflow, infilM3: r.totals.infiltration, outM3: r.totals.outflow, seaM3: r.totals.sea, drainM3: r.totals.drain ?? 0,
+        storedM3: r.totals.rain + r.totals.inflow - r.totals.infiltration - r.totals.outflow - r.totals.sea - (r.totals.drain ?? 0) } } : {}),
+      places: placesOf(r, mx),
       ...(skill.events?.length ? { skill: skill as Facts["skill"] } : {}),
       expo: ex ? { buildings: ex.buildings, people: ex.people, units: ex.perUnit.length, top: ex.perUnit.slice(0, 3).map((u) => ({ name: unitName(u.unit), people: u.people, buildings: u.buildings })) } : null,
     };
@@ -520,7 +538,7 @@ export function mountSim(page: MapPage, o: { packUrl: string; regionBbox: number
     ].join("\n");
     concl.innerHTML = `<div class="concl-head"><b>${t("concl.title")}</b><button type="button" class="btn small" data-c="ai" title="${t("concl.ai.h")}">${t("concl.ai")}</button><button type="button" class="btn small" data-c="copy">${t("concl.copy")}</button><button type="button" class="btn small" data-c="md">.md</button><button type="button" class="btn small" data-c="x" aria-label="${t("concl.close")}">×</button></div>
       <p class="help concl-ai">${t("concl.ai.file")} <a href="${import.meta.env.BASE_URL}banjir3d-konteks-ai.md" download>banjir3d-konteks-ai.md</a></p>
-      <div class="concl-body"><ul class="concl-sum">${c.summary.map((x) => `<li>${esc(x)}</li>`).join("")}</ul>
+      <div class="concl-body"><ul class="concl-sum">${c.summary.map((x) => `<li>${esc(x)}</li>`).join("")}</ul>${c.why.length ? `<h4>${esc(c.whyHead)}</h4><ul class="concl-sum">${c.why.map((x) => `<li>${esc(x)}</li>`).join("")}</ul>` : ""}
       <details><summary>${t("concl.detail")}</summary><p class="help">${t("concl.note")}</p>${c.paragraphs.map((x) => `<p>${esc(x)}</p>`).join("")}
       <h4>${esc(c.head[1])}</h4><ol class="refs">${c.refs.map((x) => `<li>${x}</li>`).join("")}</ol>
       <h4>${esc(c.head[2])}</h4><ul class="refs">${c.other.map((x) => `<li>${esc(x)}</li>`).join("")}</ul></details></div>`;

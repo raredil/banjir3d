@@ -13,7 +13,7 @@ const base: Facts = {
 describe("buildConclusion", () => {
   it("names the subsidence shift with its year and sources", () => {
     const c = buildConclusion({ ...base, terrainYear: 2020.0, subEpoch: 2013 }, "id", "2019-12-31T05:00:00Z");
-    expect(c.text).toContain("dari tahun 2013 ke tahun 2020,0");
+    expect(c.text).toContain("dari keadaan 2013 sampai Januari 2020");
     expect(c.text).toContain("Shabrina");
     expect(c.text).toContain("Morishita");
   });
@@ -46,20 +46,42 @@ describe("buildConclusion", () => {
   });
 });
 
+describe("why here", () => {
+  it("explains a place only from computed facts", () => {
+    const places = [{ name: "Kec. Jatinegara, Jakarta Timur", lon: 106.87, lat: -6.23, areaKm2: 2.4, depthP90: 1.2, reliefM: -1.4, riverShare: 0.7, nearShare: 0.9, loweredM: 0.12 },
+      { name: null, lon: 106.8, lat: -6.4, areaKm2: 0.9, depthP90: 0.6, reliefM: -0.5, riverShare: 0.05, nearShare: 0.1, loweredM: null }];
+    const c = buildConclusion({ ...base, places, subEpoch: 2013 }, "id", null);
+    expect(c.why[1]).toContain("Kec. Jatinegara");
+    expect(c.why[1]).toContain("70 % genangannya ada di tepi sungai");
+    expect(c.why[1]).toContain("1,4 m lebih rendah");
+    expect(c.why[1]).toContain("turun rata-rata 12 cm");
+    expect(c.why[2]).toContain("air hujan yang mengalir dan berkumpul");
+    expect(c.why[2]).toContain("belum pasti"); // 0.5 m relief is within the terrain error
+    expect(c.text).toContain("Mengapa di sini tergenang?");
+  });
+});
+
 describe("plain summary", () => {
   it("says what ran, how big, how deep, where the water came from and how far to trust it", () => {
-    const skill = { events: [{ id: "2020-01-01", hit: 0.6, random: 0.4, obsMedianM: 0.7, modelMedianM: 0.33, dkiKm2: 83, reportedKm2: 156 }] };
-    const c = buildConclusion({ ...base, water: { rainM3: 3e7, inflowM3: 1e7, infilM3: 3e6, outM3: 0, seaM3: 0 }, skill }, "id", "2019-12-31T05:00:00Z");
+    const skill = { events: [{ id: "2020-01-01", hit: 0.43, random: 0.37, randomNear: 0.43, verdict: "not_better" as const, obsMedianM: 0.7, modelMedianM: 0.09, dkiKm2: 62, reportedKm2: 156 },
+      { id: "2021-02-20", hit: 0.33, random: 0.19, randomNear: 0.24, verdict: "better" as const, obsMedianM: 0.65, modelMedianM: 0.05, dkiKm2: 20, reportedKm2: null },
+      { id: "2025-03-04", hit: 0.35, random: 0.36, randomNear: 0.34, verdict: "too_few" as const, obsMedianM: 0.55, modelMedianM: 0.06, dkiKm2: 55, reportedKm2: null }] };
+    const c = buildConclusion({ ...base, water: { rainM3: 3e7, inflowM3: 1e7, infilM3: 3e6, outM3: 0, seaM3: 2e7 }, skill }, "id", "2019-12-31T05:00:00Z");
     const s = c.summary.join(" ");
+    expect(s).toContain("banjir 1 Januari 2020");
     expect(s).toContain("sekitar 40,0 km²");
     expect(s).toContain("mata kaki");
     expect(s).toContain("75 % dari hujan"); // 3e7 of 4e7
-    expect(s).toContain("25 % air sungai yang masuk dari luar kotak");
-    expect(s).toContain("10 % meresap");
-    expect(s).toContain("60 % laporan warga");
-    expect(s).toContain("40 % bila titiknya disebar acak");
-    expect(s).toContain("jelas lebih baik dari acak pada 2020");
-    expect(s).toContain("83 km² dibanding 156 km²");
+    expect(s).toContain("25 % dari sungai yang membawa air dari luar kotak");
+    expect(s).toContain("8 % meresap"); // 3e6 of 4e7
+    expect(s).toContain("50 % mengalir ke laut");
+    expect(s).not.toContain("keluar lewat tepi"); // 0: left out
+    expect(s).toContain("lebih baik dari tebakan acak hanya pada banjir 2021");
+    expect(s).toContain("pada 2020 tidak lebih baik dari acak");
+    expect(s).toContain("pada 2025 laporannya terlalu sedikit");
+    expect(s).toContain("model 9 cm, sedangkan warga melaporkan 70 cm");
+    expect(s).toContain("62 km², sedangkan Pemprov DKI melaporkan 156 km²");
+    for (const x of c.summary) expect(x.split(/\s+/).length).toBeLessThanOrEqual(60); // short items
     expect(c.text.startsWith("Ringkasan")).toBe(true);
   });
   it("mentions changed components in the detail text", () => {
