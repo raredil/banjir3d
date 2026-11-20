@@ -164,6 +164,47 @@
    ]
   },
   {
+   "id": "observed-by-distance",
+   "status": "partial",
+   "file": "verification/observed/scores-2021-02-20-imerg-v8.json",
+   "id_txt": "Di mana model meleset: laporan warga dipilah menurut jarak ke sungai atau badan air terdekat di model (hasil terbaru, 20 Nov 2026, sama dengan kartu di atas). Hampir separuh laporan (43 % pada 2020, 51 % pada 2021, 56 % pada 2025) berada di blok sungai atau kurang dari 100 m darinya, padahal wilayah itu hanya 29 % dari peta. Justru di situ model paling lemah: hampir tidak lebih baik dari titik acak yang sama dekatnya ke sungai, dan kedalamannya hanya 3–12 cm lawan 60–84 cm laporan. Jauh dari sungai (lebih dari 500 m) model lebih baik: 66 % dan 64 % laporan kena pada 2020 dan 2021, lawan 47 % dan 31 % acak. Artinya: genangan karena hujan di dataran rendah tertangkap, luapan sungai ke permukiman di tepinya belum. Penyebabnya belum diuji (dugaan: hujan satelit terlalu rata di hulu, bentuk dan kedalaman sungai kecil, pintu air dan tanggul yang tidak ada di model).",
+   "en_txt": "Where the model misses: citizen reports split by distance to the nearest river or water block of the model (newest results, 20 Nov 2026, same runs as the card above). Almost half of the reports (43 % in 2020, 51 % in 2021, 56 % in 2025) lie in a river block or within 100 m of one, while that zone is only 29 % of the map. That is exactly where the model is weakest: hardly better than random points equally close to a river, and only 3-12 cm deep against 60-84 cm reported. Far from rivers (more than 500 m) the model does better: 66 % and 64 % of reports hit in 2020 and 2021, against 47 % and 31 % at random. In short: rain ponding in low-lying land is caught, rivers spilling into the neighbourhoods along their banks are not yet. The cause is not tested (guesses: satellite rain too smooth upstream, shape and depth of small rivers, gates and embankments missing from the model).",
+   "metrics": [
+    [
+     "Share of reports in or within 100 m of a river/water block vs share of the map, 2020 · 2021 · 2025",
+     "43 % · 51 % · 56 % vs 29 %"
+    ],
+    [
+     "In a river/water block: hit vs random in the same zone",
+     "53 % vs 43 % (p 0.08) · 30 % vs 25 % (p 0.17) · 31 % vs 41 % (13 reports)"
+    ],
+    [
+     "Land within 100 m: hit vs random in the same zone",
+     "46 % vs 43 % (p 0.34) · 36 % vs 25 % (p 0.01) · 38 % vs 42 % (13 reports)"
+    ],
+    [
+     "Land 100–500 m: hit vs random in the same zone",
+     "42 % vs 41 % (p 0.45) · 43 % vs 24 % (p < 0.001) · 41 % vs 40 % (17 reports)"
+    ],
+    [
+     "Land more than 500 m: hit vs random in the same zone",
+     "66 % vs 47 % (p 0.01) · 64 % vs 31 % (p < 0.001) · 75 % vs 47 % (4 reports)"
+    ],
+    [
+     "Median depth at reports within 100 m (incl. river blocks), model / reported",
+     "0.12 / 0.60 and 0.10 / 0.71 m · 0.03 / 0.84 and 0.03 / 0.71 m · 0.08 / 0.63 and 0.03 / 0.85 m"
+    ],
+    [
+     "Rule",
+     "hit = deepest land cell of the 3 × 3 window (about 270 m) at least 0.10 m deep; random = all cells of the same distance class; distance on the 90 m model grid (cell centres); reports in sea cells left out (1, 12, 2)"
+    ],
+    [
+     "Code",
+     "compare.distance_class_scores, rescore_distance.py; review 02 MT-06"
+    ]
+   ]
+  },
+  {
    "id": "observed-corrected",
    "status": "old",
    "file": "verification/observed/scores-2020-01-01-imerg-v7.json",

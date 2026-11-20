@@ -189,6 +189,81 @@ def report_scores(rep, h, summary, land, dki, area=None):
     return res
 
 
+DIST_CLASSES = [("water", "in a river or water block of the model"), ("le100", "land within 100 m of a river or water block"),
+                ("100_500", "land 100-500 m from a river or water block"), ("gt500", "land more than 500 m from a river or water block")]
+
+
+def distance_to_water(water, dx, cap_m=500.0):
+    """Distance (m, cell centre to cell centre) to the nearest water cell, exact up to cap_m, cap_m + 1 beyond (no scipy on the runner)."""
+    r = int(cap_m // dx)
+    d = np.where(water, 0.0, cap_m + 1).astype(np.float32)
+    ny, nx = water.shape
+    p = np.pad(water, r)
+    for dj in range(-r, r + 1):
+        for di in range(-r, r + 1):
+            s = dx * float(np.hypot(di, dj))
+            if s == 0 or s > cap_m:
+                continue
+            sh = p[r + dj : r + dj + ny, r + di : r + di + nx]
+            np.minimum(d, np.where(sh, s, cap_m + 1), out=d)
+    return d
+
+
+def distance_class_scores(rep, h, summary, land, water, region):
+    """Report scores per distance to the nearest river/water block (review 2026-11-20, MT-06): shows WHERE the model misses.
+    Per class: number of reports, the share of the run's land/water cells in that class (reports cluster near rivers when this share
+    is lower), hit rate with the headline rule (deepest land cell of the 3 x 3 window >= HIT_M), the random hit rate of cells of the
+    same class (fair: same distance to a river), 95 % Wilson interval, one-sided binomial p, and median depths where reports give one.
+    region = cells that count (inside the run, not sea). Distances on the model grid (cell centres), so at 90 m 'within 100 m' means
+    the eight neighbouring cells only (diagonal 127 m falls in 100-500 m)."""
+    x0, y0, dx, nx, ny, tr = grid_of(summary)
+    win = land_window_max(h, land)
+    dist = distance_to_water(water, dx)
+    cls = np.full(h.shape, -1, np.int8)
+    cls[region & water] = 0
+    cls[region & ~water & (dist <= 100)] = 1
+    cls[region & ~water & (dist > 100) & (dist <= 500)] = 2
+    cls[region & ~water & (dist > 500)] = 3
+    inside = land | (h >= 0)
+    got = [[] for _ in DIST_CLASSES]
+    for f in rep:
+        g = f.get("geometry") or {}
+        if g.get("type") != "Point":
+            continue
+        p = f.get("properties", {})
+        if p.get("disaster_type", "flood") != "flood":
+            continue
+        x, y = tr.transform(*g["coordinates"][:2])
+        i, j = int((x - x0) // dx), int((y0 - y) // dx)
+        if not (1 <= i < nx - 1 and 1 <= j < ny - 1) or not inside[j, i] or cls[j, i] < 0:
+            continue
+        d = (p.get("report_data") or {}).get("flood_depth")
+        if d is None and isinstance(p.get("depth_cm"), (int, float)):
+            d = p["depth_cm"]
+        got[cls[j, i]].append((float(win[j, i]), float(d) / 100.0 if isinstance(d, (int, float)) and d > 0 else None))
+    ok = win >= HIT_M
+    ncell = int((cls >= 0).sum())
+    out, ntot = {}, sum(len(g) for g in got)
+    for c, (key, label) in enumerate(DIST_CLASSES):
+        g = got[c]
+        n, k = len(g), sum(1 for w, _ in g if w >= HIT_M)
+        sel = cls == c
+        base = float(ok[sel].mean()) if sel.any() else None
+        dep = [(o, w) for w, o in g if o is not None]
+        out[key] = {
+            "label": label, "n": n, "share_of_reports": n / ntot if ntot else None,
+            "share_of_cells": float(sel.sum() / ncell) if ncell else None,
+            "hit_rate": k / n if n else None, "wilson95": wilson(k, n), "random_same_class": base,
+            "p_vs_random_same_class": binom_p_greater(k, n, base) if n and base is not None else None,
+            "n_with_depth": len(dep),
+            "observed_median_m": float(np.median([o for o, _ in dep])) if dep else None,
+            "model_median_m": float(np.median([w for _, w in dep])) if dep else None,
+        }
+    return {"rule": f"hit = deepest land cell of the 3 x 3 window >= {HIT_M} m; random = same rule on all cells of the class",
+            "distance": "model grid, cell centre to nearest river/water block (channel flag), exact to 500 m", "n_reports": ntot,
+            "classes": out}
+
+
 def rw_scores(areas, flooded_ids, h, summary, land):
     from rasterio import features as rf
     from rasterio.transform import from_origin
@@ -365,7 +440,8 @@ def main():
         land, lw = land_of(rundir / sp.name.replace("_summary.json", "_landshare.u8.gz"), m, inside)
         r = {"run": sp.name.replace("_summary.json", ""), "drain_mm_h": s["drain_mm_h"], "rain": s["rain"], "rain_scale": s.get("rain_scale", 1), "terrain_year": s.get("terrain_year"), "pumps": s.get("pumps"), "pump_m3s": s.get("pump_m3s"), "amc": s.get("amc", 2), "infiltration": s.get("infiltration", True),
              "mean_rain_mm": s["mean_rain_mm"], "flooded_km2": s["flooded_km2_gt015_outside_channels"], "mass_error": s["massError"],
-             "reports": report_scores(rep, h, s, land, dki_mask(s))}
+             "reports": report_scores(rep, h, s, land, dki_mask(s)),
+             "reports_by_distance": distance_class_scores(rep, h, s, land, (m & 4).astype(bool) & inside, inside)}
         r["micro"] = s.get("micro", False)
         served = (m & 8).astype(bool)
         if served.any():  # land served by South Jakarta micro drains (pipeline/micro_drains.py), scored on its own

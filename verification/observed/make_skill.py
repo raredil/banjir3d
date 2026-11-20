@@ -35,6 +35,12 @@ for f in sys.argv[1:]:
                   "ci95": [round(v, 3) for v in fa["block_bootstrap95"]], "pNear": round(fa["p_vs_near_reports"], 4),
                   "verdict": fa["verdict"], "nDki": fa["inside_dki"]["n"], "hitDki": round(fa["inside_dki"]["hit_rate"], 3),
                   "randomDki": round(fa["inside_dki"]["random_dki"], 3)})
+    bd = (base.get("reports_by_distance") or {}).get("classes")
+    if bd:  # per distance to the nearest river/water block (review MT-06): where the model misses
+        r3 = lambda v: None if v is None else round(v, 3)
+        e["byDistance"] = {k: {"n": v["n"], "hit": r3(v["hit_rate"]), "random": r3(v["random_same_class"]), "p": r3(v["p_vs_random_same_class"]),
+                               "shareReports": r3(v["share_of_reports"]), "shareCells": r3(v["share_of_cells"]),
+                               "obsMedianM": r3(v["observed_median_m"]), "modelMedianM": r3(v["model_median_m"])} for k, v in bd.items()}
     rwp = (base.get("rw_places") or {}).get("reports_or_dsda") or {}
     for k_, k2 in (("csi", "rwCsi"), ("false_alarm_ratio", "rwFar"), ("auc", "rwAucAll")):
         if rwp.get(k_) is not None:
@@ -43,7 +49,7 @@ for f in sys.argv[1:]:
     if rw and "auc" in rw:
         e["rwAuc"] = rw["auc"]
     events.append(e)
-out = {"_about": "How the tested set-up (90 m, GPM IMERG, pumps off, small-drain sink 0, average soil, subsidence to the event date) matched three recorded floods; from " + ", ".join(Path(f).name for f in sys.argv[1:]) + " (verification/observed/make_skill.py). hit/random: 3 x 3 land window (about 270 m), cell: same land cell; random = points spread at random over DKI land with the same rule (old, unfair: a third of the reports lie outside DKI); randomDomain = all land of the grid, randomNear = land within 1 km of a report (fair baselines), ci95 = 1 km block bootstrap of hit, pNear = one-sided binomial p against randomNear, verdict better|not_better|too_few (p < 0.05 against both fair baselines, at least 100 reports); hitDki/randomDki = reports inside DKI only; legacyHit: the old rule that counted river channels.",
+out = {"_about": "How the tested set-up (90 m, GPM IMERG, pumps off, small-drain sink 0, average soil, subsidence to the event date) matched three recorded floods; from " + ", ".join(Path(f).name for f in sys.argv[1:]) + " (verification/observed/make_skill.py). hit/random: 3 x 3 land window (about 270 m), cell: same land cell; random = points spread at random over DKI land with the same rule (old, unfair: a third of the reports lie outside DKI); randomDomain = all land of the grid, randomNear = land within 1 km of a report (fair baselines), ci95 = 1 km block bootstrap of hit, pNear = one-sided binomial p against randomNear, verdict better|not_better|too_few (p < 0.05 against both fair baselines, at least 100 reports); hitDki/randomDki = reports inside DKI only; legacyHit: the old rule that counted river channels; byDistance: the same hit rule per distance class to the nearest river/water block of the model (water = in the block, le100, 100_500, gt500 m; model grid), random = cells of the same class, p = one-sided binomial p against it, shareReports vs shareCells = where reports cluster.",
        "events": events}
 (root / "data/skill.json").write_text(json.dumps(out, indent=1, ensure_ascii=False) + "\n")
 print(json.dumps(out, indent=1))
