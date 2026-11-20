@@ -25,6 +25,8 @@ export type EngineGrid = {
 // Courant factor of the time step (Bates et al. 2010; LISFLOOD-FP default 0.7). 0.5 until 2026-11-13: 0.7 is about 30 % faster with the
 // same result (verification/speed/alpha-*.json: flooded area 3.249 vs 3.250 km² on a 4.4 km box, CSI 0.9994 on the whole region at 90 m).
 export const ALPHA = 0.7;
+/** Bed slope towards the edge above which an edge cell drains freely by its own Manning flow (below it: transmissive only). */
+export const S_EDGE = 1e-4;
 export type EngineOptions = { alpha?: number; dtMax?: number; hMin?: number; seaLevel?: number; inflowCells?: number[] };
 export type EngineTotals = { rain: number; infiltration: number; inflow: number; outflow: number; sea: number; drain: number }; // m3
 
@@ -163,11 +165,15 @@ export class FloodEngine {
       const hc = h[c];
       let b = 0;
       if (hc > hMin && (oN[c] | oS[c] | oW[c] | oE[c])) {
-        const qc = hc * Math.sqrt(G * hc);
-        if (oE[c] && !oW[c]) b += Math.min(qc, Math.max(0, qxN[c - 1]));
-        if (oW[c] && !oE[c]) b += Math.min(qc, Math.max(0, -qxN[c]));
-        if (oS[c] && !oN[c]) b += Math.min(qc, Math.max(0, qyN[c - nx]));
-        if (oN[c] && !oS[c]) b += Math.min(qc, Math.max(0, -qyN[c]));
+        const qc = hc * Math.sqrt(G * hc), h53 = hc * Math.cbrt(hc * hc), zc = z[c], nc = n[c];
+        // free outflow (review 2026-11-20, M-03): the larger of the discharge arriving from inside and the cell's own Manning
+        // flow down the bed slope where the ground falls towards the edge (the outside is taken to continue that slope), so rain
+        // or inflow on an edge cell can leave; flat or rising edges and sea cells keep the plain transmissive rule
+        const fr = (k: number) => { const s = active[k] && !(sea && sea[c]) ? (z[k] - zc) / dx : 0; return s > S_EDGE ? Math.min(qc, (h53 * Math.sqrt(s)) / nc) : 0; };
+        if (oE[c] && !oW[c]) b += Math.max(Math.min(qc, Math.max(0, qxN[c - 1])), fr(c - 1));
+        if (oW[c] && !oE[c]) b += Math.max(Math.min(qc, Math.max(0, -qxN[c])), fr(c + 1));
+        if (oS[c] && !oN[c]) b += Math.max(Math.min(qc, Math.max(0, qyN[c - nx])), fr(c - nx));
+        if (oN[c] && !oS[c]) b += Math.max(Math.min(qc, Math.max(0, -qyN[c])), fr(c + nx));
         b *= dx * phi[c];
         bnd[c] = b;
       }

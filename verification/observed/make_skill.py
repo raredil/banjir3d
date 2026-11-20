@@ -29,11 +29,21 @@ for f in sys.argv[1:]:
         e.update({"pumpsOnHit": round(pon["reports"]["window_3x3_land"]["hit_rate"], 3), "pumpsOnDkiKm2": round(pon["dki_flooded_km2"], 1)})
     if wet:
         e.update({"wetHit": round(wet["reports"]["window_3x3_land"]["hit_rate"], 3), "wetDkiKm2": round(wet["dki_flooded_km2"], 1)})
+    fa = rp.get("fair")
+    if fa:  # fair baselines and uncertainty (review 2026-11-20): the verdict shown to users comes from here
+        e.update({"randomDomain": round(fa["random_domain_land"], 3), "randomNear": round(fa["random_near_reports"], 3),
+                  "ci95": [round(v, 3) for v in fa["block_bootstrap95"]], "pNear": round(fa["p_vs_near_reports"], 4),
+                  "verdict": fa["verdict"], "nDki": fa["inside_dki"]["n"], "hitDki": round(fa["inside_dki"]["hit_rate"], 3),
+                  "randomDki": round(fa["inside_dki"]["random_dki"], 3)})
+    rwp = (base.get("rw_places") or {}).get("reports_or_dsda") or {}
+    for k_, k2 in (("csi", "rwCsi"), ("false_alarm_ratio", "rwFar"), ("auc", "rwAucAll")):
+        if rwp.get(k_) is not None:
+            e[k2] = round(rwp[k_], 3)
     rw = (base.get("rw_places") or {}).get("reports")
     if rw and "auc" in rw:
         e["rwAuc"] = rw["auc"]
     events.append(e)
-out = {"_about": "How the tested set-up (90 m, GPM IMERG, pumps off, small-drain sink 0, average soil, subsidence to the event date) matched three recorded floods; from " + ", ".join(Path(f).name for f in sys.argv[1:]) + " (verification/observed/make_skill.py). hit/random: 3 x 3 land window (about 270 m), cell: same land cell; random = points spread at random over DKI land with the same rule; legacyHit: the old rule that counted river channels.",
+out = {"_about": "How the tested set-up (90 m, GPM IMERG, pumps off, small-drain sink 0, average soil, subsidence to the event date) matched three recorded floods; from " + ", ".join(Path(f).name for f in sys.argv[1:]) + " (verification/observed/make_skill.py). hit/random: 3 x 3 land window (about 270 m), cell: same land cell; random = points spread at random over DKI land with the same rule (old, unfair: a third of the reports lie outside DKI); randomDomain = all land of the grid, randomNear = land within 1 km of a report (fair baselines), ci95 = 1 km block bootstrap of hit, pNear = one-sided binomial p against randomNear, verdict better|not_better|too_few (p < 0.05 against both fair baselines, at least 100 reports); hitDki/randomDki = reports inside DKI only; legacyHit: the old rule that counted river channels.",
        "events": events}
 (root / "data/skill.json").write_text(json.dumps(out, indent=1, ensure_ascii=False) + "\n")
 print(json.dumps(out, indent=1))

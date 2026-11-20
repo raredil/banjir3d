@@ -66,10 +66,10 @@
   },
   {
    "id": "sfincs",
-   "status": "pass",
+   "status": "old",
    "file": "verification/explore-vs-sfincs/comparison-spatial-n.json",
-   "id_txt": "Dibanding model terbitan SFINCS 2.4.0 (Deltares) pada medan, hujan dan kekasaran yang sama (mesin v1, skema sama; v2 akan diuji ulang).",
-   "en_txt": "Against the published SFINCS 2.4.0 model (Deltares) on the same terrain, rain and roughness (engine v1, same scheme; v2 re-run pending).",
+   "id_txt": "USANG, angka lama (jangan dikutip; lihat kartu terbaru). Dibanding model terbitan SFINCS 2.4.0 (Deltares) pada medan, hujan dan kekasaran yang sama (mesin v1, skema sama; v2 akan diuji ulang).",
+   "en_txt": "OUTDATED, old numbers (do not quote; see the newest card). Against the published SFINCS 2.4.0 model (Deltares) on the same terrain, rain and roughness (engine v1, same scheme; v2 re-run pending).",
    "metrics": [
     [
      "RMSE max depth",
@@ -115,11 +115,60 @@
    ]
   },
   {
-   "id": "observed-corrected",
+   "id": "observed-review",
    "status": "partial",
+   "file": "verification/observed/scores-2020-01-01-imerg-v8.json",
+   "id_txt": "Banjir nyata, hasil terbaru (20 Nov 2026, setelah tinjauan enam penguji). Perbaikan: tepi model tidak lagi menahan air, titik masuk sungai dari hulu dipindah ke alur sungai, daratan di blok sel sungai 90 m ikut dihitung, dan pembanding acak dibuat adil (titik acak di sekitar tempat warga biasa melapor, bukan hanya di DKI). Laporan warga yang jatuh dalam ±270 m dari genangan model: 49 % (2020), 39 % (2021), 39 % (2025); titik acak yang adil: 45, 26 dan 35 %. Putusan dengan uji statistik: hanya banjir 2021 yang jelas lebih baik dari acak; 2020 tidak (peluang kebetulan 11 %); 2025 laporannya terlalu sedikit (49). Penting: ketiga banjir juga dipakai untuk memilih pengaturan model, jadi ini uji dalam-sampel, belum validasi yang benar-benar terpisah. Model masih jauh terlalu dangkal (nilai tengah 10 cm lawan 70 cm laporan pada 2020) dan luas DKI 2020 73 km² lawan 156 km² laporan Pemprov.",
+   "en_txt": "Observed floods, newest results (20 Nov 2026, after the six-tester review). Fixes: edges no longer trap water, upstream river entries moved onto the river channel, the land part of 90 m river blocks is counted, and the random baseline is fair (random points where people report, not only inside DKI). Reports within about 270 m of modelled flooding: 49 % (2020), 39 % (2021), 39 % (2025); fair random baseline 45, 26 and 35 %. Verdict with a statistical test: only the 2021 flood is clearly better than random; 2020 is not (chance 11 %); 2025 has too few reports (49). Note: the three floods were also used to choose the model set-up, so this is an in-sample check, not yet an independent validation. The model is still far too shallow (median 10 cm vs 70 cm reported in 2020), and the 2020 DKI area is 73 km² vs 156 km² reported.",
+   "metrics": [
+    [
+     "Reports hit within ~270 m vs fair random (near reports), 2020 · 2021 · 2025",
+     "49 % vs 45 % · 39 % vs 26 % · 39 % vs 35 %"
+    ],
+    [
+     "95 % interval of the hit share (1 km block bootstrap)",
+     "41–58 % · 32–47 % · 24–55 %"
+    ],
+    [
+     "Verdict (p < 0.05 against both fair baselines, ≥ 100 reports)",
+     "not better · better (p < 0.001) · too few reports"
+    ],
+    [
+     "Reports inside DKI only, vs random on DKI land",
+     "39 % vs 38 % · 29 % vs 21 % · 18 % vs 37 % (17 reports)"
+    ],
+    [
+     "Same cell only, vs random on DKI land",
+     "26 % vs 16 % · 19 % vs 7 % · 16 % vs 15 %"
+    ],
+    [
+     "Median depth at reports, model / reported",
+     "0.10 / 0.70 m · 0.06 / 0.65 m · 0.07 / 0.55 m"
+    ],
+    [
+     "Flooded area > 0.15 m in DKI, model",
+     "73 · 31 · 66 km² (2020 reported: 156 km², definition unknown)"
+    ],
+    [
+     "RW places (2,610 RW): CSI · false-alarm ratio (upper bound) · AUC",
+     "0.13 · 0.82 · 0.57 | 0.08 · 0.85 · 0.59 | 0.05 · 0.94 · 0.53"
+    ],
+    [
+     "Set-up",
+     "90 m, GPM IMERG, pumps off, small-drain sink 0, average soil, subsidence to the event date; engine pack e16 with the engine of 20 Nov 2026 (releases validation-jakarta-*-v33..v35)"
+    ],
+    [
+     "Review reports",
+     "verification/review-2026-11-18/01..06"
+    ]
+   ]
+  },
+  {
+   "id": "observed-corrected",
+   "status": "old",
    "file": "verification/observed/scores-2020-01-01-imerg-v7.json",
-   "id_txt": "Banjir nyata setelah perbaikan 17 Nov 2026: saluran tidak lagi penuh air pura-pura sejak awal, dan kolam/situ bukan banjir. Uji tanpa hujan: model lama sudah 'membanjiri' 14,6 km² di kotak 20 × 20 km Jakarta tengah-timur hanya dari air pura-pura di saluran; model baru 0,1 km². Skor baru: 44 % (2020), 33 % (2021), 35 % (2025) laporan kena, dibanding 37, 19 dan 36 % untuk titik acak. Masih lebih baik dari acak pada 2020 dan 2021, tidak pada 2025. Model sekarang lebih kering (luas DKI 2020: 62 km², laporan Pemprov 156 km²): sebagian kecocokan lama berasal dari air yang tidak ada. Penyebab utama yang tersisa: hujan satelit terlalu rata dan sungai kecil terlalu dangkal di model.",
-   "en_txt": "Observed floods after the fixes of 17 Nov 2026: drains no longer start full of phantom water, and ponds are not floods. No-rain test: the old model already 'flooded' 14.6 km² of a 20 × 20 km box of central-east Jakarta from phantom drain water alone; the new model 0.1 km². New scores: 44 % (2020), 33 % (2021), 35 % (2025) of reports hit, against 37, 19 and 36 % for random points. Still better than random in 2020 and 2021, not in 2025. The model is now drier (2020 DKI area 62 km², city report 156 km²): part of the old agreement came from water that was not there. Main remaining causes: smoothed satellite rain and too-shallow small rivers in the model.",
+   "id_txt": "USANG, angka lama (jangan dikutip; lihat kartu terbaru). Banjir nyata setelah perbaikan 17 Nov 2026: saluran tidak lagi penuh air pura-pura sejak awal, dan kolam/situ bukan banjir. Uji tanpa hujan: model lama sudah 'membanjiri' 14,6 km² di kotak 20 × 20 km Jakarta tengah-timur hanya dari air pura-pura di saluran; model baru 0,1 km². Skor baru: 44 % (2020), 33 % (2021), 35 % (2025) laporan kena, dibanding 37, 19 dan 36 % untuk titik acak. Masih lebih baik dari acak pada 2020 dan 2021, tidak pada 2025. Model sekarang lebih kering (luas DKI 2020: 62 km², laporan Pemprov 156 km²): sebagian kecocokan lama berasal dari air yang tidak ada. Penyebab utama yang tersisa: hujan satelit terlalu rata dan sungai kecil terlalu dangkal di model.",
+   "en_txt": "OUTDATED, old numbers (do not quote; see the newest card). Observed floods after the fixes of 17 Nov 2026: drains no longer start full of phantom water, and ponds are not floods. No-rain test: the old model already 'flooded' 14.6 km² of a 20 × 20 km box of central-east Jakarta from phantom drain water alone; the new model 0.1 km². New scores: 44 % (2020), 33 % (2021), 35 % (2025) of reports hit, against 37, 19 and 36 % for random points. Still better than random in 2020 and 2021, not in 2025. The model is now drier (2020 DKI area 62 km², city report 156 km²): part of the old agreement came from water that was not there. Main remaining causes: smoothed satellite rain and too-shallow small rivers in the model.",
    "metrics": [
     [
      "Reports hit within ~270 m (land) vs random, 2020 · 2021 · 2025",
@@ -149,10 +198,10 @@
   },
   {
    "id": "observed",
-   "status": "partial",
+   "status": "old",
    "file": "verification/observed/scores-2020-01-01-imerg-v6.json",
-   "id_txt": "Banjir nyata, versi lama sebelum perbaikan 17 Nov 2026: paket 14 Nov 2026 masih mengandung 2 kesalahan. Aturan skor baru (13 Nov 2026): laporan warga PetaBencana dihitung \"kena\" bila model ≥ 10 cm di DARATAN dalam ±270 m (air di alur sungai tidak lagi dihitung). Hasil: 50 % (2020), 47 % (2021) dan 41 % (2025) laporan kena, dibanding 43, 28 dan 43 % untuk titik acak di daratan DKI. Model jelas lebih baik dari acak pada 2021, sedikit pada 2020, dan tidak pada 2025. Aturan lama (air sungai ikut dihitung) memberi 72–75 % dan terlalu menyanjung model. Luas banjir DKI 2020: model 83 km², laporan Pemprov 156 km².",
-   "en_txt": "Observed floods, old version before the fixes of 17 Nov 2026: the pack of 14 Nov 2026 still had two errors. New scoring rule (13 Nov 2026): a PetaBencana citizen report counts as hit when the model reaches 0.10 m on LAND within about 270 m (water in river channels no longer counts). Result: 50 % (2020), 47 % (2021) and 41 % (2025) of reports hit, against 43, 28 and 43 % for random points on DKI land. The model is clearly better than random in 2021, slightly in 2020 and not in 2025. The old rule (river water counted) gave 72–75 % and flattered the model. 2020 DKI flooded area: model 83 km², city government 156 km².",
+   "id_txt": "USANG, angka lama (jangan dikutip; lihat kartu terbaru). Banjir nyata, versi lama sebelum perbaikan 17 Nov 2026: paket 14 Nov 2026 masih mengandung 2 kesalahan. Aturan skor baru (13 Nov 2026): laporan warga PetaBencana dihitung \"kena\" bila model ≥ 10 cm di DARATAN dalam ±270 m (air di alur sungai tidak lagi dihitung). Hasil: 50 % (2020), 47 % (2021) dan 41 % (2025) laporan kena, dibanding 43, 28 dan 43 % untuk titik acak di daratan DKI. Model jelas lebih baik dari acak pada 2021, sedikit pada 2020, dan tidak pada 2025. Aturan lama (air sungai ikut dihitung) memberi 72–75 % dan terlalu menyanjung model. Luas banjir DKI 2020: model 83 km², laporan Pemprov 156 km².",
+   "en_txt": "OUTDATED, old numbers (do not quote; see the newest card). Observed floods, old version before the fixes of 17 Nov 2026: the pack of 14 Nov 2026 still had two errors. New scoring rule (13 Nov 2026): a PetaBencana citizen report counts as hit when the model reaches 0.10 m on LAND within about 270 m (water in river channels no longer counts). Result: 50 % (2020), 47 % (2021) and 41 % (2025) of reports hit, against 43, 28 and 43 % for random points on DKI land. The model is clearly better than random in 2021, slightly in 2020 and not in 2025. The old rule (river water counted) gave 72–75 % and flattered the model. 2020 DKI flooded area: model 83 km², city government 156 km².",
    "metrics": [
     [
      "Reports hit within ~270 m (land) vs random, 2020 · 2021 · 2025",
@@ -186,10 +235,10 @@
   },
   {
    "id": "observed-depth",
-   "status": "partial",
+   "status": "old",
    "file": "verification/observed/scores-2020-01-01-imerg-scaled.json",
-   "id_txt": "Kedalaman: di titik laporan, genangan model lebih dangkal dari yang dilaporkan warga. Uji kepekaan dengan hujan satelit dikali 1,5 dan 2: kedalaman 2020 jadi pas pada ×1,5, tetapi luas genangan Jakarta naik ke 200 km² (laporan 156 km²); 2021 baru pas pada ×2, 2025 sudah terlalu dalam pada ×1,5. Tidak ada satu faktor yang cocok, jadi aplikasi tetap memakai hujan apa adanya. (Uji kepekaan ini masih memakai aturan skor lama; arah hasilnya tetap berlaku, angkanya tidak.)",
-   "en_txt": "Depth: at report points the modelled water is shallower than citizens reported. Sensitivity runs with satellite rain times 1.5 and 2: 2020 depths match at ×1.5, but the flooded area in Jakarta rises to 200 km² (reported 156 km²); 2021 matches only at ×2, 2025 is already too deep at ×1.5. No single factor fits, so the app keeps the rain as observed. (This sensitivity test used the old scoring rule; its direction holds, its numbers do not.)",
+   "id_txt": "USANG, angka lama (jangan dikutip; lihat kartu terbaru). Kedalaman: di titik laporan, genangan model lebih dangkal dari yang dilaporkan warga. Uji kepekaan dengan hujan satelit dikali 1,5 dan 2: kedalaman 2020 jadi pas pada ×1,5, tetapi luas genangan Jakarta naik ke 200 km² (laporan 156 km²); 2021 baru pas pada ×2, 2025 sudah terlalu dalam pada ×1,5. Tidak ada satu faktor yang cocok, jadi aplikasi tetap memakai hujan apa adanya. (Uji kepekaan ini masih memakai aturan skor lama; arah hasilnya tetap berlaku, angkanya tidak.)",
+   "en_txt": "OUTDATED, old numbers (do not quote; see the newest card). Depth: at report points the modelled water is shallower than citizens reported. Sensitivity runs with satellite rain times 1.5 and 2: 2020 depths match at ×1.5, but the flooded area in Jakarta rises to 200 km² (reported 156 km²); 2021 matches only at ×2, 2025 is already too deep at ×1.5. No single factor fits, so the app keeps the rain as observed. (This sensitivity test used the old scoring rule; its direction holds, its numbers do not.)",
    "metrics": [
     [
      "Median depth at reports, new pack (2020 · 2021 · 2025)",
@@ -223,10 +272,10 @@
   },
   {
    "id": "observed-pumps-rw",
-   "status": "partial",
+   "status": "old",
    "file": "verification/observed/scores-2020-01-01-imerg-v6.json",
-   "id_txt": "Pompa, tanah basah dan per-RW: menyalakan pompa polder Jakarta Satu (665 m³/detik) menurunkan skor laporan pada 2020 dan 2021 dan memperkecil luas banjir yang sudah terlalu kecil, jadi bawaannya mati (bisa dinyalakan sebagai skenario). Tanah basah (AMC III) menaikkan skor sedikit (2020: 50 → 51 %). Per RW (2.610 RW): kemampuan membedakan RW banjir dan tidak banjir lemah (AUC 0,62; 0,5 = acak).",
-   "en_txt": "Pumps, wet soil and RW places: switching on the Jakarta Satu polder pumps (665 m³/s) lowers the report score in 2020 and 2021 and shrinks a flooded area that is already too small, so they start off (available as a scenario). Wet soil (AMC III) raises the score a little (2020: 50 → 51 %). Per RW (2,610 RW): the ability to tell flooded from dry RW is weak (AUC 0.62; 0.5 = random).",
+   "id_txt": "USANG, angka lama (jangan dikutip; lihat kartu terbaru). Pompa, tanah basah dan per-RW: menyalakan pompa polder Jakarta Satu (665 m³/detik) menurunkan skor laporan pada 2020 dan 2021 dan memperkecil luas banjir yang sudah terlalu kecil, jadi bawaannya mati (bisa dinyalakan sebagai skenario). Tanah basah (AMC III) menaikkan skor sedikit (2020: 50 → 51 %). Per RW (2.610 RW): kemampuan membedakan RW banjir dan tidak banjir lemah (AUC 0,62; 0,5 = acak).",
+   "en_txt": "OUTDATED, old numbers (do not quote; see the newest card). Pumps, wet soil and RW places: switching on the Jakarta Satu polder pumps (665 m³/s) lowers the report score in 2020 and 2021 and shrinks a flooded area that is already too small, so they start off (available as a scenario). Wet soil (AMC III) raises the score a little (2020: 50 → 51 %). Per RW (2,610 RW): the ability to tell flooded from dry RW is weak (AUC 0.62; 0.5 = random).",
    "metrics": [
     [
      "Reports hit, pumps off / on (2020 · 2021 · 2025)",
@@ -248,10 +297,10 @@
   },
   {
    "id": "observed-micro-drains",
-   "status": "partial",
+   "status": "old",
    "file": "verification/observed/scores-2021-02-20-imerg-micro.json",
-   "id_txt": "Saluran mikro Jakarta Selatan (data ukuran DSDA, 8.551 ruas): dinyalakan, model di Jakarta Selatan menjadi jauh lebih kering. Pada banjir 2021 (119 laporan warga di daerah yang dilayani) laporan yang terkena turun dari 50 % ke 28 % (titik acak 27 % → 10 %), dan kedalaman model di titik laporan turun dari 0,11 m ke hampir 0 m, padahal warga melaporkan sekitar 0,9 m. Jadi bawaannya mati, seperti pompa. Penyebab utama: hujan satelit IMERG lebih rendah dari hujan sebenarnya, dan saluran dihitung bekerja penuh (tidak tersumbat, tidak tertahan air sungai). 2020 (21 laporan) dan 2025 (3 laporan) terlalu sedikit untuk disimpulkan.",
-   "en_txt": "South Jakarta micro drains (DSDA size records, 8,551 sections): switched on, the model in South Jakarta becomes much drier. In the 2021 flood (119 citizen reports in the served area) the share of reports hit fell from 50 % to 28 % (random points 27 % → 10 %), and the model depth at the reports fell from 0.11 m to almost 0 m against about 0.9 m reported. So they start off, like the pumps. Main causes: IMERG satellite rain is lower than the real rain, and the drains are counted at full capacity (no blockage, no backwater from rivers). 2020 (21 reports) and 2025 (3 reports) are too few to conclude.",
+   "id_txt": "USANG, angka lama (jangan dikutip; lihat kartu terbaru). Saluran mikro Jakarta Selatan (data ukuran DSDA, 8.551 ruas): dinyalakan, model di Jakarta Selatan menjadi jauh lebih kering. Pada banjir 2021 (119 laporan warga di daerah yang dilayani) laporan yang terkena turun dari 50 % ke 28 % (titik acak 27 % → 10 %), dan kedalaman model di titik laporan turun dari 0,11 m ke hampir 0 m, padahal warga melaporkan sekitar 0,9 m. Jadi bawaannya mati, seperti pompa. Penyebab utama: hujan satelit IMERG lebih rendah dari hujan sebenarnya, dan saluran dihitung bekerja penuh (tidak tersumbat, tidak tertahan air sungai). 2020 (21 laporan) dan 2025 (3 laporan) terlalu sedikit untuk disimpulkan.",
+   "en_txt": "OUTDATED, old numbers (do not quote; see the newest card). South Jakarta micro drains (DSDA size records, 8,551 sections): switched on, the model in South Jakarta becomes much drier. In the 2021 flood (119 citizen reports in the served area) the share of reports hit fell from 50 % to 28 % (random points 27 % → 10 %), and the model depth at the reports fell from 0.11 m to almost 0 m against about 0.9 m reported. So they start off, like the pumps. Main causes: IMERG satellite rain is lower than the real rain, and the drains are counted at full capacity (no blockage, no backwater from rivers). 2020 (21 reports) and 2025 (3 reports) are too few to conclude.",
    "metrics": [
     [
      "Reports hit in the served area, micro off / on (2020 · 2021 · 2025)",

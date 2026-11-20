@@ -5,7 +5,7 @@ import { rainRate, type Hyetograph } from "../explore/rain";
 
 export type RunMsg = {
   type: "run"; grid: EngineGrid; seaLevel: number; hours: number; rain: Hyetograph; frameS: number;
-  inflowCells: number[]; inflowQ: Float64Array[]; inflowDt: number; floodM: number; count: Float32Array; preferGpu: boolean; // count: area share per cell that counts (0 = none)
+  inflowCells: number[]; inflowQ: Float64Array[]; inflowDt: number; floodM: number; count: Float32Array; landOff?: Float32Array; preferGpu: boolean; // count: area share per cell that counts (0 = none)
   zoneMm?: number[][]; // observed event: rain blocks per zone (grid.zone), same blockSeconds as rain
 };
 export type OutMsg =
@@ -25,7 +25,7 @@ self.onmessage = async (ev: MessageEvent<RunMsg>) => {
     const frame = (t: number, d: ArrayLike<number>, stride: number) => {
       const cm = new Uint16Array(N);
       let w = 0;
-      for (let c = 0; c < N; c++) { const v = d[c * stride]; cm[c] = v >= 655.35 ? 65535 : Math.round(v * 100); if (v > m.floodM) w += m.count[c]; }
+      for (let c = 0; c < N; c++) { const v = d[c * stride]; cm[c] = v >= 655.35 ? 65535 : Math.round(v * 100); if (v - (m.landOff ? m.landOff[c] : 0) > m.floodM) w += m.count[c]; }
       post({ type: "frame", t, depthCm: cm, floodedKm2: w * cellKm2 }, [cm.buffer]);
     };
     // WebGPU first when asked; any GPU problem (no adapter, too little memory, validation error, device lost, non-finite

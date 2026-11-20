@@ -493,6 +493,36 @@
    "volume": "126",
    "pages": "79–95",
    "doi": "10.1016/j.advwatres.2019.02.007"
+  },
+  {
+   "key": "klemes1986",
+   "type": "article",
+   "authors": [
+    "Klemeš, V."
+   ],
+   "year": 1986,
+   "title": "Operational testing of hydrological simulation models",
+   "journal": "Hydrological Sciences Journal",
+   "volume": "31",
+   "issue": "1",
+   "pages": "13–24",
+   "doi": "10.1080/02626668609491024"
+  },
+  {
+   "key": "stephens2014",
+   "type": "article",
+   "authors": [
+    "Stephens, E.",
+    "Schumann, G.",
+    "Bates, P."
+   ],
+   "year": 2014,
+   "title": "Problems with binary pattern measures for flood model evaluation",
+   "journal": "Hydrological Processes",
+   "volume": "28",
+   "issue": "18",
+   "pages": "4928–4937",
+   "doi": "10.1002/hyp.9979"
   }
  ]
 }

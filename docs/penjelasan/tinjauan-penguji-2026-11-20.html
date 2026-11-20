@@ -1,0 +1,190 @@
+<title>Tinjauan Enam Penguji Banjir3D</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Serif:wght@500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: one reading column (report), wide tables scroll in their own box; status shown as pills */
+:root {
+  --bg: #f6f8fa; --paper: #ffffff; --fg: #17222e; --muted: #56677a; --line: #d9e1ea;
+  --accent: #1f5f9e; --accent-soft: #e5eef8;
+  --ok: #1e7a4c; --ok-soft: #e3f3ea; --warn: #9a5b00; --warn-soft: #fbf0dc; --bad: #a3262a; --bad-soft: #fbe6e6;
+  --f-head: "IBM Plex Serif", Georgia, serif; --f-body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif; --f-mono: "IBM Plex Mono", ui-monospace, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #0f151c; --paper: #16202a; --fg: #e4ebf2; --muted: #9aaabb; --line: #2a3846;
+  --accent: #7fb3e8; --accent-soft: #1b2c3d;
+  --ok: #6fd3a0; --ok-soft: #15301f; --warn: #f0b75c; --warn-soft: #33270f; --bad: #f08a8d; --bad-soft: #3a1a1c; color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #0f151c; --paper: #16202a; --fg: #e4ebf2; --muted: #9aaabb; --line: #2a3846;
+  --accent: #7fb3e8; --accent-soft: #1b2c3d;
+  --ok: #6fd3a0; --ok-soft: #15301f; --warn: #f0b75c; --warn-soft: #33270f; --bad: #f08a8d; --bad-soft: #3a1a1c; color-scheme: dark }
+body { background: var(--bg); color: var(--fg); font: 16px/1.6 var(--f-body); padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 2rem 4rem; }
+main { max-width: 860px; margin: 0 auto; display: grid; gap: 1.75rem; }
+header { display: grid; gap: .5rem; }
+.eyebrow { font: 500 .78rem/1.2 var(--f-mono); letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+h1 { font: 600 clamp(1.7rem, 4vw, 2.3rem)/1.2 var(--f-head); margin: 0; text-wrap: balance; }
+h2 { font: 600 1.3rem/1.3 var(--f-head); margin: 0 0 .6rem; text-wrap: balance; }
+h3 { font: 600 1rem/1.4 var(--f-body); margin: 1rem 0 .3rem; }
+p, li { max-width: 68ch; }
+p { margin: .4rem 0; }
+section { background: var(--paper); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem 1.4rem; min-width: 0; }
+.plain { background: var(--accent-soft); border-color: transparent; }
+.plain p { font-size: 1.05rem; }
+ul, ol { padding-left: 1.2rem; margin: .4rem 0; }
+li { margin: .25rem 0; }
+.tbl { overflow-x: auto; margin: .6rem 0; }
+table { border-collapse: collapse; width: 100%; font-size: .93rem; min-width: 560px; }
+th, td { text-align: left; vertical-align: top; padding: .5rem .6rem; border-bottom: 1px solid var(--line); }
+th { font-weight: 600; color: var(--muted); font-size: .82rem; }
+td.n, th.n { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.pill { display: inline-block; font: 500 .75rem/1 var(--f-body); padding: .3rem .5rem; border-radius: 99px; white-space: nowrap; }
+.ok { background: var(--ok-soft); color: var(--ok); }
+.warn { background: var(--warn-soft); color: var(--warn); }
+.bad { background: var(--bad-soft); color: var(--bad); }
+code { font: .88em var(--f-mono); background: var(--accent-soft); padding: .05rem .3rem; border-radius: 4px; }
+.qa dt { font-weight: 600; margin-top: .9rem; }
+.qa dd { margin: .25rem 0 0; }
+.note { color: var(--muted); font-size: .9rem; }
+a { color: var(--accent); }
+</style>
+
+<main>
+<header>
+  <div class="eyebrow">Banjir3D · tinjauan 20 November 2026 · paket mesin e16, mesin 20 Nov</div>
+  <h1>Tinjauan enam penguji independen</h1>
+  <p class="note">Ditulis untuk pemilik proyek dan tim riset. Laporan lengkap tiap penguji ada di repo: <code>verification/review-2026-11-18/01..06</code>.</p>
+</header>
+
+<section class="plain">
+  <h2>Ringkasan mudah dipahami</h2>
+  <p>Enam penguji memeriksa model dari enam sudut: rumus, hasil di 60 titik, cara uji, bahasa kesimpulan, sudut pandang reviewer jurnal, dan aplikasi itu sendiri.</p>
+  <p>Rumus intinya benar. Yang salah ada di cara model disusun. Akibatnya sungai tampak sebagai pita banjir lebar, ada kolam palsu di tepi peta, dan rumah di bantaran sungai tidak ikut terhitung.</p>
+  <p>Cacat-cacat itu sudah diperbaiki dan tiga banjir dihitung ulang. Hasilnya: model baru terbukti lebih baik dari tebakan acak pada <b>satu</b> dari tiga banjir (2021). Pada 2020 belum, dan pada 2025 laporan warganya terlalu sedikit untuk dinilai.</p>
+  <p>Model juga masih terlalu dangkal. Di lokasi laporan warga, nilai tengah kedalaman model sekitar 10 cm, padahal warga melaporkan sekitar 70 cm.</p>
+  <p><b>Semua angka, peta, dan tabel yang dibuat sebelum 20 November 2026 tidak boleh dipakai lagi.</b> Hasil sekarang cukup untuk membandingkan skenario. Hasil ini belum cukup untuk menyatakan "kawasan X tergenang Y cm".</p>
+</section>
+
+<section>
+  <h2>Apa yang terjadi pada sesi ini</h2>
+  <p>Sesi pertama terhenti karena batas pemakaian mingguan habis. Keenam penguji terputus di menit awal dan belum menulis apa pun. Setelah batas pulih, mereka dilanjutkan dalam dua gelombang. Setelah itu sesi sempat terputus sekali lagi karena proses kerja dimulai ulang. Tidak ada pekerjaan yang hilang: semua hasil sudah tersimpan di GitHub (cabang <code>claude/funny-johnson-0c7vo0</code>).</p>
+</section>
+
+<section>
+  <h2>Tim penguji</h2>
+  <div class="tbl"><table>
+    <thead><tr><th>Peran</th><th>Yang diuji</th><th>Temuan terpenting</th></tr></thead>
+    <tbody>
+      <tr><td>01 Auditor Metode</td><td>Setiap rumus: aliran air, limpasan (CN), debit hulu, cara sel 90 m dibentuk; uji angka dengan mesin asli</td><td>Rumus benar (kedalaman normal Manning tepat). Penyusunan salah: titik masuk sungai jatuh di darat, tepi menahan air, blok 90 m jadi "sungai", sungai OSM tanpa palung</td></tr>
+      <tr><td>02 Penguji Multi-Titik</td><td>60 titik di 5 wilayah dan 4 kelas jarak ke sungai, 3 banjir, plus 3 run kotak</td><td>Pita "sungai" 241 km² di 90 m (106 km² di 30 m); peta menggambar 35 km² air di sel yang modelnya kering; garis air di lembah tanpa sungai</td></tr>
+      <tr><td>03 Metodolog Validasi</td><td>Cara kalibrasi dan uji, menghitung ulang semua skor, interval kepercayaan</td><td>Aritmetika benar, tetapi pembanding acak tidak adil dan "validasi" sebenarnya dalam-sampel</td></tr>
+      <tr><td>04 Penyunting Bahasa</td><td>142 kalimat kesimpulan dari 5 kasus, istilah, angka, dan jejak setiap klaim</td><td>Butir kepercayaan 150 kata, kalimat calque, kontradiksi, dan tidak ada penjelasan per lokasi</td></tr>
+      <tr><td>05 Reviewer Jurnal</td><td>30 pertanyaan tegas dan terbuka, janji BLUEPRINT, riwayat kesalahan</td><td>75 % genangan 2020 ada di luar DKI dan tidak diuji; model riset SFINCS belum ada; hasil bergantung pada ukuran sel</td></tr>
+      <tr><td>06 Penguji Aplikasi</td><td>6 run di aplikasi (4 kota, 30 dan 90 m), ekspor, halaman Validasi</td><td>GeoTIFF menghitung air di dalam sungai sebagai banjir; kartu lama tanpa label usang</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section>
+  <h2>Jawaban untuk 8 poinmu</h2>
+  <dl class="qa">
+    <dt>1. "Sungai seperti banjir besar padahal tidak kelihatan sungainya."</dt>
+    <dd>Kamu benar, dan penyebabnya ditemukan di kode. (a) Di sel 90 m, satu parit selebar 30 m membuat seluruh sel 90 m dianggap sungai dan diturunkan ke dasar sungai. (b) 34 dari 61 titik masuk air hulu jatuh di darat, salah satunya membuat kolam 8,5 m. (c) Peta menggambar air di sel yang menurut model kering. (d) Sungai kecil di OpenStreetMap hampir tanpa palung (median 0,54 m), sehingga cepat meluap. Poin a–c <b>sudah diperbaiki</b>. Poin d <b>belum</b>, karena butuh data penampang sungai (lihat bawah). Garis air di lembah yang tidak punya sungai di OpenStreetMap juga masih ada; itu aliran air hujan di lembah, belum dipisahkan dari genangan.</dd>
+    <dt>2. "Jangan uji di satu titik."</dt>
+    <dd>Penguji 02 memeriksa 60 titik (5 wilayah × 4 kelas jarak ke sungai × 3 cara pilih). Penguji 01 memeriksa 26 titik, penguji 04 memeriksa 25 titik, dan penguji 06 menjalankan 6 kotak di 4 kota. Uji di banyak titik sekarang menjadi aturan setiap pengujian.</dd>
+    <dt>3. "Apa fungsi menyamakan dengan kejadian asli? Kalau dipaksa sama tanpa metode, bias."</dt>
+    <dd>Kamu benar. Kalibrasi berarti menyetel model pada sebagian kejadian. Validasi berarti menguji model yang sudah dibekukan pada kejadian lain yang tidak dipakai untuk menyetel (uji sampel terpisah, Klemeš 1986). Di proyek ini sekitar 56 pengaturan dicoba pada tiga banjir yang sama, lalu tiga banjir itu juga disebut "validasi". Itu tidak boleh. Skor sekarang ditulis jujur sebagai uji dalam-sampel. Cara yang benar (pra-registrasi kenop dan kriteria, pembagian kejadian, rentang ketidakpastian ala GLUE) ada di laporan 03 bagian 5.4 dan perlu disepakati timmu sebelum dijalankan.</dd>
+    <dt>4. "Ada puluhan kesalahan lain."</dt>
+    <dd>Benar. Keenam laporan berisi 70-an temuan. Yang kritis dan tinggi tercantum di tabel berikutnya beserta statusnya.</dd>
+    <dt>5. "Output sudah dibawa ke meja riset."</dt>
+    <dd>Saya minta maaf. Ini kesalahan saya: beberapa angka saya sajikan sebelum diuji dengan cukup ketat. Daftar output yang harus dibuang ada di bagian "Output lama".</dd>
+    <dt>6. "Kesimpulan sulit dimengerti, seperti ditulis robot."</dt>
+    <dd>Kesimpulan ditulis ulang dan sekarang dibuka dengan ringkasan pendek, satu gagasan per butir, dengan angka nyata. Isinya: dari mana air datang, ke mana air pergi, seberapa luas dan dalam, siapa terdampak, seberapa bisa dipercaya, dan untuk apa peta boleh dipakai. Kalimat terjemahan kaku, kontradiksi, dan format angka sudah diperbaiki.</dd>
+    <dt>7. "Dulu kamu menjelaskan lokasi A banjir karena X, Y, Z, tapi itu tidak ada di kesimpulan."</dt>
+    <dd>Penjelasan itu dulu saya buat langsung di chat, dengan membuka data saat itu juga. Generator kesimpulan tidak punya bagian itu. Sekarang ada bagian <b>"Mengapa di sini tergenang?"</b> untuk tiga kecamatan dengan genangan terluas. Alasannya dihitung, bukan dikarang: berapa persen genangan ada di tepi sungai yang muka airnya melewati tinggi tanah, berapa meter tanahnya lebih rendah dari sekitarnya, berapa cm tanah turun, dan kapan alasan itu belum pasti karena galat peta tinggi tanah.</dd>
+    <dt>8. "Hanya sebesar Jakarta dan beberapa kota kecil."</dt>
+    <dd>Benar. Wilayah model adalah DKI ditambah 10 km (2.129 km²), sekitar sepertiga Jabodetabek. Kota Bogor tidak masuk sama sekali. README sebelumnya menyebut "Jabodetabek"; itu sudah dikoreksi. Memperluas wilayah itu keputusanmu (lihat bawah). Data saluran, pompa, dan penurunan tanah hanya ada untuk DKI, jadi wilayah di luar DKI akan lebih miskin data.</dd>
+  </dl>
+</section>
+
+<section>
+  <h2>Temuan utama dan statusnya</h2>
+  <div class="tbl"><table>
+    <thead><tr><th>Temuan</th><th>Status</th><th>Catatan</th></tr></thead>
+    <tbody>
+      <tr><td>Titik masuk air hulu jatuh di darat (34 dari 61)</td><td><span class="pill ok">diperbaiki</span></td><td>Dipindah ke sel sungai terdekat dalam 600 m; kolam 8,5 m hilang (sisa 0,09 m)</td></tr>
+      <tr><td>Tepi model menahan hujan dan air hulu</td><td><span class="pill ok">diperbaiki</span></td><td>Aliran bebas mengikuti kemiringan tanah; ada uji otomatis baru</td></tr>
+      <tr><td>Blok 90 m dengan satu sel sungai dianggap sungai seluruhnya; air awal 2,3× lipat</td><td><span class="pill ok">diperbaiki</span></td><td>Bagian darat blok dihitung dengan tinggi daratnya; air awal sama dengan 30 m</td></tr>
+      <tr><td>Rumah dan penduduk di bantaran tidak dihitung (2,1 juta orang di blok sungai pada 90 m)</td><td><span class="pill ok">diperbaiki</span></td><td>Luas, bangunan, penduduk, peta, dan skor memakai aturan yang sama</td></tr>
+      <tr><td>Peta menggambar air di sel yang modelnya kering</td><td><span class="pill ok">diperbaiki</span></td><td>Di peta, ekspor HTML, dan GeoTIFF berwarna</td></tr>
+      <tr><td>GeoTIFF kedalaman menghitung air dalam sungai (sampai 9 m)</td><td><span class="pill ok">diperbaiki</span></td><td>Sekarang kedalaman di atas daratan</td></tr>
+      <tr><td>Pembanding acak tidak adil; tanpa interval dan uji statistik</td><td><span class="pill ok">diperbaiki</span></td><td>Dua pembanding adil, interval bootstrap per blok 1 km, uji binomial, putusan otomatis</td></tr>
+      <tr><td>Klaim "lebih baik dari acak di 2 dari 3 banjir"</td><td><span class="pill ok">dicabut</span></td><td>Diganti putusan baru di Metode, Validasi, kesimpulan, berkas AI, dan halaman penjelasan</td></tr>
+      <tr><td>Kartu Validasi lama dengan angka basi</td><td><span class="pill ok">diberi label usang</span></td><td>Kartu baru "observed-review" di paling atas</td></tr>
+      <tr><td>Halaman Data menyebut Sentinel-1 dipakai</td><td><span class="pill ok">dikoreksi</span></td><td>Sekarang "rencana, belum dipakai"</td></tr>
+      <tr><td>ID ekspor bisa kembar; commit aplikasi tidak tercatat</td><td><span class="pill ok">diperbaiki</span></td><td>ID unik, commit, dan ringkasan KPI ada di JSON provenance</td></tr>
+      <tr><td>Aplikasi dan skrip validasi memberi angka berbeda (A-01)</td><td><span class="pill ok">bukan cacat</span></td><td>Dicek ulang: dengan kode yang sama keduanya identik (1,08 km²). Penguji membandingkan versi sebelum dan sesudah perbaikan</td></tr>
+      <tr><td>Sungai OSM tanpa palung (median 0,54 m)</td><td><span class="pill bad">belum</span></td><td>Butuh penampang sungai BBWS/DSDA, atau rumus geometri hidraulik sebagai anggapan yang diuji terpisah</td></tr>
+      <tr><td>Garis air di lembah tanpa sungai OSM</td><td><span class="pill bad">belum</span></td><td>Perlu pahat alur kecil dari DEM atau kelas "aliran" terpisah</td></tr>
+      <tr><td>Hujan satelit terlalu kecil (Halim 377 lawan 166 mm)</td><td><span class="pill bad">belum</span></td><td>Perlu hujan per jam dari alat ukur BMKG</td></tr>
+      <tr><td>Validasi dalam-sampel; belum ada protokol</td><td><span class="pill warn">perlu keputusan tim</span></td><td>Usulan protokol ada di laporan 03 bagian 5.4</td></tr>
+      <tr><td>Hasil bergantung pada ukuran sel; skor hanya diuji di 90 m</td><td><span class="pill warn">ditulis sebagai batasan</span></td><td>Kesimpulan kini menyebut uji hanya dibuat di 90 m</td></tr>
+      <tr><td>Wilayah bukan Jabodetabek; genangan di luar DKI tidak diuji</td><td><span class="pill warn">perlu keputusan</span></td><td>README dikoreksi; perluasan menunggu pilihanmu</td></tr>
+      <tr><td>Model riset SFINCS, peta peluang ensemble, uji kepekaan Manning/DEM</td><td><span class="pill bad">belum</span></td><td>Janji BLUEPRINT yang belum dikerjakan; cap "eksploratif" dipasang lagi di ekspor</td></tr>
+      <tr><td>CN 98 untuk semua piksel terbangun; satu hidrograf satuan untuk DAS 1.100 km²</td><td><span class="pill bad">belum</span></td><td>Masuk daftar uji kepekaan</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section>
+  <h2>Angka terbaru</h2>
+  <p class="note">Seluruh wilayah, sel 90 m, hujan satelit GPM IMERG, pompa mati. Laporan "kena" = laporan warga PetaBencana dalam ±270 m dari daratan yang tergenang lebih dari 10 cm. Pembanding adil = titik acak di daratan dalam 1 km dari laporan.</p>
+  <div class="tbl"><table>
+    <thead><tr><th>Banjir</th><th class="n">Laporan</th><th class="n">Kena</th><th class="n">Acak adil</th><th class="n">Rentang 95 %</th><th>Putusan</th><th class="n">Kedalaman model / laporan</th><th class="n">Luas DKI</th></tr></thead>
+    <tbody>
+      <tr><td>1 Jan 2020</td><td class="n">260</td><td class="n">49 %</td><td class="n">45 %</td><td class="n">41–58 %</td><td><span class="pill warn">tidak lebih baik</span></td><td class="n">10 / 70 cm</td><td class="n">73 km² (Pemprov 156)</td></tr>
+      <tr><td>20 Feb 2021</td><td class="n">384</td><td class="n">39 %</td><td class="n">26 %</td><td class="n">32–47 %</td><td><span class="pill ok">lebih baik</span></td><td class="n">6 / 65 cm</td><td class="n">31 km²</td></tr>
+      <tr><td>4 Mar 2025</td><td class="n">49</td><td class="n">39 %</td><td class="n">35 %</td><td class="n">24–55 %</td><td><span class="pill warn">laporan terlalu sedikit</span></td><td class="n">7 / 55 cm</td><td class="n">66 km²</td></tr>
+    </tbody>
+  </table></div>
+  <p class="note">Per RW (2.610 RW): CSI 0,13 / 0,08 / 0,05; AUC 0,57 / 0,59 / 0,53 (0,5 = acak). Sumber: <code>verification/observed/scores-*-imerg-v8.json</code>, <code>data/skill.json</code>.</p>
+</section>
+
+<section>
+  <h2>Output lama yang harus dibuang</h2>
+  <ul>
+    <li><b>Semua angka, peta, ekspor, dan tabel keterpaparan yang dibuat sebelum 20 November 2026.</b> Mesin berubah di tepi model, titik masuk sungai, dan blok sungai, jadi semuanya perlu dibuat ulang.</li>
+    <li>Kutipan "sekitar 80 % laporan warga cocok" (30 Okt–13 Nov): angka itu menggelembung karena air sungai ikut dihitung.</li>
+    <li>Kutipan "50/47/41 %" dan "44/33/35 %" serta "lebih baik dari acak pada 2020": pembandingnya tidak adil.</li>
+    <li>Run hujan rencana di bawah 24 jam sebelum 13 Nov: sebagian hujan hilang (6 jam kehilangan 37 %).</li>
+    <li>Angka keterpaparan sel halus 8–10 Nov: sekitar 3× terlalu tinggi.</li>
+    <li>Skor pompa, saluran mikro, dan atribusi "248 lawan 300 km²": dari paket data lama, belum diulang.</li>
+  </ul>
+  <p class="note">Rincian lengkap: laporan 05 bagian 5 (riwayat kesalahan).</p>
+</section>
+
+<section>
+  <h2>Yang butuh keputusan atau data darimu</h2>
+  <ol>
+    <li><b>Penampang sungai</b> (lebar dan kedalaman) untuk Kali Baru, Mampang, Krukut, Angke, Pesanggrahan, Ciliwung dari BBWS Ciliwung-Cisadane atau DSDA. Tanpa ini, sungai kecil tetap terlalu dangkal di model.</li>
+    <li><b>Hujan per jam dari alat ukur BMKG</b> untuk tiga banjir (akun gratis BMKG Data Online). Data ini untuk memisahkan kesalahan hujan dari kesalahan model.</li>
+    <li><b>Protokol uji</b>: tim menyepakati kenop yang boleh disetel, banjir mana untuk menyetel dan mana untuk menguji, serta kriteria lulus, sebelum ada run baru (laporan 03 bagian 5.4).</li>
+    <li><b>Wilayah</b>: tetap DKI + 10 km, atau diperluas ke Jabodetabek penuh (lebih lama dihitung, dan data saluran/pompa hanya ada untuk DKI).</li>
+  </ol>
+</section>
+
+<section>
+  <h2>Pertanyaan tegas penguji yang sudah dijawab</h2>
+  <dl class="qa">
+    <dt>Apakah sapuan saluran kota 0–40 mm/jam pernah diulang di paket terbaru?</dt>
+    <dd>Belum. Kesimpulan dan Metode sekarang menyebutnya "uji lama". Nilai 0 ada di batas bawah rentang uji, tanda model kekurangan air, bukan bukti saluran tidak bekerja.</dd>
+    <dt>Apakah pompa dimatikan untuk menutupi kekurangan hujan?</dt>
+    <dd>Ya. Kesimpulan kini menulisnya terang-terangan sebagai penyesuaian, dan menyatakan bahwa skenario pompa tidak boleh dibaca sebagai angka mutlak.</dd>
+    <dt>Apakah luas banjir sengaja tidak menghitung air di atas tebing di blok sungai?</dt>
+    <dd>Tidak sengaja. Sekarang bagian darat blok dihitung dengan air di atas tinggi daratnya, di aplikasi maupun di skor.</dd>
+    <dt>Apakah titik terdalam 11,1 m (sama di tiga banjir) itu banjir?</dt>
+    <dd>Kemungkinan besar bukan; itu cekungan di peta tinggi tanah. Ringkasan kini memakai sebaran kedalaman, bukan titik terdalam mentah. Titik terdalam hanya ada di penjelasan ilmiah, dengan catatan bahwa titik seperti itu bisa berupa kolam atau galian.</dd>
+    <dt>Apakah "156 km²" Pemprov sebanding dengan luas model?</dt>
+    <dd>Belum pasti. Definisi angka Pemprov tidak diketahui (bisa luas RW tergenang, bukan luas air), dan ini sekarang ditulis di setiap tempat angka itu dikutip.</dd>
+  </dl>
+</section>
+</main>

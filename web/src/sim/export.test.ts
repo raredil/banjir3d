@@ -26,8 +26,9 @@ describe("exports", () => {
     const over = downscale(h, z, Float32Array.from([0, 5, 0]), new Uint8Array(3).fill(1), 3);
     expect(over[4]).toBeCloseTo(1, 6); // channel centre: 6 m surface over the 5 m bank level
     expect(over[3]).toBeCloseTo(1, 6); // no square edge at the channel cell border: the same surface over the same ground
-    const old = downscale({ nx: 3, ny: 1 }, z, Float32Array.from([0, 3.5, 0]), new Uint8Array(3).fill(1), 3); // without channel flags the bed is blended in
-    expect(old[2]).toBeGreaterThan(0.5);
+    const old = downscale({ nx: 3, ny: 1 }, z, Float32Array.from([0, 3.5, 0]), new Uint8Array(3).fill(1), 3); // without channel flags
+    expect(old[2]).toBe(0); // a cell the model keeps dry is never drawn wet (review 2026-11-20, MT-04)
+    expect(old[4]).toBeGreaterThan(0.5); // the wet cell itself is
   });
   it("exports a drawing-grid fine result on its fine cells with buildings dry and the 30 m water surface (ADR 0018)", () => {
     const z = Float32Array.from([2, 2]), building = new Uint8Array(6 * 3); building[0] = 1;

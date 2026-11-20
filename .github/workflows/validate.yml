@@ -164,8 +164,8 @@ jobs:
           cd "$RUNNER_TEMP/out"
           python3 -c "import json,os; s=json.load(open('summary.json')); s['sources']=os.environ['SRC']; json.dump(s,open('summary.json','w'),indent=1)"
           n="${EVENT}_${RAIN}_k${K}_d${DRAIN}"; [ "$SCALE" = "1" ] || n="${n}_s${SCALE}"; [ "$TY" = "auto" ] || n="${n}_t${TY}"; [ "$PUMPS" = "on" ] || n="${n}_poff"; [ "$AMC" = "2" ] || n="${n}_amc${AMC}"; [ "$MICRO" = "off" ] || n="${n}_mdr"
-          gzip -c hmax.f32 > "${n}_hmax.f32.gz" && gzip -c mask.u8 > "${n}_mask.u8.gz" && cp summary.json "${n}_summary.json"
-          "$GITHUB_WORKSPACE/.github/scripts/release.sh" upload "$TAG" "${n}_hmax.f32.gz" "${n}_mask.u8.gz" "${n}_summary.json"
+          gzip -c hmax.f32 > "${n}_hmax.f32.gz" && gzip -c mask.u8 > "${n}_mask.u8.gz" && gzip -c landshare.u8 > "${n}_landshare.u8.gz" && cp summary.json "${n}_summary.json"
+          "$GITHUB_WORKSPACE/.github/scripts/release.sh" upload "$TAG" "${n}_hmax.f32.gz" "${n}_mask.u8.gz" "${n}_landshare.u8.gz" "${n}_summary.json"
   score:
     needs: [prep, run]
     if: ${{ always() && needs.prep.result == 'success' }}

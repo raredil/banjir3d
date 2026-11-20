@@ -65,6 +65,72 @@ def land_window_max(h, land):
     return out
 
 
+def wilson(k: int, n: int, z: float = 1.96):
+    """95 % Wilson interval of a proportion k/n."""
+    if not n:
+        return None
+    p = k / n
+    d = 1 + z * z / n
+    c = (p + z * z / (2 * n)) / d
+    r = z * np.sqrt(p * (1 - p) / n + z * z / (4 * n * n)) / d
+    return [float(c - r), float(c + r)]
+
+
+def binom_p_greater(k: int, n: int, p0: float) -> float:
+    """One-sided exact binomial p-value P(X >= k | n, p0) (no scipy needed on the runner)."""
+    from math import comb
+    if p0 <= 0:
+        return 0.0 if k > 0 else 1.0
+    if p0 >= 1:
+        return 1.0
+    return float(min(1.0, sum(comb(n, x) * p0 ** x * (1 - p0) ** (n - x) for x in range(k, n + 1))))
+
+
+def fair_baselines(ij, hit, win, land, dki, dx, seed=7, n_boot=2000):
+    """Fair comparison for the report hit rate (review 2026-11-20, finding V-04/V-05).
+    The older baseline put random points on DKI land only, while about a third of the reports lie outside DKI. Here:
+    - domain_land: random points on ALL land of the run grid (where reports can fall);
+    - near_reports: random points on land within 1 km of any report of the event (where people actually report; reports cluster
+      in dense, connected places);
+    - wilson95: 95 % interval of the hit rate; block_bootstrap95: interval with 1 km blocks resampled (reports cluster in space);
+    - p_*: one-sided exact binomial p of hit >= the baseline. Verdict 'better' only when p < 0.05 against near_reports AND domain_land.
+    Also hit rate for reports inside DKI only, set against the DKI baseline."""
+    i, j = ij
+    n, k = len(i), int(hit.sum())
+    ok = win >= HIT_M
+    occ = np.zeros(land.shape, bool)
+    occ[j, i] = True
+    r = max(1, int(round(1000 / dx)))
+    near = occ.copy()
+    for _ in range(r):  # square dilation, r cells (about 1 km)
+        p = np.pad(near, 1)
+        near = p[1:-1, 1:-1] | p[:-2, 1:-1] | p[2:, 1:-1] | p[1:-1, :-2] | p[1:-1, 2:] | p[:-2, :-2] | p[:-2, 2:] | p[2:, :-2] | p[2:, 2:]
+    near &= land
+    b_dom = float(ok[land].mean()) if land.any() else None
+    b_near = float(ok[near].mean()) if near.any() else None
+    b_dki = float(ok[dki & land].mean()) if (dki & land).any() else None
+    rng = np.random.default_rng(seed)
+    blk = (j // r) * 100000 + (i // r)
+    ub, inv = np.unique(blk, return_inverse=True)
+    hits_b, cnt_b = np.bincount(inv, weights=hit.astype(float)), np.bincount(inv)
+    bs = []
+    for _ in range(n_boot):
+        pick = rng.integers(0, len(ub), len(ub))
+        bs.append(hits_b[pick].sum() / max(1, cnt_b[pick].sum()))
+    ind = dki[j, i]
+    pn = binom_p_greater(k, n, b_near) if b_near is not None else None
+    pd_ = binom_p_greater(k, n, b_dom) if b_dom is not None else None
+    verdict = "too_few" if n < 100 else ("better" if (pn is not None and pn < 0.05 and pd_ is not None and pd_ < 0.05) else "not_better")
+    return {
+        "hit_rate": k / n if n else None, "n": n, "wilson95": wilson(k, n), "block_bootstrap95": [float(np.percentile(bs, 2.5)), float(np.percentile(bs, 97.5))],
+        "random_domain_land": b_dom, "random_near_reports": b_near, "p_vs_domain_land": pd_, "p_vs_near_reports": pn,
+        "inside_dki": {"n": int(ind.sum()), "hit_rate": float(hit[ind].mean()) if ind.any() else None, "random_dki": b_dki,
+                       "p_vs_dki": binom_p_greater(int(hit[ind].sum()), int(ind.sum()), b_dki) if ind.any() and b_dki is not None else None},
+        "verdict": verdict,
+        "rule": "verdict 'better' = p < 0.05 against both fair baselines; 'too_few' = fewer than 100 reports (a 10-point gain cannot be told from chance)",
+    }
+
+
 def report_scores(rep, h, summary, land, dki, area=None):
     """Citizen reports against the model (2026-11-13, ADR 0019). A report counts as hit when the model is at least HIT_M deep on LAND
     (river channels and sea excluded: a river always holds water, so counting it made every report next to a river a hit):
@@ -77,7 +143,7 @@ def report_scores(rep, h, summary, land, dki, area=None):
     x0, y0, dx, nx, ny, tr = grid_of(summary)
     win = land_window_max(h, land)
     inside = land | (h >= 0)  # every cell (only used for the legacy rule's location check)
-    legacy, cell, wnd, depths = [], [], [], []
+    legacy, cell, wnd, depths, ii, jj = [], [], [], [], [], []
     for f in rep:
         g = f.get("geometry") or {}
         if g.get("type") != "Point":
@@ -92,7 +158,7 @@ def report_scores(rep, h, summary, land, dki, area=None):
         legacy.append(float(h[j - 1 : j + 2, i - 1 : i + 2].max()))
         c = float(h[j, i]) if land[j, i] else 0.0
         w = float(win[j, i])
-        cell.append(c); wnd.append(w)
+        cell.append(c); wnd.append(w); ii.append(i); jj.append(j)
         d = (p.get("report_data") or {}).get("flood_depth")
         if isinstance(d, (int, float)) and d > 0:
             depths.append((d / 100.0, c, w))
@@ -112,6 +178,8 @@ def report_scores(rep, h, summary, land, dki, area=None):
         "legacy_window_with_channels": {"hit_rate": float((legacy >= HIT_M).mean())},
         "hit_rate": hw,  # the headline figure from now on: window on land only
     })
+    if area is None:
+        res["fair"] = fair_baselines((np.array(ii), np.array(jj)), wnd >= HIT_M, win, land, dki, dx)
     if depths:
         o, mc, mw = np.array(depths).T
         res.update({"n_with_depth": int(len(o)), "observed_median_m": float(np.median(o)),
@@ -203,6 +271,18 @@ def dki_mask(summary):
     return rf.rasterize([(g, 1)], out_shape=(ny, nx), transform=from_origin(x0, y0, dx, dx), dtype="uint8").astype(bool)
 
 
+def land_of(share_file: Path, m, inside):
+    """Land mask and land weight per cell. Since 2026-11-20 run_event writes hmax as depth above the LAND level and a land share per
+    cell (landshare.u8, x 255): a channel block of a 60/90 m run holding at least half land counts as land for report hits, and every
+    channel block counts its land share for areas. Older runs (no file): channel cells are not land, as before."""
+    ch = (m & 4).astype(bool)
+    if share_file.exists():
+        sh = np.frombuffer(gzip.decompress(share_file.read_bytes()), np.uint8).reshape(m.shape) / 255.0
+        return inside & (~ch | (sh >= 0.5)), np.where(inside, np.where(ch, sh, 1.0), 0.0)
+    land = inside & ~ch
+    return land, land.astype(float)
+
+
 def dki_flooded_km2(h, summary, land):
     from rasterio import features as rf
     from rasterio.transform import from_origin
@@ -214,7 +294,8 @@ def dki_flooded_km2(h, summary, land):
     adm = [f for f in dom["features"] if f["properties"].get("role") == "admin"][0]
     g = shapely.transform(shape(adm["geometry"]), lambda xy: np.column_stack(tr.transform(xy[:, 0], xy[:, 1])))
     inside = rf.rasterize([(g, 1)], out_shape=(ny, nx), transform=from_origin(x0, y0, dx, dx), dtype="uint8").astype(bool)
-    return float(((h > WET_M) & land & inside).sum() * dx * dx / 1e6), float((inside & land).sum() * dx * dx / 1e6)
+    w = land if land.dtype != bool else land.astype(float)
+    return float((w * ((h > WET_M) & inside)).sum() * dx * dx / 1e6), float((w * inside).sum() * dx * dx / 1e6)
 
 
 def genangan_scores(gpkg: Path, ev: str, h, summary, land):
@@ -281,7 +362,7 @@ def main():
         h = np.frombuffer(gzip.decompress((rundir / sp.name.replace("_summary.json", "_hmax.f32.gz")).read_bytes()), np.float32).reshape(s["ny"], s["nx"])
         m = np.frombuffer(gzip.decompress((rundir / sp.name.replace("_summary.json", "_mask.u8.gz")).read_bytes()), np.uint8).reshape(s["ny"], s["nx"])
         inside = (m & 1).astype(bool) & ~(m & 2).astype(bool)  # active, not sea
-        land = inside & ~(m & 4).astype(bool)  # and not a mapped channel
+        land, lw = land_of(rundir / sp.name.replace("_summary.json", "_landshare.u8.gz"), m, inside)
         r = {"run": sp.name.replace("_summary.json", ""), "drain_mm_h": s["drain_mm_h"], "rain": s["rain"], "rain_scale": s.get("rain_scale", 1), "terrain_year": s.get("terrain_year"), "pumps": s.get("pumps"), "pump_m3s": s.get("pump_m3s"), "amc": s.get("amc", 2), "infiltration": s.get("infiltration", True),
              "mean_rain_mm": s["mean_rain_mm"], "flooded_km2": s["flooded_km2_gt015_outside_channels"], "mass_error": s["massError"],
              "reports": report_scores(rep, h, s, land, dki_mask(s))}
@@ -292,7 +373,7 @@ def main():
             r["micro_area_flooded_km2"] = round(float(((h >= 0.15) & land & served).sum() * s["dx"] ** 2 / 1e6), 2)
         if areas:
             r["rw"] = rw_scores(areas, flooded, h, s, land)
-        r["dki_flooded_km2"], r["dki_land_km2"] = dki_flooded_km2(h, s, land)
+        r["dki_flooded_km2"], r["dki_land_km2"] = dki_flooded_km2(h, s, lw)
         if len(sys.argv) > 5 and Path(sys.argv[5]).exists():
             try:
                 r["genangan_dsda"] = genangan_scores(Path(sys.argv[5]), ev, h, s, land)
