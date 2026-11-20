@@ -1,7 +1,7 @@
 // Flood engine v2 on WebGPU: the same steps as solver.ts (CPU reference), one compute pass per step stage, float32.
 // Verified against the CPU solver on real terrain (verification/gpu-parity). Runs in a worker; no GPU readback per step:
 // the time step is computed on the GPU from the deepest water (CFL) and the CPU only reads state between batches.
-import { porosityArrays, type EngineGrid } from "./solver";
+import { S_EDGE, porosityArrays, type EngineGrid } from "./solver";
 
 const WG = 256;
 // WebGPU flag values (spec constants), written out so the module also type-checks where the globals are not declared
@@ -83,6 +83,14 @@ fn face(c: u32, r: u32, q0: f32, qt: f32, dt: f32) -> f32 {
   qn[c] = a;
 }
 
+// free outflow of an edge cell (same as solver.ts): Manning flow down the bed slope towards the edge, where the ground falls towards the edge, capped critical
+fn freeOut(c: u32, k: u32, hc: f32, qc: f32) -> f32 {
+  if ((fl(k) & 1u) == 0u || (fl(c) & 2u) != 0u) { return 0.0; }
+  let s = (z(k) - z(c)) / p.dx;
+  if (s <= ${S_EDGE.toExponential()}) { return 0.0; }
+  return min(qc, hc * pow(hc, 2.0 / 3.0) * sqrt(s) / cell[c].y);
+}
+
 @compute @workgroup_size(${WG}) fn limit(@builtin(global_invocation_id) gid: vec3<u32>) {
   let c = gid.x;
   if (c >= p.nx * p.ny) { return; }
@@ -92,10 +100,10 @@ fn face(c: u32, r: u32, q0: f32, qt: f32, dt: f32) -> f32 {
   if (hc > p.hMin) {
     let qc = hc * sqrt(G * hc);
     let oN = (f & 4u) != 0u; let oS = (f & 8u) != 0u; let oW = (f & 16u) != 0u; let oE = (f & 32u) != 0u;
-    if (oE && !oW) { b += min(qc, max(0.0, qn[c - 1u].x)); }
-    if (oW && !oE) { b += min(qc, max(0.0, -qn[c].x)); }
-    if (oS && !oN) { b += min(qc, max(0.0, qn[c - p.nx].y)); }
-    if (oN && !oS) { b += min(qc, max(0.0, -qn[c].y)); }
+    if (oE && !oW) { b += max(min(qc, max(0.0, qn[c - 1u].x)), freeOut(c, c - 1u, hc, qc)); }
+    if (oW && !oE) { b += max(min(qc, max(0.0, -qn[c].x)), freeOut(c, c + 1u, hc, qc)); }
+    if (oS && !oN) { b += max(min(qc, max(0.0, qn[c - p.nx].y)), freeOut(c, c - p.nx, hc, qc)); }
+    if (oN && !oS) { b += max(min(qc, max(0.0, -qn[c].y)), freeOut(c, c + p.nx, hc, qc)); }
   }
   let ph = phi(c); let ps = psi(c);
   b *= p.dx * ph;

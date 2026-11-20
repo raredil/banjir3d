@@ -2,7 +2,7 @@
 import type { GeoJSONSource, MapMouseEvent } from "maplibre-gl";
 import { lang, t, type Key } from "../i18n";
 import type { MapPage } from "../map";
-import { buildDualRun, buildFineRun, buildRun, chooseCompute, inflowSpread, withFineDrawing, loadPack, packCellOf, CHANNEL, type Pack, type RunGrid } from "../engine/pack";
+import { buildDualRun, buildFineRun, buildRun, chooseCompute, inflowSpread, withFineDrawing, loadPack, packCellOf, landSurface, CHANNEL, type Pack, type RunGrid } from "../engine/pack";
 import { buildingMask } from "./buildings";
 import { DT_S, cnForAmc, inflowsFor, inflowsForSpatial, type Inflow } from "../engine/hydrology";
 import { cumAtSteps, meanHyetograph, pointAt, zoneGrid, type EventRain } from "../engine/event-rain";
@@ -60,7 +60,7 @@ const subName = (p: Pack) => String((p.header.subsidence as { label?: string } |
 const skillOf = (id: string) => (skill.events as { id: string; n?: number; hit: number; random: number }[]).find((e) => e.id === id);
 const eventIds = Object.keys(EVENTS).map((f) => /([\d-]+)_imerg\.json$/.exec(f)![1]).sort();
 const loadEvent = (id: string) => EVENTS[`../../../data/events/${id}_imerg.json`]();
-type Result = { run: RunGrid; grid: Grid; frames: Uint16Array[]; times: number[]; area: number[]; max: Float32Array | null; inflows: Inflow[]; hy: Hyetograph; scenario: Record<string, unknown>; event: EventRain | null; zone?: Uint16Array; count: Float32Array; cells?: ReturnType<typeof exposureCells>; totals?: Record<string, number>; mass?: number; wall?: number; gpu?: boolean };
+type Result = { run: RunGrid; grid: Grid; frames: Uint16Array[]; times: number[]; area: number[]; max: Float32Array | null; inflows: Inflow[]; hy: Hyetograph; scenario: Record<string, unknown>; event: EventRain | null; zone?: Uint16Array; count: Float32Array; cells?: ReturnType<typeof exposureCells>; landOff?: Float32Array; totals?: Record<string, number>; mass?: number; wall?: number; gpu?: boolean };
 
 export function mountSim(page: MapPage, o: { packUrl: string; regionBbox: number[]; releaseTag: string | null }) {
   const { map } = page;
@@ -292,11 +292,13 @@ export function mountSim(page: MapPage, o: { packUrl: string; regionBbox: number
   const kpi = (k1: string, v: string, unit: string, sub: string) => `<div class="kpi card" title="${esc(sub)}"><div class="k">${esc(k1)}</div><div class="v">${v}<small>${unit}</small></div></div>`;
   // depth range filter (legend card): only depths inside [fMin, fMax] are drawn, and their area is measured
   let fMin = 0, fMax = Infinity;
+  // depth that counts as flood: above the land level (only differs in channel blocks of coarse runs)
+  const over = (r: Result, d: Float32Array) => (r.landOff ? Float32Array.from(d, (v, c) => Math.max(0, v - r.landOff![c])) : d);
   const render = () => {
     if (!res || !layer) return;
-    const d = depthNow();
+    const d0 = depthNow(), d = d0 ? over(res, d0) : d0;
     const filtered = d && (fMin > 0 || fMax < Infinity);
-    layer.setDepth(filtered ? d!.map((v) => (v >= fMin && v <= fMax ? v : 0)) : d);
+    layer.setDepth(filtered ? d0!.map((v, c) => (d![c] >= fMin && d![c] <= fMax ? v : 0)) : d0);
     if (d) {
       let n = 0;
       for (let c = 0; c < d.length; c++) if (res.count[c] && d[c] > (fMin > 0 ? fMin : FLOOD_M) && d[c] <= fMax) n += res.count[c]; // no lower bound set: same 0.15 m as the KPI
@@ -442,7 +444,7 @@ export function mountSim(page: MapPage, o: { packUrl: string; regionBbox: number
     const x = b.dataset.x;
     // dual-grid runs export on the fine cells (the drawn result); f = 1: no further refinement
     const fr = res.grid.fine && (x === "tif" || x === "ctif" || x === "html") ? fineResult(res.grid, d) : null;
-    if (x === "tif") save(`${name}_depth_m.tif`, fr ? depthTiff(fr.grid, fr.depth) : depthTiff(res.grid, d), "image/tiff");
+    if (x === "tif") save(`${name}_depth_m.tif`, fr ? depthTiff(fr.grid, fr.depth) : depthTiff(res.grid, over(res, d)), "image/tiff"); // depth above land (not above a channel bed)
     else if (x === "ctif") save(`${name}_colour.tif`, fr ? colourTiff(fr.grid, fr.depth, 1) : colourTiff(res.grid, d), "image/tiff");
     else if (x === "html") save(`${name}.html`, htmlMap(title, await (fr ? mercatorPng(fr.grid, fr.depth, 2400, 1) : mercatorPng(res.grid, d)), sourceLines(), t("legend")), "text/html");
     else if (x === "png") save(`${name}.png`, await mapPng(map, title, sourceLines()[0], sourceLines().slice(1), t("legend")), "image/png");
@@ -462,7 +464,7 @@ export function mountSim(page: MapPage, o: { packUrl: string; regionBbox: number
   let conclText = "";
   const conclude = () => {
     if (!res?.max || !pack) return;
-    const r = res, g = r.run, mx = r.max!, a = g.dx * g.dx / 1e6;
+    const r = res, g = r.run, mx = over(r, r.max!), a = g.dx * g.dx / 1e6;
     let land = 0, wet = 0, sum = 0, deep = -1, dMax = 0;
     const cls = [0, 0, 0, 0], bounds = [0.5, 1, 2];
     for (let c = 0; c < mx.length; c++) {
@@ -587,7 +589,10 @@ export function mountSim(page: MapPage, o: { packUrl: string; regionBbox: number
     const amc = amcOf(), cnOf = (v: number) => cnForAmc(v, amc);
     if (amc !== 2) run = { ...run, cn: run.cn.map(cnOf) };
     const N = run.nx * run.ny, count = new Float32Array(N), mask = new Uint8Array(N);
-    for (let c = 0; c < N; c++) { mask[c] = +(run.active[c] && !run.sea[c] && !run.building?.[c] && (!run.phi || run.phi[c] > 0)); count[c] = mask[c] && !run.channel[c] ? (run.phi ? run.phi[c] : 1) : 0; }
+    for (let c = 0; c < N; c++) { mask[c] = +(run.active[c] && !run.sea[c] && !run.building?.[c] && (!run.phi || run.phi[c] > 0)); count[c] = !mask[c] ? 0 : run.channel[c] ? (run.landShare?.[c] ?? 0) : run.phi ? run.phi[c] : 1; }
+    // channel blocks of coarse runs: their land part counts with the water above the land level (review 2026-11-20, M-05/MT-03)
+    const land = landSurface(run), landOff = new Float32Array(N);
+    for (let c = 0; c < N; c++) if (run.channel[c]) landOff[c] = land[c] - run.z[c];
     const hours = num("s-hours"), steps = Math.ceil((hours * 3600) / DT_S), up = $<HTMLInputElement>("s-up").checked;
     // observed event: rain zone per cell, area-mean hyetograph for the chart and KPIs, each upstream catchment with the rain of its own points
     const zone = ev ? zoneGrid(ev, run) : undefined, hy = ev ? meanHyetograph(ev, zone!, mask) : hyIn!;
@@ -602,7 +607,7 @@ export function mountSim(page: MapPage, o: { packUrl: string; regionBbox: number
       raw = inflowsFor(p.streams, run.isIn, cum, steps, cnOf, (hy.mm.length * hy.blockSeconds) / 3600); // point rain -> catchment mean (areal reduction)
     }
     const inflows = raw.map((f) => ({ ...f, cell: run.cellAt(f.x, f.y) })).filter((f) => f.cell >= 0);
-    const grid: Grid = { nx: run.nx, ny: run.ny, dx: run.dx, zone: run.utm.zone, x0: run.utm.x0, y0: run.utm.y0, z: Float32Array.from(run.z), mask, channel: run.channel, fine: run.fine };
+    const grid: Grid = { nx: run.nx, ny: run.ny, dx: run.dx, zone: run.utm.zone, x0: run.utm.x0, y0: run.utm.y0, z: Float32Array.from(run.z), mask, channel: run.channel, land, fine: run.fine };
     const scenario = {
       area: area === "box" ? { box: bbox } : "region", rainMode: mode(), ...(mode() === "design" ? { designTotalMm: num("s-r24"), designHours: num("s-dur") } : {}),
       components: { upstream: up, infiltration: infilOn(), soilWetness: ["dry (AMC I)", "average (AMC II)", "wet (AMC III)"][amc - 1], subsidence: subOn() && !!p.sub, polderPumps: !!run.pump && pumpsOn(), microDrains: !!run.mdr && mdrOn(), extraDrainMmH: num("s-drain") }, rainMm: +totalMm(hy).toFixed(1), rainHours: (hy.mm.length * hy.blockSeconds) / 3600, upstreamRain: up, seaLevel: num("s-sea"), hours, cellM: run.fine ? run.fine.dx : run.dx,
@@ -612,7 +617,7 @@ export function mountSim(page: MapPage, o: { packUrl: string; regionBbox: number
       ...(run.pump ? { polderPumps: pumpsOn(), pumpM3s: Math.round(run.pump.reduce((a, v, c) => a + (run.sea[c] ? 0 : v * (run.phi ? run.phi[c] : 1)), 0) * run.dx * run.dx) } : {}),
       ...(ev ? { event: ev.id, eventStartUtc: ev.start_utc, rainSource: ev.source, rainPoints: ev.mm.length } : {}),
     };
-    res = { run, grid, frames: [], times: [], area: [], max: null, inflows, hy, scenario, event: ev, zone, count };
+    res = { run, grid, frames: [], times: [], area: [], max: null, inflows, hy, scenario, event: ev, zone, count, landOff };
     const mine = res;
     ensureExposure().then((x) => { expoNow = x; if (res !== mine) return; if (x) res.cells = exposureCells(x, run, count); $("s-expo-box").hidden = false; render(); conclude(); });
     layer = new FloodLayer(grid); addLayer();
@@ -672,7 +677,7 @@ export function mountSim(page: MapPage, o: { packUrl: string; regionBbox: number
     for (const f of inflows) { const sp = inflowSpread(run, f.cell); sp.cells.forEach((c, m) => { inCells.push(c); inQ.push(sp.w[m] === 1 ? f.q : f.q.map((v) => v * sp.w[m])); }); }
     const msg: RunMsg = {
       type: "run", grid: { nx: run.nx, ny: run.ny, dx: run.dx, z: run.z, n: run.n, cn: infilOn() ? run.cn : undefined, active: run.active, sea: run.sea, drain: drainOf(run, pumpsOn(), num("s-drain"), mdrOn()), zone, ...(run.h0 ? { h0: run.h0 } : {}), ...(run.phi ? { phi: run.phi, psiX: run.psiX, psiY: run.psiY, rainW: run.rainW } : {}) }, zoneMm: ev?.mm, seaLevel: num("s-sea"), hours, rain: hy, frameS,
-      inflowCells: inCells, inflowQ: inQ, inflowDt: DT_S, floodM: FLOOD_M, count, preferGpu: gpuAvailable,
+      inflowCells: inCells, inflowQ: inQ, inflowDt: DT_S, floodM: FLOOD_M, count, landOff, preferGpu: gpuAvailable,
     };
     worker.postMessage(msg);
   };

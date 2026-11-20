@@ -26,8 +26,21 @@ describe("flood engine v2 (CPU reference)", () => {
     run(e, 300);
     expect(Math.abs(e.massError())).toBeLessThan(1e-9);
   });
+  it("lets rain on an edge cell leave (free outflow, review 2026-11-20 M-03)", () => {
+    // tilted plane under steady rain, outflow east: kinematic depth h = (i x n / sqrt S)^0.6 also at the last cell
+    const nx = 50, dx = 30, S = 0.01, nM = 0.03, iMmH = 50;
+    const z = Float64Array.from({ length: nx }, (_, i) => (i === 0 ? 100 : (nx - i) * dx * S));
+    const e = new FloodEngine({ nx, ny: 1, dx, z, n: new Float64Array(nx).fill(nM), active: new Uint8Array(nx).fill(1) });
+    e.rate = iMmH;
+    run(e, 4 * 3600);
+    const kin = (c: number) => ((iMmH / 3.6e6) * c * dx * nM / Math.sqrt(S)) ** 0.6;
+    expect(e.h[49]).toBeLessThan(1.3 * kin(50)); // was 0.209 m (all rain kept) against 0.047 m
+    expect(e.h[40] / kin(40)).toBeGreaterThan(0.7);
+    expect(Math.abs(e.massError())).toBeLessThan(1e-9);
+  });
   it("keeps a lake at rest", () => {
-    const g = grid(20, 20, 10, (i) => 0.1 * i);
+    // west column is a wall: an open edge where the ground falls outward drains freely (M-03), which is not what this test checks
+    const g = grid(20, 20, 10, (i) => (i === 0 ? 5 : 0.1 * i));
     const e = new FloodEngine(g);
     for (let c = 0; c < 400; c++) e.h[c] = Math.max(0, 1.5 - g.z[c]);
     const h0 = Float64Array.from(e.h);

@@ -3,7 +3,7 @@
 // there (landGround in pack.ts, interpolated bilinearly: a river, canal or drain cell takes the level of its banks, ADR 0018):
 // water inside a channel up to its banks is the river and is not drawn, water above the banks is, so rivers no longer show as a
 // staircase of 30 m squares, and water edges follow the ground smoothly. No water is invented where all surrounding cells are
-// dry. This is the water-surface downscaling used for SFINCS output (Leijnse et al. 2021; HydroMT-SFINCS downscale_floodmap),
+// dry, and none on a cell the model keeps dry (2026-11-20). This is the water-surface downscaling used for SFINCS output (Leijnse et al. 2021; HydroMT-SFINCS downscale_floodmap),
 // done here on the model's own terrain grid. Fine cells (10-1 m) use the same rule and leave building footprints dry, so the
 // same flood looks the same at every cell size. Colours: depth classes of BLUEPRINT §8.
 import { MercatorCoordinate, type CustomLayerInterface, type CustomRenderMethodInput, type Map as MlMap } from "maplibre-gl";
@@ -12,7 +12,7 @@ import { bilinearAt, landGround, type FineGrid } from "../engine/pack";
 
 export const CLASSES = [0.05, 0.15, 0.5, 1.0, 2.0]; // m, lower bounds
 export const CLASS_COLORS = ["#c6dbef", "#9ecae1", "#4292c6", "#2166ac", "#0b3d7a", "#08214a"]; // below first = transparent
-export type FloodGeom = { nx: number; ny: number; dx: number; zone: number; x0: number; y0: number; z: Float32Array; mask: Uint8Array; channel?: Uint8Array; fine?: FineGrid }; // mask 1 = draw
+export type FloodGeom = { nx: number; ny: number; dx: number; zone: number; x0: number; y0: number; z: Float32Array; mask: Uint8Array; channel?: Uint8Array; land?: Float32Array; fine?: FineGrid }; // mask 1 = draw; land: land surface (landSurface in pack.ts)
 // fine (10-1 m cells): the water surface of the compute cells minus the land surface (landGround, bilinear, the same at every
 // cell size), no water on building footprints (drawn near 2 m, fine.draw). Only the compute-cell depth changes per frame.
 
@@ -43,6 +43,9 @@ void main() {
     if (d > u_min) { ws += w * (z + d); wt += w; }
   }
   if (wt < 1e-4) discard;
+  // no water on a cell the model keeps dry (review 2026-11-20, MT-04): smoothing only shapes water inside wet cells
+  ivec2 me = clamp(ivec2(floor(v_uv * u_n)), ivec2(0), ivec2(u_n) - 1);
+  if (u_fine == 0 && texelFetch(u_z, me, 0).r + texelFetch(u_d, me, 0).r - texelFetch(u_z, me, 0).g <= u_min) discard;
   float h;
   if (u_fine == 1) {
     ivec2 nb = textureSize(u_b, 0);
@@ -110,7 +113,7 @@ export class FloodLayer implements CustomLayerInterface {
       return t;
     };
     // model ground (for the water surface) and the land surface (channels at bank level) of the run grid
-    const zc = new Float32Array(nx * ny * 2), lg = landGround(nx, ny, this.g.z, this.g.channel ?? new Uint8Array(nx * ny));
+    const zc = new Float32Array(nx * ny * 2), lg = this.g.land ?? landGround(nx, ny, this.g.z, this.g.channel ?? new Uint8Array(nx * ny));
     for (let c = 0; c < nx * ny; c++) { zc[2 * c] = this.g.z[c]; zc[2 * c + 1] = lg[c]; }
     this.tex.z = mk(zc, nx, ny, "rg32f");
     this.tex.d = mk(this.pending ?? new Float32Array(nx * ny));
@@ -163,9 +166,9 @@ export class FloodLayer implements CustomLayerInterface {
 }
 
 /** The same depth rule on the CPU at any resolution (for PNG/GeoTIFF/HTML exports): returns depth per output pixel. */
-export function downscale(g: { nx: number; ny: number; channel?: Uint8Array }, z: Float32Array, d: Float32Array, mask: Uint8Array, f: number): Float32Array {
+export function downscale(g: { nx: number; ny: number; channel?: Uint8Array; land?: Float32Array }, z: Float32Array, d: Float32Array, mask: Uint8Array, f: number, minM = 0.01): Float32Array {
   const W = g.nx * f, H = g.ny * f, out = new Float32Array(W * H);
-  const lg = landGround(g.nx, g.ny, z, g.channel ?? new Uint8Array(g.nx * g.ny));
+  const lg = g.land ?? landGround(g.nx, g.ny, z, g.channel ?? new Uint8Array(g.nx * g.ny));
   for (let Y = 0; Y < H; Y++) for (let X = 0; X < W; X++) {
     const px = (X + 0.5) / f - 0.5, py = (Y + 0.5) / f - 0.5;
     const bx = Math.floor(px), by = Math.floor(py), fx = px - bx, fy = py - by;
@@ -176,7 +179,10 @@ export function downscale(g: { nx: number; ny: number; channel?: Uint8Array }, z
       const dd = mask[c] ? d[c] : 0;
       if (dd > 0.01) { ws += w * (z[c] + dd); wt += w; }
     }
-    out[Y * W + X] = wt < 1e-4 ? 0 : Math.max(0, ws / wt - bilinearAt(g.nx, g.ny, lg, (X + 0.5) / f, (Y + 0.5) / f));
+    // no water drawn on a cell the model keeps dry (review 2026-11-20, MT-04): the smoothing only shapes water inside wet cells
+    const own = Math.min(g.ny - 1, Math.floor(Y / f)) * g.nx + Math.min(g.nx - 1, Math.floor(X / f));
+    const ownWet = mask[own] && z[own] + d[own] - lg[own] > minM;
+    out[Y * W + X] = wt < 1e-4 || !ownWet ? 0 : Math.max(0, ws / wt - bilinearAt(g.nx, g.ny, lg, (X + 0.5) / f, (Y + 0.5) / f));
   }
   return out;
 }

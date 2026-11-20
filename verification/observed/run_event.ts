@@ -8,10 +8,11 @@
 // --upstream off: no river inflow from the catchments upstream of the run area (local rain only; source attribution runs).
 // --pumps: polder pump sink from the engine pack (Jakarta Satu pump capacities per polder), on by default when the pack has it.
 // --micro: South Jakarta micro-drain sink from the engine pack (pipeline/micro_drains.py), off by default.
+// Writes hmax.f32 as depth above the land level (channel blocks: above their land part) and landshare.u8 (see below).
 // --year: terrain year for the land subsidence shift (auto = event start; none = terrain as measured). --scale: rain multiplier (1 = reanalysis as it is). Writes hmax.f32 (row-major, run grid), mask.u8 and summary.json.
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { gunzipSync } from "node:zlib";
-import { buildRun, parsePack } from "../../web/src/engine/pack";
+import { buildRun, landSurface, parsePack } from "../../web/src/engine/pack";
 import { FloodEngine } from "../../web/src/engine/solver";
 import { DT_S, cnForAmc, inflowsForSpatial } from "../../web/src/engine/hydrology";
 import { fromUtm } from "../../web/src/util";
@@ -80,10 +81,15 @@ while (e.t < hours * 3600) {
   e.step(); nsteps++;
   if (nsteps % 4000 === 0) console.log(`t=${(e.t / 3600).toFixed(2)} h  dt=${e.dtNow().toFixed(2)}  wall=${((Date.now() - w0) / 1000).toFixed(0)} s`);
 }
-writeFileSync(`${out}/hmax.f32`, Buffer.from(Float32Array.from(e.hMax).buffer));
+// depth above the LAND level (review 2026-11-20): in a channel block of a coarse run the water above its land part, not above the
+// channel bed; landshare.u8 = land share of each cell x 255 (1 = no channel), so scores and areas count riverside land too
+const land = landSurface(run), share = run.landShare;
+const hLand = Float32Array.from(e.hMax, (v, c) => (run.channel[c] ? Math.max(0, run.z[c] + v - land[c]) : v));
+writeFileSync(`${out}/hmax.f32`, Buffer.from(hLand.buffer));
+writeFileSync(`${out}/landshare.u8`, Uint8Array.from({ length: N }, (_, c) => Math.round(255 * (run.channel[c] ? (share?.[c] ?? 0) : 1))));
 writeFileSync(`${out}/mask.u8`, Uint8Array.from({ length: N }, (_, c) => run.active[c] | (run.sea[c] << 1) | (run.channel[c] << 2) | ((run.mdr?.[c] ?? 0) > 0 ? 8 : 0))); // bit0 active, bit1 sea, bit2 channel, bit3 served by a micro drain (whether on or off)
 let wet = 0, cnt = 0, rainSum = 0;
-for (let c = 0; c < N; c++) if (run.active[c] && !run.sea[c]) { cnt++; rainSum += cumOf[zone[c]][steps]; if (!run.channel[c] && e.hMax[c] > 0.15) wet++; }
+for (let c = 0; c < N; c++) if (run.active[c] && !run.sea[c]) { cnt++; rainSum += cumOf[zone[c]][steps]; if (hLand[c] > 0.15) wet += run.channel[c] ? (share?.[c] ?? 0) : 1; }
 const summary = {
   pack: pack.header.created, rain: rainFile.split("/").pop(), start_utc: startUtc, hours, k, dx: run.dx, nx: run.nx, ny: run.ny, drain_mm_h: drainMmH, upstream: upOn, amc, infiltration: infilOn, pumps: pumpsOn && !!run.pump, micro: microOn && !!run.mdr, micro_m3s: run.mdr && microOn ? Math.round(run.mdr.reduce((a, v, c) => a + (run.sea[c] || run.channel[c] ? 0 : v), 0) * run.dx * run.dx * 10) / 10 : 0, pump_m3s: run.pump ? Math.round(run.pump.reduce((a, v, c) => a + (run.sea[c] ? 0 : v), 0) * run.dx * run.dx * 10) / 10 : 0, rain_scale: scale, terrain_year: terrainYear ?? null, terrain_epoch: pack.sub ? pack.subEpoch : null,
   steps: nsteps, wall_s: (Date.now() - w0) / 1000, massError: e.massError(), totals: e.totals, built_share_known: !!pack.built,

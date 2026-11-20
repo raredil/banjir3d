@@ -77,6 +77,8 @@ export type RunGrid = {
   h0: Float64Array | null; // initial depth (m), mean over the block (channel cells only in a block holding a channel)
   pump: Float64Array | null; // polder pump sink (m/s), mean over the block, so a coarse cell removes the same volume
   mdr: Float64Array | null; // micro-drain sink (m/s), spread like the pump sink
+  // coarse runs (buildRun): mean ground of the land (non-channel) part of each block and its share of the block (1 without a channel)
+  landZ?: Float64Array; landShare?: Float32Array;
   // dual-grid fine runs (buildDualRun): building porosity of each compute cell and the fine grid the result is shown on
   phi?: Float32Array; psiX?: Float32Array; psiY?: Float32Array; rainW?: Float32Array;
   fine?: FineGrid;
@@ -89,6 +91,42 @@ export type RunGrid = {
 /** Terrain lowering (m) of one pack cell from the terrain epoch to `year` (0 without subsidence data or year). */
 export const sinkM = (p: Pack, c: number, year: number | undefined): number =>
   p.sub && year ? (p.sub[c] / 1000) * (year - p.subEpoch) : 0;
+
+/** Land surface per run cell for counting and drawing (review 2026-11-20): the ground of the land part of a channel block where it
+ *  has one (coarse runs), else the bank level spread into channel cells (landGround). Land cells: their own ground. Depth that counts
+ *  as flood = ground + depth - landSurface (equal to the depth on land cells). */
+export function landSurface(g: Pick<RunGrid, "nx" | "ny" | "z" | "channel" | "landZ" | "landShare">): Float32Array {
+  const N = g.nx * g.ny, z = Float64Array.from(g.z as ArrayLike<number>), ch = Uint8Array.from(g.channel);
+  if (g.landZ && g.landShare) for (let c = 0; c < N; c++) if (ch[c] && g.landShare[c] > 0) { z[c] = g.landZ[c]; ch[c] = 0; }
+  return landGround(g.nx, g.ny, z, ch);
+}
+/** Depth above the land surface (what counts as flood) for run cell c with depth d. */
+export const landDepth = (z: ArrayLike<number>, land: ArrayLike<number>, c: number, d: number) => Math.max(0, z[c] + d - land[c]);
+
+/** River entry point -> run cell (review 2026-11-20, M-02): the nearest open CHANNEL cell within ENTRY_SNAP_M of the point (the GLO-90
+ *  stream network and the mapped rivers do not line up exactly; injecting hundreds of m3/s on a land cell made deep ponds on land),
+ *  else the lowest open cell within `r0` cells. */
+export const ENTRY_SNAP_M = 600;
+function snapEntry(nx: number, ny: number, dx: number, c0: number, r0: number, ok: (c: number) => boolean, channel: ArrayLike<number>, z: ArrayLike<number>): number {
+  if (c0 < 0) return -1;
+  const I = c0 % nx, J = (c0 - I) / nx, R = Math.max(r0, Math.ceil(ENTRY_SNAP_M / dx));
+  let best = -1, bd = Infinity;
+  for (let dj = -R; dj <= R; dj++) for (let di = -R; di <= R; di++) {
+    const a = I + di, b = J + dj;
+    if (a < 0 || b < 0 || a >= nx || b >= ny) continue;
+    const c = b * nx + a, d = di * di + dj * dj;
+    if (!channel[c] || !ok(c) || d > R * R) continue;
+    if (d < bd || (d === bd && z[c] < z[best])) { best = c; bd = d; }
+  }
+  if (best >= 0) return best;
+  for (let dj = -r0; dj <= r0; dj++) for (let di = -r0; di <= r0; di++) {
+    const a = I + di, b = J + dj;
+    if (a < 0 || b < 0 || a >= nx || b >= ny) continue;
+    const c = b * nx + a;
+    if (ok(c) && (best < 0 || z[c] < z[best])) best = c;
+  }
+  return best;
+}
 
 /** Run grid for the whole region (domain polygon) or for a lon/lat box, aggregated by k x k pack cells (k = 1: 30 m).
  *  `year` (decimal) shifts the terrain by the mapped subsidence rate from the terrain epoch to that year. */
@@ -105,8 +143,9 @@ export function buildRun(p: Pack, box: number[] | null, k: number, year?: number
   const z = new Float64Array(N), n = new Float64Array(N), cn = new Float64Array(N);
   const active = new Uint8Array(N), sea = new Uint8Array(N), channel = new Uint8Array(N), built = new Float64Array(N);
   const h0 = p.h0 ? new Float64Array(N) : null, pump = p.pump ? new Float64Array(N) : null, mdr = p.mdr ? new Float64Array(N) : null;
+  const landZ = new Float64Array(N), landShare = new Float32Array(N);
   for (let J = 0; J < ny; J++) for (let I = 0; I < nx; I++) {
-    let cnt = 0, inDom = 0, nSea = 0, nCh = 0, zs = 0, zch = 0, ns = 0, nch = 0, cs = 0, bs = 0, hs = 0, hch = 0, ps = 0, ms = 0;
+    let cnt = 0, inDom = 0, nSea = 0, nCh = 0, zs = 0, zch = 0, ns = 0, nch = 0, cs = 0, bs = 0, hs = 0, ps = 0, ms = 0;
     for (let dj = 0; dj < k; dj++) for (let di = 0; di < k; di++) {
       const i = i0 + I * k + di, j = j0 + J * k + dj;
       if (i >= i1 || j >= j1) continue;
@@ -116,14 +155,18 @@ export function buildRun(p: Pack, box: number[] | null, k: number, year?: number
       cnt++; zs += zc; hs += hc; ps += p.pump ? p.pump[c] : 0; ms += p.mdr ? p.mdr[c] : 0; ns += p.n[c]; cs += p.cn[c]; bs += p.built ? p.built[c] / 100 : 0;
       if (box || f & DOMAIN) inDom++;
       if (f & SEA) nSea++;
-      if (f & CHANNEL) { nCh++; zch += zc; hch += hc; nch += p.n[c]; }
+      if (f & CHANNEL) { nCh++; zch += zc; nch += p.n[c]; }
     }
     const C = J * nx + I;
     if (!cnt) continue;
     // a block holding a mapped channel keeps the channel level and roughness so the river stays connected and conveys the
-    // same discharge at coarse resolution
-    z[C] = nCh ? zch / nCh : zs / cnt; if (h0) h0[C] = nCh ? hch / nCh : hs / cnt; n[C] = nCh ? nch / nCh : ns / cnt; cn[C] = cs / cnt; built[C] = bs / cnt; if (pump) pump[C] = ps / cnt; if (mdr) mdr[C] = ms / cnt;
+    // same discharge at coarse resolution. Its land part keeps its own level (landZ) and share (landShare): flooded area, exposure
+    // and the map count water above THAT level, so the riverside land inside a 60/90 m channel block is not lost (review
+    // 2026-11-20, M-04/M-05/MT-02/MT-03). Start water is the block mean (same volume as at 30 m; it was the channel-cell mean,
+    // which put 2.3 times the 30 m volume into 90 m blocks).
+    z[C] = nCh ? zch / nCh : zs / cnt; if (h0) h0[C] = hs / cnt; n[C] = nCh ? nch / nCh : ns / cnt; cn[C] = cs / cnt; built[C] = bs / cnt; if (pump) pump[C] = ps / cnt; if (mdr) mdr[C] = ms / cnt;
     active[C] = +(inDom * 2 > cnt); sea[C] = +(nSea * 2 > cnt); channel[C] = +(nCh > 0);
+    landShare[C] = (cnt - nCh) / cnt; landZ[C] = nCh < cnt ? (zs - zch) / (cnt - nCh) : z[C];
   }
   const dx = p.dx * k, x0 = p.ox + i0 * p.dx, y0 = p.oy - j0 * p.dx;
   const ll = (x: number, y: number) => { const g = fromUtm(x, y, p.zone, true); return [g.lon, g.lat] as [number, number]; };
@@ -132,23 +175,11 @@ export function buildRun(p: Pack, box: number[] | null, k: number, year?: number
     return I >= 0 && J >= 0 && I < nx && J < ny ? J * nx + I : -1;
   };
   return {
-    nx, ny, dx, k, i0, j0, r: 1, building: null, z, n, cn, active, sea, channel, built, h0, pump, mdr,
+    nx, ny, dx, k, i0, j0, r: 1, building: null, z, n, cn, active, sea, channel, built, h0, pump, mdr, landZ, landShare,
     corners: [ll(x0, y0), ll(x0 + nx * dx, y0), ll(x0 + nx * dx, y0 - ny * dx), ll(x0, y0 - ny * dx)],
     utm: { zone: p.zone, x0, y0 },
     isIn: (x, y) => { const c = cell(x, y); return c >= 0 && active[c] === 1 && !sea[c]; },
-    cellAt: (x, y) => {
-      const c0 = cell(x, y);
-      if (c0 < 0) return -1;
-      const I = c0 % nx, J = (c0 - I) / nx;
-      let best = -1;
-      for (let dj = -1; dj <= 1; dj++) for (let di = -1; di <= 1; di++) {
-        const a = I + di, b = J + dj;
-        if (a < 0 || b < 0 || a >= nx || b >= ny) continue;
-        const c = b * nx + a;
-        if (active[c] && !sea[c] && (best < 0 || z[c] < z[best])) best = c;
-      }
-      return best;
-    },
+    cellAt: (x, y) => snapEntry(nx, ny, dx, cell(x, y), 1, (c) => !!(active[c] && !sea[c]), channel, z),
   };
 }
 
@@ -289,19 +320,7 @@ export function buildFineRun(p: Pack, box: number[], r: number, year?: number, b
     fine: { r, s: 1, nx, ny, dx, building: building ?? new Uint8Array(N), base: { nx: pnx, ny: pny, z: Float32Array.from(base.z), channel: base.channel } },
     isIn: (x, y) => { const c = cell(x, y); return c >= 0 && active[c] === 1 && !sea[c]; },
     // river inflow points are 30 m stream cells: search one pack cell around the point for the lowest open run cell
-    cellAt: (x, y) => {
-      const c0 = cell(x, y);
-      if (c0 < 0) return -1;
-      const I = c0 % nx, J = (c0 - I) / nx;
-      let best = -1;
-      for (let dj = -r; dj <= r; dj++) for (let di = -r; di <= r; di++) {
-        const a = I + di, b = J + dj;
-        if (a < 0 || b < 0 || a >= nx || b >= ny) continue;
-        const c = b * nx + a;
-        if (active[c] && !sea[c] && !building?.[c] && (best < 0 || z[c] < z[best])) best = c;
-      }
-      return best;
-    },
+    cellAt: (x, y) => snapEntry(nx, ny, dx, cell(x, y), r, (c) => !!(active[c] && !sea[c] && !building?.[c]), channel, z),
   };
 }
 
@@ -400,19 +419,7 @@ export function buildDualRun(p: Pack, box: number[], r: number, rc: number, year
     fine: { r, s, nx: nfx, ny: nfy, dx: p.dx / r, building, base: { nx: pnx, ny: pny, z: bz, channel: bch } },
     corners: base.corners, utm: { zone: p.zone, x0, y0 },
     isIn: (x, y) => { const c = cell(x, y); return c >= 0 && active[c] === 1 && !sea[c]; },
-    cellAt: (x, y) => {
-      const c0 = cell(x, y);
-      if (c0 < 0) return -1;
-      const I = c0 % nx, J = (c0 - I) / nx;
-      let best = -1;
-      for (let dj = -rc; dj <= rc; dj++) for (let di = -rc; di <= rc; di++) {
-        const a = I + di, b = J + dj;
-        if (a < 0 || b < 0 || a >= nx || b >= ny) continue;
-        const c = b * nx + a;
-        if (active[c] && !sea[c] && phi[c] >= PHI_DONOR && (best < 0 || z[c] < z[best])) best = c;
-      }
-      return best;
-    },
+    cellAt: (x, y) => snapEntry(nx, ny, dx, cell(x, y), rc, (c) => !!(active[c] && !sea[c] && phi[c] >= PHI_DONOR), channel, z),
   };
 }
 

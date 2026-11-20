@@ -271,6 +271,18 @@ def dki_mask(summary):
     return rf.rasterize([(g, 1)], out_shape=(ny, nx), transform=from_origin(x0, y0, dx, dx), dtype="uint8").astype(bool)
 
 
+def land_of(share_file: Path, m, inside):
+    """Land mask and land weight per cell. Since 2026-11-20 run_event writes hmax as depth above the LAND level and a land share per
+    cell (landshare.u8, x 255): a channel block of a 60/90 m run holding at least half land counts as land for report hits, and every
+    channel block counts its land share for areas. Older runs (no file): channel cells are not land, as before."""
+    ch = (m & 4).astype(bool)
+    if share_file.exists():
+        sh = np.frombuffer(gzip.decompress(share_file.read_bytes()), np.uint8).reshape(m.shape) / 255.0
+        return inside & (~ch | (sh >= 0.5)), np.where(inside, np.where(ch, sh, 1.0), 0.0)
+    land = inside & ~ch
+    return land, land.astype(float)
+
+
 def dki_flooded_km2(h, summary, land):
     from rasterio import features as rf
     from rasterio.transform import from_origin
@@ -282,7 +294,8 @@ def dki_flooded_km2(h, summary, land):
     adm = [f for f in dom["features"] if f["properties"].get("role") == "admin"][0]
     g = shapely.transform(shape(adm["geometry"]), lambda xy: np.column_stack(tr.transform(xy[:, 0], xy[:, 1])))
     inside = rf.rasterize([(g, 1)], out_shape=(ny, nx), transform=from_origin(x0, y0, dx, dx), dtype="uint8").astype(bool)
-    return float(((h > WET_M) & land & inside).sum() * dx * dx / 1e6), float((inside & land).sum() * dx * dx / 1e6)
+    w = land if land.dtype != bool else land.astype(float)
+    return float((w * ((h > WET_M) & inside)).sum() * dx * dx / 1e6), float((w * inside).sum() * dx * dx / 1e6)
 
 
 def genangan_scores(gpkg: Path, ev: str, h, summary, land):
@@ -349,7 +362,7 @@ def main():
         h = np.frombuffer(gzip.decompress((rundir / sp.name.replace("_summary.json", "_hmax.f32.gz")).read_bytes()), np.float32).reshape(s["ny"], s["nx"])
         m = np.frombuffer(gzip.decompress((rundir / sp.name.replace("_summary.json", "_mask.u8.gz")).read_bytes()), np.uint8).reshape(s["ny"], s["nx"])
         inside = (m & 1).astype(bool) & ~(m & 2).astype(bool)  # active, not sea
-        land = inside & ~(m & 4).astype(bool)  # and not a mapped channel
+        land, lw = land_of(rundir / sp.name.replace("_summary.json", "_landshare.u8.gz"), m, inside)
         r = {"run": sp.name.replace("_summary.json", ""), "drain_mm_h": s["drain_mm_h"], "rain": s["rain"], "rain_scale": s.get("rain_scale", 1), "terrain_year": s.get("terrain_year"), "pumps": s.get("pumps"), "pump_m3s": s.get("pump_m3s"), "amc": s.get("amc", 2), "infiltration": s.get("infiltration", True),
              "mean_rain_mm": s["mean_rain_mm"], "flooded_km2": s["flooded_km2_gt015_outside_channels"], "mass_error": s["massError"],
              "reports": report_scores(rep, h, s, land, dki_mask(s))}
@@ -360,7 +373,7 @@ def main():
             r["micro_area_flooded_km2"] = round(float(((h >= 0.15) & land & served).sum() * s["dx"] ** 2 / 1e6), 2)
         if areas:
             r["rw"] = rw_scores(areas, flooded, h, s, land)
-        r["dki_flooded_km2"], r["dki_land_km2"] = dki_flooded_km2(h, s, land)
+        r["dki_flooded_km2"], r["dki_land_km2"] = dki_flooded_km2(h, s, lw)
         if len(sys.argv) > 5 and Path(sys.argv[5]).exists():
             try:
                 r["genangan_dsda"] = genangan_scores(Path(sys.argv[5]), ev, h, s, land)
