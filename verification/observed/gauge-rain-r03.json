@@ -1,0 +1,125 @@
+{
+ "_about": "Gauge-adjusted IMERG (verification/observed/gauge_merge.py, local ratio, L 10 km) vs IMERG as is, 20 Nov 2026. Same pack (e16), pumps off, drains 0, AMC 2. Releases validation-jakarta-*-v39..v41 (scores-*-imerg-gauge.json) vs v33..v35 (scores-*-imerg-v8.json).",
+ "events": [
+  {
+   "id": "2020-01-01",
+   "n_reports": 260,
+   "n_gauges": 120,
+   "loo": {
+    "n": 120,
+    "mae_adjusted_mm": 43.4,
+    "bias_adjusted_mm": -12.6,
+    "mae_imerg_mm": 53.2,
+    "bias_imerg_mm": 0.6
+   },
+   "loo_mean_field": {
+    "n": 120,
+    "factor": 0.995,
+    "mae_adjusted_mm": 53.6,
+    "bias_adjusted_mm": -0.0
+   },
+   "imerg": {
+    "mean_rain_mm": 142.9,
+    "hit": 0.492,
+    "random_near": 0.452,
+    "p_vs_near": 0.1056,
+    "verdict": "not_better",
+    "hit_cell": 0.258,
+    "model_median_m": 0.103,
+    "observed_median_m": 0.7,
+    "dki_flooded_km2": 72.9
+   },
+   "gauge_adjusted": {
+    "mean_rain_mm": 154.5,
+    "hit": 0.504,
+    "random_near": 0.465,
+    "p_vs_near": 0.1142,
+    "verdict": "not_better",
+    "hit_cell": 0.285,
+    "model_median_m": 0.104,
+    "observed_median_m": 0.7,
+    "dki_flooded_km2": 76.1
+   }
+  },
+  {
+   "id": "2021-02-20",
+   "n_reports": 384,
+   "n_gauges": 102,
+   "loo": {
+    "n": 102,
+    "mae_adjusted_mm": 31.9,
+    "bias_adjusted_mm": -15.8,
+    "mae_imerg_mm": 35.4,
+    "bias_imerg_mm": -14.9
+   },
+   "loo_mean_field": {
+    "n": 102,
+    "factor": 1.3,
+    "mae_adjusted_mm": 37.5,
+    "bias_adjusted_mm": -0.0
+   },
+   "imerg": {
+    "mean_rain_mm": 50.9,
+    "hit": 0.393,
+    "random_near": 0.26,
+    "p_vs_near": 0.0,
+    "verdict": "better",
+    "hit_cell": 0.19,
+    "model_median_m": 0.057,
+    "observed_median_m": 0.65,
+    "dki_flooded_km2": 30.7
+   },
+   "gauge_adjusted": {
+    "mean_rain_mm": 65.4,
+    "hit": 0.474,
+    "random_near": 0.321,
+    "p_vs_near": 0.0,
+    "verdict": "better",
+    "hit_cell": 0.242,
+    "model_median_m": 0.105,
+    "observed_median_m": 0.65,
+    "dki_flooded_km2": 39.7
+   }
+  },
+  {
+   "id": "2025-03-04",
+   "n_reports": 49,
+   "n_gauges": 101,
+   "loo": {
+    "n": 101,
+    "mae_adjusted_mm": 26.5,
+    "bias_adjusted_mm": -6.9,
+    "mae_imerg_mm": 34.9,
+    "bias_imerg_mm": 13.7
+   },
+   "loo_mean_field": {
+    "n": 101,
+    "factor": 0.843,
+    "mae_adjusted_mm": 33.2,
+    "bias_adjusted_mm": 0.0
+   },
+   "imerg": {
+    "mean_rain_mm": 99.1,
+    "hit": 0.388,
+    "random_near": 0.351,
+    "p_vs_near": 0.344,
+    "verdict": "too_few",
+    "hit_cell": 0.163,
+    "model_median_m": 0.067,
+    "observed_median_m": 0.55,
+    "dki_flooded_km2": 66.4
+   },
+   "gauge_adjusted": {
+    "mean_rain_mm": 81.3,
+    "hit": 0.347,
+    "random_near": 0.329,
+    "p_vs_near": 0.4457,
+    "verdict": "too_few",
+    "hit_cell": 0.143,
+    "model_median_m": 0.054,
+    "observed_median_m": 0.55,
+    "dki_flooded_km2": 56.3
+   }
+  }
+ ]
+}
