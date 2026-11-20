@@ -30,7 +30,7 @@ Model ini bukan peta kontur dan bukan "isi cekungan sampai penuh". Ia menghitung
 6. **Laut** dijaga pada tinggi yang dipilih. Air yang mencapai tepi area keluar.
 7. **Tergenang** = air lebih dalam dari 15 cm di luar alur sungai. Peta menampilkan warna mulai 5 cm.
 
-Hasil uji pada banjir 1 Januari 2020 (seluruh wilayah): hanya sekitar 17 % genangan model berada dalam jarak 90 m dari sungai. Sebagian besar genangan adalah air hujan setempat yang terkumpul di tanah rendah; air sungai dari hulu menambah sekitar seperenam luas, tetapi hampir menggandakan luas yang lebih dalam dari 1 m (dari 15 menjadi 26 km²). Jadi banjir di model bukan hanya "sungai meluber".
+Hasil uji terbaru (20 Nov 2026, laporan warga dipilah menurut jarak ke sungai): hampir separuh laporan warga (43–56 %) ada di sungai atau kurang dari 100 m darinya, padahal zona itu hanya 29 % dari peta. Di zona itu model hampir tidak lebih baik dari titik acak yang sama dekatnya ke sungai, dan kedalamannya hanya 3–12 cm lawan 60–85 cm laporan. Lebih dari 500 m dari sungai model lebih baik (2020: 66 % lawan 47 % acak; 2021: 64 % lawan 31 %). Jadi genangan hujan di tanah rendah lebih tertangkap daripada luapan sungai ke permukiman di tepinya. Penyebabnya belum diuji. (Angka lama "17 % genangan dekat sungai, hulu menambah seperenam" berasal dari paket data sebelum perbaikan 17 dan 20 November dan tidak berlaku lagi.)
 
 ## D. Komponen model dan statusnya
 
@@ -148,7 +148,7 @@ Pompa polder (665 m³/detik total) dan serapan saluran kecil sudah diuji. Setiap
 
 - Ambang tergenang 0,15 m; warna peta mulai 0,05 m; laporan dianggap "kena" bila model ≥ 0,10 m di daratan.
 - Kekasaran Manning: kawasan terbangun 0,15; alur sungai/saluran 0,035; nilai kelas lain dari tabel HEC-RAS menurut Chow (1959).
-- Curve Number kawasan terbangun 98 (kedap air); kelas lain dari tabel TR-55; kelompok tanah 83 % D, 17 % C.
+- Curve Number kawasan terbangun 98 (kedap air); kelas lain dari tabel TR-55; kelompok tanah di wilayah model 98 % D, 2 % C (83 % D, 17 % C adalah kotak hulu yang lebih besar).
 - Serapan saluran kecil bawaan 0 mm/jam; pompa bawaan mati; saluran mikro Jakarta Selatan (data ukuran DSDA) bawaan mati.
 - Langkah waktu: faktor Courant 0,7, paling lama 15 detik; aliran hanya lewat sisi kotak yang airnya lebih dari 1 mm.
 

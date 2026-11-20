@@ -57,7 +57,7 @@ export function buildAiContext(stamp: { built: string; commit: string }): string
     "",
     `- Ambang tergenang 0,15 m; warna peta mulai 0,05 m; laporan dianggap \"kena\" bila model ≥ 0,10 m di daratan.`,
     `- Kekasaran Manning: kawasan terbangun 0,15; alur sungai/saluran 0,035; nilai kelas lain dari tabel HEC-RAS menurut Chow (1959).`,
-    `- Curve Number kawasan terbangun 98 (kedap air); kelas lain dari tabel TR-55; kelompok tanah 83 % D, 17 % C.`,
+    `- Curve Number kawasan terbangun 98 (kedap air); kelas lain dari tabel TR-55; kelompok tanah di wilayah model 98 % D, 2 % C (83 % D, 17 % C adalah kotak hulu yang lebih besar).`,
     `- Serapan saluran kecil bawaan ${calibration.drain_mm_h} mm/jam; pompa bawaan ${calibration.pumps_default ? "menyala" : "mati"}; saluran mikro Jakarta Selatan (data ukuran DSDA) bawaan ${(calibration as { micro_default?: boolean }).micro_default ? "menyala" : "mati"}.`,
     "- Langkah waktu: faktor Courant 0,7, paling lama 15 detik; aliran hanya lewat sisi kotak yang airnya lebih dari 1 mm.",
     "",
