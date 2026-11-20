@@ -1,15 +1,15 @@
 # ROADMAP
-**Current position: Phase 4 validation done for three observed floods (ADR 0010/0011). 2026-11-01: terrain upgrade (ADR 0013): InSAR land subsidence shifts the terrain to the run date, Jakarta Satu (DSDA) drains carved with width/depth, DEMNAS 8 m public as map layer. 2026-11-01 (17th): Jakarta Satu + PetaBencana published as map layers (ADR 0014), polder pumps in the engine, new pack validated (depth better, 2020 drier), map UI (active-layers card, hidden rail). Next: pump validation, 2020 dryness. Owner options open: C (Sentinel-1 flood extent), D (terrain-edit scenarios). 2026-11-08 (18th): fine cells 10/5/2/1 m with building blocks for drawn boxes, event rain maps, tertiary drains (owner file) as map layer, source attribution run (ADR 0015). Next: tertiary-drain sensitivity in validation, fine-run checks against report clusters.**
+**Current position (2026-11-20): Phases 0–4 delivered (data, look, engine v2 with WebGPU, provenance/exports, validation on three observed floods with fair baselines). Since then: accuracy work without owner data (gauge rain, sub-grid river blocks, region-wide 30 m in tiles) and return-period design rain (CHIRPS 1981–2025). Open: depth at reports still too shallow; Zenodo DOI (owner account); other regions (owner choice).**
 
 | Phase | Work | Gate (owner sees) | Status |
 |---|---|---|---|
-| 0 | Data & licences: verify datasets, catalog, region pack Action, DEMNAS guide | Data catalog page + 2D map with all layers | in progress |
+| 0 | Data & licences: verify datasets, catalog, region pack Action, DEMNAS guide | Data catalog page + 2D map with all layers | done |
 | 1 | Look-lock: 3D sample in 3 styles (Ciliwung 10 × 10 km) | Pick style | done (all three kept, selectable) |
-| 2 | Engines: Explore (WebGPU) + SFINCS Research Run, benchmarks | Same scenario in both engines | in progress (Explore v1 on CPU, ADR 0006/0007, Methods page) |
-| 3 | Provenance: record, Reproduce, export ZIP, CITATION.cff, Zenodo | ZIP with METHODS.md + REFERENCES.bib | — |
-| 4 | Validation: 2 events, CSI/Hit/FAR, sensitivity | Validation page | — |
-| 5 | Full region + live rain + ensembles | Probability map | — |
-| 6 | Layout composer (cartographic templates) | Journal-ready figure | — |
+| 2 | Engines: Explore (WebGPU) + SFINCS Research Run, benchmarks | Same scenario in both engines | done for engine v2 (WebGPU + CPU, GPU parity, mass/analytical tests); SFINCS re-run postponed by owner |
+| 3 | Provenance: record, Reproduce, export ZIP, CITATION.cff, Zenodo | ZIP with METHODS.md + REFERENCES.bib | done except Zenodo DOI (needs owner account) |
+| 4 | Validation: 2 events, CSI/Hit/FAR, sensitivity | Validation page | done (3 floods, fair baselines, sensitivity, cell size); accuracy work continues |
+| 5 | Full region + live rain + ensembles | Probability map | partial: whole-region runs, return-period rain; no live rain/ensembles |
+| 6 | Layout composer (cartographic templates) | Journal-ready figure | partial: PNG figure (title, legend, scale, north, sources), GeoTIFF, HTML map |
 | 7 | World mode | City outside Indonesia | — |
 | 8 | Polish, Indonesian labels, docs | v1.0 with DOI | — |
 

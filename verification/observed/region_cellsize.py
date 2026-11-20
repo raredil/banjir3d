@@ -3,7 +3,7 @@
   python verification/observed/region_cellsize.py <runs dir> <reports_petabencana.geojson> <out.json>
 
 runs dir holds the run files of the validation releases (<event>_imerg_k<k>_d0_poff_{hmax.f32.gz,mask.u8.gz,landshare.u8.gz,summary.json})
-for k = 3 (90 m, v33-v35), k = 2 (60 m, v42-v44) and k = 3 with the sub-grid channel (suffix _sub, v45-v47, ADR 0025). The headline score of compare.py uses the 3 x 3 window, which grows with
+for k = 3 (90 m, v33-v35), k = 2 (60 m, v42-v44), k = 3 with the sub-grid channel (suffix _sub, v45-v47, ADR 0025) and, where present, k = 1 region-wide in 5 x 4 tiles (suffix _sub_tiles5x4, v48-v50, mosaic_tiles.py). The headline score of compare.py uses the 3 x 3 window, which grows with
 the cell (about 270 m wide at 90 m, 180 m at 60 m), so it cannot compare cell sizes. Here, as in box_cellsize.py: hit = the deepest
 LAND cell whose centre lies within R_M of the report is at least HIT_M deep; also the land cell under the report. Only reports
 inside DKI Jakarta count. Random baseline: the same rule at N_RANDOM points spread uniformly over DKI land (the same points at
@@ -90,7 +90,9 @@ def main():
         rnd = [(x0 + (ii[p] + rng.random()) * dx, y0 - (jj[p] + rng.random()) * dx) for p in pick]
         dcls = [float(dist[jj[p], ii[p]]) for p in pick]
         out = {"event": ev, "n_reports_dki": len(rep), "sizes": {}}
-        for k, suf, name in ((3, "", "90m"), (2, "", "60m"), (3, "_sub", "90m_subgrid")):
+        for k, suf, name in ((3, "", "90m"), (2, "", "60m"), (3, "_sub", "90m_subgrid"), (1, "_sub_tiles5x4", "30m_tiles")):
+            if not (runs / f"{ev}_imerg_k{k}_d0_poff{suf}_summary.json").exists():
+                continue  # 30 m tiles (mosaic_tiles.py, Next steps 00(3)) only where run
             r = r90 if (k, suf) == (3, "") else load(runs, ev, k, suf)
             if r is None:
                 continue

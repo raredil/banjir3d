@@ -1,0 +1,21 @@
+cff-version: 1.2.0
+message: "If you use banjir3d or its results, please cite it as below, name the run (provenance JSON of the export) and cite the datasets listed on the Data page."
+title: "banjir3d: browser flood simulation for Jakarta (local inertial 2D model with open data)"
+type: software
+authors:
+  - name: "banjir3d project"
+repository-code: "https://github.com/raredil/banjir3d"
+url: "https://raredil.github.io/banjir3d/"
+date-released: "2026-11-20"
+version: "2026-11-20"
+abstract: >-
+  Web application that simulates pluvial and river flooding over DKI Jakarta and 10 km around it with a local inertial
+  shallow-water model (WebGPU with a CPU fallback), curve-number infiltration, upstream inflows, land subsidence and mapped
+  drains, from open data. Scores against three observed floods, methods, references and every assumption are on the
+  Methods and Validation pages. Not a forecast of which street or RW floods.
+keywords:
+  - flood
+  - hydrodynamic model
+  - Jakarta
+  - WebGPU
+  - open data
