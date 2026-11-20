@@ -67,8 +67,10 @@ def parse(body: bytes):
     vals = []
     for line in txt.splitlines():
         t = line.strip()
-        if t.startswith("[") and "," in t:  # data rows look like "[0][3], v, v, ..." (index prefix, then values)
-            vals += [float(v) for v in NUM.findall(t.split(",", 1)[1])]
+        # data rows: "precipitation.precipitation[precipitation.time=12185][precipitation.lon=106.55], v, v, ..." (GES DISC Hyrax,
+        # seen 2026-11-20) or "[0][3], v, ..." (plain DAP2); the map vectors ("precipitation.lat, ...") carry no index and are skipped
+        if "]," in t and (t.startswith("[") or t.startswith("precipitation.precipitation[")):
+            vals += [float(v) for v in NUM.findall(t.rsplit("],", 1)[1])]
     nlon, nlat = I1 - I0 + 1, J1 - J0 + 1
     if len(vals) < nlon * nlat:
         return None
