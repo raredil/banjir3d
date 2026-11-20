@@ -399,9 +399,15 @@ export function mountSim(page: MapPage, o: { packUrl: string; regionBbox: number
       "kecamatan,kota,province,buildings_flooded,people_affected", ...rows].join("\r\n");
   };
   const provenance = () => ({
-    id: `B3D-${stamp()}`, created: new Date().toISOString(), app: "Banjir3D", data_release: o.releaseTag,
+    id: `B3D-${new Date().toISOString().replace(/[-:]/g, "").slice(0, 15)}-${Math.random().toString(16).slice(2, 6)}`, created: new Date().toISOString(), app: "Banjir3D", app_commit: import.meta.env.VITE_GIT_SHA ?? null, data_release: o.releaseTag,
     engine: { name: "Banjir3D flood engine v2 (local inertial, Bates et al. 2010; NRCS CN; NRCS unit hydrograph inflows)", device: res!.gpu ? "WebGPU float32" : "CPU float64", wall_s: (res!.wall ?? 0) / 1000 },
     engine_pack: { created: pack?.header.created, inputs_sha256: pack?.header.inputs_sha256, landcover_year: pack?.header.landcover_year, soil: pack?.header.soil, channels: pack?.header.channels },
+    summary: (() => { // the KPI numbers, so they can be checked from this file (review 2026-11-20, A-09)
+      if (!res!.max) return null;
+      const d = over(res!, res!.max); let w = 0, mx = 0;
+      for (let c = 0; c < d.length; c++) if (res!.count[c]) { if (d[c] > FLOOD_M) w += res!.count[c]; if (d[c] > mx) mx = d[c]; }
+      return { threshold_m: FLOOD_M, flooded_km2_envelope: +((w * res!.run.dx * res!.run.dx) / 1e6).toFixed(3), max_depth_above_land_m: +mx.toFixed(2), rule: "depth above the land level; channel cells, sea and building footprints excluded, the land part of coarse channel blocks included" };
+    })(),
     scenario: res!.scenario, rain_mm_per_block: res!.hy, grid: { nx: res!.run.nx, ny: res!.run.ny, cell_m: res!.run.dx, utm: res!.run.utm, corners_lonlat: res!.run.corners },
     exposure: expoLast ? { flooded_m: FLOOD_M, buildings: Math.round(expoLast.buildings), people: Math.round(expoLast.people), pack: expoNow?.header.created, sources: expoNow?.header.sources } : null,
     inflows: res!.inflows.map((f) => ({ catchment_km2: +f.areaKm2.toFixed(2), areal_reduction: (f as { arf?: number }).arf !== undefined ? +(f as { arf?: number }).arf!.toFixed(3) : undefined, cn: +f.cn.toFixed(1), lag_h: +f.lagH.toFixed(2), peak_m3s: +Math.max(...f.q).toFixed(1), x_m: f.x, y_m: f.y })),

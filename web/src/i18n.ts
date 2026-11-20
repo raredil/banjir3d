@@ -88,7 +88,7 @@ const id = {
   "exp.csv": "Tabel per kecamatan (CSV)", "exp.csv.h": "Bangunan dan penduduk tergenang per kecamatan, bisa dibuka di Excel.",
   "exp.json": "Catatan proses (JSON)", "exp.json.h": "Semua masukan, versi data, parameter dan hasil cek massa, untuk lampiran tesis.",
   "exp.which": "Ekspor kedalaman: {w}", "exp.none": "Jalankan simulasi dulu.",
-  "exp.title": "Simulasi banjir", "exp.limit": "Hasil model, bukan peta banjir resmi.",
+  "exp.title": "Simulasi banjir", "exp.limit": "Hasil model eksploratif, bukan peta banjir resmi; belum lulus uji pembanding (lihat Validasi).",
   // data page
   "data.title": "Data", "data.lead": "Data yang dipakai, versinya, dan gunanya.",
   "data.use.engine": "Mesin simulasi", "data.use.map": "Lapisan peta", "data.use.validation": "Validasi", "data.use.planned": "Belum dipakai",
@@ -189,7 +189,7 @@ const en: Dict = {
   "exp.csv": "Table per kecamatan (CSV)", "exp.csv.h": "Buildings and people flooded per kecamatan, opens in Excel.",
   "exp.json": "Process record (JSON)", "exp.json.h": "All inputs, data versions, parameters and the mass check, for a thesis appendix.",
   "exp.which": "Exporting depth: {w}", "exp.none": "Run a simulation first.",
-  "exp.title": "Flood simulation", "exp.limit": "Model result, not an official flood map.",
+  "exp.title": "Flood simulation", "exp.limit": "Exploratory model result, not an official flood map; not yet passed its benchmark checks (see Validation).",
   "data.title": "Data", "data.lead": "Datasets used, their versions and what they are for.",
   "data.use.engine": "Simulation engine", "data.use.map": "Map layer", "data.use.validation": "Validation", "data.use.planned": "Not used yet",
   "data.all": "All", "data.version": "Version", "data.res": "Resolution", "data.licence": "Licence", "data.provider": "Provider", "data.more": "Details and citation",
