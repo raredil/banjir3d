@@ -39,3 +39,6 @@
 | River cross-sections (width/depth) for rivers without DSDA depth (Kali Baru 0.33 m, Mampang 0.8 m, Angke 1.6 m bed-to-bank in the model): ask owner for DSDA/BBWS Ciliwung-Cisadane data; otherwise hydraulic geometry with a stated relation (ADR 0021) | 4 |
 | Geology map (owner, 2026-11-17) as a map layer and as an upstream soil-group check; ask owner for the source/licence of the shapefile (Badan Geologi sheets) | 4 |
 | Kemang RT flood-risk labels (owner): compare with a 30 m box run in the app (90 m does not resolve RTs); ask who made the labels and how | 4 |
+| Depth at reports vs the deepest modelled cell within 100/200 m (v48–v50 30 m tiles, no new run): tells whether reports come from the deepest spots (ADR 0026) | 4+ |
+| Return-period rain from CHIRPS 1981–2025 (5 km, 45 years) when its server allows the Action again; IMERG 2001–2024 is used now | 4+ |
+| Repository licence + Zenodo DOI (owner decision and account; CITATION.cff ready) | owner |
