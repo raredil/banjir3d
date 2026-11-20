@@ -19,7 +19,7 @@ Date: 2026-11-20. Status: accepted.
   - Annual maximum daily rain of every satellite cell inside DKI.
   - Gumbel (method of moments) and log-Pearson III, Chow et al. (1988); the one with the smaller median Kolmogorov–Smirnov distance is used.
   - The app offers the median over the cells for T = 2–100 years, with a 24 h Mononobe storm.
-  - Source: CHIRPS v2.0 1981–2025 was the first choice. Its server answered 403/429 to the Action (2026-11-20), so GPM IMERG V07 daily 2001–2025 through GES DISC OPeNDAP is the fallback. The file records which was used.
+  - Source: CHIRPS v2.0 1981–2025 was the first choice. Its server answered 403/429 to the Action (2026-11-20), so GPM IMERG V07 daily 2001–2025 through GES DISC OPeNDAP is the fallback. The file records which was used: IMERG (release design-rain-jakarta-20261120-r5).
   - Gauge check: open BMKG/partner gauges within 15 km of DKI (2020–2025), annual maxima against the satellite cell. The ratio is shown, not applied.
 - `CITATION.cff` added (no licence chosen: owner decision).
 
@@ -30,9 +30,10 @@ Date: 2026-11-20. Status: accepted.
   - 200 m rule in DKI: 84 / 83 / 76 % vs random 88 / 71 / 88 %; only 2021 beats chance.
   - Depth near reports 0.25 / 0.26 / 0.32 m (90 m sub-grid 0.13 / 0.07 / 0.15 m).
   - DKI flooded > 0.15 m: 112 / 47 / 100 km² (2020 reported 156).
+- Return-period rain (IMERG 2001–2024, 24 full years, 5 cells of 11 km inside DKI): log-Pearson III chosen (median KS 0.12 vs Gumbel 0.135; all cells pass at 0.28). Median R24 92 / 112 / 126 / 145 / 160 / 175 mm for T = 2 / 5 / 10 / 25 / 50 / 100 years (100-year range over the cells 145–207 mm). Gauge check: 21 gauges, 101 station-years, gauge / satellite annual maximum median 1.37 (quartiles 0.98–1.70).
 - Rain adjusted to gauges (ADR 0024), the sub-grid channel (ADR 0025) and 30 m cells (this ADR) do not close the depth gap. Untested remaining causes: terrain error, blocked/overtopped drains, reports from the deepest spots.
 
 ## Consequences
 - The conclusion card and the AI context use the sub-grid headline.
 - Larger tile sets or other events can be run by editing `request.json` (`tiles`, k 1, one set-up).
-- Return-period values are satellite area values for 5–11 km cells. For a single point they are likely too low (see the gauge ratio).
+- Return-period values are satellite area values for 11 km cells. For a single point they are likely too low (see the gauge ratio).

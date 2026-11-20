@@ -1,4 +1,5 @@
-"""Return-period design rain (R24) for Jakarta from 45 years of daily CHIRPS (1981-2025), with a check against rain gauges.
+"""Return-period design rain (R24) for Jakarta from daily satellite rain (CHIRPS 1981-2025, or GPM IMERG 2001-2025 from
+design_rain_imerg.py when CHIRPS is not reachable; same file layout), with a check against rain gauges.
 
   python pipeline/design_rain.py <chirps_daily_jakarta.npz> <manifest.json> <gauge dir or -> data/rain/design_rain_jakarta.json
 

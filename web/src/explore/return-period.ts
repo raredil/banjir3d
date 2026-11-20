@@ -1,5 +1,6 @@
 // Return-period design rain for DKI Jakarta (pipeline/design_rain.py -> data/rain/design_rain_jakarta.json): R24 per return period from
-// daily satellite rain (CHIRPS 1981-2025, or GPM IMERG 2001-2025 when CHIRPS is not reachable) (median over the 5 km cells inside DKI, distribution with the better Kolmogorov-Smirnov fit).
+// daily satellite rain (CHIRPS 1981-2025, or GPM IMERG 2001-2025 when CHIRPS is not reachable) (median over the satellite cells inside DKI, distribution with the better Kolmogorov-Smirnov fit).
+// Release design-rain-jakarta-20261120-r5: IMERG 2001-2024 (CHIRPS refused), 5 cells of 11 km, log-Pearson III.
 // Loaded only when the file exists (made by the design-rain Action); without it the option is hidden.
 const FILES = import.meta.glob<unknown>("../../../data/rain/design_rain_jakarta.json", { import: "default", eager: true });
 

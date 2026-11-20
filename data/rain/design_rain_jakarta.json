@@ -1,0 +1,1196 @@
+{
+ "_about": "Return-period design rain for DKI Jakarta: 24 h (daily) rain depth that is reached or exceeded on average once in T years. Made by pipeline/design_rain.py from daily satellite rain (product, source); R24 per return period from the annual maximum daily rain of every satellite cell whose centre lies inside DKI (median, min and max over the cells) and of the DKI area mean. 'chosen' = the distribution with the smaller median Kolmogorov-Smirnov distance over the cells. Satellite daily rain is smoother than a rain gauge: see gaugeCheck (gauge annual maximum / satellite cell annual maximum in the same year).",
+ "product": "GPM IMERG V07",
+ "cell_km": 11.1,
+ "source": "GPM IMERG Final Run V07 daily, 0.1 degree (Huffman et al. 2023, doi:10.5067/GPM/IMERGDF/DAY/07), NASA GES DISC",
+ "files": {
+  "manifest": "pipeline/design_rain_imerg.py",
+  "npz_sha256": "a0938789806969b86b129e77c7f342d74f4a7511eddff9d477ad78e5a8ff2eef",
+  "base_url": "https://gpm1.gesdisc.eosdis.nasa.gov/opendap/GPM_L3/GPM_3IMERGDF.07/"
+ },
+ "method": "annual maximum daily rain; Gumbel (method of moments) and log-Pearson III (moments of log10, skew corrected), Chow, Maidment and Mays (1988) ch. 12; Kolmogorov-Smirnov goodness of fit, critical value 1.36/sqrt(n) (5 %)",
+ "years": [
+  2001,
+  2024
+ ],
+ "n_years": 24,
+ "missing_days": 130,
+ "n_cells": 5,
+ "cell_deg": 0.1,
+ "periods": [
+  2,
+  5,
+  10,
+  25,
+  50,
+  100
+ ],
+ "chosen": "lp3",
+ "R24": {
+  "gumbel": {
+   "2": {
+    "median": 93.0,
+    "min": 87.1,
+    "max": 97.3,
+    "areaMean": 81.6
+   },
+   "5": {
+    "median": 113.1,
+    "min": 104.3,
+    "max": 122.6,
+    "areaMean": 101.0
+   },
+   "10": {
+    "median": 126.5,
+    "min": 115.8,
+    "max": 139.4,
+    "areaMean": 113.7
+   },
+   "25": {
+    "median": 143.4,
+    "min": 130.2,
+    "max": 160.6,
+    "areaMean": 129.9
+   },
+   "50": {
+    "median": 155.9,
+    "min": 140.9,
+    "max": 176.4,
+    "areaMean": 141.9
+   },
+   "100": {
+    "median": 168.3,
+    "min": 151.5,
+    "max": 192.0,
+    "areaMean": 153.8
+   }
+  },
+  "lp3": {
+   "2": {
+    "median": 92.0,
+    "min": 88.5,
+    "max": 95.2,
+    "areaMean": 80.5
+   },
+   "5": {
+    "median": 112.2,
+    "min": 106.1,
+    "max": 119.9,
+    "areaMean": 99.7
+   },
+   "10": {
+    "median": 126.4,
+    "min": 116.6,
+    "max": 138.3,
+    "areaMean": 113.5
+   },
+   "25": {
+    "median": 145.3,
+    "min": 128.8,
+    "max": 163.9,
+    "areaMean": 132.1
+   },
+   "50": {
+    "median": 160.0,
+    "min": 137.3,
+    "max": 184.7,
+    "areaMean": 146.8
+   },
+   "100": {
+    "median": 175.4,
+    "min": 145.4,
+    "max": 207.1,
+    "areaMean": 162.4
+   }
+  }
+ },
+ "fit": {
+  "ks_critical": 0.278,
+  "ks_median_gumbel": 0.135,
+  "ks_median_lp3": 0.12,
+  "cells_pass_gumbel": 5,
+  "cells_pass_lp3": 5,
+  "area_ks_gumbel": 0.097,
+  "area_ks_lp3": 0.075,
+  "area_mean_mm": 85.2,
+  "area_s_mm": 21.9,
+  "area_skew_log": 0.747
+ },
+ "annualMax": {
+  "years": [
+   2001,
+   2002,
+   2003,
+   2004,
+   2005,
+   2006,
+   2007,
+   2008,
+   2009,
+   2010,
+   2011,
+   2012,
+   2013,
+   2014,
+   2015,
+   2016,
+   2017,
+   2018,
+   2019,
+   2020,
+   2021,
+   2022,
+   2023,
+   2024
+  ],
+  "areaMean": [
+   67.1,
+   74.0,
+   67.4,
+   148.0,
+   79.0,
+   95.5,
+   103.9,
+   75.2,
+   87.5,
+   87.2,
+   86.2,
+   72.8,
+   115.3,
+   98.2,
+   125.3,
+   60.8,
+   62.5,
+   83.7,
+   104.2,
+   78.4,
+   78.0,
+   59.9,
+   70.1,
+   65.5
+  ],
+  "wettestCell": [
+   103.7,
+   113.3,
+   94.0,
+   192.6,
+   99.0,
+   167.7,
+   118.3,
+   140.0,
+   93.8,
+   142.1,
+   120.2,
+   145.3,
+   143.0,
+   132.9,
+   133.0,
+   96.7,
+   88.8,
+   105.0,
+   117.9,
+   95.8,
+   99.2,
+   105.4,
+   84.2,
+   95.9
+  ],
+  "cells": {
+   "106.750,-6.150": [
+    103.7,
+    66.5,
+    75.1,
+    138.6,
+    99.0,
+    101.0,
+    109.4,
+    82.1,
+    89.8,
+    109.2,
+    120.2,
+    77.0,
+    98.6,
+    115.0,
+    133.0,
+    76.9,
+    69.5,
+    71.2,
+    86.8,
+    75.1,
+    77.1,
+    105.4,
+    72.6,
+    68.7
+   ],
+   "106.850,-6.150": [
+    78.8,
+    88.8,
+    94.0,
+    192.6,
+    89.4,
+    79.5,
+    118.3,
+    95.9,
+    93.8,
+    94.9,
+    110.0,
+    145.3,
+    143.0,
+    126.8,
+    128.2,
+    90.1,
+    88.8,
+    105.0,
+    100.1,
+    95.8,
+    75.5,
+    71.7,
+    71.0,
+    70.6
+   ],
+   "106.950,-6.150": [
+    73.2,
+    103.1,
+    84.6,
+    159.2,
+    90.3,
+    104.6,
+    103.5,
+    80.6,
+    79.8,
+    102.9,
+    90.2,
+    92.2,
+    139.2,
+    132.9,
+    123.6,
+    70.4,
+    75.2,
+    98.8,
+    100.7,
+    92.7,
+    99.2,
+    71.9,
+    80.3,
+    71.8
+   ],
+   "106.750,-6.250": [
+    67.2,
+    84.8,
+    72.1,
+    140.0,
+    79.1,
+    167.7,
+    117.9,
+    140.0,
+    92.1,
+    142.1,
+    75.5,
+    70.7,
+    102.4,
+    99.5,
+    123.2,
+    96.7,
+    83.9,
+    70.7,
+    115.5,
+    67.5,
+    73.5,
+    85.6,
+    84.2,
+    95.9
+   ],
+   "106.850,-6.250": [
+    68.1,
+    113.3,
+    72.1,
+    109.6,
+    88.0,
+    95.3,
+    117.5,
+    101.3,
+    83.7,
+    98.7,
+    89.3,
+    77.3,
+    116.2,
+    107.8,
+    124.9,
+    68.4,
+    80.0,
+    72.7,
+    117.9,
+    81.5,
+    86.6,
+    58.0,
+    73.1,
+    66.2
+   ]
+  }
+ },
+ "gaugeCheck": {
+  "stations": [
+   {
+    "name": "Ciriung",
+    "lat": -6.4604167,
+    "lon": 106.8564167,
+    "km_from_dki": 10.5,
+    "district": "Kab. Bogor"
+   },
+   {
+    "name": "Klapanunggal",
+    "lat": -6.4142222,
+    "lon": 106.9620833,
+    "km_from_dki": 7.6,
+    "district": "Kab. Bogor"
+   },
+   {
+    "name": "Situ Tungilis",
+    "lat": -6.4198056,
+    "lon": 107.0312778,
+    "km_from_dki": 14.2,
+    "district": "Kab. Bogor"
+   },
+   {
+    "name": "Curug Serpong",
+    "lat": -6.3864444,
+    "lon": 106.7266389,
+    "km_from_dki": 7.8,
+    "district": "Kab. Bogor"
+   },
+   {
+    "name": "Cis Empang",
+    "lat": -6.4534444,
+    "lon": 106.7990833,
+    "km_from_dki": 9.8,
+    "district": "Kab. Bogor"
+   },
+   {
+    "name": "Citayam",
+    "lat": -6.4703889,
+    "lon": 106.8053889,
+    "km_from_dki": 11.7,
+    "district": "Kab. Bogor"
+   },
+   {
+    "name": "Depok_BMKG_Sukmajaya",
+    "lat": -6.4053056,
+    "lon": 106.8458056,
+    "km_from_dki": 5.6,
+    "district": "Kota Depok"
+   },
+   {
+    "name": "Perk. Kahuripan",
+    "lat": -6.4459722,
+    "lon": 106.6911944,
+    "km_from_dki": 14.5,
+    "district": "Kab. Bogor"
+   },
+   {
+    "name": "BPP Ciseeng",
+    "lat": -6.4461389,
+    "lon": 106.6875278,
+    "km_from_dki": 14.9,
+    "district": "Kab. Bogor"
+   },
+   {
+    "name": "BPP Tambun",
+    "lat": -6.2166667,
+    "lon": 107.0833056,
+    "km_from_dki": 12.8,
+    "district": "Kab. Bekasi"
+   },
+   {
+    "name": "Cibitung",
+    "lat": -6.2276667,
+    "lon": 107.0938056,
+    "km_from_dki": 14.3,
+    "district": "Kab. Bekasi"
+   },
+   {
+    "name": "Babakan",
+    "lat": -6.1279444,
+    "lon": 107.0612222,
+    "km_from_dki": 10.0,
+    "district": "Kab. Bekasi"
+   },
+   {
+    "name": "Tapak Serang",
+    "lat": -6.1296389,
+    "lon": 107.0624167,
+    "km_from_dki": 10.1,
+    "district": "Kab. Bekasi"
+   },
+   {
+    "name": "Gabus",
+    "lat": -6.1673611,
+    "lon": 107.0488333,
+    "km_from_dki": 8.6,
+    "district": "Kab. Bekasi"
+   },
+   {
+    "name": "Setu",
+    "lat": -6.3430833,
+    "lon": 107.0437778,
+    "km_from_dki": 13.7,
+    "district": "Kab. Bekasi"
+   },
+   {
+    "name": "Rawa Dukuh",
+    "lat": -6.2261389,
+    "lon": 107.0298889,
+    "km_from_dki": 7.4,
+    "district": "Kota Bekasi"
+   },
+   {
+    "name": "Kranji",
+    "lat": -6.2220833,
+    "lon": 107.0036111,
+    "km_from_dki": 4.5,
+    "district": "Kota Bekasi"
+   },
+   {
+    "name": "Bendung Bekasi",
+    "lat": -6.2499167,
+    "lon": 106.99775,
+    "km_from_dki": 5.6,
+    "district": "Kota Bekasi"
+   },
+   {
+    "name": "Cikeas",
+    "lat": -6.3056111,
+    "lon": 106.96225,
+    "km_from_dki": 4.5,
+    "district": "Kota Bekasi"
+   },
+   {
+    "name": "Lab.Perikanan Depok",
+    "lat": -6.4002222,
+    "lon": 106.8146944,
+    "km_from_dki": 4.0,
+    "district": "Kota Depok"
+   },
+   {
+    "name": "Beji Depok",
+    "lat": -6.3806389,
+    "lon": 106.8065556,
+    "km_from_dki": 1.8,
+    "district": "Kota Depok"
+   }
+  ],
+  "n_station_years": 101,
+  "pairs": [
+   {
+    "station": "Ciriung",
+    "year": 2020,
+    "gaugeMax": 106.0,
+    "satMax": 77.3,
+    "ratio": 1.372
+   },
+   {
+    "station": "Ciriung",
+    "year": 2021,
+    "gaugeMax": 97.0,
+    "satMax": 68.9,
+    "ratio": 1.409
+   },
+   {
+    "station": "Ciriung",
+    "year": 2022,
+    "gaugeMax": 103.0,
+    "satMax": 56.9,
+    "ratio": 1.81
+   },
+   {
+    "station": "Ciriung",
+    "year": 2023,
+    "gaugeMax": 125.0,
+    "satMax": 128.7,
+    "ratio": 0.971
+   },
+   {
+    "station": "Ciriung",
+    "year": 2024,
+    "gaugeMax": 97.0,
+    "satMax": 72.3,
+    "ratio": 1.341
+   },
+   {
+    "station": "Klapanunggal",
+    "year": 2020,
+    "gaugeMax": 48.0,
+    "satMax": 98.0,
+    "ratio": 0.49
+   },
+   {
+    "station": "Klapanunggal",
+    "year": 2021,
+    "gaugeMax": 60.0,
+    "satMax": 62.1,
+    "ratio": 0.966
+   },
+   {
+    "station": "Klapanunggal",
+    "year": 2022,
+    "gaugeMax": 23.0,
+    "satMax": 67.5,
+    "ratio": 0.341
+   },
+   {
+    "station": "Klapanunggal",
+    "year": 2023,
+    "gaugeMax": 55.0,
+    "satMax": 82.2,
+    "ratio": 0.669
+   },
+   {
+    "station": "Klapanunggal",
+    "year": 2024,
+    "gaugeMax": 35.0,
+    "satMax": 76.2,
+    "ratio": 0.46
+   },
+   {
+    "station": "Situ Tungilis",
+    "year": 2020,
+    "gaugeMax": 55.0,
+    "satMax": 85.5,
+    "ratio": 0.644
+   },
+   {
+    "station": "Situ Tungilis",
+    "year": 2021,
+    "gaugeMax": 55.0,
+    "satMax": 76.1,
+    "ratio": 0.723
+   },
+   {
+    "station": "Situ Tungilis",
+    "year": 2022,
+    "gaugeMax": 32.0,
+    "satMax": 59.5,
+    "ratio": 0.538
+   },
+   {
+    "station": "Situ Tungilis",
+    "year": 2023,
+    "gaugeMax": 38.0,
+    "satMax": 83.8,
+    "ratio": 0.454
+   },
+   {
+    "station": "Situ Tungilis",
+    "year": 2024,
+    "gaugeMax": 45.0,
+    "satMax": 69.8,
+    "ratio": 0.644
+   },
+   {
+    "station": "Curug Serpong",
+    "year": 2020,
+    "gaugeMax": 98.0,
+    "satMax": 87.0,
+    "ratio": 1.126
+   },
+   {
+    "station": "Curug Serpong",
+    "year": 2021,
+    "gaugeMax": 81.0,
+    "satMax": 67.8,
+    "ratio": 1.194
+   },
+   {
+    "station": "Curug Serpong",
+    "year": 2022,
+    "gaugeMax": 82.5,
+    "satMax": 90.8,
+    "ratio": 0.909
+   },
+   {
+    "station": "Curug Serpong",
+    "year": 2023,
+    "gaugeMax": 82.0,
+    "satMax": 84.2,
+    "ratio": 0.974
+   },
+   {
+    "station": "Curug Serpong",
+    "year": 2024,
+    "gaugeMax": 87.0,
+    "satMax": 90.6,
+    "ratio": 0.96
+   },
+   {
+    "station": "Cis Empang",
+    "year": 2020,
+    "gaugeMax": 120.0,
+    "satMax": 110.4,
+    "ratio": 1.087
+   },
+   {
+    "station": "Cis Empang",
+    "year": 2021,
+    "gaugeMax": 118.0,
+    "satMax": 65.9,
+    "ratio": 1.791
+   },
+   {
+    "station": "Cis Empang",
+    "year": 2022,
+    "gaugeMax": 150.0,
+    "satMax": 82.8,
+    "ratio": 1.811
+   },
+   {
+    "station": "Cis Empang",
+    "year": 2023,
+    "gaugeMax": 182.0,
+    "satMax": 71.2,
+    "ratio": 2.555
+   },
+   {
+    "station": "Cis Empang",
+    "year": 2024,
+    "gaugeMax": 106.0,
+    "satMax": 82.3,
+    "ratio": 1.287
+   },
+   {
+    "station": "Citayam",
+    "year": 2020,
+    "gaugeMax": 135.9,
+    "satMax": 77.3,
+    "ratio": 1.759
+   },
+   {
+    "station": "Citayam",
+    "year": 2021,
+    "gaugeMax": 112.3,
+    "satMax": 68.9,
+    "ratio": 1.631
+   },
+   {
+    "station": "Citayam",
+    "year": 2022,
+    "gaugeMax": 141.0,
+    "satMax": 56.9,
+    "ratio": 2.477
+   },
+   {
+    "station": "Citayam",
+    "year": 2023,
+    "gaugeMax": 100.6,
+    "satMax": 128.7,
+    "ratio": 0.781
+   },
+   {
+    "station": "Citayam",
+    "year": 2024,
+    "gaugeMax": 101.6,
+    "satMax": 72.3,
+    "ratio": 1.405
+   },
+   {
+    "station": "Depok_BMKG_Sukmajaya",
+    "year": 2020,
+    "gaugeMax": 134.0,
+    "satMax": 77.3,
+    "ratio": 1.734
+   },
+   {
+    "station": "Depok_BMKG_Sukmajaya",
+    "year": 2021,
+    "gaugeMax": 126.0,
+    "satMax": 68.9,
+    "ratio": 1.83
+   },
+   {
+    "station": "Depok_BMKG_Sukmajaya",
+    "year": 2022,
+    "gaugeMax": 69.0,
+    "satMax": 56.9,
+    "ratio": 1.212
+   },
+   {
+    "station": "Depok_BMKG_Sukmajaya",
+    "year": 2023,
+    "gaugeMax": 148.0,
+    "satMax": 128.7,
+    "ratio": 1.15
+   },
+   {
+    "station": "Depok_BMKG_Sukmajaya",
+    "year": 2024,
+    "gaugeMax": 121.0,
+    "satMax": 72.3,
+    "ratio": 1.673
+   },
+   {
+    "station": "Perk. Kahuripan",
+    "year": 2020,
+    "gaugeMax": 175.0,
+    "satMax": 82.7,
+    "ratio": 2.117
+   },
+   {
+    "station": "Perk. Kahuripan",
+    "year": 2021,
+    "gaugeMax": 106.0,
+    "satMax": 68.6,
+    "ratio": 1.545
+   },
+   {
+    "station": "Perk. Kahuripan",
+    "year": 2022,
+    "gaugeMax": 100.0,
+    "satMax": 63.1,
+    "ratio": 1.585
+   },
+   {
+    "station": "Perk. Kahuripan",
+    "year": 2023,
+    "gaugeMax": 138.2,
+    "satMax": 58.6,
+    "ratio": 2.36
+   },
+   {
+    "station": "Perk. Kahuripan",
+    "year": 2024,
+    "gaugeMax": 102.0,
+    "satMax": 86.6,
+    "ratio": 1.178
+   },
+   {
+    "station": "BPP Ciseeng",
+    "year": 2020,
+    "gaugeMax": 31.0,
+    "satMax": 82.7,
+    "ratio": 0.375
+   },
+   {
+    "station": "BPP Ciseeng",
+    "year": 2021,
+    "gaugeMax": 44.0,
+    "satMax": 68.6,
+    "ratio": 0.641
+   },
+   {
+    "station": "BPP Ciseeng",
+    "year": 2022,
+    "gaugeMax": 62.0,
+    "satMax": 63.1,
+    "ratio": 0.983
+   },
+   {
+    "station": "BPP Ciseeng",
+    "year": 2023,
+    "gaugeMax": 120.0,
+    "satMax": 58.6,
+    "ratio": 2.049
+   },
+   {
+    "station": "BPP Ciseeng",
+    "year": 2024,
+    "gaugeMax": 91.0,
+    "satMax": 86.6,
+    "ratio": 1.051
+   },
+   {
+    "station": "BPP Tambun",
+    "year": 2021,
+    "gaugeMax": 125.0,
+    "satMax": 89.9,
+    "ratio": 1.391
+   },
+   {
+    "station": "BPP Tambun",
+    "year": 2022,
+    "gaugeMax": 91.5,
+    "satMax": 62.0,
+    "ratio": 1.476
+   },
+   {
+    "station": "BPP Tambun",
+    "year": 2023,
+    "gaugeMax": 110.0,
+    "satMax": 65.6,
+    "ratio": 1.677
+   },
+   {
+    "station": "BPP Tambun",
+    "year": 2024,
+    "gaugeMax": 95.0,
+    "satMax": 80.6,
+    "ratio": 1.179
+   },
+   {
+    "station": "Cibitung",
+    "year": 2020,
+    "gaugeMax": 76.0,
+    "satMax": 94.2,
+    "ratio": 0.807
+   },
+   {
+    "station": "Cibitung",
+    "year": 2021,
+    "gaugeMax": 75.0,
+    "satMax": 89.9,
+    "ratio": 0.834
+   },
+   {
+    "station": "Cibitung",
+    "year": 2022,
+    "gaugeMax": 85.0,
+    "satMax": 62.0,
+    "ratio": 1.371
+   },
+   {
+    "station": "Cibitung",
+    "year": 2023,
+    "gaugeMax": 141.0,
+    "satMax": 65.6,
+    "ratio": 2.15
+   },
+   {
+    "station": "Cibitung",
+    "year": 2024,
+    "gaugeMax": 163.0,
+    "satMax": 80.6,
+    "ratio": 2.022
+   },
+   {
+    "station": "Babakan",
+    "year": 2022,
+    "gaugeMax": 114.0,
+    "satMax": 79.3,
+    "ratio": 1.438
+   },
+   {
+    "station": "Babakan",
+    "year": 2023,
+    "gaugeMax": 93.0,
+    "satMax": 76.9,
+    "ratio": 1.209
+   },
+   {
+    "station": "Babakan",
+    "year": 2024,
+    "gaugeMax": 95.5,
+    "satMax": 84.8,
+    "ratio": 1.126
+   },
+   {
+    "station": "Tapak Serang",
+    "year": 2020,
+    "gaugeMax": 137.6,
+    "satMax": 79.2,
+    "ratio": 1.737
+   },
+   {
+    "station": "Tapak Serang",
+    "year": 2021,
+    "gaugeMax": 78.6,
+    "satMax": 74.0,
+    "ratio": 1.062
+   },
+   {
+    "station": "Tapak Serang",
+    "year": 2022,
+    "gaugeMax": 167.6,
+    "satMax": 79.3,
+    "ratio": 2.114
+   },
+   {
+    "station": "Tapak Serang",
+    "year": 2023,
+    "gaugeMax": 109.0,
+    "satMax": 76.9,
+    "ratio": 1.417
+   },
+   {
+    "station": "Tapak Serang",
+    "year": 2024,
+    "gaugeMax": 110.0,
+    "satMax": 84.8,
+    "ratio": 1.297
+   },
+   {
+    "station": "Gabus",
+    "year": 2020,
+    "gaugeMax": 175.0,
+    "satMax": 79.2,
+    "ratio": 2.209
+   },
+   {
+    "station": "Gabus",
+    "year": 2021,
+    "gaugeMax": 86.0,
+    "satMax": 74.0,
+    "ratio": 1.162
+   },
+   {
+    "station": "Gabus",
+    "year": 2022,
+    "gaugeMax": 40.0,
+    "satMax": 79.3,
+    "ratio": 0.504
+   },
+   {
+    "station": "Gabus",
+    "year": 2023,
+    "gaugeMax": 80.0,
+    "satMax": 76.9,
+    "ratio": 1.04
+   },
+   {
+    "station": "Gabus",
+    "year": 2024,
+    "gaugeMax": 65.0,
+    "satMax": 84.8,
+    "ratio": 0.766
+   },
+   {
+    "station": "Setu",
+    "year": 2020,
+    "gaugeMax": 154.5,
+    "satMax": 71.7,
+    "ratio": 2.155
+   },
+   {
+    "station": "Setu",
+    "year": 2021,
+    "gaugeMax": 202.0,
+    "satMax": 93.8,
+    "ratio": 2.154
+   },
+   {
+    "station": "Setu",
+    "year": 2022,
+    "gaugeMax": 126.0,
+    "satMax": 82.3,
+    "ratio": 1.532
+   },
+   {
+    "station": "Setu",
+    "year": 2023,
+    "gaugeMax": 96.0,
+    "satMax": 74.5,
+    "ratio": 1.289
+   },
+   {
+    "station": "Setu",
+    "year": 2024,
+    "gaugeMax": 108.5,
+    "satMax": 84.1,
+    "ratio": 1.29
+   },
+   {
+    "station": "Rawa Dukuh",
+    "year": 2020,
+    "gaugeMax": 160.0,
+    "satMax": 94.2,
+    "ratio": 1.699
+   },
+   {
+    "station": "Rawa Dukuh",
+    "year": 2021,
+    "gaugeMax": 123.0,
+    "satMax": 89.9,
+    "ratio": 1.368
+   },
+   {
+    "station": "Rawa Dukuh",
+    "year": 2022,
+    "gaugeMax": 95.0,
+    "satMax": 62.0,
+    "ratio": 1.533
+   },
+   {
+    "station": "Rawa Dukuh",
+    "year": 2024,
+    "gaugeMax": 65.0,
+    "satMax": 80.6,
+    "ratio": 0.806
+   },
+   {
+    "station": "Kranji",
+    "year": 2020,
+    "gaugeMax": 150.0,
+    "satMax": 94.2,
+    "ratio": 1.593
+   },
+   {
+    "station": "Kranji",
+    "year": 2021,
+    "gaugeMax": 120.0,
+    "satMax": 89.9,
+    "ratio": 1.335
+   },
+   {
+    "station": "Kranji",
+    "year": 2022,
+    "gaugeMax": 104.0,
+    "satMax": 62.0,
+    "ratio": 1.678
+   },
+   {
+    "station": "Kranji",
+    "year": 2023,
+    "gaugeMax": 98.0,
+    "satMax": 65.6,
+    "ratio": 1.494
+   },
+   {
+    "station": "Kranji",
+    "year": 2024,
+    "gaugeMax": 114.0,
+    "satMax": 80.6,
+    "ratio": 1.414
+   },
+   {
+    "station": "Bendung Bekasi",
+    "year": 2020,
+    "gaugeMax": 179.0,
+    "satMax": 99.9,
+    "ratio": 1.791
+   },
+   {
+    "station": "Bendung Bekasi",
+    "year": 2021,
+    "gaugeMax": 108.0,
+    "satMax": 79.2,
+    "ratio": 1.364
+   },
+   {
+    "station": "Bendung Bekasi",
+    "year": 2022,
+    "gaugeMax": 90.0,
+    "satMax": 58.0,
+    "ratio": 1.55
+   },
+   {
+    "station": "Bendung Bekasi",
+    "year": 2023,
+    "gaugeMax": 82.0,
+    "satMax": 69.9,
+    "ratio": 1.173
+   },
+   {
+    "station": "Bendung Bekasi",
+    "year": 2024,
+    "gaugeMax": 94.0,
+    "satMax": 74.5,
+    "ratio": 1.262
+   },
+   {
+    "station": "Cikeas",
+    "year": 2020,
+    "gaugeMax": 221.0,
+    "satMax": 79.3,
+    "ratio": 2.787
+   },
+   {
+    "station": "Cikeas",
+    "year": 2021,
+    "gaugeMax": 217.0,
+    "satMax": 74.6,
+    "ratio": 2.907
+   },
+   {
+    "station": "Cikeas",
+    "year": 2022,
+    "gaugeMax": 109.5,
+    "satMax": 70.5,
+    "ratio": 1.552
+   },
+   {
+    "station": "Cikeas",
+    "year": 2023,
+    "gaugeMax": 91.0,
+    "satMax": 117.1,
+    "ratio": 0.777
+   },
+   {
+    "station": "Cikeas",
+    "year": 2024,
+    "gaugeMax": 94.0,
+    "satMax": 67.8,
+    "ratio": 1.387
+   },
+   {
+    "station": "Lab.Perikanan Depok",
+    "year": 2020,
+    "gaugeMax": 161.0,
+    "satMax": 77.3,
+    "ratio": 2.084
+   },
+   {
+    "station": "Lab.Perikanan Depok",
+    "year": 2021,
+    "gaugeMax": 111.5,
+    "satMax": 68.9,
+    "ratio": 1.619
+   },
+   {
+    "station": "Lab.Perikanan Depok",
+    "year": 2022,
+    "gaugeMax": 99.0,
+    "satMax": 56.9,
+    "ratio": 1.739
+   },
+   {
+    "station": "Lab.Perikanan Depok",
+    "year": 2023,
+    "gaugeMax": 113.0,
+    "satMax": 128.7,
+    "ratio": 0.878
+   },
+   {
+    "station": "Lab.Perikanan Depok",
+    "year": 2024,
+    "gaugeMax": 118.0,
+    "satMax": 72.3,
+    "ratio": 1.631
+   },
+   {
+    "station": "Beji Depok",
+    "year": 2020,
+    "gaugeMax": 143.0,
+    "satMax": 77.9,
+    "ratio": 1.836
+   },
+   {
+    "station": "Beji Depok",
+    "year": 2021,
+    "gaugeMax": 82.0,
+    "satMax": 79.6,
+    "ratio": 1.031
+   },
+   {
+    "station": "Beji Depok",
+    "year": 2022,
+    "gaugeMax": 141.0,
+    "satMax": 76.1,
+    "ratio": 1.852
+   },
+   {
+    "station": "Beji Depok",
+    "year": 2023,
+    "gaugeMax": 86.0,
+    "satMax": 90.0,
+    "ratio": 0.955
+   },
+   {
+    "station": "Beji Depok",
+    "year": 2024,
+    "gaugeMax": 142.0,
+    "satMax": 98.8,
+    "ratio": 1.437
+   }
+  ],
+  "ratio_median": 1.371,
+  "ratio_q25": 0.983,
+  "ratio_q75": 1.699,
+  "ratio_of_means": 1.346
+ }
+}

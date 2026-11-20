@@ -1,5 +1,5 @@
 # ROADMAP
-**Current position (2026-11-20): Phases 0–4 delivered (data, look, engine v2 with WebGPU, provenance/exports, validation on three observed floods with fair baselines). Since then: accuracy work without owner data (gauge rain, sub-grid river blocks, region-wide 30 m in tiles) and return-period design rain (CHIRPS 1981–2025). Open: depth at reports still too shallow; Zenodo DOI (owner account); other regions (owner choice).**
+**Current position (2026-11-20): Phases 0–4 delivered (data, look, engine v2 with WebGPU, provenance/exports, validation on three observed floods with fair baselines). Since then: accuracy work without owner data (gauge rain, sub-grid river blocks, region-wide 30 m in tiles) and return-period design rain (GPM IMERG 2001–2024; CHIRPS server refused). Open: depth at reports still too shallow; Zenodo DOI (owner account); other regions (owner choice).**
 
 | Phase | Work | Gate (owner sees) | Status |
 |---|---|---|---|

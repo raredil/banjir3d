@@ -39,6 +39,7 @@ Hasil uji terbaru (20 Nov 2026, laporan warga dipilah menurut jarak ke sungai): 
 | Kondisi tanah sebelum hujan | diuji "normal", bisa diganti | Kering / normal / basah menurut hujan 5 hari sebelumnya (< 36 mm, 36–53 mm, > 53 mm; Chow dkk. 1988). Ini cara hujan mingguan atau bulanan memengaruhi banjir. |
 | Penurunan tanah | diuji, bisa dimatikan | Laju dari satelit radar Sentinel-1 2016–2024 (hingga sekitar 4 cm/tahun), hanya di dalam DKI. |
 | Air kiriman dari hulu | diuji, bisa dimatikan | Debit dari daerah tangkapan di luar area. Pada hujan rencana, hujan titik dikali faktor reduksi luas tiap daerah tangkapan (0,82–0,91 untuk tangkapan besar). |
+| Hujan rencana kala ulang | pilihan, bawaan "atur sendiri" | Hujan 24 jam untuk kala ulang 2–100 tahun dari hujan harian satelit GPM IMERG 2001–2024 (server CHIRPS menolak), sebaran log-Pearson III, nilai tengah 5 sel 11 km di DKI: 92 / 112 / 126 / 145 / 160 / 175 mm. Penakar hujan dekat DKI mencatat maksimum tahunan rata-rata 1,37 kali nilai satelit, jadi untuk satu titik angka ini **kemungkinan terlalu rendah** (tidak dikoreksi). |
 | Pompa polder DKI | skenario, bawaan mati | 263 rumah pompa, kapasitas tercatat; kapasitas dibagi rata ke polder. Lihat bagian G. |
 | Serapan saluran kecil (mm/jam) | skenario, bawaan 0 | Pengganti got/saluran tersier yang tidak ada ukurannya. Lihat bagian G. |
 | Muka laut | pengguna | 0 = rata-rata. Tanggul laut tidak ada di model. |
