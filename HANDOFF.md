@@ -24,7 +24,7 @@ Playwright module lives at `/opt/node-tools/node_modules` (use `NODE_PATH=/opt/n
 - Whole-region run, 1 Jan 2020 storm, 90 m CPU (Node): 13.5 min, mass error 5e-15; water follows valleys/rivers. 4.4 km box at 30 m in the browser: 39 s CPU, flood along Ciliwung (Kampung Melayu–Bukit Duri).
 - Exports: depth GeoTIFF (EPSG:32748, float32, nodata -9999), coloured GeoTIFF, HTML map (Leaflet + OSM from CDN), PNG figure (title, legend, scale, north, sources), JSON provenance.
 - Region-wide 30 m in tiles: set `tiles` in `verification/observed/request.json` (`{"box": [W,S,E,N], "n": [5,4], "buffer_km": 2}`, k 1) -> validate.yml runs one job per tile and `mosaic_tiles.py stitch` joins them by core (seam check in the summary).
-- Return-period design rain: `design-rain.yml` (push of `pipeline/design_rain*.py`) -> release `design-rain-jakarta-<date>-r<n>`; copy its `design_rain_jakarta.json` to `data/rain/`; the app option "Kala ulang" appears only when that file exists.
+- Return-period design rain: `design-rain.yml` (push of `pipeline/design_rain*.py`) -> release `design-rain-jakarta-<date>-r<n>`; copy its `design_rain_jakarta.json` to `data/rain/`; the app option "Kala ulang" appears only when that file exists. Any push that edits `pipeline/design_rain*.py` on a `claude/**` branch starts the ~4 h run again (cancel it if the edit was only text).
 - Tests: `cd web && npm run check` (104), `python -m pytest -q verification/observed/test_compare.py` (2, needs pyproj), `cd pipeline && python -m pytest -q` (23). `python3 tools/check.py` (2 warnings: IDEAS.md, MUST IDs format).
 
 ## Broken / Known gaps
