@@ -238,6 +238,51 @@
    ]
   },
   {
+   "id": "observed-sensitivity",
+   "status": "partial",
+   "file": "verification/observed/sensitivity-r08.json",
+   "id_txt": "Uji kepekaan: ketiga banjir dihitung ulang dengan 13 variasi masukan yang tidak pasti (20 Nov 2026): kekasaran permukaan 30 % lebih kecil dan 30 % lebih besar, kawasan terbangun sedikit menyerap air (CN 92, bukan 98), dan sepuluh peta tinggi tanah dengan galat acak yang halus (simpangan 0,5 m, asumsi). Hasil tanpa variasi sama persis dengan kartu resmi, jadi hitungan bisa diulang. Putusan tidak berubah pada variasi mana pun: 2021 tetap lebih baik dari acak, 2020 tetap tidak, 2025 tetap terlalu sedikit laporan. Kedalaman di lokasi laporan tetap 4–11 cm pada semua variasi (laporan 55–70 cm), jadi ketiga hal ini bukan penyebab model terlalu dangkal. Yang paling menggeser hasil adalah galat tinggi tanah: luas genangan DKI 2021 berkisar 22–47 km² (tanpa variasi 31 km²).",
+   "en_txt": "Sensitivity test: the three floods were run again with 13 variants of uncertain inputs (20 Nov 2026): surface roughness 30 % lower and 30 % higher, built-up land soaking in a little (CN 92 instead of 98), and ten terrain maps with a smooth random error (0.5 m standard deviation, an assumption). The run without changes matches the official card exactly, so the result can be repeated. No variant changes any verdict: 2021 stays better than random, 2020 stays not better, 2025 stays too few reports. The depth at the reports stays 4–11 cm in every variant (reported 55–70 cm), so none of these three inputs explains why the model is too shallow. The terrain error moves the results most: the 2021 DKI flooded area ranges 22–47 km² (31 km² without changes).",
+   "metrics": [
+    [
+     "Report hit (~270 m window) vs fair random near reports, 2020 · 2021 · 2025: as tested",
+     "49 vs 45 % · 39 vs 26 % · 39 vs 35 %"
+    ],
+    [
+     "Manning n x 0.7 / x 1.3",
+     "44 / 49 % · 38 / 38 % · 37 / 41 % (verdicts unchanged)"
+    ],
+    [
+     "Built-area CN 92 instead of 98",
+     "45 % · 32 % · 37 % (verdicts unchanged)"
+    ],
+    [
+     "Terrain error, 10 members (median, min–max)",
+     "46 (42–49) % · 37 (33–39) % · 34 (29–45) %; verdict the same in all 10 members of every flood"
+    ],
+    [
+     "DKI flooded > 0.15 m, km²: as tested · n x0.7 · n x1.3 · CN 92 · terrain (min–max)",
+     "2020 73 · 66 · 71 · 67 · 66–84 | 2021 31 · 32 · 20 · 24 · 22–47 | 2025 66 · 62 · 60 · 57 · 57–78"
+    ],
+    [
+     "Median model depth at reports, all variants (reported)",
+     "0.08–0.11 m (0.70) · 0.04–0.06 m (0.65) · 0.04–0.09 m (0.55)"
+    ],
+    [
+     "Hit near rivers (in a river block or within 100 m) / more than 500 m away, range over variants",
+     "2020 41–50 / 49–66 % · 2021 25–35 / 52–68 % (the near-river gap remains in every variant)"
+    ],
+    [
+     "Set-up",
+     "as the newest card (90 m, IMERG, pumps off, drains 0, AMC II, e16), releases validation-jakarta-*-v36..v38; terrain error: 0.5 m standard deviation smoothed over about 250 m, seeds 1–10 (assumption, web/src/engine/sensitivity.ts)"
+    ],
+    [
+     "Code",
+     "run_event.ts --sens, validate.yml sens axis, make_sens.py; review 05 R-08"
+    ]
+   ]
+  },
+  {
    "id": "observed-corrected",
    "status": "old",
    "file": "verification/observed/scores-2020-01-01-imerg-v7.json",
