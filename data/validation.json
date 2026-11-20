@@ -115,8 +115,57 @@
    ]
   },
   {
-   "id": "observed-review",
+   "id": "observed-subgrid",
    "status": "partial",
+   "file": "verification/observed/scores-2020-01-01-imerg-v9-sub.json",
+   "id_txt": "Banjir nyata, hasil terbaru (20 Nov 2026, dengan saluran sub-grid). Blok sel 90 m yang berisi sungai sekarang menyimpan dan mengalirkan air sesuai lebar sungai yang sebenarnya, bukan seluruh blok dianggap dasar sungai. Laporan warga yang jatuh dalam ±270 m dari genangan model: 55 % (2020), 43 % (2021), 51 % (2025); titik acak yang adil: 49, 27 dan 42 %. Putusan dengan uji statistik: banjir 2020 dan 2021 lebih baik dari acak (peluang kebetulan 3 % dan di bawah 0,1 %); 2025 laporannya terlalu sedikit (49). Di dalam DKI saja, 2020 belum jelas lebih baik dari acak (48 lawan 44 %). Ketiga banjir juga dipakai untuk memilih pengaturan model, jadi ini uji dalam-sampel. Model masih jauh terlalu dangkal di titik laporan (nilai tengah 12 cm lawan 70 cm pada 2020).",
+   "en_txt": "Observed floods, newest results (20 Nov 2026, with the sub-grid channel). A 90 m block that holds a river now stores and passes water by the real channel width instead of treating the whole block as river bed. Reports within about 270 m of modelled flooding: 55 % (2020), 43 % (2021), 51 % (2025); fair random baseline 49, 27 and 42 %. Verdict with a statistical test: the 2020 and 2021 floods are better than random (chance 3 % and below 0.1 %); 2025 has too few reports (49). Inside DKI alone, 2020 is not yet clearly better than random (48 vs 44 %). The three floods were also used to choose the model set-up, so this is an in-sample check. The model is still far too shallow at the reports (median 12 cm vs 70 cm in 2020).",
+   "metrics": [
+    [
+     "Reports hit within ~270 m vs fair random (near reports), 2020 · 2021 · 2025",
+     "55 % vs 49 % · 43 % vs 27 % · 51 % vs 42 %"
+    ],
+    [
+     "95 % interval of the hit share (1 km block bootstrap)",
+     "46–65 % · 36–51 % · 35–69 %"
+    ],
+    [
+     "Verdict (p < 0.05 against both fair baselines, ≥ 100 reports)",
+     "better (p = 0.03) · better (p < 0.001) · too few reports"
+    ],
+    [
+     "Reports inside DKI only, vs random on DKI land",
+     "48 % vs 44 % (p = 0.10) · 32 % vs 21 % · 41 % vs 42 % (17 reports)"
+    ],
+    [
+     "Same cell only, vs random on DKI land",
+     "30 % vs 19 % · 22 % vs 6 % · 22 % vs 17 %"
+    ],
+    [
+     "Median depth at reports, model / reported",
+     "0.12 / 0.70 m · 0.09 / 0.65 m · 0.13 / 0.55 m"
+    ],
+    [
+     "Flooded area > 0.15 m in DKI, model",
+     "86 · 24 · 75 km² (2020 reported: 156 km², definition unknown)"
+    ],
+    [
+     "RW places (2,610 RW): CSI · false-alarm ratio (upper bound) · AUC",
+     "0.15 · 0.81 · 0.59 | 0.08 · 0.85 · 0.60 | 0.10 · 0.89 · 0.67"
+    ],
+    [
+     "Change against the run without the sub-grid channel (v33–v35)",
+     "hit +6 · +4 · +12 points; fair random +4 · +1 · +7 points; depth +2 · +3 · +6 cm"
+    ],
+    [
+     "Set-up",
+     "90 m with the sub-grid channel (ADR 0025), GPM IMERG, pumps off, small-drain sink 0, average soil, subsidence to the event date; engine pack e16 (releases validation-jakarta-*-v45..v47, scores-*-imerg-v9-sub.json)"
+    ]
+   ]
+  },
+  {
+   "id": "observed-review",
+   "status": "old",
    "file": "verification/observed/scores-2020-01-01-imerg-v8.json",
    "id_txt": "Banjir nyata, hasil terbaru (20 Nov 2026, setelah tinjauan enam penguji). Perbaikan: tepi model tidak lagi menahan air, titik masuk sungai dari hulu dipindah ke alur sungai, daratan di blok sel sungai 90 m ikut dihitung, dan pembanding acak dibuat adil (titik acak di sekitar tempat warga biasa melapor, bukan hanya di DKI). Laporan warga yang jatuh dalam ±270 m dari genangan model: 49 % (2020), 39 % (2021), 39 % (2025); titik acak yang adil: 45, 26 dan 35 %. Putusan dengan uji statistik: hanya banjir 2021 yang jelas lebih baik dari acak; 2020 tidak (peluang kebetulan 11 %); 2025 laporannya terlalu sedikit (49). Penting: ketiga banjir juga dipakai untuk memilih pengaturan model, jadi ini uji dalam-sampel, belum validasi yang benar-benar terpisah. Model masih jauh terlalu dangkal (nilai tengah 10 cm lawan 70 cm laporan pada 2020) dan luas DKI 2020 73 km² lawan 156 km² laporan Pemprov.",
    "en_txt": "Observed floods, newest results (20 Nov 2026, after the six-tester review). Fixes: edges no longer trap water, upstream river entries moved onto the river channel, the land part of 90 m river blocks is counted, and the random baseline is fair (random points where people report, not only inside DKI). Reports within about 270 m of modelled flooding: 49 % (2020), 39 % (2021), 39 % (2025); fair random baseline 45, 26 and 35 %. Verdict with a statistical test: only the 2021 flood is clearly better than random; 2020 is not (chance 11 %); 2025 has too few reports (49). Note: the three floods were also used to choose the model set-up, so this is an in-sample check, not yet an independent validation. The model is still far too shallow (median 10 cm vs 70 cm reported in 2020), and the 2020 DKI area is 73 km² vs 156 km² reported.",

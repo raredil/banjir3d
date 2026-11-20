@@ -1,55 +1,55 @@
 {
- "_about": "How the tested set-up (90 m, GPM IMERG, pumps off, small-drain sink 0, average soil, subsidence to the event date) matched three recorded floods; from scores-2020-01-01-imerg-v8.json, scores-2021-02-20-imerg-v8.json, scores-2025-03-04-imerg-v8.json (verification/observed/make_skill.py). hit/random: 3 x 3 land window (about 270 m), cell: same land cell; random = points spread at random over DKI land with the same rule (old, unfair: a third of the reports lie outside DKI); randomDomain = all land of the grid, randomNear = land within 1 km of a report (fair baselines), ci95 = 1 km block bootstrap of hit, pNear = one-sided binomial p against randomNear, verdict better|not_better|too_few (p < 0.05 against both fair baselines, at least 100 reports); hitDki/randomDki = reports inside DKI only; legacyHit: the old rule that counted river channels; byDistance: the same hit rule per distance class to the nearest river/water block of the model (water = in the block, le100, 100_500, gt500 m; model grid), random = cells of the same class, p = one-sided binomial p against it, shareReports vs shareCells = where reports cluster.",
+ "_about": "How the tested set-up (90 m, GPM IMERG, pumps off, small-drain sink 0, average soil, subsidence to the event date) matched three recorded floods; from scores-2020-01-01-imerg-v9-sub.json, scores-2021-02-20-imerg-v9-sub.json, scores-2025-03-04-imerg-v9-sub.json (verification/observed/make_skill.py). hit/random: 3 x 3 land window (about 270 m), cell: same land cell; random = points spread at random over DKI land with the same rule (old, unfair: a third of the reports lie outside DKI); randomDomain = all land of the grid, randomNear = land within 1 km of a report (fair baselines), ci95 = 1 km block bootstrap of hit, pNear = one-sided binomial p against randomNear, verdict better|not_better|too_few (p < 0.05 against both fair baselines, at least 100 reports); hitDki/randomDki = reports inside DKI only; legacyHit: the old rule that counted river channels; byDistance: the same hit rule per distance class to the nearest river/water block of the model (water = in the block, le100, 100_500, gt500 m; model grid), random = cells of the same class, p = one-sided binomial p against it, shareReports vs shareCells = where reports cluster.",
  "events": [
   {
    "id": "2020-01-01",
    "n": 260,
-   "hit": 0.492,
-   "random": 0.382,
-   "hitCell": 0.258,
-   "randomCell": 0.16,
-   "legacyHit": 0.492,
+   "hit": 0.554,
+   "random": 0.436,
+   "hitCell": 0.3,
+   "randomCell": 0.186,
+   "legacyHit": 0.554,
    "obsMedianM": 0.7,
-   "modelMedianM": 0.103,
-   "dkiKm2": 72.9,
+   "modelMedianM": 0.124,
+   "dkiKm2": 85.9,
    "reportedKm2": 156,
-   "randomDomain": 0.43,
-   "randomNear": 0.452,
+   "randomDomain": 0.468,
+   "randomNear": 0.494,
    "ci95": [
-    0.406,
-    0.585
+    0.458,
+    0.651
    ],
-   "pNear": 0.1056,
-   "verdict": "not_better",
+   "pNear": 0.0311,
+   "verdict": "better",
    "nDki": 188,
-   "hitDki": 0.394,
-   "randomDki": 0.382,
+   "hitDki": 0.484,
+   "randomDki": 0.436,
    "byDistance": {
     "water": {
      "n": 57,
-     "hit": 0.526,
-     "random": 0.426,
-     "p": 0.082,
+     "hit": 0.579,
+     "random": 0.529,
+     "p": 0.267,
      "shareReports": 0.22,
      "shareCells": 0.135,
      "obsMedianM": 0.6,
-     "modelMedianM": 0.115
+     "modelMedianM": 0.217
     },
     "le100": {
      "n": 54,
-     "hit": 0.463,
-     "random": 0.426,
-     "p": 0.339,
+     "hit": 0.63,
+     "random": 0.51,
+     "p": 0.052,
      "shareReports": 0.208,
      "shareCells": 0.15,
      "obsMedianM": 0.715,
-     "modelMedianM": 0.101
+     "modelMedianM": 0.126
     },
     "100_500": {
      "n": 101,
-     "hit": 0.416,
-     "random": 0.405,
-     "p": 0.453,
+     "hit": 0.455,
+     "random": 0.432,
+     "p": 0.349,
      "shareReports": 0.39,
      "shareCells": 0.485,
      "obsMedianM": 0.785,
@@ -58,158 +58,158 @@
     "gt500": {
      "n": 47,
      "hit": 0.66,
-     "random": 0.473,
-     "p": 0.008,
+     "random": 0.479,
+     "p": 0.009,
      "shareReports": 0.181,
      "shareCells": 0.23,
      "obsMedianM": 0.6,
-     "modelMedianM": 0.135
+     "modelMedianM": 0.153
     }
    },
-   "rwCsi": 0.128,
-   "rwFar": 0.821,
-   "rwAucAll": 0.567,
-   "rwAuc": 0.5925105561837969
+   "rwCsi": 0.148,
+   "rwFar": 0.813,
+   "rwAucAll": 0.587,
+   "rwAuc": 0.6163168687989985
   },
   {
    "id": "2021-02-20",
    "n": 384,
-   "hit": 0.393,
+   "hit": 0.432,
    "random": 0.209,
-   "hitCell": 0.19,
-   "randomCell": 0.07,
-   "legacyHit": 0.401,
+   "hitCell": 0.216,
+   "randomCell": 0.061,
+   "legacyHit": 0.448,
    "obsMedianM": 0.65,
-   "modelMedianM": 0.057,
-   "dkiKm2": 30.7,
+   "modelMedianM": 0.086,
+   "dkiKm2": 24.3,
    "reportedKm2": null,
-   "randomDomain": 0.26,
-   "randomNear": 0.26,
+   "randomDomain": 0.271,
+   "randomNear": 0.267,
    "ci95": [
-    0.322,
-    0.47
+    0.355,
+    0.51
    ],
    "pNear": 0.0,
    "verdict": "better",
    "nDki": 265,
-   "hitDki": 0.291,
+   "hitDki": 0.321,
    "randomDki": 0.209,
    "byDistance": {
     "water": {
      "n": 91,
-     "hit": 0.297,
-     "random": 0.248,
-     "p": 0.171,
+     "hit": 0.396,
+     "random": 0.288,
+     "p": 0.018,
      "shareReports": 0.245,
      "shareCells": 0.135,
      "obsMedianM": 0.84,
-     "modelMedianM": 0.03
+     "modelMedianM": 0.072
     },
     "le100": {
      "n": 99,
-     "hit": 0.364,
-     "random": 0.25,
-     "p": 0.008,
+     "hit": 0.404,
+     "random": 0.281,
+     "p": 0.006,
      "shareReports": 0.266,
      "shareCells": 0.15,
      "obsMedianM": 0.71,
-     "modelMedianM": 0.033
+     "modelMedianM": 0.059
     },
     "100_500": {
      "n": 138,
-     "hit": 0.435,
-     "random": 0.239,
+     "hit": 0.449,
+     "random": 0.242,
      "p": 0.0,
      "shareReports": 0.371,
      "shareCells": 0.485,
      "obsMedianM": 0.53,
-     "modelMedianM": 0.091
+     "modelMedianM": 0.098
     },
     "gt500": {
      "n": 44,
      "hit": 0.636,
-     "random": 0.306,
+     "random": 0.304,
      "p": 0.0,
      "shareReports": 0.118,
      "shareCells": 0.23,
      "obsMedianM": 0.52,
-     "modelMedianM": 0.219
+     "modelMedianM": 0.196
     }
    },
-   "rwCsi": 0.084,
-   "rwFar": 0.849,
-   "rwAucAll": 0.59,
-   "rwAuc": 0.5996277114383761
+   "rwCsi": 0.082,
+   "rwFar": 0.85,
+   "rwAucAll": 0.603,
+   "rwAuc": 0.6090121690240722
   },
   {
    "id": "2025-03-04",
    "n": 49,
-   "hit": 0.388,
-   "random": 0.373,
-   "hitCell": 0.163,
-   "randomCell": 0.15,
-   "legacyHit": 0.388,
+   "hit": 0.51,
+   "random": 0.424,
+   "hitCell": 0.224,
+   "randomCell": 0.17,
+   "legacyHit": 0.51,
    "obsMedianM": 0.55,
-   "modelMedianM": 0.067,
-   "dkiKm2": 66.4,
+   "modelMedianM": 0.126,
+   "dkiKm2": 75.1,
    "reportedKm2": null,
-   "randomDomain": 0.424,
-   "randomNear": 0.351,
+   "randomDomain": 0.459,
+   "randomNear": 0.424,
    "ci95": [
-    0.244,
-    0.548
+    0.353,
+    0.686
    ],
-   "pNear": 0.344,
+   "pNear": 0.141,
    "verdict": "too_few",
    "nDki": 17,
-   "hitDki": 0.176,
-   "randomDki": 0.373,
+   "hitDki": 0.412,
+   "randomDki": 0.424,
    "byDistance": {
     "water": {
      "n": 13,
-     "hit": 0.308,
-     "random": 0.415,
-     "p": 0.857,
+     "hit": 0.538,
+     "random": 0.514,
+     "p": 0.541,
      "shareReports": 0.277,
      "shareCells": 0.135,
      "obsMedianM": 0.63,
-     "modelMedianM": 0.077
+     "modelMedianM": 0.147
     },
     "le100": {
      "n": 13,
-     "hit": 0.385,
-     "random": 0.417,
-     "p": 0.692,
+     "hit": 0.538,
+     "random": 0.499,
+     "p": 0.498,
      "shareReports": 0.277,
      "shareCells": 0.15,
      "obsMedianM": 0.85,
-     "modelMedianM": 0.034
+     "modelMedianM": 0.126
     },
     "100_500": {
      "n": 17,
-     "hit": 0.412,
-     "random": 0.402,
-     "p": 0.557,
+     "hit": 0.471,
+     "random": 0.423,
+     "p": 0.434,
      "shareReports": 0.362,
      "shareCells": 0.485,
      "obsMedianM": 0.5,
-     "modelMedianM": 0.083
+     "modelMedianM": 0.097
     },
     "gt500": {
      "n": 4,
      "hit": 0.75,
-     "random": 0.469,
-     "p": 0.268,
+     "random": 0.472,
+     "p": 0.272,
      "shareReports": 0.085,
      "shareCells": 0.23,
      "obsMedianM": 0.225,
      "modelMedianM": 0.418
     }
    },
-   "rwCsi": 0.048,
-   "rwFar": 0.941,
-   "rwAucAll": 0.525,
-   "rwAuc": 0.4067318540804814
+   "rwCsi": 0.103,
+   "rwFar": 0.886,
+   "rwAucAll": 0.672,
+   "rwAuc": 0.5933115399080048
   }
  ]
 }
