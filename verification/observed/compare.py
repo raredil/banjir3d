@@ -438,7 +438,7 @@ def main():
         m = np.frombuffer(gzip.decompress((rundir / sp.name.replace("_summary.json", "_mask.u8.gz")).read_bytes()), np.uint8).reshape(s["ny"], s["nx"])
         inside = (m & 1).astype(bool) & ~(m & 2).astype(bool)  # active, not sea
         land, lw = land_of(rundir / sp.name.replace("_summary.json", "_landshare.u8.gz"), m, inside)
-        r = {"run": sp.name.replace("_summary.json", ""), "drain_mm_h": s["drain_mm_h"], "rain": s["rain"], "rain_scale": s.get("rain_scale", 1), "terrain_year": s.get("terrain_year"), "pumps": s.get("pumps"), "pump_m3s": s.get("pump_m3s"), "amc": s.get("amc", 2), "infiltration": s.get("infiltration", True),
+        r = {"run": sp.name.replace("_summary.json", ""), "drain_mm_h": s["drain_mm_h"], "rain": s["rain"], "rain_scale": s.get("rain_scale", 1), "terrain_year": s.get("terrain_year"), "pumps": s.get("pumps"), "pump_m3s": s.get("pump_m3s"), "amc": s.get("amc", 2), "infiltration": s.get("infiltration", True), "sens": s.get("sens", "none"),
              "mean_rain_mm": s["mean_rain_mm"], "flooded_km2": s["flooded_km2_gt015_outside_channels"], "mass_error": s["massError"],
              "reports": report_scores(rep, h, s, land, dki_mask(s)),
              "reports_by_distance": distance_class_scores(rep, h, s, land, (m & 4).astype(bool) & inside, inside)}

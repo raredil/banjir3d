@@ -10,7 +10,7 @@ root = Path(__file__).resolve().parents[2]
 
 def pick(results, pumps, amc):
     for r in results:
-        if bool(r.get("pumps")) == pumps and r.get("amc", 2) == amc and r.get("drain_mm_h", 0) == 0 and r.get("rain_scale", 1) == 1:
+        if bool(r.get("pumps")) == pumps and r.get("amc", 2) == amc and r.get("drain_mm_h", 0) == 0 and r.get("rain_scale", 1) == 1 and r.get("sens", "none") == "none":
             return r
     return None
 
