@@ -54,6 +54,8 @@ jobs:
       micros: ${{ steps.t.outputs.micros }}
       sens: ${{ steps.t.outputs.sens }}
       subs: ${{ steps.t.outputs.subs }}
+      tiles: ${{ steps.t.outputs.tiles }}
+      tilespec: ${{ steps.t.outputs.tilespec }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -68,7 +70,9 @@ jobs:
           IN_SCALES: ${{ inputs.scales }}
         run: |
           python3 - <<'PY' >> "$GITHUB_OUTPUT"
-          import json, os, re
+          import json, os, re, sys
+          sys.path.insert(0, "verification/observed")
+          from mosaic_tiles import plan  # stdlib only
           r = json.load(open("verification/observed/request.json"))
           ev = os.environ["IN_EVENT"] or r["event"]
           dr = json.loads(os.environ["IN_DRAINS"] or json.dumps(r["drains"]))
@@ -81,6 +85,9 @@ jobs:
           mi = r.get("micro", ["off"])
           se = r.get("sens", ["none"])  # sensitivity variants (web/src/engine/sensitivity.ts, review R-08)
           sg = r.get("subgrid", ["on"])  # sub-grid channel in coarse river blocks (ADR 0025)
+          ts = r.get("tiles")  # region-wide 30 m in tiles (mosaic_tiles.py): one set-up only, k 1
+          tl = plan(ts) if ts else ["none"]
+          assert not ts or (k == "1" and len(mi) * len(am) * len(pu) * len(ty) * len(sc) * len(dr) * len(se) * len(sg) == 1)
           assert isinstance(sg, list) and 0 < len(sg) <= 2 and len(set(sg)) == len(sg) and all(v in ("on", "off") for v in sg) and len(mi) * len(am) * len(pu) * len(ty) * len(sc) * len(dr) * len(se) * len(sg) <= 16
           assert isinstance(se, list) and 0 < len(se) <= 16 and len(set(se)) == len(se) and all(isinstance(v, str) and re.fullmatch(r"none|n0\.7|n1\.3|cnb92|dem([1-9]|10)", v) for v in se)
           assert isinstance(mi, list) and 0 < len(mi) <= 2 and all(v in ("on", "off") for v in mi)
@@ -90,7 +97,7 @@ jobs:
           assert re.fullmatch(r"\d{4}-\d\d-\d\d", ev) and rain in ("era5", "era5_land", "chirps", "imerg", "imerg_gauge") and k in "123456" and len(k) == 1
           assert isinstance(dr, list) and 0 < len(dr) <= 8 and all(isinstance(v, (int, float)) and 0 <= v <= 500 for v in dr)
           assert isinstance(sc, list) and 0 < len(sc) * len(dr) <= 8 and all(isinstance(v, (int, float)) and 0.1 <= v <= 5 for v in sc)
-          print(f"event={ev}\ndrains={json.dumps(dr)}\nrain={rain}\nk={k}\nscales={json.dumps(sc)}\nyears={json.dumps(ty)}\npumps={json.dumps(pu)}\namcs={json.dumps(am)}\nmicros={json.dumps(mi)}\nsens={json.dumps(se)}\nsubs={json.dumps(sg)}")
+          print(f"event={ev}\ndrains={json.dumps(dr)}\nrain={rain}\nk={k}\nscales={json.dumps(sc)}\nyears={json.dumps(ty)}\npumps={json.dumps(pu)}\namcs={json.dumps(am)}\nmicros={json.dumps(mi)}\nsens={json.dumps(se)}\nsubs={json.dumps(sg)}\ntiles={json.dumps(tl)}\ntilespec={json.dumps(ts or {}, separators=(',', ':'))}")
           PY
           EVENT=$(grep '^event=' "$GITHUB_OUTPUT" | tail -1 | cut -d= -f2)
           case "$EVENT" in [0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]) ;; *) echo "::error::bad event id"; exit 1 ;; esac
@@ -115,6 +122,7 @@ jobs:
         micro: ${{ fromJSON(needs.prep.outputs.micros) }}
         sens: ${{ fromJSON(needs.prep.outputs.sens) }}
         sub: ${{ fromJSON(needs.prep.outputs.subs) }}
+        tile: ${{ fromJSON(needs.prep.outputs.tiles) }}
     env:
       EVENT: ${{ needs.prep.outputs.event }}
       RAIN: ${{ needs.prep.outputs.rain }}
@@ -127,6 +135,7 @@ jobs:
       MICRO: ${{ matrix.micro }}
       SENS: ${{ matrix.sens }}
       SUB: ${{ matrix.sub }}
+      TILE: ${{ matrix.tile }}
       TAG: ${{ needs.prep.outputs.tag }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -153,6 +162,7 @@ jobs:
           case "$MICRO" in on|off) ;; *) echo "::error::bad micro"; exit 1 ;; esac
           [[ "$SENS" =~ ^(none|n0\.7|n1\.3|cnb92|dem([1-9]|10))$ ]] || { echo "::error::bad sens"; exit 1; }
           case "$SUB" in on|off) ;; *) echo "::error::bad subgrid"; exit 1 ;; esac
+          [[ "$TILE" =~ ^(none|[0-9]{1,2}:[0-9.]+,-[0-9.]+,[0-9.]+,-[0-9.]+)$ ]] || { echo "::error::bad tile"; exit 1; }
           newest() { gh release list --repo "$GITHUB_REPOSITORY" --limit 100 --json tagName,isDraft,createdAt \
             --jq "[.[] | select(.isDraft | not) | select(.tagName | startswith(\"$1\"))] | sort_by(.createdAt) | last | .tagName // empty"; }
           ep=$(newest region-jakarta-); ob=$(newest observed-jakarta-)
@@ -173,14 +183,15 @@ jobs:
         run: |
           read -r start hours < <(python3 -c "import json,sys; e=[e for e in json.load(open('../verification/observed/events.json'))['events'] if e['id']==sys.argv[1]][0]; print(e['utc'][0], e['run_hours'])" "$EVENT")
           npx --yes vite-node@6.0.0 ../verification/observed/run_event.ts "$RUNNER_TEMP/in/engine_jakarta.bin.gz" "$RUNNER_TEMP/in/$EVENT/rain_${RAIN}.json" \
-            "$start" "$hours" "$RUNNER_TEMP/out" --k "$K" --drain "$DRAIN" --scale "$SCALE" --year "$TY" --pumps "$PUMPS" --amc "$AMC" --micro "$MICRO" --sens "$SENS" --subgrid "$SUB"
+            "$start" "$hours" "$RUNNER_TEMP/out" --k "$K" --drain "$DRAIN" --scale "$SCALE" --year "$TY" --pumps "$PUMPS" --amc "$AMC" --micro "$MICRO" --sens "$SENS" --subgrid "$SUB" \
+            $([ "$TILE" = none ] || echo "--box ${TILE#*:}")
       - name: Upload result
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           cd "$RUNNER_TEMP/out"
           python3 -c "import json,os; s=json.load(open('summary.json')); s['sources']=os.environ['SRC']; json.dump(s,open('summary.json','w'),indent=1)"
-          n="${EVENT}_${RAIN}_k${K}_d${DRAIN}"; [ "$SCALE" = "1" ] || n="${n}_s${SCALE}"; [ "$TY" = "auto" ] || n="${n}_t${TY}"; [ "$PUMPS" = "on" ] || n="${n}_poff"; [ "$AMC" = "2" ] || n="${n}_amc${AMC}"; [ "$MICRO" = "off" ] || n="${n}_mdr"; [ "$SENS" = "none" ] || n="${n}_${SENS}"; [ "$SUB" = "off" ] || n="${n}_sub"
+          n="${EVENT}_${RAIN}_k${K}_d${DRAIN}"; [ "$SCALE" = "1" ] || n="${n}_s${SCALE}"; [ "$TY" = "auto" ] || n="${n}_t${TY}"; [ "$PUMPS" = "on" ] || n="${n}_poff"; [ "$AMC" = "2" ] || n="${n}_amc${AMC}"; [ "$MICRO" = "off" ] || n="${n}_mdr"; [ "$SENS" = "none" ] || n="${n}_${SENS}"; [ "$SUB" = "off" ] || n="${n}_sub"; [ "$TILE" = none ] || n="tile${TILE%%:*}-${n}"
           [ -f "$RUNNER_TEMP/in/gauge_merge.json" ] && cp "$RUNNER_TEMP/in/gauge_merge.json" "${n}_gauge_merge.json" && "$GITHUB_WORKSPACE/.github/scripts/release.sh" upload "$TAG" "${n}_gauge_merge.json"
           gzip -c hmax.f32 > "${n}_hmax.f32.gz" && gzip -c mask.u8 > "${n}_mask.u8.gz" && gzip -c landshare.u8 > "${n}_landshare.u8.gz" && cp summary.json "${n}_summary.json"
           "$GITHUB_WORKSPACE/.github/scripts/release.sh" upload "$TAG" "${n}_hmax.f32.gz" "${n}_mask.u8.gz" "${n}_landshare.u8.gz" "${n}_summary.json"
@@ -194,6 +205,7 @@ jobs:
     env:
       EVENT: ${{ needs.prep.outputs.event }}
       TAG: ${{ needs.prep.outputs.tag }}
+      TILESPEC: ${{ needs.prep.outputs.tilespec }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -212,5 +224,6 @@ jobs:
           python verification/observed/fetch.py "$RUNNER_TEMP/pb" --petabencana-only
           (cd pipeline && timeout 480 python jakartasatu.py "$RUNNER_TEMP/js") || echo "::warning::Jakarta Satu not reachable; scoring without DSDA flood polygons"
           timeout 480 python verification/observed/rw_zenodo.py "$RUNNER_TEMP/rw" || echo "::warning::RW polygons not available; scoring without RW places"
+          if [ "$TILESPEC" != "{}" ]; then python verification/observed/mosaic_tiles.py stitch "$RUNNER_TEMP/res" "$TILESPEC" && (cd "$RUNNER_TEMP/res" && "$GITHUB_WORKSPACE/.github/scripts/release.sh" upload "$TAG" ./*_tiles*_*); fi
           python verification/observed/compare.py "$RUNNER_TEMP/pb" "$EVENT" "$RUNNER_TEMP/res" "$RUNNER_TEMP/${EVENT}_scores.json" "$RUNNER_TEMP/js/jakartasatu.gpkg" "$RUNNER_TEMP/rw/rw.gpkg"
           "$GITHUB_WORKSPACE/.github/scripts/release.sh" upload "$TAG" "$RUNNER_TEMP/${EVENT}_scores.json"
