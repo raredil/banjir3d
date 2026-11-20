@@ -1,7 +1,7 @@
 // Run engine v2 (CPU reference) on an observed event: hourly rain per 0.1 degree reanalysis cell (fetch.py), each catchment with
 // its own rain, and the city-drain sink on built-up cells. Usage (from web/):
 //   npx vite-node ../verification/observed/run_event.ts <engine.bin.gz> <rain_era5_land.json> <start UTC> <hours> <outdir>
-//       [--k 3] [--drain 0] [--scale 1] [--box W,S,E,N] [--year auto|none|<decimal year>] [--pumps on|off] [--micro on|off] [--upstream on|off] [--amc 1|2|3] [--infil on|off] [--sens none|n0.7|n1.3|cnb92|dem1..dem10]
+//       [--k 3] [--drain 0] [--scale 1] [--box W,S,E,N] [--year auto|none|<decimal year>] [--pumps on|off] [--micro on|off] [--upstream on|off] [--amc 1|2|3] [--infil on|off] [--sens none|n0.7|n1.3|cnb92|dem1..dem10] [--subgrid off|on]
 // --sens: one sensitivity variant (web/src/engine/sensitivity.ts, review R-08): Manning n x 0.7 / x 1.3, built-area CN 92, or terrain + a
 //   smooth random error (0.5 m standard deviation, seed 1..10). Research runs only.
 // --amc: soil wetness before the storm (antecedent runoff condition, Chow et al. 1988), applied to the cells and the upstream catchments.
@@ -14,7 +14,7 @@
 // --year: terrain year for the land subsidence shift (auto = event start; none = terrain as measured). --scale: rain multiplier (1 = reanalysis as it is). Writes hmax.f32 (row-major, run grid), mask.u8 and summary.json.
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { gunzipSync } from "node:zlib";
-import { buildRun, landSurface, parsePack } from "../../web/src/engine/pack";
+import { buildRun, landSurface, parsePack, subgridOf } from "../../web/src/engine/pack";
 import { FloodEngine } from "../../web/src/engine/solver";
 import { DT_S, cnForAmc, inflowsForSpatial } from "../../web/src/engine/hydrology";
 import { fromUtm } from "../../web/src/util";
@@ -24,7 +24,7 @@ const a = process.argv.slice(2);
 const opt = (k: string, d: string) => { const i = a.indexOf(`--${k}`); return i >= 0 ? a[i + 1] : d; };
 const [packFile, rainFile, startUtc, hoursS, out] = a;
 const hours = Number(hoursS), k = Number(opt("k", "3")), drainMmH = Number(opt("drain", "0")), scale = Number(opt("scale", "1")), pumpsOn = opt("pumps", "on") !== "off", microOn = opt("micro", "off") === "on", upOn = opt("upstream", "on") !== "off";
-const amc = Number(opt("amc", "2")) as 1 | 2 | 3, infilOn = opt("infil", "on") !== "off", sens = opt("sens", "none");
+const amc = Number(opt("amc", "2")) as 1 | 2 | 3, infilOn = opt("infil", "on") !== "off", sens = opt("sens", "none"), subOn = opt("subgrid", "off") === "on";
 if (![1, 2, 3].includes(amc)) throw new Error("--amc must be 1, 2 or 3");
 const cnOf = (v: number) => cnForAmc(v, amc);
 mkdirSync(out, { recursive: true });
@@ -73,7 +73,7 @@ for (let c = 0; c < N; c++) {
   if (microOn && run.mdr && !run.channel[c] && !run.sea[c]) drain[c] += run.mdr[c]; // micro drains (pipeline/micro_drains.py)
 }
 
-const e = new FloodEngine({ nx: run.nx, ny: run.ny, dx: run.dx, z: run.z, n: run.n, cn: infilOn ? run.cn : undefined, active: run.active, sea: run.sea, zone, drain, ...(run.h0 ? { h0: run.h0 } : {}) }, { inflowCells: inflows.map((f) => f.cell) });
+const e = new FloodEngine({ nx: run.nx, ny: run.ny, dx: run.dx, z: run.z, n: run.n, cn: infilOn ? run.cn : undefined, active: run.active, sea: run.sea, zone, drain, ...(run.h0 ? { h0: run.h0 } : {}), ...(subOn ? subgridOf(run) : {}) }, { inflowCells: inflows.map((f) => f.cell) });
 const w0 = Date.now();
 let nsteps = 0;
 while (e.t < hours * 3600) {
@@ -94,7 +94,7 @@ writeFileSync(`${out}/mask.u8`, Uint8Array.from({ length: N }, (_, c) => run.act
 let wet = 0, cnt = 0, rainSum = 0;
 for (let c = 0; c < N; c++) if (run.active[c] && !run.sea[c]) { cnt++; rainSum += cumOf[zone[c]][steps]; if (hLand[c] > 0.15) wet += run.channel[c] ? (share?.[c] ?? 0) : 1; }
 const summary = {
-  pack: pack.header.created, rain: rainFile.split("/").pop(), start_utc: startUtc, hours, k, dx: run.dx, nx: run.nx, ny: run.ny, drain_mm_h: drainMmH, sens, upstream: upOn, amc, infiltration: infilOn, pumps: pumpsOn && !!run.pump, micro: microOn && !!run.mdr, micro_m3s: run.mdr && microOn ? Math.round(run.mdr.reduce((a, v, c) => a + (run.sea[c] || run.channel[c] ? 0 : v), 0) * run.dx * run.dx * 10) / 10 : 0, pump_m3s: run.pump ? Math.round(run.pump.reduce((a, v, c) => a + (run.sea[c] ? 0 : v), 0) * run.dx * run.dx * 10) / 10 : 0, rain_scale: scale, terrain_year: terrainYear ?? null, terrain_epoch: pack.sub ? pack.subEpoch : null,
+  pack: pack.header.created, rain: rainFile.split("/").pop(), start_utc: startUtc, hours, k, dx: run.dx, nx: run.nx, ny: run.ny, drain_mm_h: drainMmH, sens, subgrid: subOn, upstream: upOn, amc, infiltration: infilOn, pumps: pumpsOn && !!run.pump, micro: microOn && !!run.mdr, micro_m3s: run.mdr && microOn ? Math.round(run.mdr.reduce((a, v, c) => a + (run.sea[c] || run.channel[c] ? 0 : v), 0) * run.dx * run.dx * 10) / 10 : 0, pump_m3s: run.pump ? Math.round(run.pump.reduce((a, v, c) => a + (run.sea[c] ? 0 : v), 0) * run.dx * run.dx * 10) / 10 : 0, rain_scale: scale, terrain_year: terrainYear ?? null, terrain_epoch: pack.sub ? pack.subEpoch : null,
   steps: nsteps, wall_s: (Date.now() - w0) / 1000, massError: e.massError(), totals: e.totals, built_share_known: !!pack.built,
   mean_rain_mm: rainSum / cnt, flooded_km2_gt015_outside_channels: (wet * run.dx * run.dx) / 1e6, utm: run.utm, corners: run.corners,
   inflows: inflows.slice(0, 12).map((f) => ({ areaKm2: +f.areaKm2.toFixed(1), rainMm: +f.rainMm.toFixed(1), peakQ: +Math.max(...f.q).toFixed(1), x: f.x, y: f.y })),

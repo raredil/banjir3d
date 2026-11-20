@@ -1,6 +1,6 @@
 // Developer page (not in the production build): GPU solver vs CPU reference on real terrain. Open /verify-gpu.html?box=W,S,E,N&hours=H
 // &zones=1: west and east half get different rain (east half 50 %); &drain=D: drains of D mm/h on built cells (all cells without a share).
-import { buildRun, loadPack } from "./engine/pack";
+import { buildRun, loadPack, subgridOf } from "./engine/pack";
 import { FloodEngine } from "./engine/solver";
 import { GpuEngine } from "./engine/gpu";
 import { DT_S, inflowsFor } from "./engine/hydrology";
@@ -27,7 +27,9 @@ const out = document.querySelector("#out")!;
     for (let c = 0; c < N; c++) { const ch = run.channel[c] || run.sea[c]; phi[c] = ch ? 1 : 0.35 + 0.6 * (((c * 7919) % 13) / 12); psiX[c] = ch ? 1 : 0.15 + 0.85 * (((c * 104729) % 11) / 10); psiY[c] = ch ? 1 : 0.6; rainW[c] = ch ? 1 : c % 2 ? 1.15 : 0.85; }
     return { phi, psiX, psiY, rainW };
   })() : {};
-  const grid = { nx: run.nx, ny: run.ny, dx: run.dx, z: run.z, n: run.n, cn: run.cn, active: run.active, sea: run.sea, zone, drain, ...por };
+  // &sub=1: sub-grid channel in coarse river blocks (k > 1, ADR 0025)
+  const sub = q.get("sub") === "1" ? subgridOf(run) : {};
+  const grid = { nx: run.nx, ny: run.ny, dx: run.dx, z: run.z, n: run.n, cn: run.cn, active: run.active, sea: run.sea, zone, drain, ...por, ...sub };
   // CPU: rain rate per block is constant, inflow per DT_S step (same discretisation as the GPU)
   const cpu = new FloodEngine(grid, { inflowCells: inflows.map((f) => f.cell) });
   let t0 = performance.now();

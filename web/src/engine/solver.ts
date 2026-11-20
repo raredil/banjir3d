@@ -20,6 +20,11 @@ export type EngineGrid = {
   // ground (stores water), open share of the east / south face (conveys water) and the cell area whose rain reaches this
   // cell's open ground (roof runoff of nearly closed cells is handed to open neighbours), all in units of the cell (1 = no buildings)
   phi?: ArrayLike<number>; psiX?: ArrayLike<number>; psiY?: ArrayLike<number>; rainW?: ArrayLike<number>;
+  // Sub-grid channel (coarse 60/90 m blocks that hold a mapped channel; ADR 0025): the block bed is the channel bed, but below
+  // the block's land level (subDz m above the bed) only the channel share subS of the block stores water and only the smaller
+  // channel share of two blocks conveys it across their face; above the land level the whole block does. Same idea as the
+  // sub-grid channel of LISFLOOD-FP and as depth-dependent porosity (Sanders et al. 2008). Absent or subS = 1: plain cell.
+  subS?: ArrayLike<number>; subDz?: ArrayLike<number>;
 };
 // hMin: depth below which a face carries no flow; 0.001 m is the LISFLOOD-FP default, so thin runoff sheets still drain
 // Courant factor of the time step (Bates et al. 2010; LISFLOOD-FP default 0.7). 0.5 until 2026-11-13: 0.7 is about 30 % faster with the
@@ -52,6 +57,9 @@ export class FloodEngine {
   private readonly py: Float64Array; // open share of the south face
   private readonly rw: Float64Array; // rain-collecting area per cell (cell areas)
   private readonly cfl: Uint8Array; // 1 = the cell can exchange water with a neighbour (cells sealed by buildings do not limit the time step)
+  private readonly ss: Float64Array; // sub-grid channel share below the land level (1 = plain cell)
+  private readonly dz: Float64Array; // land level above the bed of a sub-grid channel block (m)
+  private readonly sub: boolean;
   readonly porous: boolean;
   t = 0;
   rainMm = 0; // cumulative gross rain (mm) since t = 0
@@ -93,16 +101,22 @@ export class FloodEngine {
     }
     const por = porosityArrays(g);
     this.phi = por.phi; this.px = por.px; this.py = por.py; this.rw = por.rw; this.cfl = por.cfl; this.porous = !!g.phi;
+    this.ss = por.ss; this.dz = por.dz; this.sub = por.sub;
     if (g.sea) for (let c = 0; c < N; c++) if (g.sea[c] && active[c]) this.h[c] = Math.max(0, this.seaLevel - g.z[c]);
-    if (g.h0) for (let c = 0; c < N; c++) if (active[c] && !g.sea?.[c]) this.h[c] = Math.max(this.h[c], g.h0[c]);
+    // h0 is a volume per cell area (block mean of the 30 m start water); a sub-grid block holds it in its channel share first
+    if (g.h0) for (let c = 0; c < N; c++) if (active[c] && !g.sea?.[c]) this.h[c] = Math.max(this.h[c], this.ss[c] < 1 ? this.hOf(c, g.h0[c] * this.phi[c]) : g.h0[c]);
     this.initial = this.volume();
     for (let c = 0; c < N; c++) if (this.cfl[c] && this.h[c] > this.depthMax) this.depthMax = this.h[c];
   }
   private readonly initial: number;
 
+  /** Water volume per cell area held at depth h (above the bed) in cell c. */
+  vOf(c: number, h: number): number { return volAt(this.phi[c], this.ss[c], this.dz[c], h); }
+  /** Depth (above the bed) at which cell c holds the volume v per cell area (inverse of vOf). */
+  hOf(c: number, v: number): number { return depthAt(this.phi[c], this.ss[c], this.dz[c], v); }
   volume(): number {
     let v = 0;
-    for (let c = 0; c < this.h.length; c++) if (this.g.active[c]) v += this.h[c] * this.phi[c];
+    for (let c = 0; c < this.h.length; c++) if (this.g.active[c]) v += this.vOf(c, this.h[c]);
     return v * this.area;
   }
   /** (initial + rain + inflow - infiltration - outflow - sea - drain - stored) / (initial + rain + inflow). */
@@ -116,7 +130,7 @@ export class FloodEngine {
 
   step(): number {
     const { nx, ny, dx, z, n, active, sea, zone, drain } = this.g;
-    const { h, qx, qy, qxN, qyN, bnd, scale, hMin, phi, px, py, rw, cfl } = this;
+    const { h, qx, qy, qxN, qyN, bnd, scale, hMin, phi, px, py, rw, cfl, sub, ss } = this;
     const dt = this.dtNow(), A = this.area, gdt = G * dt, gdtDx = gdt / dx;
     const N = nx * ny;
     // 1. face fluxes per metre of open face (both cells active), momentum equation of Bates et al. (2010) with semi-implicit
@@ -135,10 +149,12 @@ export class FloodEngine {
             let qt = qy[c] + qy[r];
             if (j > 0) qt += qy[c - nx] + qy[r - nx];
             qt *= 0.25;
-            const q0 = qx[c], nn = 0.5 * (n[c] + n[r]);
-            const q = (q0 - hf * gdtDx * (etaR - etaC)) / (1 + (gdt * nn * nn * Math.sqrt(q0 * q0 + qt * qt)) / (hf * hf * Math.cbrt(hf)));
+            // sub-grid channel: fluxes are kept per metre of the whole face; the momentum equation works on the flow in the open part
+            const w = sub ? this.faceW(c, r, hf) : 1;
+            const q0 = qx[c] / w, nn = 0.5 * (n[c] + n[r]);
+            const q = (q0 - hf * gdtDx * (etaR - etaC)) / (1 + (gdt * nn * nn * Math.sqrt(q0 * q0 + (qt * qt) / (w * w))) / (hf * hf * Math.cbrt(hf)));
             const qm = hf * Math.sqrt(G * hf);
-            qxN[c] = q > qm ? qm : q < -qm ? -qm : q;
+            qxN[c] = (q > qm ? qm : q < -qm ? -qm : q) * w;
           }
         }
         if (!lastRow && py[c] > 0) {
@@ -148,10 +164,11 @@ export class FloodEngine {
             let qt = qx[c] + qx[r];
             if (i > 0) qt += qx[c - 1] + qx[r - 1];
             qt *= 0.25;
-            const q0 = qy[c], nn = 0.5 * (n[c] + n[r]);
-            const q = (q0 - hf * gdtDx * (etaR - etaC)) / (1 + (gdt * nn * nn * Math.sqrt(q0 * q0 + qt * qt)) / (hf * hf * Math.cbrt(hf)));
+            const w = sub ? this.faceW(c, r, hf) : 1;
+            const q0 = qy[c] / w, nn = 0.5 * (n[c] + n[r]);
+            const q = (q0 - hf * gdtDx * (etaR - etaC)) / (1 + (gdt * nn * nn * Math.sqrt(q0 * q0 + (qt * qt) / (w * w))) / (hf * hf * Math.cbrt(hf)));
             const qm = hf * Math.sqrt(G * hf);
-            qyN[c] = q > qm ? qm : q < -qm ? -qm : q;
+            qyN[c] = (q > qm ? qm : q < -qm ? -qm : q) * w;
           }
         }
       }
@@ -174,7 +191,7 @@ export class FloodEngine {
         if (oW[c] && !oE[c]) b += Math.max(Math.min(qc, Math.max(0, -qxN[c])), fr(c + 1));
         if (oS[c] && !oN[c]) b += Math.max(Math.min(qc, Math.max(0, qyN[c - nx])), fr(c - nx));
         if (oN[c] && !oS[c]) b += Math.max(Math.min(qc, Math.max(0, -qyN[c])), fr(c + nx));
-        b *= dx * phi[c];
+        b *= ss[c] < 1 ? (dx * this.vOf(c, hc)) / hc : dx * phi[c];
         bnd[c] = b;
       }
       let o = b;
@@ -182,7 +199,7 @@ export class FloodEngine {
       if (c % nx > 0 && qxN[c - 1] < 0) o -= qxN[c - 1] * px[c - 1] * dx;
       if (qyN[c] > 0) o += qyN[c] * py[c] * dx;
       if (c >= nx && qyN[c - nx] < 0) o -= qyN[c - nx] * py[c - nx] * dx;
-      const v = o * dt, vol = hc * phi[c] * A;
+      const v = o * dt, vol = (ss[c] < 1 ? this.vOf(c, hc) : hc * phi[c]) * A;
       if (v > vol && v > 0) scale[c] = vol / v;
     }
     for (let c = 0; c < N; c++) {
@@ -201,20 +218,24 @@ export class FloodEngine {
       let div = -qxN[c] * px[c] - qyN[c] * py[c];
       if (i > 0) div += qxN[c - 1] * px[c - 1];
       if (j > 0) div += qyN[c - nx] * py[c - nx];
-      const ph = phi[c];
-      let hn = h[c] + (dt * div) / (dx * ph) - (bnd[c] * dt) / (A * ph);
+      const ph = phi[c], sg = ss[c] < 1;
+      // a sub-grid channel block updates its volume and converts it back to a depth; a plain cell its depth (same result)
+      let hn = sg ? this.vOf(c, h[c]) + (dt * div) / dx - (bnd[c] * dt) / A : h[c] + (dt * div) / (dx * ph) - (bnd[c] * dt) / (A * ph);
       if (raining) {
         const p0 = zone ? z0[zone[c]] : P0, p1 = zone ? zm[zone[c]] : P1;
         if (p1 > p0) {
           const w = rw[c], gross = ((p1 - p0) / 1000) * w;
           const eff = sRet ? ((scsRunoff(p1, sRet[c]) - scsRunoff(p0, sRet[c])) / 1000) * w : gross;
-          hn += eff / ph; rainV += gross; effV += eff;
+          hn += sg ? eff : eff / ph; rainV += gross; effV += eff;
         }
       }
       if (hn < 0) hn = 0;
-      if (drain && drain[c] > 0) { const d = Math.min(hn, drain[c] * dt); hn -= d; drV += d * ph; }
+      if (drain && drain[c] > 0) {
+        if (sg) { const d = Math.min(hn, drain[c] * dt * ph); hn -= d; drV += d; } else { const d = Math.min(hn, drain[c] * dt); hn -= d; drV += d * ph; }
+      }
+      if (sg) hn = this.hOf(c, hn);
       out += bnd[c] * dt;
-      if (sea && sea[c]) { const fix = Math.max(0, this.seaLevel - z[c]); seaV += (hn - fix) * ph; hn = fix; }
+      if (sea && sea[c]) { const fix = Math.max(0, this.seaLevel - z[c]); seaV += sg ? this.vOf(c, hn) - this.vOf(c, fix) : (hn - fix) * ph; hn = fix; }
       h[c] = hn;
       if (hn > this.hMax[c]) this.hMax[c] = hn;
       if (hn > hm && cfl[c]) hm = hn;
@@ -223,7 +244,7 @@ export class FloodEngine {
     for (let k = 0; k < this.inflowCells.length; k++) {
       const c = this.inflowCells[k], v = (this.inflows[k] ?? 0) * dt;
       if (v <= 0 || !active[c]) continue;
-      h[c] += v / (A * phi[c]); inV += v;
+      h[c] = ss[c] < 1 ? this.hOf(c, this.vOf(c, h[c]) + v / A) : h[c] + v / (A * phi[c]); inV += v;
       if (h[c] > this.hMax[c]) this.hMax[c] = h[c];
       if (h[c] > hm && cfl[c]) hm = h[c];
     }
@@ -235,6 +256,24 @@ export class FloodEngine {
     this.t += dt;
     return dt;
   }
+  /** Open share of the face between c and r for a flow depth hf above the higher bed: the smaller channel share of the two
+   *  blocks up to the higher land level, the whole face above it (flow area / (face width x hf)). */
+  private faceW(c: number, r: number, hf: number): number {
+    const { z } = this.g, zb = Math.max(z[c], z[r]);
+    const d = Math.max(z[c] + this.dz[c], z[r] + this.dz[r]) - zb, s = Math.min(this.ss[c], this.ss[r]);
+    if (s >= 1 || d <= 0) return 1;
+    return hf <= d ? s : (s * d + hf - d) / hf;
+  }
+}
+
+/** Volume per cell area at depth h for storage share phi and sub-grid channel share s up to dz above the bed. */
+export const volAt = (phi: number, s: number, dz: number, h: number) => phi * (s >= 1 ? h : h < dz ? s * h : s * dz + h - dz);
+/** Inverse of volAt: depth above the bed holding the volume v per cell area. */
+export function depthAt(phi: number, s: number, dz: number, v: number): number {
+  const w = v / phi;
+  if (s >= 1) return w;
+  const b = s * dz;
+  return w < b ? w / s : dz + w - b;
 }
 
 export const PHI_MIN = 0.02; // storage share floor: a cell almost covered by roofs still stores a little water (no division by zero)
@@ -263,5 +302,12 @@ export function porosityArrays(g: EngineGrid) {
       || !active[c - 1] || !active[c + 1] || !active[c - nx] || !active[c + nx];
     cfl[c] = +anyFace;
   }
-  return { phi, px, py, rw, cfl };
+  // sub-grid channel blocks (EngineGrid.subS / subDz)
+  const ss = new Float64Array(N).fill(1), dz = new Float64Array(N);
+  let sub = false;
+  if (g.subS && g.subDz) for (let c = 0; c < N; c++) {
+    const s = g.subS[c], d = g.subDz[c];
+    if (active[c] && s > 0 && s < 1 && d > 0) { ss[c] = Math.max(PHI_MIN, s); dz[c] = d; sub = true; }
+  }
+  return { phi, px, py, rw, cfl, ss, dz, sub };
 }

@@ -88,6 +88,20 @@ export type RunGrid = {
   cellAt: (x: number, y: number) => number; // lowest active cell within one cell of a point, -1 if none
 };
 
+/** Sub-grid channel arrays for the engines (EngineGrid.subS / subDz, ADR 0025): in a coarse block holding a mapped channel, the
+ *  channel share of the block (1 - land share) and the height of the block's land level above its channel bed. Empty for 30 m
+ *  and finer runs (no block holds both). */
+export function subgridOf(g: Pick<RunGrid, "z" | "channel" | "landZ" | "landShare">): { subS?: Float64Array; subDz?: Float64Array } {
+  if (!g.landZ || !g.landShare) return {};
+  const N = g.z.length, subS = new Float64Array(N).fill(1), subDz = new Float64Array(N);
+  let any = false;
+  for (let c = 0; c < N; c++) {
+    if (!g.channel[c] || g.landShare[c] <= 0 || g.landZ[c] <= g.z[c]) continue;
+    subS[c] = 1 - g.landShare[c]; subDz[c] = g.landZ[c] - g.z[c]; any = true;
+  }
+  return any ? { subS, subDz } : {};
+}
+
 /** Terrain lowering (m) of one pack cell from the terrain epoch to `year` (0 without subsidence data or year). */
 export const sinkM = (p: Pack, c: number, year: number | undefined): number =>
   p.sub && year ? (p.sub[c] / 1000) * (year - p.subEpoch) : 0;

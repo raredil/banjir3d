@@ -208,3 +208,45 @@ describe("soil wetness (antecedent runoff condition)", () => {
     expect(cnForAmc(100, 1)).toBe(100);
   });
 });
+
+describe("sub-grid channel in coarse river blocks (ADR 0025)", () => {
+  // straight river 30 m wide and 2 m deep down a 0.05 % slope, floodplain at bank level; 30 m reference vs 90 m blocks
+  function river(k: number, sub: boolean, q: number) {
+    const dx = 30 * k, nx = 81 / k, ny = 27 / k, N = nx * ny, S = 5e-4, mid = Math.floor(ny / 2);
+    const z = new Float64Array(N), subS = new Float64Array(N).fill(1), subDz = new Float64Array(N);
+    for (let j = 0; j < ny; j++) for (let i = 0; i < nx; i++) {
+      const c = j * nx + i, x = (i + 0.5) * dx;
+      z[c] = j === mid ? -S * x : 2 - S * x;
+      if (j === mid && k > 1) { subS[c] = 1 / k; subDz[c] = 2; }
+    }
+    const g = grid(nx, ny, dx, (i, j) => z[j * nx + i], { n: new Float64Array(N).fill(0.035), ...(sub ? { subS, subDz } : {}) });
+    const e = new FloodEngine(g, { inflowCells: [mid * nx] });
+    e.inflows = [q];
+    run(e, 4 * 3600);
+    let land = 0;
+    for (let c = 0; c < N; c++) if (Math.floor(c / nx) !== mid) land += e.h[c] * dx * dx;
+    const m = mid * nx + Math.floor(nx / 2);
+    return { stage: z[m] + e.h[m], land, mass: e.massError() };
+  }
+  it("raises the river like the 30 m channel instead of spreading it over the whole block", () => {
+    const ref = river(1, false, 60), plain = river(3, false, 60), sub = river(3, true, 60);
+    expect(plain.stage).toBeLessThan(0.5 * ref.stage); // the old 90 m block: a 90 m wide river, a third of the rise
+    expect(Math.abs(sub.stage - ref.stage)).toBeLessThan(0.25 * ref.stage);
+    expect(Math.abs(sub.mass)).toBeLessThan(1e-9);
+  });
+  it("spills onto the floodplain about as much as the 30 m run", () => {
+    const ref = river(1, false, 250), plain = river(3, false, 250), sub = river(3, true, 250);
+    expect(plain.land).toBeLessThan(0.3 * ref.land);
+    expect(sub.land).toBeGreaterThan(0.6 * ref.land);
+    expect(sub.land).toBeLessThan(1.2 * ref.land);
+    expect(Math.abs(sub.mass)).toBeLessThan(1e-9);
+  });
+  it("leaves plain cells unchanged (no sub-grid arrays = same numbers)", () => {
+    const a = river(3, false, 60), N = 81 / 3 * 9;
+    const g = grid(27, 9, 90, () => 0, { subS: new Float64Array(N).fill(1), subDz: new Float64Array(N) });
+    const e1 = new FloodEngine(g), e2 = new FloodEngine(grid(27, 9, 90, () => 0));
+    e1.rate = e2.rate = 20; run(e1, 1800); run(e2, 1800);
+    expect(Array.from(e1.h)).toEqual(Array.from(e2.h));
+    expect(a.stage).toBeGreaterThan(0);
+  });
+});
