@@ -3,7 +3,7 @@
 > The AUTO part is rebuilt by `python3 tools/make_map.py`. Write by hand only below it.
 
 <!-- AUTO:START -->
-Files: 180 | Lines: 24833 | Fingerprint: 369d6bd9743ab113 | Generated: 2026-11-18
+Files: 177 | Lines: 24550 | Fingerprint: 46a5d4c595face0b | Generated: 2026-11-20
 
 ### Files
 - `pipeline/catalog_tools.py` (67 lines): load, bib_entries, check, write_bib
@@ -43,12 +43,13 @@ Files: 180 | Lines: 24833 | Fingerprint: 369d6bd9743ab113 | Generated: 2026-11-1
 - `verification/explore-vs-sfincs/make_inputs.py` (87 lines): lon_px, lat_py, load_dem
 - `verification/explore-vs-sfincs/run_explore.ts` (36 lines): opt
 - `verification/fine-consistency/run.ts` (113 lines): engineFor
-- `verification/observed/compare.py` (317 lines): load_json, features, auc, grid_of, land_window_max, report_scores, rw_scores, rw_place_scores (+4 more)
+- `verification/observed/compare.py` (398 lines): load_json, features, auc, grid_of, land_window_max, wilson, binom_p_greater, fair_baselines (+8 more)
 - `verification/observed/event_rain.py` (57 lines): main
 - `verification/observed/fetch.py` (361 lines): _NasaRedirect, nasa_host, redirect_request, get, grid_points, era5, imerg_granules, imerg (+8 more)
-- `verification/observed/make_skill.py` (40 lines): pick
+- `verification/observed/make_skill.py` (50 lines): pick
 - `verification/observed/publish.py` (87 lines): features, structure, main
-- `verification/observed/run_event.ts` (95 lines): opt, cnOf, decYear, near, pointAt
+- `verification/observed/rescore_fair.py` (46 lines): read, main
+- `verification/observed/run_event.ts` (101 lines): opt, cnOf, decYear, near, pointAt
 - `verification/observed/rw_zenodo.py` (49 lines): main
 - `verification/observed/test_compare.py` (29 lines): test_channel_water_is_not_a_hit
 - `verification/region-run/run.ts` (42 lines): opt
@@ -65,33 +66,31 @@ Files: 180 | Lines: 24833 | Fingerprint: 369d6bd9743ab113 | Generated: 2026-11-1
   - data objects: FONT
 - `web/src/pmtiles-init.ts` (14 lines): ensurePmtiles
 - `web/src/util.ts` (93 lines): esc, safeUrl, fmtBytes, toUtm, rasterResampling, fromUtm
-- `web/src/engine/engine.test.ts` (198 lines): grid, run, isIn, mk
+- `web/src/engine/engine.test.ts` (211 lines): grid, run, kin, isIn, mk
 - `web/src/engine/event-rain.ts` (46 lines): zoneGrid, cumAtSteps, meanHyetograph, nearest, pointAt
-- `web/src/engine/gpu.ts` (321 lines): GpuEngine, buf, off, group
-- `web/src/engine/hydrology.ts` (130 lines): nrcsLagHours, uhRatio, catchmentHydrograph, findEntries, arealReduction, inflowsFor, entryMembers, inflowsForSpatial (+1 more)
-  - data objects: UH_Q, UH_T
-- Not listed one by one (120 files): data/ (7), data/demnas/ (1), data/engine/ (2), data/events/ (3), data/methods/ (1), data/roughness/ (1), docs/penjelasan/ (1), verification/analytical-wave/ (2), verification/data-checks/ (2), verification/explore-vs-sfincs/ (3), verification/fine-consistency/ (3), verification/fine-speed/ (4), verification/gpu-parity/ (2), verification/observed/ (29), verification/speed/ (3), web/ (5), web/public/data/jakarta/ (16), web/public/meta/ (2), web/scripts/ (2), web/src/ (6), web/src/engine/ (4), web/src/explore/ (7), web/src/methods/ (3), web/src/sim/ (11)
+- `web/src/engine/gpu.ts` (329 lines): GpuEngine, buf, off, group
+- Not listed one by one (117 files): data/ (7), data/demnas/ (1), data/engine/ (2), data/events/ (3), data/methods/ (1), data/roughness/ (1), docs/penjelasan/ (2), verification/analytical-wave/ (2), verification/data-checks/ (2), verification/explore-vs-sfincs/ (3), verification/fine-consistency/ (3), verification/fine-speed/ (4), verification/gpu-parity/ (2), verification/observed/ (32), verification/speed/ (3), web/ (5), web/public/data/jakarta/ (6), web/public/meta/ (2), web/scripts/ (2), web/src/ (6), web/src/engine/ (5), web/src/explore/ (7), web/src/methods/ (3), web/src/sim/ (13)
 
 ### Links (A -> B means A loads or uses B)
 - `pipeline/catalog_tools.py` -> pipeline/engine_pack.py, web/src/engine/gpu.ts
-- `pipeline/demnas_ingest.py` -> pipeline/b3d/__init__.py, pipeline/b3d/grid.py, pipeline/b3d/util.py, pipeline/catalog_tools.py, pipeline/engine_pack.py, verification/data-checks/check_pack.py (+6 more)
+- `pipeline/demnas_ingest.py` -> pipeline/b3d/__init__.py, pipeline/b3d/grid.py, pipeline/b3d/util.py, pipeline/catalog_tools.py, pipeline/engine_pack.py, verification/data-checks/check_pack.py (+7 more)
 - `pipeline/demnas_public.py` -> pipeline/b3d/__init__.py, pipeline/b3d/tiles.py, pipeline/b3d/util.py, pipeline/demnas_ingest.py, pipeline/engine_pack.py, verification/data-checks/check_pack.py (+3 more)
-- `pipeline/demnas_tiles.py` -> pipeline/b3d/__init__.py, pipeline/b3d/grid.py, pipeline/b3d/layers.py, pipeline/b3d/rbi.py, pipeline/catalog_tools.py, pipeline/demnas_ingest.py (+4 more)
-- `pipeline/engine_pack.py` -> pipeline/b3d/grid.py, pipeline/b3d/layers.py, pipeline/map_layers.py, pipeline/micro_drains.py, pipeline/region_pack.py, pipeline/subsidence.py (+14 more)
-- `pipeline/exposure_pack.py` -> pipeline/b3d/grid.py, pipeline/b3d/util.py, pipeline/engine_pack.py, pipeline/micro_drains.py, verification/observed/compare.py, web/src/engine/engine.test.ts (+2 more)
+- `pipeline/demnas_tiles.py` -> pipeline/b3d/__init__.py, pipeline/b3d/grid.py, pipeline/b3d/layers.py, pipeline/b3d/rbi.py, pipeline/catalog_tools.py, pipeline/demnas_ingest.py (+5 more)
+- `pipeline/engine_pack.py` -> pipeline/b3d/grid.py, pipeline/b3d/layers.py, pipeline/map_layers.py, pipeline/micro_drains.py, pipeline/region_pack.py, pipeline/subsidence.py (+15 more)
+- `pipeline/exposure_pack.py` -> pipeline/b3d/grid.py, pipeline/b3d/util.py, pipeline/engine_pack.py, pipeline/micro_drains.py, verification/observed/compare.py, verification/observed/rescore_fair.py (+4 more)
 - `pipeline/jakartasatu.py` -> pipeline/b3d/util.py, pipeline/demnas_ingest.py, pipeline/engine_pack.py, pipeline/map_layers.py, verification/data-checks/check_pack.py, verification/observed/compare.py (+3 more)
 - `pipeline/make_domain.py` -> pipeline/b3d/__init__.py, pipeline/b3d/grid.py, pipeline/b3d/layers.py, pipeline/b3d/util.py, pipeline/demnas_ingest.py, pipeline/engine_pack.py (+1 more)
 - `pipeline/map_layers.py` -> pipeline/b3d/util.py, pipeline/demnas_ingest.py, pipeline/engine_pack.py, pipeline/jakartasatu.py, pipeline/micro_drains.py, pipeline/verify_sources.py (+6 more)
-- `pipeline/micro_drains.py` -> pipeline/b3d/grid.py, pipeline/demnas_ingest.py, pipeline/engine_pack.py, verification/data-checks/check_pack.py, verification/observed/compare.py, web/src/engine/engine.test.ts (+5 more)
+- `pipeline/micro_drains.py` -> pipeline/b3d/grid.py, pipeline/demnas_ingest.py, pipeline/engine_pack.py, verification/data-checks/check_pack.py, verification/observed/compare.py, verification/observed/rescore_fair.py (+6 more)
 - `pipeline/region_pack.py` -> pipeline/b3d/__init__.py, pipeline/b3d/layers.py, pipeline/b3d/tiles.py, pipeline/b3d/util.py, pipeline/engine_pack.py, pipeline/verify_sources.py (+4 more)
-- `pipeline/subsidence.py` -> pipeline/b3d/__init__.py, pipeline/b3d/grid.py, pipeline/b3d/tiles.py, pipeline/b3d/util.py, pipeline/demnas_ingest.py, pipeline/engine_pack.py (+7 more)
+- `pipeline/subsidence.py` -> pipeline/b3d/__init__.py, pipeline/b3d/grid.py, pipeline/b3d/tiles.py, pipeline/b3d/util.py, pipeline/demnas_ingest.py, pipeline/engine_pack.py (+8 more)
 - `pipeline/verify_sources.py` -> pipeline/b3d/layers.py, pipeline/b3d/util.py, pipeline/catalog_tools.py, pipeline/demnas_ingest.py, verification/terrain/probe.py, web/src/ai-context.ts (+1 more)
 - `pipeline/b3d/__init__.py` -> pipeline/b3d/grid.py, verification/observed/compare.py, web/src/sim/conclusion.ts
-- `pipeline/b3d/grid.py` -> pipeline/subsidence.py, verification/data-checks/check_pack.py, web/src/engine/engine.test.ts
-- `pipeline/b3d/layers.py` -> ., .grid, .tiles, .util, pipeline/b3d/__init__.py, pipeline/b3d/grid.py (+14 more)
+- `pipeline/b3d/grid.py` -> pipeline/subsidence.py, verification/data-checks/check_pack.py, verification/observed/rescore_fair.py, web/src/engine/engine.test.ts
+- `pipeline/b3d/layers.py` -> ., .grid, .tiles, .util, pipeline/b3d/__init__.py, pipeline/b3d/grid.py (+15 more)
 - `pipeline/b3d/rbi.py` -> pipeline/b3d/grid.py, web/src/sim/export.ts
-- `pipeline/b3d/tiles.py` -> pipeline/b3d/grid.py, verification/data-checks/check_pack.py, web/src/sim/buildings.test.ts, web/src/sim/conclusion.ts, web/src/sim/export.ts
-- `pipeline/b3d/util.py` -> pipeline/b3d/grid.py, pipeline/engine_pack.py, verification/data-checks/check_pack.py, web/src/engine/event-rain.ts, web/src/sim/buildings.test.ts, web/src/sim/conclusion.ts (+2 more)
+- `pipeline/b3d/tiles.py` -> pipeline/b3d/grid.py, verification/data-checks/check_pack.py, verification/observed/rescore_fair.py, web/src/sim/buildings.test.ts, web/src/sim/conclusion.ts, web/src/sim/export.ts
+- `pipeline/b3d/util.py` -> pipeline/b3d/grid.py, pipeline/engine_pack.py, verification/data-checks/check_pack.py, verification/observed/rescore_fair.py, web/src/engine/event-rain.ts, web/src/sim/buildings.test.ts (+3 more)
 - `pipeline/tests/test_catalog.py` -> pipeline/catalog_tools.py
 - `pipeline/tests/test_domain.py` -> pipeline/b3d/__init__.py, pipeline/b3d/grid.py
 - `pipeline/tests/test_engine_drains.py` -> pipeline/engine_pack.py, pipeline/jakartasatu.py, pipeline/map_layers.py, pipeline/micro_drains.py, web/src/explore/local-inertial.test.ts
@@ -105,34 +104,34 @@ Files: 180 | Lines: 24833 | Fingerprint: 369d6bd9743ab113 | Generated: 2026-11-1
 - `pipeline/tests/test_subsidence.py` -> pipeline/engine_pack.py, pipeline/micro_drains.py, pipeline/subsidence.py, web/src/ai-context.ts, web/src/map.ts
 - `pipeline/tests/test_tiles.py` -> pipeline/b3d/tiles.py, pipeline/micro_drains.py, verification/data-checks/check_pack.py, verification/observed/run_event.ts, web/src/sim/buildings.test.ts, web/src/sim/export.ts
 - `verification/audit.cjs` -> playwright, pipeline/catalog_tools.py, pipeline/demnas_ingest.py, pipeline/verify_sources.py, web/src/engine/pack.ts, web/src/map.ts
-- `verification/data-checks/check_pack.py` -> pipeline/b3d/layers.py, pipeline/catalog_tools.py, pipeline/demnas_ingest.py, pipeline/engine_pack.py, pipeline/micro_drains.py, web/src/engine/engine.test.ts (+4 more)
+- `verification/data-checks/check_pack.py` -> pipeline/b3d/layers.py, pipeline/catalog_tools.py, pipeline/demnas_ingest.py, pipeline/engine_pack.py, pipeline/micro_drains.py, verification/observed/rescore_fair.py (+6 more)
 - `verification/explore-vs-sfincs/compare.py` -> pipeline/catalog_tools.py, pipeline/micro_drains.py, verification/data-checks/check_pack.py, web/src/engine/engine.test.ts
 - `verification/explore-vs-sfincs/make_inputs.py` -> pipeline/b3d/grid.py, pipeline/micro_drains.py, web/src/engine/engine.test.ts
 - `verification/explore-vs-sfincs/run_explore.ts` -> node:fs, ../../web/src/explore/local-inertial, web/src/engine/engine.test.ts, web/src/engine/pack.ts, web/src/explore/local-inertial.ts
-- `verification/fine-consistency/run.ts` -> node:fs, node:zlib, ../../web/src/engine/pack, ../../web/src/engine/solver, ../../web/src/engine/hydrology, ../../web/src/sim/buildings (+13 more)
-- `verification/observed/compare.py` -> pipeline/b3d/grid.py, pipeline/catalog_tools.py, pipeline/demnas_ingest.py, pipeline/map_layers.py, pipeline/micro_drains.py, verification/data-checks/check_pack.py (+4 more)
+- `verification/fine-consistency/run.ts` -> node:fs, node:zlib, ../../web/src/engine/pack, ../../web/src/engine/solver, ../../web/src/engine/hydrology, ../../web/src/sim/buildings (+14 more)
+- `verification/observed/compare.py` -> pipeline/b3d/grid.py, pipeline/catalog_tools.py, pipeline/demnas_ingest.py, pipeline/map_layers.py, pipeline/micro_drains.py, verification/data-checks/check_pack.py (+7 more)
 - `verification/observed/event_rain.py` -> pipeline/demnas_ingest.py, verification/observed/fetch.py, web/src/engine/engine.test.ts, web/src/sim/buildings.test.ts, web/src/sim/panel.ts
-- `verification/observed/fetch.py` -> pipeline/b3d/grid.py, pipeline/b3d/util.py, pipeline/demnas_ingest.py, pipeline/engine_pack.py, pipeline/jakartasatu.py, pipeline/map_layers.py (+9 more)
-- `verification/observed/make_skill.py` -> pipeline/engine_pack.py, pipeline/micro_drains.py, verification/observed/compare.py, verification/observed/fetch.py, web/src/ai-context.ts, web/src/catalog.ts
+- `verification/observed/fetch.py` -> pipeline/b3d/grid.py, pipeline/b3d/util.py, pipeline/demnas_ingest.py, pipeline/engine_pack.py, pipeline/jakartasatu.py, pipeline/map_layers.py (+11 more)
+- `verification/observed/make_skill.py` -> pipeline/engine_pack.py, pipeline/micro_drains.py, verification/observed/compare.py, verification/observed/fetch.py, web/src/ai-context.ts, web/src/catalog.ts (+2 more)
 - `verification/observed/publish.py` -> pipeline/demnas_ingest.py, pipeline/jakartasatu.py, pipeline/map_layers.py, pipeline/verify_sources.py, verification/data-checks/check_pack.py, verification/observed/compare.py (+3 more)
+- `verification/observed/rescore_fair.py` -> pipeline/demnas_ingest.py, verification/observed/compare.py
 - `verification/observed/run_event.ts` -> node:fs, node:zlib, ../../web/src/engine/pack, ../../web/src/engine/solver, ../../web/src/engine/hydrology, ../../web/src/util (+13 more)
 - `verification/observed/rw_zenodo.py` -> pipeline/demnas_ingest.py, verification/observed/compare.py, verification/terrain/probe.py, web/src/engine/gpu.ts
 - `verification/observed/test_compare.py` -> pipeline/micro_drains.py, verification/observed/compare.py
 - `verification/region-run/run.ts` -> node:fs, node:zlib, ../../web/src/engine/pack, ../../web/src/engine/solver, ../../web/src/engine/hydrology, ../../web/src/explore/rain (+7 more)
-- `verification/terrain/probe.py` -> pipeline/b3d/grid.py, pipeline/demnas_ingest.py, pipeline/engine_pack.py, pipeline/map_layers.py, pipeline/micro_drains.py, pipeline/subsidence.py (+9 more)
+- `verification/terrain/probe.py` -> pipeline/b3d/grid.py, pipeline/demnas_ingest.py, pipeline/engine_pack.py, pipeline/map_layers.py, pipeline/micro_drains.py, pipeline/subsidence.py (+10 more)
 - `web/src/ai-context.ts` -> ../../docs/ai/panduan-id.md?raw, ../../data/methods/methods.md?raw, ../../data/methods/references.json, ../../data/layer-roles.json, ../../data/skill.json, ../../data/engine/calibration.json (+5 more)
 - `web/src/catalog.ts` -> ../../data/catalog-use.json, ./i18n, ./types, ./util, pipeline/b3d/util.py, pipeline/demnas_ingest.py (+8 more)
 - `web/src/i18n.ts` -> pipeline/b3d/grid.py, pipeline/catalog_tools.py, pipeline/engine_pack.py, pipeline/micro_drains.py, verification/data-checks/check_pack.py, verification/observed/compare.py (+11 more)
 - `web/src/layer-export.ts` -> ./layers, pipeline/b3d/util.py, pipeline/jakartasatu.py, pipeline/verify_sources.py, verification/observed/compare.py, web/src/engine/pack.ts
-- `web/src/layers.ts` -> ./i18n, pipeline/b3d/layers.py, pipeline/b3d/util.py, pipeline/engine_pack.py, pipeline/map_layers.py, pipeline/micro_drains.py (+9 more)
+- `web/src/layers.ts` -> ./i18n, pipeline/b3d/layers.py, pipeline/b3d/util.py, pipeline/engine_pack.py, pipeline/map_layers.py, pipeline/micro_drains.py (+11 more)
 - `web/src/main.ts` -> ../../data/validation.json, ./catalog, ./i18n, ./map, ./types, ./util (+11 more)
 - `web/src/map.ts` -> ../../data/layer-roles.json, maplibre-gl, ./pmtiles-init, ./i18n, ./layers, ./engine/event-rain (+21 more)
 - `web/src/pmtiles-init.ts` -> maplibre-gl, maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url, pmtiles, web/src/sim/buildings.test.ts
 - `web/src/util.ts` -> pipeline/engine_pack.py, pipeline/jakartasatu.py, verification/data-checks/check_pack.py, web/src/engine/event-rain.ts, web/src/map.ts
-- `web/src/engine/engine.test.ts` -> vitest, ./solver, ./hydrology, ../util, pipeline/demnas_ingest.py, pipeline/engine_pack.py (+6 more)
-- `web/src/engine/event-rain.ts` -> ../util, ./hydrology, ../explore/rain, pipeline/engine_pack.py, pipeline/micro_drains.py, verification/data-checks/check_pack.py (+3 more)
-- `web/src/engine/gpu.ts` -> ./solver, pipeline/engine_pack.py, pipeline/micro_drains.py, web/src/engine/engine.test.ts, web/src/engine/solver.ts, web/src/main.ts (+3 more)
-- `web/src/engine/hydrology.ts` -> ./solver, pipeline/engine_pack.py, pipeline/micro_drains.py, verification/observed/run_event.ts, web/src/engine/engine.test.ts, web/src/engine/pack.ts (+2 more)
+- `web/src/engine/engine.test.ts` -> vitest, ./solver, ./hydrology, ../util, pipeline/demnas_ingest.py, pipeline/engine_pack.py (+7 more)
+- `web/src/engine/event-rain.ts` -> ../util, ./hydrology, ../explore/rain, pipeline/engine_pack.py, pipeline/micro_drains.py, verification/data-checks/check_pack.py (+4 more)
+- `web/src/engine/gpu.ts` -> ./solver, pipeline/engine_pack.py, pipeline/micro_drains.py, verification/observed/rescore_fair.py, web/src/engine/engine.test.ts, web/src/engine/solver.ts (+4 more)
 
 ### Saved data keys (browser storage)
 - b3d.lang, b3d.theme
