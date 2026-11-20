@@ -551,6 +551,22 @@
    "title": "The Project for Promoting Countermeasures against Land Subsidence in Jakarta: Flood Control Master Plan Implementation Promotion, Final Report (Table 2-14, daily rainfall of the January 2020 flood)",
    "url": "https://openjicareport.jica.go.jp/pdf/1000049032_01.pdf",
    "accessed": "20 November 2026"
+  },
+  {
+   "key": "neal2012",
+   "type": "article",
+   "authors": [
+    "Neal, J.",
+    "Schumann, G.",
+    "Bates, P."
+   ],
+   "year": 2012,
+   "title": "A subgrid channel model for simulating river hydraulics and floodplain inundation over large and data sparse areas",
+   "journal": "Water Resources Research",
+   "volume": "48",
+   "issue": "11",
+   "pages": "W11506",
+   "doi": "10.1029/2012WR012514"
   }
  ]
 }

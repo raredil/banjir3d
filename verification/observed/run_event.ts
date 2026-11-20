@@ -1,7 +1,7 @@
 // Run engine v2 (CPU reference) on an observed event: hourly rain per 0.1 degree reanalysis cell (fetch.py), each catchment with
 // its own rain, and the city-drain sink on built-up cells. Usage (from web/):
 //   npx vite-node ../verification/observed/run_event.ts <engine.bin.gz> <rain_era5_land.json> <start UTC> <hours> <outdir>
-//       [--k 3] [--drain 0] [--scale 1] [--box W,S,E,N] [--year auto|none|<decimal year>] [--pumps on|off] [--micro on|off] [--upstream on|off] [--amc 1|2|3] [--infil on|off] [--sens none|n0.7|n1.3|cnb92|dem1..dem10] [--subgrid off|on]
+//       [--k 3] [--drain 0] [--scale 1] [--box W,S,E,N] [--year auto|none|<decimal year>] [--pumps on|off] [--micro on|off] [--upstream on|off] [--amc 1|2|3] [--infil on|off] [--sens none|n0.7|n1.3|cnb92|dem1..dem10] [--subgrid on|off]
 // --sens: one sensitivity variant (web/src/engine/sensitivity.ts, review R-08): Manning n x 0.7 / x 1.3, built-area CN 92, or terrain + a
 //   smooth random error (0.5 m standard deviation, seed 1..10). Research runs only.
 // --amc: soil wetness before the storm (antecedent runoff condition, Chow et al. 1988), applied to the cells and the upstream catchments.
@@ -24,7 +24,7 @@ const a = process.argv.slice(2);
 const opt = (k: string, d: string) => { const i = a.indexOf(`--${k}`); return i >= 0 ? a[i + 1] : d; };
 const [packFile, rainFile, startUtc, hoursS, out] = a;
 const hours = Number(hoursS), k = Number(opt("k", "3")), drainMmH = Number(opt("drain", "0")), scale = Number(opt("scale", "1")), pumpsOn = opt("pumps", "on") !== "off", microOn = opt("micro", "off") === "on", upOn = opt("upstream", "on") !== "off";
-const amc = Number(opt("amc", "2")) as 1 | 2 | 3, infilOn = opt("infil", "on") !== "off", sens = opt("sens", "none"), subOn = opt("subgrid", "off") === "on";
+const amc = Number(opt("amc", "2")) as 1 | 2 | 3, infilOn = opt("infil", "on") !== "off", sens = opt("sens", "none"), subOn = opt("subgrid", "on") === "on";
 if (![1, 2, 3].includes(amc)) throw new Error("--amc must be 1, 2 or 3");
 const cnOf = (v: number) => cnForAmc(v, amc);
 mkdirSync(out, { recursive: true });

@@ -2,7 +2,7 @@
 import type { GeoJSONSource, MapMouseEvent } from "maplibre-gl";
 import { lang, t, type Key } from "../i18n";
 import type { MapPage } from "../map";
-import { buildDualRun, buildFineRun, buildRun, chooseCompute, inflowSpread, withFineDrawing, loadPack, packCellOf, landSurface, sinkM, CHANNEL, type Pack, type RunGrid } from "../engine/pack";
+import { buildDualRun, buildFineRun, buildRun, chooseCompute, inflowSpread, withFineDrawing, loadPack, packCellOf, landSurface, sinkM, subgridOf, CHANNEL, type Pack, type RunGrid } from "../engine/pack";
 import { buildingMask } from "./buildings";
 import { DT_S, cnForAmc, inflowsFor, inflowsForSpatial, type Inflow } from "../engine/hydrology";
 import { cumAtSteps, meanHyetograph, pointAt, zoneGrid, type EventRain } from "../engine/event-rain";
@@ -637,6 +637,7 @@ export function mountSim(page: MapPage, o: { packUrl: string; regionBbox: number
       components: { upstream: up, infiltration: infilOn(), soilWetness: ["dry (AMC I)", "average (AMC II)", "wet (AMC III)"][amc - 1], subsidence: subOn() && !!p.sub, polderPumps: !!run.pump && pumpsOn(), microDrains: !!run.mdr && mdrOn(), extraDrainMmH: num("s-drain") }, rainMm: +totalMm(hy).toFixed(1), rainHours: (hy.mm.length * hy.blockSeconds) / 3600, upstreamRain: up, seaLevel: num("s-sea"), hours, cellM: run.fine ? run.fine.dx : run.dx,
       ...(p.sub && tYear ? { terrainYear: +tYear.toFixed(2), terrainEpoch: p.subEpoch } : {}),
       ...(r > 1 ? { fineCells: { cellM: 30 / r, computeM: run.dx, terrain: "bilinear from the 30 m pack (no new terrain detail)", flow: run.fine?.drawOnly ? "the 30 m run (same numbers as 30 m); fine cells only draw its water surface as a smooth sheet, no building cut-outs (ADR 0018, 0019)" : "trial: flow solved among the buildings (ADR 0015/0016), not validated", buildings: bldInfo ? { method: run.fine?.drawOnly ? "footprints drawn dry on the fine cells (water surface of the 30 m run)" : run.phi ? "building porosity on the compute grid, result drawn on the fine cells (dual grid: Sanders et al. 2008; Sanders and Schubert 2019)" : "building block +10 m (Schubert and Sanders 2012)", source: "Overture Maps buildings, region pack tiles z14", cells: bldInfo.cells, share: +bldInfo.share.toFixed(3) } : "not loaded" } } : {}),
+      ...(!run.phi && run.dx > 30 && run.landShare ? { riverBlocks: "sub-grid channel: a coarse river block stores and carries water like the real river width up to the bank level, like the whole block above it (ADR 0025)" } : {}),
       ...(run.mdr && mdrOn() ? { microDrainM3s: +(run.mdr.reduce((a, v, c) => a + (run.sea[c] || run.channel[c] ? 0 : v * (run.phi ? run.phi[c] : 1)), 0) * run.dx * run.dx).toFixed(1) } : {}),
       ...(run.pump ? { polderPumps: pumpsOn(), pumpM3s: Math.round(run.pump.reduce((a, v, c) => a + (run.sea[c] ? 0 : v * (run.phi ? run.phi[c] : 1)), 0) * run.dx * run.dx) } : {}),
       ...(ev ? { event: ev.id, eventStartUtc: ev.start_utc, rainSource: ev.source, rainPoints: ev.mm.length } : {}),
@@ -700,7 +701,7 @@ export function mountSim(page: MapPage, o: { packUrl: string; regionBbox: number
     const inCells: number[] = [], inQ: Float64Array[] = [];
     for (const f of inflows) { const sp = inflowSpread(run, f.cell); sp.cells.forEach((c, m) => { inCells.push(c); inQ.push(sp.w[m] === 1 ? f.q : f.q.map((v) => v * sp.w[m])); }); }
     const msg: RunMsg = {
-      type: "run", grid: { nx: run.nx, ny: run.ny, dx: run.dx, z: run.z, n: run.n, cn: infilOn() ? run.cn : undefined, active: run.active, sea: run.sea, drain: drainOf(run, pumpsOn(), num("s-drain"), mdrOn()), zone, ...(run.h0 ? { h0: run.h0 } : {}), ...(run.phi ? { phi: run.phi, psiX: run.psiX, psiY: run.psiY, rainW: run.rainW } : {}) }, zoneMm: ev?.mm, seaLevel: num("s-sea"), hours, rain: hy, frameS,
+      type: "run", grid: { nx: run.nx, ny: run.ny, dx: run.dx, z: run.z, n: run.n, cn: infilOn() ? run.cn : undefined, active: run.active, sea: run.sea, drain: drainOf(run, pumpsOn(), num("s-drain"), mdrOn()), zone, ...(run.h0 ? { h0: run.h0 } : {}), ...(run.phi ? { phi: run.phi, psiX: run.psiX, psiY: run.psiY, rainW: run.rainW } : subgridOf(run)) }, zoneMm: ev?.mm, seaLevel: num("s-sea"), hours, rain: hy, frameS,
       inflowCells: inCells, inflowQ: inQ, inflowDt: DT_S, floodM: FLOOD_M, count, landOff, preferGpu: gpuAvailable,
     };
     worker.postMessage(msg);

@@ -80,7 +80,7 @@ jobs:
           am = r.get("amc", [2])
           mi = r.get("micro", ["off"])
           se = r.get("sens", ["none"])  # sensitivity variants (web/src/engine/sensitivity.ts, review R-08)
-          sg = r.get("subgrid", ["off"])  # sub-grid channel in coarse river blocks (ADR 0025)
+          sg = r.get("subgrid", ["on"])  # sub-grid channel in coarse river blocks (ADR 0025)
           assert isinstance(sg, list) and 0 < len(sg) <= 2 and len(set(sg)) == len(sg) and all(v in ("on", "off") for v in sg) and len(mi) * len(am) * len(pu) * len(ty) * len(sc) * len(dr) * len(se) * len(sg) <= 16
           assert isinstance(se, list) and 0 < len(se) <= 16 and len(set(se)) == len(se) and all(isinstance(v, str) and re.fullmatch(r"none|n0\.7|n1\.3|cnb92|dem([1-9]|10)", v) for v in se)
           assert isinstance(mi, list) and 0 < len(mi) <= 2 and all(v in ("on", "off") for v in mi)

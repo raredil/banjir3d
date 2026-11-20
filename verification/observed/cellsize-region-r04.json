@@ -1,0 +1,499 @@
+{
+ "_about": "Region-wide report scores at 90 m and 60 m cells with ONE rule for both (review 2026-11-20, R-04; ADR 0025).\n\n  python verification/observed/region_cellsize.py <runs dir> <reports_petabencana.geojson> <out.json>\n\nruns dir holds the run files of the validation releases (<event>_imerg_k<k>_d0_poff_{hmax.f32.gz,mask.u8.gz,landshare.u8.gz,summary.json})\nfor k = 3 (90 m, v33-v35), k = 2 (60 m, v42-v44) and k = 3 with the sub-grid channel (suffix _sub, v45-v47, ADR 0025). The headline score of compare.py uses the 3 x 3 window, which grows with\nthe cell (about 270 m wide at 90 m, 180 m at 60 m), so it cannot compare cell sizes. Here, as in box_cellsize.py: hit = the deepest\nLAND cell whose centre lies within R_M of the report is at least HIT_M deep; also the land cell under the report. Only reports\ninside DKI Jakarta count. Random baseline: the same rule at N_RANDOM points spread uniformly over DKI land (the same points at\nboth sizes). Distance classes (to the nearest river/water block) come from the 90 m grid for both sizes, so the same reports\nfall in the same class. Wilson 95 % intervals; p = one-sided binomial against the random rate of the same class.\n",
+ "radius_m": 200.0,
+ "hit_m": 0.1,
+ "events": [
+  {
+   "event": "2020-01-01",
+   "n_reports_dki": 188,
+   "sizes": {
+    "90m": {
+     "n": 188,
+     "hit_radius": 0.4734042553191489,
+     "hit_radius_wilson95": [
+      0.4032803888810504,
+      0.5445932735571277
+     ],
+     "random_radius": 0.4915,
+     "p_radius_vs_random": 0.7152521788302905,
+     "hit_cell": 0.18617021276595744,
+     "random_cell": 0.1515,
+     "model_median_m": 0.09926580637693405,
+     "dki_flooded_land_km2_gt015": 72.89,
+     "mass_error": -4.1031763579271224e-15,
+     "by_distance": {
+      "le100": {
+       "n": 87,
+       "hit_radius": 0.42528735632183906,
+       "hit_radius_wilson95": [
+        0.3267307291558499,
+        0.5301630287700343
+       ],
+       "random_radius": 0.42298084929225643,
+       "p_radius_vs_random": 0.5236501378968181,
+       "hit_cell": 0.14942528735632185,
+       "random_cell": 0.13322231473771856,
+       "model_median_m": 0.0738726481795311
+      },
+      "100_500": {
+       "n": 77,
+       "hit_radius": 0.44155844155844154,
+       "hit_radius_wilson95": [
+        0.3360515471044896,
+        0.5526196320903805
+       ],
+       "random_radius": 0.5037523452157598,
+       "p_radius_vs_random": 0.8860791458928928,
+       "hit_cell": 0.19480519480519481,
+       "random_cell": 0.15150093808630394,
+       "model_median_m": 0.09543176740407944
+      },
+      "gt500": {
+       "n": 24,
+       "hit_radius": 0.75,
+       "hit_radius_wilson95": [
+        0.5510017468789357,
+        0.8800079652065766
+       ],
+       "random_radius": 0.5757121439280359,
+       "p_radius_vs_random": 0.06137642764937163,
+       "hit_cell": 0.2916666666666667,
+       "random_cell": 0.18440779610194902,
+       "model_median_m": 0.21585537493228912
+      }
+     }
+    },
+    "60m": {
+     "n": 188,
+     "hit_radius": 0.5638297872340425,
+     "hit_radius_wilson95": [
+      0.49236427634769053,
+      0.6327389338006819
+     ],
+     "random_radius": 0.6372424319511575,
+     "p_radius_vs_random": 0.9841443427788614,
+     "hit_cell": 0.22872340425531915,
+     "random_cell": 0.1808700076316459,
+     "model_median_m": 0.12307706102728844,
+     "dki_flooded_land_km2_gt015": 88.02,
+     "mass_error": -9.018526854964369e-15,
+     "by_distance": {
+      "le100": {
+       "n": 87,
+       "hit_radius": 0.4482758620689655,
+       "hit_radius_wilson95": [
+        0.348170047270701,
+        0.552756400524142
+       ],
+       "random_radius": 0.6054721977052074,
+       "p_radius_vs_random": 0.9989291831768796,
+       "hit_cell": 0.20689655172413793,
+       "random_cell": 0.19505736981465135,
+       "model_median_m": 0.07356797903776169
+      },
+      "100_500": {
+       "n": 77,
+       "hit_radius": 0.6233766233766234,
+       "hit_radius_wilson95": [
+        0.511725974706673,
+        0.7233015358819349
+       ],
+       "random_radius": 0.6386672923510089,
+       "p_radius_vs_random": 0.6579299663089773,
+       "hit_cell": 0.19480519480519481,
+       "random_cell": 0.17597372125762553,
+       "model_median_m": 0.14172542095184326
+      },
+      "gt500": {
+       "n": 24,
+       "hit_radius": 0.7916666666666666,
+       "hit_radius_wilson95": [
+        0.5952915551476452,
+        0.9075531089521192
+       ],
+       "random_radius": 0.6866566716641679,
+       "p_radius_vs_random": 0.18874707100785723,
+       "hit_cell": 0.4166666666666667,
+       "random_cell": 0.1724137931034483,
+       "model_median_m": 0.28832221031188965
+      }
+     }
+    },
+    "90m_subgrid": {
+     "n": 188,
+     "hit_radius": 0.5425531914893617,
+     "hit_radius_wilson95": [
+      0.47119802696916707,
+      0.6122041131297478
+     ],
+     "random_radius": 0.55025,
+     "p_radius_vs_random": 0.6131687366035794,
+     "hit_cell": 0.22872340425531915,
+     "random_cell": 0.17925,
+     "model_median_m": 0.13304206728935242,
+     "dki_flooded_land_km2_gt015": 85.85,
+     "mass_error": -5.585465778871049e-15,
+     "by_distance": {
+      "le100": {
+       "n": 87,
+       "hit_radius": 0.5517241379310345,
+       "hit_radius_wilson95": [
+        0.447243599475858,
+        0.6518299527292991
+       ],
+       "random_radius": 0.5412156536219817,
+       "p_radius_vs_random": 0.465697192546271,
+       "hit_cell": 0.21839080459770116,
+       "random_cell": 0.19733555370524564,
+       "model_median_m": 0.16574226319789886
+      },
+      "100_500": {
+       "n": 77,
+       "hit_radius": 0.4675324675324675,
+       "hit_radius_wilson95": [
+        0.36029890673598886,
+        0.5778517483722723
+       ],
+       "random_radius": 0.5464352720450282,
+       "p_radius_vs_random": 0.9335538863052143,
+       "hit_cell": 0.22077922077922077,
+       "random_cell": 0.1697936210131332,
+       "model_median_m": 0.09865877777338028
+      },
+      "gt500": {
+       "n": 24,
+       "hit_radius": 0.75,
+       "hit_radius_wilson95": [
+        0.5510017468789357,
+        0.8800079652065766
+       ],
+       "random_radius": 0.5787106446776612,
+       "p_radius_vs_random": 0.065012778815925,
+       "hit_cell": 0.2916666666666667,
+       "random_cell": 0.17691154422788605,
+       "model_median_m": 0.21586644649505615
+      }
+     }
+    }
+   }
+  },
+  {
+   "event": "2021-02-20",
+   "n_reports_dki": 265,
+   "sizes": {
+    "90m": {
+     "n": 265,
+     "hit_radius": 0.35471698113207545,
+     "hit_radius_wilson95": [
+      0.29956482243970833,
+      0.41402117020428714
+     ],
+     "random_radius": 0.30025,
+     "p_radius_vs_random": 0.03233113717108448,
+     "hit_cell": 0.12452830188679245,
+     "random_cell": 0.06825,
+     "model_median_m": 0.047513995319604874,
+     "dki_flooded_land_km2_gt015": 30.68,
+     "mass_error": 2.1085642026084194e-14,
+     "by_distance": {
+      "le100": {
+       "n": 139,
+       "hit_radius": 0.23741007194244604,
+       "hit_radius_wilson95": [
+        0.17433688772270345,
+        0.3146075094277065
+       ],
+       "random_radius": 0.2353923205342237,
+       "p_radius_vs_random": 0.5104391075955556,
+       "hit_cell": 0.05755395683453238,
+       "random_cell": 0.07011686143572621,
+       "model_median_m": 0.027950109913945198
+      },
+      "100_500": {
+       "n": 101,
+       "hit_radius": 0.45544554455445546,
+       "hit_radius_wilson95": [
+        0.36173444762795837,
+        0.5524217651730671
+       ],
+       "random_radius": 0.30392156862745096,
+       "p_radius_vs_random": 0.0009520488009365146,
+       "hit_cell": 0.16831683168316833,
+       "random_cell": 0.0611577964519141,
+       "model_median_m": 0.06405714899301529
+      },
+      "gt500": {
+       "n": 25,
+       "hit_radius": 0.6,
+       "hit_radius_wilson95": [
+        0.40739127785127344,
+        0.7659694233580909
+       ],
+       "random_radius": 0.40606060606060607,
+       "p_radius_vs_random": 0.03948928597963984,
+       "hit_cell": 0.32,
+       "random_cell": 0.08787878787878788,
+       "model_median_m": 0.10970859229564667
+      }
+     }
+    },
+    "60m": {
+     "n": 265,
+     "hit_radius": 0.5283018867924528,
+     "hit_radius_wilson95": [
+      0.4682226699890259,
+      0.5875722665088969
+     ],
+     "random_radius": 0.4316675165731769,
+     "p_radius_vs_random": 0.0009737513676604657,
+     "hit_cell": 0.14339622641509434,
+     "random_cell": 0.07521672616012239,
+     "model_median_m": 0.10732299834489822,
+     "dki_flooded_land_km2_gt015": 34.87,
+     "mass_error": -9.881916974506396e-15,
+     "by_distance": {
+      "le100": {
+       "n": 139,
+       "hit_radius": 0.4748201438848921,
+       "hit_radius_wilson95": [
+        0.3936014333920228,
+        0.5573932348278794
+       ],
+       "random_radius": 0.35714285714285715,
+       "p_radius_vs_random": 0.0028669074706103546,
+       "hit_cell": 0.08633093525179857,
+       "random_cell": 0.08035714285714286,
+       "model_median_m": 0.09425696730613708
+      },
+      "100_500": {
+       "n": 101,
+       "hit_radius": 0.5742574257425742,
+       "hit_radius_wilson95": [
+        0.47684837141099295,
+        0.6662246072539644
+       ],
+       "random_radius": 0.4411764705882353,
+       "p_radius_vs_random": 0.0048938114800268296,
+       "hit_cell": 0.19801980198019803,
+       "random_cell": 0.07329598506069095,
+       "model_median_m": 0.12994824349880219
+      },
+      "gt500": {
+       "n": 25,
+       "hit_radius": 0.64,
+       "hit_radius_wilson95": [
+        0.44518154601046633,
+        0.7975234356826436
+       ],
+       "random_radius": 0.5272727272727272,
+       "p_radius_vs_random": 0.17682808881137316,
+       "hit_cell": 0.24,
+       "random_cell": 0.07272727272727272,
+       "model_median_m": 0.1968143880367279
+      }
+     }
+    },
+    "90m_subgrid": {
+     "n": 265,
+     "hit_radius": 0.4075471698113208,
+     "hit_radius_wilson95": [
+      0.3501148056343337,
+      0.467621735139118
+     ],
+     "random_radius": 0.30625,
+     "p_radius_vs_random": 0.00030065668661999356,
+     "hit_cell": 0.13962264150943396,
+     "random_cell": 0.056,
+     "model_median_m": 0.06592413038015366,
+     "dki_flooded_land_km2_gt015": 24.31,
+     "mass_error": -1.0165645472197594e-14,
+     "by_distance": {
+      "le100": {
+       "n": 139,
+       "hit_radius": 0.33093525179856115,
+       "hit_radius_wilson95": [
+        0.2581807839687957,
+        0.4127834169362627
+       ],
+       "random_radius": 0.25375626043405675,
+       "p_radius_vs_random": 0.025407941848819823,
+       "hit_cell": 0.08633093525179857,
+       "random_cell": 0.05008347245409015,
+       "model_median_m": 0.04829078167676926
+      },
+      "100_500": {
+       "n": 101,
+       "hit_radius": 0.4752475247524752,
+       "hit_radius_wilson95": [
+        0.3805571262165129,
+        0.5717518808951678
+       ],
+       "random_radius": 0.3062558356676004,
+       "p_radius_vs_random": 0.00027228957306593276,
+       "hit_cell": 0.1782178217821782,
+       "random_cell": 0.052754435107376284,
+       "model_median_m": 0.09818058460950851
+      },
+      "gt500": {
+       "n": 25,
+       "hit_radius": 0.56,
+       "hit_radius_wilson95": [
+        0.37067017019564436,
+        0.7333462505299744
+       ],
+       "random_radius": 0.4015151515151515,
+       "p_radius_vs_random": 0.08012786902389739,
+       "hit_cell": 0.28,
+       "random_cell": 0.07727272727272727,
+       "model_median_m": 0.10968457907438278
+      }
+     }
+    }
+   }
+  },
+  {
+   "event": "2025-03-04",
+   "n_reports_dki": 17,
+   "sizes": {
+    "90m": {
+     "n": 17,
+     "hit_radius": 0.23529411764705882,
+     "hit_radius_wilson95": [
+      0.0955488907167594,
+      0.47262245889171595
+     ],
+     "random_radius": 0.49,
+     "p_radius_vs_random": 0.9920307847685914,
+     "hit_cell": 0.058823529411764705,
+     "random_cell": 0.14825,
+     "model_median_m": 0.03429241478443146,
+     "dki_flooded_land_km2_gt015": 66.4,
+     "mass_error": -3.504979206603426e-15,
+     "by_distance": {
+      "le100": {
+       "n": 13,
+       "hit_radius": 0.15384615384615385,
+       "hit_radius_wilson95": [
+        0.04325726318273798,
+        0.4223517050863101
+       ],
+       "random_radius": 0.42709163346613543,
+       "p_radius_vs_random": 0.9923416514184986,
+       "hit_cell": 0.0,
+       "random_cell": 0.12430278884462151,
+       "model_median_m": 0.03429241478443146
+      },
+      "100_500": {
+       "n": 4,
+       "hit_radius": 0.5,
+       "hit_radius_wilson95": [
+        0.15003570882017148,
+        0.8499642911798285
+       ],
+       "random_radius": 0.49715639810426543,
+       "p_radius_vs_random": 0.6832225142320775,
+       "hit_cell": 0.25,
+       "random_cell": 0.15497630331753554,
+       "model_median_m": 0.15090583264827728
+      },
+      "gt500": {
+       "n": 0
+      }
+     }
+    },
+    "60m": {
+     "n": 17,
+     "hit_radius": 0.29411764705882354,
+     "hit_radius_wilson95": [
+      0.13279793865556402,
+      0.5313353332621391
+     ],
+     "random_radius": 0.6420541645375575,
+     "p_radius_vs_random": 0.9992453359096659,
+     "hit_cell": 0.058823529411764705,
+     "random_cell": 0.16964741951967297,
+     "model_median_m": 0.04597257822751999,
+     "dki_flooded_land_km2_gt015": 78.84,
+     "mass_error": -2.4384381430088596e-15,
+     "by_distance": {
+      "le100": {
+       "n": 13,
+       "hit_radius": 0.23076923076923078,
+       "hit_radius_wilson95": [
+        0.08179379092465713,
+        0.5025687399512693
+       ],
+       "random_radius": 0.6313088109495295,
+       "p_radius_vs_random": 0.9994139494428069,
+       "hit_cell": 0.0,
+       "random_cell": 0.17792985457656116,
+       "model_median_m": 0.032818589359521866
+      },
+      "100_500": {
+       "n": 4,
+       "hit_radius": 0.5,
+       "hit_radius_wilson95": [
+        0.15003570882017148,
+        0.8499642911798285
+       ],
+       "random_radius": 0.6274881516587678,
+       "p_radius_vs_random": 0.8510006984088705,
+       "hit_cell": 0.25,
+       "random_cell": 0.16161137440758294,
+       "model_median_m": 0.18365805968642235
+      },
+      "gt500": {
+       "n": 0
+      }
+     }
+    },
+    "90m_subgrid": {
+     "n": 17,
+     "hit_radius": 0.5294117647058824,
+     "hit_radius_wilson95": [
+      0.30962897311549487,
+      0.738351988039119
+     ],
+     "random_radius": 0.5405,
+     "p_radius_vs_random": 0.6328747434044323,
+     "hit_cell": 0.058823529411764705,
+     "random_cell": 0.1675,
+     "model_median_m": 0.14677701890468597,
+     "dki_flooded_land_km2_gt015": 75.07,
+     "mass_error": -5.009509637168183e-16,
+     "by_distance": {
+      "le100": {
+       "n": 13,
+       "hit_radius": 0.46153846153846156,
+       "hit_radius_wilson95": [
+        0.2320575430148814,
+        0.7085656756816796
+       ],
+       "random_radius": 0.5434262948207171,
+       "p_radius_vs_random": 0.8082366393042726,
+       "hit_cell": 0.0,
+       "random_cell": 0.1856573705179283,
+       "model_median_m": 0.08592595160007477
+      },
+      "100_500": {
+       "n": 4,
+       "hit_radius": 0.75,
+       "hit_radius_wilson95": [
+        0.3006360524426366,
+        0.9544139373553637
+       ],
+       "random_radius": 0.5255924170616114,
+       "p_radius_vs_random": 0.35183627172127624,
+       "hit_cell": 0.25,
+       "random_cell": 0.15450236966824646,
+       "model_median_m": 0.26911449432373047
+      },
+      "gt500": {
+       "n": 0
+      }
+     }
+    }
+   }
+  }
+ ]
+}

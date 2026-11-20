@@ -1,0 +1,249 @@
+{
+ "event": "2020-01-01",
+ "source": "PetaBencana.id flood reports and flooded-area archive (aggregate scores only)",
+ "reported": {
+  "_about": "Impact the city reported; figures are used only after reported_excerpts.json (fetched by the Action) shows them in the page text.",
+  "pages": [
+   "https://sumut.antaranews.com/berita/270492/banjir-tahun-baru-2020-adalah-yang-terbaik-selama-siklus-banjir-besar-jakarta",
+   "https://www.antaranews.com/berita/1921596/banjir-dan-kenangan",
+   "https://www.mobil123.com/berita/pemprov-dki-jakarta-klaim-banjir-kali-ini-tidak-seluas-tahun-lalu/62890/amp/"
+  ],
+  "flooded_km2": 156,
+  "flooded_rw": 390,
+  "status": "checked in page text 2026-10-30 (reported_excerpts.json in release observed-jakarta-20261030-o8)",
+  "quote": "luas area tergenang 156 km persegi dengan jumlah RW tergenang sebanyak 390 (Antara, data Pemprov DKI, rapat koordinasi 7 Jan 2020)",
+  "context": {
+   "2007": {
+    "km2": 455,
+    "rw": 955,
+    "rain_mm_day": 340
+   },
+   "2013": {
+    "km2": 240,
+    "rw": 599
+   },
+   "2015": {
+    "km2": 281,
+    "rw": 702
+   }
+  }
+ },
+ "n_flooded_area_records": 482,
+ "rw_shapes": 0,
+ "results": [
+  {
+   "run": "2020-01-01_imerg_k3_d0_poff_sub",
+   "drain_mm_h": 0,
+   "rain": "rain_imerg.json",
+   "rain_scale": 1,
+   "terrain_year": 2019.9978310502283,
+   "pumps": false,
+   "pump_m3s": 664.8,
+   "amc": 2,
+   "infiltration": true,
+   "sens": "none",
+   "mean_rain_mm": 142.87322662903097,
+   "flooded_km2": 284.09400081208577,
+   "mass_error": -5.585465778871049e-15,
+   "reports": {
+    "n_reports": 260,
+    "rule": "hit = model max depth >= 0.1 m on land (channels and sea excluded)",
+    "cell": {
+     "hit_rate": 0.3,
+     "random_hit_rate": 0.18632286995515696,
+     "skill": 0.13970790851474232
+    },
+    "window_3x3_land": {
+     "hit_rate": 0.5538461538461539,
+     "random_hit_rate": 0.43580849380110787,
+     "skill": 0.20921559213164523
+    },
+    "legacy_window_with_channels": {
+     "hit_rate": 0.5538461538461539
+    },
+    "hit_rate": 0.5538461538461539,
+    "fair": {
+     "hit_rate": 0.5538461538461539,
+     "n": 260,
+     "wilson95": [
+      0.4930749634385242,
+      0.6130493171904593
+     ],
+     "block_bootstrap95": [
+      0.4584639683421272,
+      0.6509284984678242
+     ],
+     "random_domain_land": 0.468132524693085,
+     "random_near_reports": 0.49412637318579106,
+     "p_vs_domain_land": 0.003417157052362331,
+     "p_vs_near_reports": 0.031098072982993514,
+     "inside_dki": {
+      "n": 188,
+      "hit_rate": 0.48404255319148937,
+      "random_dki": 0.43580849380110787,
+      "p_vs_dki": 0.10406846597187071
+     },
+     "verdict": "better",
+     "rule": "verdict 'better' = p < 0.05 against both fair baselines; 'too_few' = fewer than 100 reports (a 10-point gain cannot be told from chance)"
+    },
+    "n_with_depth": 212,
+    "observed_median_m": 0.7,
+    "model_median_m": 0.12368552014231682,
+    "model_median_cell_m": 0.029993541538715363,
+    "depth_bias_m": -0.539826534240735,
+    "depth_mae_m": 0.5865838611315725,
+    "depth_rmse_m": 0.7127645917997809,
+    "depth_note": "model depth = window_3x3_land value"
+   },
+   "reports_by_distance": {
+    "rule": "hit = deepest land cell of the 3 x 3 window >= 0.1 m; random = same rule on all cells of the class",
+    "distance": "model grid, cell centre to nearest river/water block (channel flag), exact to 500 m",
+    "n_reports": 259,
+    "classes": {
+     "water": {
+      "label": "in a river or water block of the model",
+      "n": 57,
+      "share_of_reports": 0.22007722007722008,
+      "share_of_cells": 0.13506270525125252,
+      "hit_rate": 0.5789473684210527,
+      "wilson95": [
+       0.4497991014068138,
+       0.6981260024694814
+      ],
+      "random_same_class": 0.5290062216243484,
+      "p_vs_random_same_class": 0.2674588786223639,
+      "n_with_depth": 44,
+      "observed_median_m": 0.6,
+      "model_median_m": 0.2171124666929245
+     },
+     "le100": {
+      "label": "land within 100 m of a river or water block",
+      "n": 54,
+      "share_of_reports": 0.2084942084942085,
+      "share_of_cells": 0.14964320916436907,
+      "hit_rate": 0.6296296296296297,
+      "wilson95": [
+       0.49627222791081016,
+       0.745768102923745
+      ],
+      "random_same_class": 0.5098497495826377,
+      "p_vs_random_same_class": 0.05152175319846362,
+      "n_with_depth": 48,
+      "observed_median_m": 0.715,
+      "model_median_m": 0.1259208805859089
+     },
+     "100_500": {
+      "label": "land 100-500 m from a river or water block",
+      "n": 101,
+      "share_of_reports": 0.38996138996138996,
+      "share_of_cells": 0.48508110121413356,
+      "hit_rate": 0.45544554455445546,
+      "wilson95": [
+       0.36173444762795837,
+       0.5524217651730671
+      ],
+      "random_same_class": 0.43161600838998443,
+      "p_vs_random_same_class": 0.3494841964430351,
+      "n_with_depth": 84,
+      "observed_median_m": 0.785,
+      "model_median_m": 0.09865877777338028
+     },
+     "gt500": {
+      "label": "land more than 500 m from a river or water block",
+      "n": 47,
+      "share_of_reports": 0.18146718146718147,
+      "share_of_cells": 0.23021298437024487,
+      "hit_rate": 0.6595744680851063,
+      "wilson95": [
+       0.5167065950530297,
+       0.7783273928623781
+      ],
+      "random_same_class": 0.47860229268196436,
+      "p_vs_random_same_class": 0.009460348107015919,
+      "n_with_depth": 35,
+      "observed_median_m": 0.6,
+      "model_median_m": 0.15258562564849854
+     }
+    }
+   },
+   "micro": false,
+   "reports_micro_area": {
+    "n_reports": 21,
+    "rule": "hit = model max depth >= 0.1 m on land (channels and sea excluded)",
+    "cell": {
+     "hit_rate": 0.23809523809523808,
+     "random_hit_rate": 0.14563779527559056,
+     "skill": 0.10821808632027606
+    },
+    "window_3x3_land": {
+     "hit_rate": 0.5238095238095238,
+     "random_hit_rate": 0.42708661417322835,
+     "skill": 0.16882640906830026
+    },
+    "legacy_window_with_channels": {
+     "hit_rate": 0.5238095238095238
+    },
+    "hit_rate": 0.5238095238095238,
+    "n_with_depth": 11,
+    "observed_median_m": 0.85,
+    "model_median_m": 0.15330307185649872,
+    "model_median_cell_m": 0.01266979519277811,
+    "depth_bias_m": -0.7624427366087382,
+    "depth_mae_m": 0.7624427366087382,
+    "depth_rmse_m": 0.9686178122004653,
+    "depth_note": "model depth = window_3x3_land value"
+   },
+   "micro_area_flooded_km2": 14.47,
+   "dki_flooded_km2": 85.85132823529412,
+   "dki_land_km2": 600.881474117647,
+   "genangan_dsda": {
+    "source": "Jakarta Satu, Dinas SDA DKI, layer Genangan (aggregates only)",
+    "window_utc": [
+     "2019-12-30 05:00:00+00:00",
+     "2020-01-04 05:00:00+00:00"
+    ],
+    "n_polygons": 148,
+    "hit_rate": 0.6621621621621622,
+    "median_model_depth_m": 0.22022636234760284,
+    "n_with_depth": 147,
+    "median_observed_depth_m": 0.3,
+    "median_model_depth_at_observed_m": 0.21864041686058044,
+    "mean_error_m": -0.048557843041866014,
+    "share_model_ge_half_observed": 0.5374149659863946
+   },
+   "rw_places": {
+    "source": "RW polygons: Shabrina et al. (2026), Zenodo 19456870, CC BY 4.0",
+    "n_rw": 2672,
+    "rw_share_threshold": 0.1,
+    "note": "RW without a record = not recorded (reports are incomplete): false_alarm_ratio is an upper bound",
+    "reports_or_dsda": {
+     "n_observed": 384,
+     "n_model": 851,
+     "hits": 159,
+     "hit_rate": 0.4140625,
+     "false_alarm_ratio": 0.8131609870740305,
+     "csi": 0.14776951672862454,
+     "auc": 0.5867615457459208
+    },
+    "reports": {
+     "n_observed": 113,
+     "n_model": 851,
+     "hits": 56,
+     "hit_rate": 0.49557522123893805,
+     "false_alarm_ratio": 0.9341950646298472,
+     "csi": 0.06167400881057269,
+     "auc": 0.6163168687989985
+    },
+    "dsda": {
+     "n_observed": 286,
+     "n_model": 851,
+     "hits": 112,
+     "hit_rate": 0.3916083916083916,
+     "false_alarm_ratio": 0.8683901292596945,
+     "csi": 0.10926829268292683,
+     "auc": 0.5721326033564089
+    }
+   }
+  }
+ ]
+}
