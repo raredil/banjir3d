@@ -52,7 +52,31 @@
     "depth_bias_m": -0.5224611980040023,
     "depth_mae_m": 0.6878105487912259,
     "depth_rmse_m": 0.8474108542767125,
-    "depth_note": "model depth = window_3x3_land value"
+    "depth_note": "model depth = window_3x3_land value",
+    "fair": {
+     "hit_rate": 0.3469387755102041,
+     "n": 49,
+     "wilson95": [
+      0.2292420960931444,
+      0.4868906478056021
+     ],
+     "block_bootstrap95": [
+      0.20454545454545456,
+      0.5106382978723404
+     ],
+     "random_domain_land": 0.41796115995000577,
+     "random_near_reports": 0.33780743851229755,
+     "p_vs_domain_land": 0.876196622386887,
+     "p_vs_near_reports": 0.4997417466264918,
+     "inside_dki": {
+      "n": 17,
+      "hit_rate": 0.11764705882352941,
+      "random_dki": 0.35775443420049907,
+      "p_vs_dki": 0.9943655682982157
+     },
+     "verdict": "too_few",
+     "rule": "verdict 'better' = p < 0.05 against both fair baselines; 'too_few' = fewer than 100 reports (a 10-point gain cannot be told from chance)"
+    }
    },
    "micro": false,
    "reports_micro_area": {

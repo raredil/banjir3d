@@ -1,5 +1,5 @@
 {
- "_about": "How the tested set-up (90 m, GPM IMERG, pumps off, small-drain sink 0, average soil, subsidence to the event date) matched three recorded floods; from scores-2020-01-01-imerg-v7.json, scores-2021-02-20-imerg-v7.json, scores-2025-03-04-imerg-v7.json (verification/observed/make_skill.py). hit/random: 3 x 3 land window (about 270 m), cell: same land cell; random = points spread at random over DKI land with the same rule; legacyHit: the old rule that counted river channels.",
+ "_about": "How the tested set-up (90 m, GPM IMERG, pumps off, small-drain sink 0, average soil, subsidence to the event date) matched three recorded floods; from scores-2020-01-01-imerg-v7.json, scores-2021-02-20-imerg-v7.json, scores-2025-03-04-imerg-v7.json (verification/observed/make_skill.py). hit/random: 3 x 3 land window (about 270 m), cell: same land cell; random = points spread at random over DKI land with the same rule (old, unfair: a third of the reports lie outside DKI); randomDomain = all land of the grid, randomNear = land within 1 km of a report (fair baselines), ci95 = 1 km block bootstrap of hit, pNear = one-sided binomial p against randomNear, verdict better|not_better|too_few (p < 0.05 against both fair baselines, at least 100 reports); hitDki/randomDki = reports inside DKI only; legacyHit: the old rule that counted river channels.",
  "events": [
   {
    "id": "2020-01-01",
@@ -13,6 +13,20 @@
    "modelMedianM": 0.087,
    "dkiKm2": 61.6,
    "reportedKm2": 156,
+   "randomDomain": 0.422,
+   "randomNear": 0.429,
+   "ci95": [
+    0.354,
+    0.521
+   ],
+   "pNear": 0.4563,
+   "verdict": "not_better",
+   "nDki": 188,
+   "hitDki": 0.314,
+   "randomDki": 0.366,
+   "rwCsi": 0.127,
+   "rwFar": 0.819,
+   "rwAucAll": 0.569,
    "rwAuc": 0.5856810448358687
   },
   {
@@ -27,6 +41,20 @@
    "modelMedianM": 0.048,
    "dkiKm2": 19.5,
    "reportedKm2": null,
+   "randomDomain": 0.258,
+   "randomNear": 0.24,
+   "ci95": [
+    0.259,
+    0.41
+   ],
+   "pNear": 0.0,
+   "verdict": "better",
+   "nDki": 265,
+   "hitDki": 0.234,
+   "randomDki": 0.185,
+   "rwCsi": 0.071,
+   "rwFar": 0.855,
+   "rwAucAll": 0.58,
    "rwAuc": 0.5819371303784506
   },
   {
@@ -41,6 +69,20 @@
    "modelMedianM": 0.056,
    "dkiKm2": 55.2,
    "reportedKm2": null,
+   "randomDomain": 0.418,
+   "randomNear": 0.338,
+   "ci95": [
+    0.205,
+    0.511
+   ],
+   "pNear": 0.4997,
+   "verdict": "too_few",
+   "nDki": 17,
+   "hitDki": 0.118,
+   "randomDki": 0.358,
+   "rwCsi": 0.05,
+   "rwFar": 0.938,
+   "rwAucAll": 0.521,
    "rwAuc": 0.4232990728947602
   }
  ]
