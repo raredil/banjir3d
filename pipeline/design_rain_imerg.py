@@ -52,27 +52,54 @@ def granules(y0: int, y1: int) -> dict:
     return out
 
 
-ROW = re.compile(r"^\S*?\[(\d+)\]\[(\d+)\],\s*(.+)$")
+NUM = re.compile(r"[-+]?(?:\d+\.?\d*|\.\d+)(?:[eE][-+]?\d+)?|nan|NaN")
+ORDER = {"lon_first": True}  # set from the DDS by probe(): precipitation[time][lon][lat] (V07 daily) or [time][lat][lon]
+
+
+def subset_url(url: str) -> str:
+    a, b = (f"[{I0}:{I1}]", f"[{J0}:{J1}]") if ORDER["lon_first"] else (f"[{J0}:{J1}]", f"[{I0}:{I1}]")
+    return f"{url}.ascii?precipitation[0:0]{a}{b}"
+
+
+def parse(body: bytes):
+    """Values of the precipitation block of a DAP2 ASCII answer, in the requested order, as [lat north to south, lon]."""
+    txt = body.decode("utf-8", "replace")
+    vals = []
+    for line in txt.splitlines():
+        t = line.strip()
+        if t.startswith("[") and "," in t:  # data rows look like "[0][3], v, v, ..." (index prefix, then values)
+            vals += [float(v) for v in NUM.findall(t.split(",", 1)[1])]
+    nlon, nlat = I1 - I0 + 1, J1 - J0 + 1
+    if len(vals) < nlon * nlat:
+        return None
+    a = np.array(vals[: nlon * nlat], np.float32)
+    a = a.reshape(nlon, nlat).T if ORDER["lon_first"] else a.reshape(nlat, nlon)  # -> [lat south to north, lon]
+    a[~np.isfinite(a) | (a < 0)] = np.nan
+    return a[::-1].copy()
+
+
+def probe(url: str):
+    dds = fetch.get(f"{url}.dds", None, tries=3, headers=AUTH, log=False)
+    print("DDS:", (dds or b"")[:600].decode("utf-8", "replace"))
+    m = re.search(r"precipitation\[(\w+) = \d+\]\[(\w+) = \d+\]\[(\w+) = \d+\]", (dds or b"").decode("utf-8", "replace"))
+    if not m:
+        sys.exit("no precipitation array in the DDS (see above)")
+    ORDER["lon_first"] = m.group(2) == "lon"
+    b = fetch.get(subset_url(url), None, tries=3, headers=AUTH, log=False)
+    print("ASCII:", (b or b"")[:1200].decode("utf-8", "replace"))
+    a = parse(b or b"")
+    if a is None:
+        sys.exit("the ASCII answer could not be read (see above)")
+    print("probe ok, dims", m.groups(), "max", np.nanmax(a))
 
 
 def read(day_url):
     day, url = day_url
-    q = f"{url}.ascii?precipitation[0:0][{I0}:{I1}][{J0}:{J1}]"
-    for attempt in range(5):
-        b = fetch.get(q, None, tries=2, headers=AUTH, log=False)
-        if b:
-            a = np.full((I1 - I0 + 1, J1 - J0 + 1), np.nan, np.float32)
-            n = 0
-            for line in b.decode("utf-8", "replace").splitlines():
-                m = ROW.match(line.strip())
-                if m:
-                    vals = [float(v) for v in m.group(3).split(",")]
-                    if len(vals) == a.shape[1]:
-                        a[int(m.group(2))] = vals
-                        n += 1
-            if n == a.shape[0]:
-                a[a < 0] = np.nan
-                return day, a.T[::-1].copy(), b[:400]  # -> [lat north to south, lon]
+    for attempt in range(4):
+        b = fetch.get(subset_url(url), None, tries=2, headers=AUTH, log=False)
+        a = parse(b) if b else None
+        if a is not None:
+            return day, a, None
         time.sleep(5 * (attempt + 1))
     print("failed", day, url)
     return day, None, None
@@ -87,9 +114,9 @@ def main(out: Path, y0: int, y1: int):
     if len(g) < 300 * (y1 - y0 + 1):
         sys.exit(f"only {len(g)} IMERG granules listed")
     days = sorted(g)
+    probe(g[days[len(days) // 2]])
     with ThreadPoolExecutor(int(os.environ.get("DR_WORKERS", "8"))) as ex:
         res = list(ex.map(read, [(d, g[d]) for d in days]))
-    print("first response:", next((r[2] for r in res if r[2]), b"")[:400])
     ok = [(d, a) for d, a, _ in res if a is not None]
     lon = -179.95 + 0.1 * np.arange(I0, I1 + 1)
     lat = (-89.95 + 0.1 * np.arange(J0, J1 + 1))[::-1]

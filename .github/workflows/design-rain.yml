@@ -19,7 +19,7 @@ concurrency:
 jobs:
   design-rain:
     runs-on: ubuntu-24.04
-    timeout-minutes: 120
+    timeout-minutes: 240
     permissions:
       contents: write
     env:
@@ -35,7 +35,7 @@ jobs:
       - name: CHIRPS 1981-2025 (first choice)
         id: chirps
         continue-on-error: true
-        timeout-minutes: 45
+        timeout-minutes: 10
         run: python pipeline/design_rain_fetch.py "$RUNNER_TEMP/dr" 1981 2025
       - name: GPM IMERG 2001-2025 (when the CHIRPS server refuses, as on 2026-11-20)
         if: steps.chirps.outcome != 'success'
