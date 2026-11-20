@@ -1,6 +1,6 @@
 {
  "_about": "What the 'Validate on observed floods' workflow runs on push. drains: mm/h on a fully built cell. scales: rain multipliers (sensitivity only, 1 = as observed).",
- "event": "2020-01-01",
+ "event": "2021-02-20",
  "drains": [
   0
  ],
