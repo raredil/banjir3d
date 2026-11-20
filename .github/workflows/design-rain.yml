@@ -1,4 +1,4 @@
-name: Design rain (return periods, CHIRPS)
+name: Design rain (return periods, satellite)
 
 # Return-period design rain for Jakarta (Next steps 1, owner question 4): reads 45 years of daily CHIRPS over DKI with HTTP range
 # requests (pipeline/design_rain_fetch.py; data.chc.ucsb.edu is not reachable from the cloud session), fits Gumbel and log-Pearson III
@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
   push:
     branches: ["claude/**", "ccr-**"]
-    paths: ["pipeline/design_rain.py", "pipeline/design_rain_fetch.py", ".github/workflows/design-rain.yml"]
+    paths: ["pipeline/design_rain.py", "pipeline/design_rain_fetch.py", "pipeline/design_rain_imerg.py", ".github/workflows/design-rain.yml"]
 
 permissions:
   contents: read
@@ -32,7 +32,16 @@ jobs:
         with:
           python-version: "3.13"
       - run: pip install -r pipeline/requirements.txt scipy==1.18.1 openpyxl==3.1.5
-      - run: python pipeline/design_rain_fetch.py "$RUNNER_TEMP/dr" 1981 2025
+      - name: CHIRPS 1981-2025 (first choice)
+        id: chirps
+        continue-on-error: true
+        timeout-minutes: 45
+        run: python pipeline/design_rain_fetch.py "$RUNNER_TEMP/dr" 1981 2025
+      - name: GPM IMERG 2001-2025 (when the CHIRPS server refuses, as on 2026-11-20)
+        if: steps.chirps.outcome != 'success'
+        env:
+          EARTHDATA_TOKEN: ${{ secrets.EARTHDATA_TOKEN }}
+        run: rm -rf "$RUNNER_TEMP/dr" && python pipeline/design_rain_imerg.py "$RUNNER_TEMP/dr" 2001 2025
       - name: Gauges (open West Java set, earlier release)
         env:
           GH_TOKEN: ${{ github.token }}
@@ -48,6 +57,6 @@ jobs:
         run: |
           tag="design-rain-jakarta-$(date -u +%Y%m%d)-r${GITHUB_RUN_NUMBER}"
           cd "$RUNNER_TEMP/dr" && sha256sum -- * > SHA256SUMS && ls -la
-          "$GITHUB_WORKSPACE/.github/scripts/release.sh" create "$tag" "$GITHUB_SHA" "Design rain: Jakarta return periods (CHIRPS 1981-2025)" \
-            "Made by pipeline/design_rain_fetch.py and pipeline/design_rain.py. CHIRPS v2.0 daily (doi:10.1038/sdata.2015.66); gauges doi:10.17632/d7j3s64vvr.3 (release $GAUGE_TAG). Run: ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}" \
+          "$GITHUB_WORKSPACE/.github/scripts/release.sh" create "$tag" "$GITHUB_SHA" "Design rain: Jakarta return periods (daily satellite rain)" \
+            "Made by pipeline/design_rain_fetch.py and pipeline/design_rain.py. CHIRPS v2.0 daily (doi:10.1038/sdata.2015.66) or, when CHIRPS refuses, GPM IMERG V07 daily (doi:10.5067/GPM/IMERGDF/DAY/07; see manifest.json); gauges doi:10.17632/d7j3s64vvr.3 (release $GAUGE_TAG). Run: ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}" \
             "$RUNNER_TEMP"/dr/*

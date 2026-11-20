@@ -126,7 +126,7 @@ def gauge_check(gdir: Path, adm, dates, rain, lon, lat):
             g = max(dv[d] for d in days)
             c = float(np.nanmax([rain[pos[d], j, i] for d in days]))
             if c > 0:
-                pairs.append({"station": str(name), "year": y, "gaugeMax": g, "chirpsMax": round(c, 1), "ratio": round(g / c, 3)})
+                pairs.append({"station": str(name), "year": y, "gaugeMax": g, "satMax": round(c, 1), "ratio": round(g / c, 3)})
         if any(p["station"] == str(name) for p in pairs):
             used.append({"name": str(name), **s})
     r = np.array([p["ratio"] for p in pairs]) if pairs else np.array([])
@@ -134,7 +134,7 @@ def gauge_check(gdir: Path, adm, dates, rain, lon, lat):
     if len(r):
         out.update({"ratio_median": round(float(np.median(r)), 3), "ratio_q25": round(float(np.percentile(r, 25)), 3),
                     "ratio_q75": round(float(np.percentile(r, 75)), 3),
-                    "ratio_of_means": round(float(np.mean([p["gaugeMax"] for p in pairs]) / np.mean([p["chirpsMax"] for p in pairs])), 3)})
+                    "ratio_of_means": round(float(np.mean([p["gaugeMax"] for p in pairs]) / np.mean([p["satMax"] for p in pairs])), 3)})
     return out
 
 
@@ -170,7 +170,8 @@ def main(npz: Path, manifest: Path, gdir: str, out: Path):
     cell_series = {f"{lon[i]:.3f},{lat[j]:.3f}": [r1(v) for v in amax[:, j, i]] for j, i in cells}
     gc = gauge_check(Path(gdir), adm, dates, rain, lon, lat) if gdir != "-" else None
     doc = {
-        "_about": "Return-period design rain for DKI Jakarta: 24 h (daily) rain depth that is reached or exceeded on average once in T years. Made by pipeline/design_rain.py from daily CHIRPS rain; R24 per return period from the annual maximum daily rain of every CHIRPS cell whose centre lies inside DKI (median, min and max over the cells) and of the DKI area mean. 'chosen' = the distribution with the smaller median Kolmogorov-Smirnov distance over the cells. Satellite daily rain is smoother than a rain gauge: see gaugeCheck (gauge annual maximum / CHIRPS cell annual maximum in the same year).",
+        "_about": "Return-period design rain for DKI Jakarta: 24 h (daily) rain depth that is reached or exceeded on average once in T years. Made by pipeline/design_rain.py from daily satellite rain (product, source); R24 per return period from the annual maximum daily rain of every satellite cell whose centre lies inside DKI (median, min and max over the cells) and of the DKI area mean. 'chosen' = the distribution with the smaller median Kolmogorov-Smirnov distance over the cells. Satellite daily rain is smoother than a rain gauge: see gaugeCheck (gauge annual maximum / satellite cell annual maximum in the same year).",
+        "product": "GPM IMERG V07" if "IMERG" in man["source"] else "CHIRPS v2.0", "cell_km": round(float(lon[1] - lon[0]) * 111.0, 1),
         "source": man["source"], "files": {"manifest": man.get("made_by"), "npz_sha256": man.get("npz_sha256"), "base_url": man.get("base_url")},
         "method": "annual maximum daily rain; Gumbel (method of moments) and log-Pearson III (moments of log10, skew corrected), Chow, Maidment and Mays (1988) ch. 12; Kolmogorov-Smirnov goodness of fit, critical value 1.36/sqrt(n) (5 %)",
         "years": [full[0], full[-1]], "n_years": n, "missing_days": len(man.get("missing_days", [])), "n_cells": int(len(cells)), "cell_deg": round(float(lon[1] - lon[0]), 4),
