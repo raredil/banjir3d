@@ -110,6 +110,29 @@
    "doi": "10.1002/wrcr.20366"
   },
   {
+   "key": "funk2015",
+   "type": "article",
+   "authors": [
+    "Funk, C.",
+    "Peterson, P.",
+    "Landsfeld, M.",
+    "Pedreros, D.",
+    "Verdin, J.",
+    "Shukla, S.",
+    "Husak, G.",
+    "Rowland, J.",
+    "Harrison, L.",
+    "Hoell, A.",
+    "Michaelsen, J."
+   ],
+   "year": 2015,
+   "title": "The climate hazards infrared precipitation with stations—a new environmental record for monitoring extremes",
+   "journal": "Scientific Data",
+   "volume": "2",
+   "pages": "150066",
+   "doi": "10.1038/sdata.2015.66"
+  },
+  {
    "key": "hawker2022",
    "type": "article",
    "authors": [

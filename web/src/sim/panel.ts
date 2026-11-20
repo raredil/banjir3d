@@ -7,6 +7,7 @@ import { buildingMask } from "./buildings";
 import { DT_S, cnForAmc, inflowsFor, inflowsForSpatial, type Inflow } from "../engine/hydrology";
 import { cumAtSteps, meanHyetograph, pointAt, zoneGrid, type EventRain } from "../engine/event-rain";
 import { designStorm, parseHourly, totalMm, type Hyetograph } from "../explore/rain";
+import { RP, RP_OPTIONS, returnPeriodOf } from "../explore/return-period";
 import { CLASSES, CLASS_COLORS, FloodLayer, fineResult } from "./flood-layer";
 import { buildConclusion, type Facts } from "./conclusion";
 import { floodPlaces } from "./places";
@@ -81,7 +82,8 @@ export function mountSim(page: MapPage, o: { packUrl: string; regionBbox: number
     <div class="sec"><h3>${t("sim.rain")}</h3>
       <div class="row"><button class="btn small" id="s-preset" type="button">${t("sim.preset")}</button>${q("sim.preset")}</div>${tip("sim.preset")}
       <div class="field"><div class="lbl"><span>${t("sim.mode")}</span></div><select id="s-mode"><option value="design">${t("sim.mode.design")}</option><option value="hourly">${t("sim.mode.hourly")}</option><option value="event">${t("sim.mode.event")}</option></select></div>
-      <div data-mode="design">${sl("s-r24", "sim.r24", 0, 600, 5, 150, "mm")}${sl("s-dur", "sim.dur", 1, 72, 1, 6, "h")}</div>
+      <div data-mode="design"><div class="field"${RP_OPTIONS.length ? "" : " hidden"}><div class="lbl"><span>${t("sim.rp")} ${q("sim.rp")}</span></div><select id="s-rp"><option value="">${t("sim.rp.custom")}</option>${RP_OPTIONS.map((o) => `<option value="${o.years}">${t("sim.rp.opt", { t: o.years, mm: o.mm })}</option>`).join("")}</select>
+        <p class="help tip" data-tipfor="sim.rp" hidden>${t("sim.rp.h", { y0: RP.years[0], y1: RP.years[1], n: RP.nYears, c: RP.cells, d: RP.dist === "gumbel" ? "Gumbel" : "log-Pearson III", g: RP.gaugeRatio === null ? "?" : RP.gaugeRatio.toFixed(2).replace(".", lang === "id" ? "," : "."), gn: RP.gaugeN, gs: RP.gaugeStations })}</p></div>${sl("s-r24", "sim.r24", 0, 600, 5, 150, "mm")}${sl("s-dur", "sim.dur", 1, 72, 1, 6, "h")}</div>
       <div data-mode="hourly" hidden><div class="field"><div class="lbl"><span>${t("sim.hourly")}</span></div><textarea id="s-hourly" rows="2" placeholder="5, 20, 60, 35, 10"></textarea></div></div>
       <div data-mode="event" hidden><div class="field"><div class="lbl"><span>${t("sim.event")} ${q("sim.event")}</span></div>
         <select id="s-event">${eventIds.map((id) => `<option value="${id}">${new Date(`${id}T12:00:00+07:00`).toLocaleDateString(lang === "id" ? "id-ID" : "en-GB", { day: "numeric", month: "long", year: "numeric" })}</option>`).join("")}</select>${tip("sim.event")}</div></div>
@@ -155,10 +157,14 @@ export function mountSim(page: MapPage, o: { packUrl: string; regionBbox: number
     const hy = hyeto();
     if (!hy) { $("s-rainsum").textContent = t("sim.hourly.bad"); return; }
     const peak = Math.max(0, ...hy.mm.map((v) => (v * 3600) / hy.blockSeconds));
+    const rp = mode() === "design" ? returnPeriodOf(num("s-r24"), num("s-dur")) : null;
+    $<HTMLSelectElement>("s-rp").value = rp ? String(rp) : "";
     $("s-rainsum").textContent = lang === "id" ? `Total ${totalMm(hy).toFixed(0)} mm selama ${(hy.mm.length * hy.blockSeconds) / 3600} jam, jam terderas ${peak.toFixed(0)} mm.` : `Total ${totalMm(hy).toFixed(0)} mm over ${(hy.mm.length * hy.blockSeconds) / 3600} h, wettest hour ${peak.toFixed(0)} mm.`;
+    if (rp) $("s-rainsum").textContent += ` ${t("sim.rp.sum", { t: rp })}`;
   };
   box.querySelectorAll<HTMLInputElement>('input[type="range"]').forEach((el) => el.addEventListener("input", () => { $(`${el.id}-v`).textContent = `${el.value} ${el.dataset.unit}`; summarize(); }));
   $("s-mode").addEventListener("change", summarize);
+  $("s-rp").addEventListener("change", () => { const o = RP_OPTIONS.find((x) => String(x.years) === $<HTMLSelectElement>("s-rp").value); if (o) { setVal("s-dur", 24); setVal("s-r24", o.mm); } });
   $("s-event").addEventListener("change", summarize);
   $("s-hourly").addEventListener("input", summarize);
   const setVal = (id: string, v: number) => { const el = $<HTMLInputElement>(id); el.value = String(v); el.dispatchEvent(new Event("input")); };
@@ -519,7 +525,7 @@ export function mountSim(page: MapPage, o: { packUrl: string; regionBbox: number
       for (let c = 0; c < r.zone.length; c++) if (r.grid.mask[c]) used.add(r.zone[c]);
       const tot = [...used].map((z) => r.event!.mm[z].reduce((s2, v) => s2 + v, 0));
       rain = { kind: "event", id: r.event.id, wib: r.event.wib, meanMm: totalMm(hy), maxMm: Math.max(...tot), points: used.size, reportsN: skillOf(r.event.id)?.n ?? r.event.reports.n, hitRate: skillOf(r.event.id)?.hit ?? r.event.reports.hit_rate, randomRate: skillOf(r.event.id)?.randomNear ?? skillOf(r.event.id)?.random, reportedKm2: r.event.reported_km2, reportedRw: r.event.reported_rw };
-    } else rain = { kind: r.scenario.rainMode === "hourly" ? "hourly" : "design", mm: totalMm(hy), h, peakMmH };
+    } else rain = { kind: r.scenario.rainMode === "hourly" ? "hourly" : "design", mm: totalMm(hy), h, peakMmH, ...(r.scenario.returnPeriodYears ? { rpYears: r.scenario.returnPeriodYears as number } : {}) };
     const box2 = (r.scenario.area as { box?: number[] }).box ?? null, [wKm, hKm] = box2 ? kmOf(box2) : [0, 0];
     const facts: Facts = {
       area: { box: box2, wKm, hKm }, landKm2: land * a, cellM: g.fine ? g.fine.dx : g.dx, ...(r.scenario.fineCells ? { fine: { buildingShare: (r.scenario.fineCells as { buildings?: { share?: number } } | undefined)?.buildings?.share ?? null, ...(g.fine && g.fine.s > 1 ? { computeM: g.dx } : {}), ...(g.fine?.drawOnly ? { drawOnly: true } : {}) } } : {}), hours: r.scenario.hours as number, gpu: !!r.gpu, landcoverYear: pack.header.landcover_year, ...(r.scenario.terrainYear ? { terrainYear: r.scenario.terrainYear as number, subEpoch: r.scenario.terrainEpoch as number } : {}),
@@ -633,7 +639,7 @@ export function mountSim(page: MapPage, o: { packUrl: string; regionBbox: number
     const inflows = raw.map((f) => ({ ...f, cell: run.cellAt(f.x, f.y) })).filter((f) => f.cell >= 0);
     const grid: Grid = { nx: run.nx, ny: run.ny, dx: run.dx, zone: run.utm.zone, x0: run.utm.x0, y0: run.utm.y0, z: Float32Array.from(run.z), mask, channel: run.channel, land, fine: run.fine };
     const scenario = {
-      area: area === "box" ? { box: bbox } : "region", rainMode: mode(), ...(mode() === "design" ? { designTotalMm: num("s-r24"), designHours: num("s-dur") } : {}),
+      area: area === "box" ? { box: bbox } : "region", rainMode: mode(), ...(mode() === "design" ? { designTotalMm: num("s-r24"), designHours: num("s-dur"), ...(returnPeriodOf(num("s-r24"), num("s-dur")) ? { returnPeriodYears: returnPeriodOf(num("s-r24"), num("s-dur")), designRainSource: `data/rain/design_rain_jakarta.json: CHIRPS daily ${RP.years[0]}-${RP.years[1]}, median over ${RP.cells} DKI cells, ${RP.dist}` } : {}) } : {}),
       components: { upstream: up, infiltration: infilOn(), soilWetness: ["dry (AMC I)", "average (AMC II)", "wet (AMC III)"][amc - 1], subsidence: subOn() && !!p.sub, polderPumps: !!run.pump && pumpsOn(), microDrains: !!run.mdr && mdrOn(), extraDrainMmH: num("s-drain") }, rainMm: +totalMm(hy).toFixed(1), rainHours: (hy.mm.length * hy.blockSeconds) / 3600, upstreamRain: up, seaLevel: num("s-sea"), hours, cellM: run.fine ? run.fine.dx : run.dx,
       ...(p.sub && tYear ? { terrainYear: +tYear.toFixed(2), terrainEpoch: p.subEpoch } : {}),
       ...(r > 1 ? { fineCells: { cellM: 30 / r, computeM: run.dx, terrain: "bilinear from the 30 m pack (no new terrain detail)", flow: run.fine?.drawOnly ? "the 30 m run (same numbers as 30 m); fine cells only draw its water surface as a smooth sheet, no building cut-outs (ADR 0018, 0019)" : "trial: flow solved among the buildings (ADR 0015/0016), not validated", buildings: bldInfo ? { method: run.fine?.drawOnly ? "footprints drawn dry on the fine cells (water surface of the 30 m run)" : run.phi ? "building porosity on the compute grid, result drawn on the fine cells (dual grid: Sanders et al. 2008; Sanders and Schubert 2019)" : "building block +10 m (Schubert and Sanders 2012)", source: "Overture Maps buildings, region pack tiles z14", cells: bldInfo.cells, share: +bldInfo.share.toFixed(3) } : "not loaded" } } : {}),

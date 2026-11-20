@@ -1,11 +1,12 @@
 // Research-style summary of a finished run: every number comes from the run, every method and dataset is cited
 // from data/methods/references.json (Harvard, as on the Methods page). Pure function, unit-tested.
+import { RP } from "../explore/return-period";
 import data from "../../../data/methods/references.json";
 import { citeAuthors, refEntry, sortRefs, type Ref } from "../methods/cite";
 import type { Place } from "./places";
 
 export type Rain =
-  | { kind: "design" | "hourly"; mm: number; h: number; peakMmH: number }
+  | { kind: "design" | "hourly"; mm: number; h: number; peakMmH: number; rpYears?: number }
   | { kind: "event"; id: string; wib: [string, string]; meanMm: number; maxMm: number; points: number; reportsN: number; hitRate: number; randomRate?: number; reportedKm2: number | null; reportedRw: number | null };
 
 export type Facts = {
@@ -129,8 +130,8 @@ export function buildConclusion(f: Facts, lang: "id" | "en", startUtc: string | 
       : `Rain input is hourly GPM IMERG Final V07 satellite precipitation ${cite("huffman2023")} at ${r.points} grid points of 0.1° for ${wib(r.wib[0])} to ${wib(r.wib[1])}; each model cell takes the rain of its nearest point. The area-mean rain was ${n(r.meanMm)} mm${r.points > 1 ? ` and the wettest grid point received ${n(r.maxMm)} mm` : ""}.`;
   } else if (r.kind === "design") {
     rain = id
-      ? `Hujan yang dipakai adalah hujan rencana ${n(r.mm)} mm selama ${n(r.h)} jam, dibentuk dengan rumus intensitas Mononobe (sebagaimana dipakai ${citeN("maitsa2021")}) yang diskalakan ke lama hujan${r.h > 24 ? " (diperpanjang melewati 24 jam tempat rumus itu diturunkan: sebuah anggapan)" : ""} dan diurutkan dengan metode blok bergantian ${cite("chow1988")}, dengan intensitas puncak ${n(r.peakMmH)} mm/jam, seragam di seluruh area.${f.upstream ? ` Untuk daerah tangkapan hulu, hujan titik ini dikalikan faktor reduksi luas ${cite("allen2005")}.` : ""}`
-      : `Rain input is a design storm of ${n(r.mm)} mm over ${n(r.h)} h, shaped with the Mononobe intensity relation ${cite("maitsa2021")} scaled to the storm duration${r.h > 24 ? " (extended beyond the 24 h it was derived for: an assumption)" : ""} and ordered with the alternating block method ${cite("chow1988")}, with a peak intensity of ${n(r.peakMmH)} mm/h, uniform over the area.${f.upstream ? ` Over the upstream catchments this point depth is multiplied by the areal reduction factor ${cite("allen2005")}.` : ""}`;
+      ? `Hujan yang dipakai adalah hujan rencana ${n(r.mm)} mm selama ${n(r.h)} jam, dibentuk dengan rumus intensitas Mononobe (sebagaimana dipakai ${citeN("maitsa2021")}) yang diskalakan ke lama hujan${r.h > 24 ? " (diperpanjang melewati 24 jam tempat rumus itu diturunkan: sebuah anggapan)" : ""} dan diurutkan dengan metode blok bergantian ${cite("chow1988")}, dengan intensitas puncak ${n(r.peakMmH)} mm/jam, seragam di seluruh area.${f.upstream ? ` Untuk daerah tangkapan hulu, hujan titik ini dikalikan faktor reduksi luas ${cite("allen2005")}.` : ""}${r.rpYears ? ` Jumlah ini adalah hujan rencana kala ulang ${r.rpYears} tahun untuk DKI: hujan harian terbesar tiap tahun dari satelit CHIRPS ${RP.years[0]}–${RP.years[1]} ${cite("funk2015")}, dicocokkan dengan sebaran ${RP.dist === "gumbel" ? "Gumbel" : "log-Pearson III"} ${cite("chow1988")}; hujan satelit lebih halus dari alat penakar, jadi untuk satu titik nilainya bisa terlalu rendah.` : ""}`
+      : `Rain input is a design storm of ${n(r.mm)} mm over ${n(r.h)} h, shaped with the Mononobe intensity relation ${cite("maitsa2021")} scaled to the storm duration${r.h > 24 ? " (extended beyond the 24 h it was derived for: an assumption)" : ""} and ordered with the alternating block method ${cite("chow1988")}, with a peak intensity of ${n(r.peakMmH)} mm/h, uniform over the area.${f.upstream ? ` Over the upstream catchments this point depth is multiplied by the areal reduction factor ${cite("allen2005")}.` : ""}${r.rpYears ? ` This total is the ${r.rpYears}-year return-period design rain for DKI: annual maximum daily rain from CHIRPS ${RP.years[0]}–${RP.years[1]} ${cite("funk2015")}, fitted with the ${RP.dist === "gumbel" ? "Gumbel" : "log-Pearson III"} distribution ${cite("chow1988")}; satellite rain is smoother than a gauge, so at a single point it can be too low.` : ""}`;
   } else {
     rain = id
       ? `Hujan yang dipakai adalah hujan per jam yang diisi pengguna, total ${n(r.mm)} mm selama ${n(r.h)} jam dengan intensitas puncak ${n(r.peakMmH)} mm/jam, seragam di seluruh area.`
