@@ -1,0 +1,3762 @@
+{
+ "_about": "Daily gauge rain (mm, 24 h to the 07:00 WIB reading of the date) for the validation floods, cut by verification/observed/gauges_westjava.py.",
+ "source": "Saputra H, Dasanto BD, Tarigan SD, Santikayasa IP, Darmawan Y (2026). Daily Rainfall Observations from 460 Stations and Flood Event Records across West Java, Indonesia (2020-2025). Mendeley Data V3, doi:10.17632/d7j3s64vvr.3. CC BY 4.0. Data from BMKG dataonline.bmkg.go.id and partner networks.",
+ "events": {
+  "2020-01-01": {
+   "days": [
+    "2020-01-01",
+    "2020-01-02",
+    "2020-01-03"
+   ],
+   "gauges": [
+    {
+     "name": "Ciriung",
+     "id": "32010102a",
+     "lat": -6.46042,
+     "lon": 106.85642,
+     "district": "Kab. Bogor",
+     "days": {
+      "2020-01-01": 45.0,
+      "2020-01-02": 106.0,
+      "2020-01-03": 0.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "BP3K Jonggol",
+     "id": "32010603a",
+     "lat": -6.46789,
+     "lon": 107.06589,
+     "district": "Kab. Bogor",
+     "days": {
+      "2020-01-01": 0.0,
+      "2020-01-02": 7.0,
+      "2020-01-03": 0.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Dayeuh/Sukanagara",
+     "id": "32010606a",
+     "lat": -6.50997,
+     "lon": 107.01997,
+     "district": "Kab. Bogor",
+     "days": {
+      "2020-01-01": 55.0,
+      "2020-01-02": 40.0,
+      "2020-01-03": 0.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Klapanunggal",
+     "id": "32010701a",
+     "lat": -6.41422,
+     "lon": 106.96208,
+     "district": "Kab. Bogor",
+     "days": {
+      "2020-01-01": 55.0,
+      "2020-01-02": 36.0,
+      "2020-01-03": 0.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Situ Tungilis",
+     "id": "32010704a",
+     "lat": -6.41981,
+     "lon": 107.03128,
+     "district": "Kab. Bogor",
+     "days": {
+      "2020-01-01": 63.0,
+      "2020-01-02": 38.0,
+      "2020-01-03": 0.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Cariu",
+     "id": "32010802a",
+     "lat": -6.50422,
+     "lon": 107.13294,
+     "district": "Kab. Bogor",
+     "days": {
+      "2020-01-01": 127.0,
+      "2020-01-02": 20.0,
+      "2020-01-03": 0.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Sinar Rasa_Tanjung rasa",
+     "id": "32010803a",
+     "lat": -6.61978,
+     "lon": 107.15797,
+     "district": "Kab. Bogor",
+     "days": {
+      "2020-01-01": 82.0,
+      "2020-01-02": 3.0,
+      "2020-01-03": 0.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Jampang",
+     "id": "32011002a",
+     "lat": -6.48147,
+     "lon": 106.69467,
+     "district": "Kab. Bogor",
+     "days": {
+      "2020-01-01": 32.0,
+      "2020-01-02": 0.0,
+      "2020-01-03": 0.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Curug Serpong",
+     "id": "32011102a",
+     "lat": -6.38644,
+     "lon": 106.72664,
+     "district": "Kab. Bogor",
+     "days": {
+      "2020-01-01": 36.0,
+      "2020-01-02": 0.0,
+      "2020-01-03": 0.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Situ Kemang",
+     "id": "32011201a",
+     "lat": -6.49539,
+     "lon": 106.74158,
+     "district": "Kab. Bogor",
+     "days": {
+      "2020-01-01": 75.0,
+      "2020-01-02": 18.0,
+      "2020-01-03": 5.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Bojong Gede",
+     "id": "32011301a",
+     "lat": -6.5009,
+     "lon": 106.786,
+     "district": "Kab. Bogor",
+     "days": {
+      "2020-01-01": 60.0,
+      "2020-01-02": 0.0,
+      "2020-01-03": 0.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Cis Empang",
+     "id": "32011302a",
+     "lat": -6.45344,
+     "lon": 106.79908,
+     "district": "Kab. Bogor",
+     "days": {
+      "2020-01-01": 65.0,
+      "2020-01-02": 10.0,
+      "2020-01-03": 0.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Citayam",
+     "id": "32011303a",
+     "lat": -6.47039,
+     "lon": 106.80539,
+     "district": "Kab. Bogor",
+     "days": {
+      "2020-01-01": 243.0,
+      "2020-01-02": 16.0,
+      "2020-01-03": 1.8
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Perkeb. Cianten",
+     "id": "32011401a",
+     "lat": -6.72233,
+     "lon": 106.60378,
+     "district": "Kab. Bogor",
+     "days": {
+      "2020-01-01": 74.5,
+      "2020-01-02": 73.0,
+      "2020-01-03": 0.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Pamijahan",
+     "id": "32011404a",
+     "lat": -6.65961,
+     "lon": 106.70361,
+     "district": "Kab. Bogor",
+     "days": {
+      "2020-01-01": 85.0,
+      "2020-01-02": 6.0,
+      "2020-01-03": 0.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Bp3K  Leuwiliang",
+     "id": "32011406a",
+     "lat": -6.5635,
+     "lon": 106.62981,
+     "district": "Kab. Bogor",
+     "days": {
+      "2020-01-01": 70.0,
+      "2020-01-02": 15.0,
+      "2020-01-03": 1.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Cihideung",
+     "id": "32011504a",
+     "lat": -6.59339,
+     "lon": 106.71989,
+     "district": "Kab. Bogor",
+     "days": {
+      "2020-01-01": 60.0,
+      "2020-01-02": 30.0,
+      "2020-01-03": 0.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Cibodas",
+     "id": "32011505a",
+     "lat": -6.54739,
+     "lon": 106.69119,
+     "district": "Kab. Bogor",
+     "days": {
+      "2020-01-01": 34.0,
+      "2020-01-02": 30.0,
+      "2020-01-03": 0.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Citeureup Pamijahan",
+     "id": "32011702a",
+     "lat": -6.72297,
+     "lon": 106.65997,
+     "district": "Kab. Bogor",
+     "days": {
+      "2020-01-01": 85.0,
+      "2020-01-02": 6.0,
+      "2020-01-03": 0.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Perkeb. Jasinga",
+     "id": "32011904a",
+     "lat": -6.47344,
+     "lon": 106.468,
+     "district": "Kab. Bogor",
+     "days": {
+      "2020-01-01": 61.0,
+      "2020-01-02": 14.0,
+      "2020-01-03": 25.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Cigelung",
+     "id": "32011905a",
+     "lat": -6.52417,
+     "lon": 106.415,
+     "district": "Kab. Bogor",
+     "days": {
+      "2020-01-01": 30.0,
+      "2020-01-02": 15.0,
+      "2020-01-03": 30.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Parung Panjang",
+     "id": "32012002a",
+     "lat": -6.38,
+     "lon": 106.54997,
+     "district": "Kab. Bogor",
+     "days": {
+      "2020-01-01": 38.0,
+      "2020-01-02": 9.5,
+      "2020-01-03": 4.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Nanggung",
+     "id": "32012103a",
+     "lat": -6.5975,
+     "lon": 106.5395,
+     "district": "Kab. Bogor",
+     "days": {
+      "2020-01-01": 150.0,
+      "2020-01-02": 100.0,
+      "2020-01-03": 15.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Afd Bolang",
+     "id": "32012201a",
+     "lat": -6.43606,
+     "lon": 106.52236,
+     "district": "Kab. Bogor",
+     "days": {
+      "2020-01-01": 35.0,
+      "2020-01-02": 50.0,
+      "2020-01-03": 13.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Perkeb. Cikasungka",
+     "id": "32012202a",
+     "lat": -6.55278,
+     "lon": 106.53858,
+     "district": "Kab. Bogor",
+     "days": {
+      "2020-01-01": 275.0,
+      "2020-01-02": 24.0,
+      "2020-01-03": 1.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Empl. Toge",
+     "id": "32012205a",
+     "lat": -6.50942,
+     "lon": 106.50344,
+     "district": "Kab. Bogor",
+     "days": {
+      "2020-01-01": 135.0,
+      "2020-01-02": 9.5,
+      "2020-01-03": 8.5
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Ciawi",
+     "id": "32012401a",
+     "lat": -6.66236,
+     "lon": 106.85286,
+     "district": "Kab. Bogor",
+     "days": {
+      "2020-01-01": 120.0,
+      "2020-01-02": 60.5,
+      "2020-01-03": 0.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Naringgul",
+     "id": "32012506a",
+     "lat": -6.69847,
+     "lon": 106.98769,
+     "district": "Kab. Bogor",
+     "days": {
+      "2020-01-01": 40.0,
+      "2020-01-02": 69.0,
+      "2020-01-03": 7.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Cibeureum Bogor",
+     "id": "32012507a",
+     "lat": -6.70278,
+     "lon": 106.93797,
+     "district": "Kab. Bogor",
+     "days": {
+      "2020-01-01": 83.6,
+      "2020-01-02": 85.2,
+      "2020-01-03": 8.2
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Perk Gunung Mas",
+     "id": "32012511a",
+     "lat": -6.70914,
+     "lon": 106.96739,
+     "district": "Kab. Bogor",
+     "days": {
+      "2020-01-01": 66.0,
+      "2020-01-02": 58.5,
+      "2020-01-03": 9.5
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Gadog",
+     "id": "32012602a",
+     "lat": -6.65689,
+     "lon": 106.86383,
+     "district": "Kab. Bogor",
+     "days": {
+      "2020-01-01": 110.0,
+      "2020-01-02": 34.0,
+      "2020-01-03": 0.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Cibalagung Bogor",
+     "id": "32012902a",
+     "lat": -6.60386,
+     "lon": 106.78731,
+     "district": "Kota Bogor",
+     "days": {
+      "2020-01-01": 110.0,
+      "2020-01-02": 0.0,
+      "2020-01-03": 27.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Depok_BMKG_Sukmajaya",
+     "id": "32013301a",
+     "lat": -6.40531,
+     "lon": 106.84581,
+     "district": "Kota Depok",
+     "days": {
+      "2020-01-01": 92.0,
+      "2020-01-02": 91.0,
+      "2020-01-03": 0.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "BPP Ciseeng",
+     "id": "32013303a",
+     "lat": -6.44614,
+     "lon": 106.68753,
+     "district": "Kab. Bogor",
+     "days": {
+      "2020-01-01": 33.0,
+      "2020-01-02": 21.0,
+      "2020-01-03": 12.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Perkebunan Cimulang",
+     "id": "32013401a",
+     "lat": -6.52589,
+     "lon": 106.71658,
+     "district": "Kab. Bogor",
+     "days": {
+      "2020-01-01": 0.0,
+      "2020-01-02": 31.0,
+      "2020-01-03": 1.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Gunung Bunder",
+     "id": "32014001a",
+     "lat": -6.64258,
+     "lon": 106.68047,
+     "district": "Kab. Bogor",
+     "days": {
+      "2020-01-01": 50.0,
+      "2020-01-02": 37.0,
+      "2020-01-03": 0.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Goalpara",
+     "id": "32020401a",
+     "lat": -6.89419,
+     "lon": 106.96303,
+     "district": "Kab. Sukabumi",
+     "days": {
+      "2020-01-01": 37.0,
+      "2020-01-02": 4.0,
+      "2020-01-03": 2.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Batu Karut",
+     "id": "32020402a",
+     "lat": -6.88442,
+     "lon": 106.98503,
+     "district": "Kab. Sukabumi",
+     "days": {
+      "2020-01-01": 120.0,
+      "2020-01-02": 59.0,
+      "2020-01-03": 10.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Perkeb. Sukamaju",
+     "id": "32021101a",
+     "lat": -6.88311,
+     "lon": 106.77317,
+     "district": "Kab. Sukabumi",
+     "days": {
+      "2020-01-01": 0.0,
+      "2020-01-02": 0.0,
+      "2020-01-03": 0.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Sinagar",
+     "id": "32021201a",
+     "lat": -6.85197,
+     "lon": 106.80147,
+     "district": "Kab. Sukabumi",
+     "days": {
+      "2020-01-01": 11.0,
+      "2020-01-02": 2.0,
+      "2020-01-03": 8.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Parakan Salak",
+     "id": "32021501a",
+     "lat": -6.8,
+     "lon": 106.7,
+     "district": "Kab. Sukabumi",
+     "days": {
+      "2020-01-01": 48.0,
+      "2020-01-02": 15.0,
+      "2020-01-03": 17.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Empl.  Cisalak",
+     "id": "32021502a",
+     "lat": -6.83739,
+     "lon": 106.66078,
+     "district": "Kab. Sukabumi",
+     "days": {
+      "2020-01-01": 42.0,
+      "2020-01-02": 10.0,
+      "2020-01-03": 14.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Kec. Cicurug",
+     "id": "32021601a",
+     "lat": -6.78731,
+     "lon": 106.77856,
+     "district": "Kab. Sukabumi",
+     "days": {
+      "2020-01-01": 0.0,
+      "2020-01-02": 10.0,
+      "2020-01-03": 27.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Perbawati",
+     "id": "32023206a",
+     "lat": -6.85267,
+     "lon": 106.95286,
+     "district": "Kab. Sukabumi",
+     "days": {
+      "2020-01-01": 20.5,
+      "2020-01-02": 0.0,
+      "2020-01-03": 11.5
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Cibalagung Cianjur",
+     "id": "32030503a",
+     "lat": -6.76253,
+     "lon": 107.23281,
+     "district": "Kab. Cianjur",
+     "days": {
+      "2020-01-01": 8.5,
+      "2020-01-02": 3.5,
+      "2020-01-03": 1.5
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Sangiang_Cibarengkok",
+     "id": "32030504a",
+     "lat": -6.87269,
+     "lon": 107.2565,
+     "district": "Kab. Cianjur",
+     "days": {
+      "2020-01-01": 60.0,
+      "2020-01-02": 0.0,
+      "2020-01-03": 0.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "PSDA_Ciranjang",
+     "id": "32030505a",
+     "lat": -6.814,
+     "lon": 107.24531,
+     "district": "Kab. Cianjur",
+     "days": {
+      "2020-01-01": 30.0,
+      "2020-01-02": 1.0,
+      "2020-01-03": 4.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Bojong Picung_kec",
+     "id": "32030601a",
+     "lat": -6.85106,
+     "lon": 107.26867,
+     "district": "Kab. Cianjur",
+     "days": {
+      "2020-01-01": 24.5,
+      "2020-01-02": 5.0,
+      "2020-01-03": 15.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Cisokan",
+     "id": "32030605a",
+     "lat": -6.86331,
+     "lon": 107.23536,
+     "district": "Kab. Cianjur",
+     "days": {
+      "2020-01-01": 3.5,
+      "2020-01-02": 2.0,
+      "2020-01-03": 4.5
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Mande",
+     "id": "32030801a",
+     "lat": -6.76997,
+     "lon": 107.2,
+     "district": "Kab. Cianjur",
+     "days": {
+      "2020-01-01": 0.0,
+      "2020-01-02": 0.0,
+      "2020-01-03": 5.5
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Janggari",
+     "id": "32030803a",
+     "lat": -6.7515,
+     "lon": 107.25967,
+     "district": "Kab. Cianjur",
+     "days": {
+      "2020-01-01": 10.0,
+      "2020-01-02": 4.0,
+      "2020-01-03": 0.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Afd.Tanawati ( kb.Gedeh )",
+     "id": "32031102a",
+     "lat": -6.79847,
+     "lon": 107.04139,
+     "district": "Kab. Cianjur",
+     "days": {
+      "2020-01-01": 53.0,
+      "2020-01-02": 29.0,
+      "2020-01-03": 1.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Vada",
+     "id": "32031203a",
+     "lat": -6.73297,
+     "lon": 107.18328,
+     "district": "Kab. Cianjur",
+     "days": {
+      "2020-01-01": 30.0,
+      "2020-01-02": 5.0,
+      "2020-01-03": 0.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Maleber",
+     "id": "32031205a",
+     "lat": -6.719,
+     "lon": 107.24206,
+     "district": "Kab. Cianjur",
+     "days": {
+      "2020-01-01": 43.0,
+      "2020-01-02": 5.0,
+      "2020-01-03": 0.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Cikundul",
+     "id": "32031206a",
+     "lat": -6.72078,
+     "lon": 107.21083,
+     "district": "Kab. Cianjur",
+     "days": {
+      "2020-01-01": 0.0,
+      "2020-01-02": 2.0,
+      "2020-01-03": 0.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Alam Indah Bunga Nusantara",
+     "id": "32031302a",
+     "lat": -6.72619,
+     "lon": 107.07647,
+     "district": "Kab. Cianjur",
+     "days": {
+      "2020-01-01": 44.0,
+      "2020-01-02": 3.0,
+      "2020-01-03": 0.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Haur wangi_Cipeuyeum_Mekarwangi",
+     "id": "32032202a",
+     "lat": -6.81269,
+     "lon": 107.2565,
+     "district": "Kab. Cianjur",
+     "days": {
+      "2020-01-01": 8.0,
+      "2020-01-02": 12.0,
+      "2020-01-03": 11.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Ciptasari",
+     "id": "32150201a",
+     "lat": -6.50978,
+     "lon": 107.21825,
+     "district": "Kab. Karawang",
+     "days": {
+      "2020-01-01": 103.0,
+      "2020-01-02": 0.0,
+      "2020-01-03": 0.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Pataruman",
+     "id": "32150601a",
+     "lat": -6.22622,
+     "lon": 107.29764,
+     "district": "Kab. Karawang",
+     "days": {
+      "2020-01-01": 71.0,
+      "2020-01-02": 30.0,
+      "2020-01-03": 0.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Pacing Karawang",
+     "id": "32150603a",
+     "lat": -6.11658,
+     "lon": 107.27297,
+     "district": "Kab. Karawang",
+     "days": {
+      "2020-01-01": 60.0,
+      "2020-01-02": 7.0,
+      "2020-01-03": 0.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Pangakaran",
+     "id": "32150801a",
+     "lat": -6.02167,
+     "lon": 107.16086,
+     "district": "Kab. Karawang",
+     "days": {
+      "2020-01-01": 80.0,
+      "2020-01-02": 11.0,
+      "2020-01-03": 0.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Batu Jaya",
+     "id": "32150802a",
+     "lat": -6.10142,
+     "lon": 107.21758,
+     "district": "Kab. Karawang",
+     "days": {
+      "2020-01-01": 83.0,
+      "2020-01-02": 6.0,
+      "2020-01-03": 0.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Teluk Bango Karawang",
+     "id": "32150803a",
+     "lat": -6.09403,
+     "lon": 107.21061,
+     "district": "Kab. Karawang",
+     "days": {
+      "2020-01-01": 84.0,
+      "2020-01-02": 5.0,
+      "2020-01-03": 0.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Teluk Buyung",
+     "id": "32151201a",
+     "lat": -6.04761,
+     "lon": 107.13522,
+     "district": "Kab. Karawang",
+     "days": {
+      "2020-01-01": 79.0,
+      "2020-01-02": 9.0,
+      "2020-01-03": 0.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "BPP Tambun",
+     "id": "32160601a",
+     "lat": -6.21667,
+     "lon": 107.08331,
+     "district": "Kab. Bekasi",
+     "days": {
+      "2020-01-01": 150.0,
+      "2020-01-02": 61.5,
+      "2020-01-03": 0.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Cibitung",
+     "id": "32160701a",
+     "lat": -6.22767,
+     "lon": 107.09381,
+     "district": "Kab. Bekasi",
+     "days": {
+      "2020-01-01": 147.0,
+      "2020-01-02": 27.0,
+      "2020-01-03": 0.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Cipayung",
+     "id": "32160901a",
+     "lat": -6.30203,
+     "lon": 107.22694,
+     "district": "Kab. Bekasi",
+     "days": {
+      "2020-01-01": 105.0,
+      "2020-01-02": 66.0,
+      "2020-01-03": 0.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Bendung Cikarang",
+     "id": "32160903a",
+     "lat": -6.29219,
+     "lon": 107.11803,
+     "district": "Kab. Bekasi",
+     "days": {
+      "2020-01-01": 135.0,
+      "2020-01-02": 74.0,
+      "2020-01-03": 0.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Sie. Lemah Abang",
+     "id": "32160904a",
+     "lat": -6.26342,
+     "lon": 107.16417,
+     "district": "Kab. Bekasi",
+     "days": {
+      "2020-01-01": 151.0,
+      "2020-01-02": 91.0,
+      "2020-01-03": 0.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Bend. Lemah Abang",
+     "id": "32161101a",
+     "lat": -6.26833,
+     "lon": 107.18411,
+     "district": "Kab. Bekasi",
+     "days": {
+      "2020-01-01": 141.0,
+      "2020-01-02": 48.0,
+      "2020-01-03": 0.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Rengas Bandung",
+     "id": "32161102a",
+     "lat": -6.24503,
+     "lon": 107.22078,
+     "district": "Kab. Bekasi",
+     "days": {
+      "2020-01-01": 83.0,
+      "2020-01-02": 59.0,
+      "2020-01-03": 0.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Teluk Bango Bekasi",
+     "id": "32161201a",
+     "lat": -6.10433,
+     "lon": 107.23189,
+     "district": "Kab. Bekasi",
+     "days": {
+      "2020-01-01": 60.0,
+      "2020-01-02": 12.0,
+      "2020-01-03": 0.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Pacing Bekasi",
+     "id": "32161303a",
+     "lat": -6.14506,
+     "lon": 107.27722,
+     "district": "Kab. Bekasi",
+     "days": {
+      "2020-01-01": 49.0,
+      "2020-01-02": 11.0,
+      "2020-01-03": 0.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Pabayuran/ Kertasari",
+     "id": "32161304a",
+     "lat": -6.21361,
+     "lon": 107.27642,
+     "district": "Kab. Bekasi",
+     "days": {
+      "2020-01-01": 80.0,
+      "2020-01-02": 40.0,
+      "2020-01-03": 23.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Srengseng",
+     "id": "32161501a",
+     "lat": -6.1725,
+     "lon": 107.18014,
+     "district": "Kab. Bekasi",
+     "days": {
+      "2020-01-01": 91.0,
+      "2020-01-02": 25.0,
+      "2020-01-03": 0.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Tapak Serang",
+     "id": "32161601a",
+     "lat": -6.12964,
+     "lon": 107.06242,
+     "district": "Kab. Bekasi",
+     "days": {
+      "2020-01-01": 87.6,
+      "2020-01-02": 7.6,
+      "2020-01-03": 0.2
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Gabus",
+     "id": "32161701a",
+     "lat": -6.16736,
+     "lon": 107.04883,
+     "district": "Kab. Bekasi",
+     "days": {
+      "2020-01-01": 180.0,
+      "2020-01-02": 90.0,
+      "2020-01-03": 0.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Setu",
+     "id": "32161801a",
+     "lat": -6.34308,
+     "lon": 107.04378,
+     "district": "Kab. Bekasi",
+     "days": {
+      "2020-01-01": 230.0,
+      "2020-01-02": 30.0,
+      "2020-01-03": 2.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Bendung Cibeet",
+     "id": "32162003a",
+     "lat": -6.39128,
+     "lon": 107.22133,
+     "district": "Kab. Bekasi",
+     "days": {
+      "2020-01-01": 155.0,
+      "2020-01-02": 35.0,
+      "2020-01-03": 0.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Cibogo_cibarusah",
+     "id": "32162201a",
+     "lat": -6.42347,
+     "lon": 107.08611,
+     "district": "Kab. Bekasi",
+     "days": {
+      "2020-01-01": 150.0,
+      "2020-01-02": 130.0,
+      "2020-01-03": 0.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Bend. Cipamingkis",
+     "id": "32162202a",
+     "lat": -6.50269,
+     "lon": 107.06689,
+     "district": "Kab. Bogor",
+     "days": {
+      "2020-01-01": 140.0,
+      "2020-01-02": 40.0,
+      "2020-01-03": 0.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Empang",
+     "id": "32710101a",
+     "lat": -6.61169,
+     "lon": 106.79139,
+     "district": "Kota Bogor",
+     "days": {
+      "2020-01-01": 65.0,
+      "2020-01-02": 47.0,
+      "2020-01-03": 0.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Katulampa",
+     "id": "32710201a",
+     "lat": -6.63328,
+     "lon": 106.83419,
+     "district": "Kota Bogor",
+     "days": {
+      "2020-01-01": 49.0,
+      "2020-01-02": 74.0,
+      "2020-01-03": 0.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Kb. Percob. Cimanggu",
+     "id": "32710302a",
+     "lat": -6.57731,
+     "lon": 106.78814,
+     "district": "Kota Bogor",
+     "days": {
+      "2020-01-01": 102.0,
+      "2020-01-02": 53.5,
+      "2020-01-03": 0.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Kebun Raya Bogor",
+     "id": "32710501a",
+     "lat": -6.59878,
+     "lon": 106.79558,
+     "district": "Kota Bogor",
+     "days": {
+      "2020-01-01": 141.0,
+      "2020-01-02": 0.2,
+      "2020-01-03": 0.2
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Darmaga",
+     "id": "32710401a",
+     "lat": -6.55358,
+     "lon": 106.74983,
+     "district": "Kota Bogor",
+     "days": {
+      "2020-01-01": 44.4,
+      "2020-01-02": 34.3,
+      "2020-01-03": 0.3
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Rawa Dukuh",
+     "id": "32750102a",
+     "lat": -6.22614,
+     "lon": 107.02989,
+     "district": "Kota Bekasi",
+     "days": {
+      "2020-01-01": 155.0,
+      "2020-01-02": 55.0,
+      "2020-01-03": 0.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Kranji",
+     "id": "32750201a",
+     "lat": -6.22208,
+     "lon": 107.00361,
+     "district": "Kota Bekasi",
+     "days": {
+      "2020-01-01": 120.0,
+      "2020-01-02": 99.0,
+      "2020-01-03": 0.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Bendung Bekasi",
+     "id": "32750401a",
+     "lat": -6.24992,
+     "lon": 106.99775,
+     "district": "Kota Bekasi",
+     "days": {
+      "2020-01-01": 150.0,
+      "2020-01-02": 54.0,
+      "2020-01-03": 0.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Cikeas",
+     "id": "32750901a",
+     "lat": -6.30561,
+     "lon": 106.96225,
+     "district": "Kota Bekasi",
+     "days": {
+      "2020-01-01": 246.0,
+      "2020-01-02": 36.5,
+      "2020-01-03": 0.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Lab.Perikanan Depok",
+     "id": "32760102a",
+     "lat": -6.40022,
+     "lon": 106.81469,
+     "district": "Kota Depok",
+     "days": {
+      "2020-01-01": 125.0,
+      "2020-01-02": 107.0,
+      "2020-01-03": 1.5
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Beji Depok",
+     "id": "32760601a",
+     "lat": -6.38064,
+     "lon": 106.80656,
+     "district": "Kota Depok",
+     "days": {
+      "2020-01-01": 142.0,
+      "2020-01-02": 54.0,
+      "2020-01-03": 0.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Lanud Atang Sanjaya",
+     "id": "32011202a",
+     "lat": -6.54453,
+     "lon": 106.75531,
+     "district": "Kab. Bogor",
+     "days": {
+      "2020-01-01": 43.4,
+      "2020-01-02": 0.0,
+      "2020-01-03": 0.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Citeko",
+     "id": "32012508a",
+     "lat": -6.68619,
+     "lon": 106.92533,
+     "district": "Kab. Bogor",
+     "days": {
+      "2020-01-01": 60.0,
+      "2020-01-02": 73.0,
+      "2020-01-03": 6.8
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Pacet Cianjur",
+     "id": "32031001a",
+     "lat": -6.71264,
+     "lon": 107.00628,
+     "district": "Kab. Cianjur",
+     "days": {
+      "2020-01-01": 39.0,
+      "2020-01-02": 29.0,
+      "2020-01-03": 0.0
+     },
+     "source": "westjava2026"
+    }
+   ]
+  },
+  "2021-02-20": {
+   "days": [
+    "2021-02-20",
+    "2021-02-21"
+   ],
+   "gauges": [
+    {
+     "name": "Ciriung",
+     "id": "32010102a",
+     "lat": -6.46042,
+     "lon": 106.85642,
+     "district": "Kab. Bogor",
+     "days": {
+      "2021-02-20": 54.0,
+      "2021-02-21": 73.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "BP3K Jonggol",
+     "id": "32010603a",
+     "lat": -6.46789,
+     "lon": 107.06589,
+     "district": "Kab. Bogor",
+     "days": {
+      "2021-02-20": 87.0,
+      "2021-02-21": 27.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Dayeuh/Sukanagara",
+     "id": "32010606a",
+     "lat": -6.50997,
+     "lon": 107.01997,
+     "district": "Kab. Bogor",
+     "days": {
+      "2021-02-20": 55.0,
+      "2021-02-21": 0.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Klapanunggal",
+     "id": "32010701a",
+     "lat": -6.41422,
+     "lon": 106.96208,
+     "district": "Kab. Bogor",
+     "days": {
+      "2021-02-20": 60.0,
+      "2021-02-21": 0.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Situ Tungilis",
+     "id": "32010704a",
+     "lat": -6.41981,
+     "lon": 107.03128,
+     "district": "Kab. Bogor",
+     "days": {
+      "2021-02-20": 48.0,
+      "2021-02-21": 0.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Cariu",
+     "id": "32010802a",
+     "lat": -6.50422,
+     "lon": 107.13294,
+     "district": "Kab. Bogor",
+     "days": {
+      "2021-02-20": 107.0,
+      "2021-02-21": 6.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Sinar Rasa_Tanjung rasa",
+     "id": "32010803a",
+     "lat": -6.61978,
+     "lon": 107.15797,
+     "district": "Kab. Bogor",
+     "days": {
+      "2021-02-20": 113.0,
+      "2021-02-21": 50.5
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Jampang",
+     "id": "32011002a",
+     "lat": -6.48147,
+     "lon": 106.69467,
+     "district": "Kab. Bogor",
+     "days": {
+      "2021-02-20": 52.0,
+      "2021-02-21": 14.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Curug Serpong",
+     "id": "32011102a",
+     "lat": -6.38644,
+     "lon": 106.72664,
+     "district": "Kab. Bogor",
+     "days": {
+      "2021-02-20": 73.5,
+      "2021-02-21": 0.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Situ Kemang",
+     "id": "32011201a",
+     "lat": -6.49539,
+     "lon": 106.74158,
+     "district": "Kab. Bogor",
+     "days": {
+      "2021-02-20": 63.0,
+      "2021-02-21": 14.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Bojong Gede",
+     "id": "32011301a",
+     "lat": -6.5009,
+     "lon": 106.786,
+     "district": "Kab. Bogor",
+     "days": {
+      "2021-02-20": 47.0,
+      "2021-02-21": 12.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Cis Empang",
+     "id": "32011302a",
+     "lat": -6.45344,
+     "lon": 106.79908,
+     "district": "Kab. Bogor",
+     "days": {
+      "2021-02-20": 67.0,
+      "2021-02-21": 17.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Citayam",
+     "id": "32011303a",
+     "lat": -6.47039,
+     "lon": 106.80539,
+     "district": "Kab. Bogor",
+     "days": {
+      "2021-02-20": 59.1,
+      "2021-02-21": 16.5
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Perkeb. Cianten",
+     "id": "32011401a",
+     "lat": -6.72233,
+     "lon": 106.60378,
+     "district": "Kab. Bogor",
+     "days": {
+      "2021-02-20": 8.0,
+      "2021-02-21": 5.5
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Pamijahan",
+     "id": "32011404a",
+     "lat": -6.65961,
+     "lon": 106.70361,
+     "district": "Kab. Bogor",
+     "days": {
+      "2021-02-20": 0.0,
+      "2021-02-21": 5.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "PLTA Kracak_Power House",
+     "id": "32011405a",
+     "lat": -6.61692,
+     "lon": 106.64414,
+     "district": "Kab. Bogor",
+     "days": {
+      "2021-02-20": 0.0,
+      "2021-02-21": 11.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Bp3K  Leuwiliang",
+     "id": "32011406a",
+     "lat": -6.5635,
+     "lon": 106.62981,
+     "district": "Kab. Bogor",
+     "days": {
+      "2021-02-20": 35.0,
+      "2021-02-21": 23.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Dam Cianten",
+     "id": "32011407a",
+     "lat": -6.64144,
+     "lon": 106.63239,
+     "district": "Kab. Bogor",
+     "days": {
+      "2021-02-20": 7.3,
+      "2021-02-21": 8.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Cihideung",
+     "id": "32011504a",
+     "lat": -6.59339,
+     "lon": 106.71989,
+     "district": "Kab. Bogor",
+     "days": {
+      "2021-02-20": 36.0,
+      "2021-02-21": 37.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Cibodas",
+     "id": "32011505a",
+     "lat": -6.54739,
+     "lon": 106.69119,
+     "district": "Kab. Bogor",
+     "days": {
+      "2021-02-20": 11.0,
+      "2021-02-21": 0.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Cikluwung",
+     "id": "32011701a",
+     "lat": -6.643,
+     "lon": 106.64397,
+     "district": "Kab. Bogor",
+     "days": {
+      "2021-02-20": 12.0,
+      "2021-02-21": 2.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Citeureup Pamijahan",
+     "id": "32011702a",
+     "lat": -6.72297,
+     "lon": 106.65997,
+     "district": "Kab. Bogor",
+     "days": {
+      "2021-02-20": 30.0,
+      "2021-02-21": 10.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Perkeb. Jasinga",
+     "id": "32011904a",
+     "lat": -6.47344,
+     "lon": 106.468,
+     "district": "Kab. Bogor",
+     "days": {
+      "2021-02-20": 29.0,
+      "2021-02-21": 11.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Cigelung",
+     "id": "32011905a",
+     "lat": -6.52417,
+     "lon": 106.415,
+     "district": "Kab. Bogor",
+     "days": {
+      "2021-02-20": 20.0,
+      "2021-02-21": 5.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Parung Panjang",
+     "id": "32012002a",
+     "lat": -6.38,
+     "lon": 106.54997,
+     "district": "Kab. Bogor",
+     "days": {
+      "2021-02-20": 14.5,
+      "2021-02-21": 9.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Nanggung",
+     "id": "32012103a",
+     "lat": -6.5975,
+     "lon": 106.5395,
+     "district": "Kab. Bogor",
+     "days": {
+      "2021-02-20": 25.0,
+      "2021-02-21": 15.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Afd Bolang",
+     "id": "32012201a",
+     "lat": -6.43606,
+     "lon": 106.52236,
+     "district": "Kab. Bogor",
+     "days": {
+      "2021-02-20": 15.0,
+      "2021-02-21": 2.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Perkeb. Cikasungka",
+     "id": "32012202a",
+     "lat": -6.55278,
+     "lon": 106.53858,
+     "district": "Kab. Bogor",
+     "days": {
+      "2021-02-20": 24.0,
+      "2021-02-21": 13.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Empl. Toge",
+     "id": "32012205a",
+     "lat": -6.50942,
+     "lon": 106.50344,
+     "district": "Kab. Bogor",
+     "days": {
+      "2021-02-20": 33.0,
+      "2021-02-21": 26.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Ciawi",
+     "id": "32012401a",
+     "lat": -6.66236,
+     "lon": 106.85286,
+     "district": "Kab. Bogor",
+     "days": {
+      "2021-02-20": 9.0,
+      "2021-02-21": 0.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Naringgul",
+     "id": "32012506a",
+     "lat": -6.69847,
+     "lon": 106.98769,
+     "district": "Kab. Bogor",
+     "days": {
+      "2021-02-20": 75.0,
+      "2021-02-21": 54.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Cibeureum Bogor",
+     "id": "32012507a",
+     "lat": -6.70278,
+     "lon": 106.93797,
+     "district": "Kab. Bogor",
+     "days": {
+      "2021-02-20": 57.0,
+      "2021-02-21": 64.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Perk Gunung Mas",
+     "id": "32012511a",
+     "lat": -6.70914,
+     "lon": 106.96739,
+     "district": "Kab. Bogor",
+     "days": {
+      "2021-02-20": 46.5,
+      "2021-02-21": 62.5
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Gadog",
+     "id": "32012602a",
+     "lat": -6.65689,
+     "lon": 106.86383,
+     "district": "Kab. Bogor",
+     "days": {
+      "2021-02-20": 45.0,
+      "2021-02-21": 23.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Cibalagung Bogor",
+     "id": "32012902a",
+     "lat": -6.60386,
+     "lon": 106.78731,
+     "district": "Kota Bogor",
+     "days": {
+      "2021-02-20": 23.5,
+      "2021-02-21": 18.2
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Depok_BMKG_Sukmajaya",
+     "id": "32013301a",
+     "lat": -6.40531,
+     "lon": 106.84581,
+     "district": "Kota Depok",
+     "days": {
+      "2021-02-20": 104.0,
+      "2021-02-21": 32.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Perk. Kahuripan",
+     "id": "32013302a",
+     "lat": -6.44597,
+     "lon": 106.69119,
+     "district": "Kab. Bogor",
+     "days": {
+      "2021-02-20": 32.5,
+      "2021-02-21": 0.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "BPP Ciseeng",
+     "id": "32013303a",
+     "lat": -6.44614,
+     "lon": 106.68753,
+     "district": "Kab. Bogor",
+     "days": {
+      "2021-02-20": 17.0,
+      "2021-02-21": 4.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Perkebunan Cimulang",
+     "id": "32013401a",
+     "lat": -6.52589,
+     "lon": 106.71658,
+     "district": "Kab. Bogor",
+     "days": {
+      "2021-02-20": 23.5,
+      "2021-02-21": 29.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Cimulang_PU",
+     "id": "32013701a",
+     "lat": -6.52239,
+     "lon": 106.70572,
+     "district": "Kab. Bogor",
+     "days": {
+      "2021-02-20": 37.0,
+      "2021-02-21": 23.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Gunung Bunder",
+     "id": "32014001a",
+     "lat": -6.64258,
+     "lon": 106.68047,
+     "district": "Kab. Bogor",
+     "days": {
+      "2021-02-20": 68.0,
+      "2021-02-21": 23.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Goalpara",
+     "id": "32020401a",
+     "lat": -6.89419,
+     "lon": 106.96303,
+     "district": "Kab. Sukabumi",
+     "days": {
+      "2021-02-20": 0.0,
+      "2021-02-21": 0.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Batu Karut",
+     "id": "32020402a",
+     "lat": -6.88442,
+     "lon": 106.98503,
+     "district": "Kab. Sukabumi",
+     "days": {
+      "2021-02-20": 5.0,
+      "2021-02-21": 3.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Cikelat",
+     "id": "32020503a",
+     "lat": -6.88025,
+     "lon": 106.45817,
+     "district": "Kab. Sukabumi",
+     "days": {
+      "2021-02-20": 46.0,
+      "2021-02-21": 0.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Perkeb. Sukamaju",
+     "id": "32021101a",
+     "lat": -6.88311,
+     "lon": 106.77317,
+     "district": "Kab. Sukabumi",
+     "days": {
+      "2021-02-20": 5.0,
+      "2021-02-21": 0.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Sinagar",
+     "id": "32021201a",
+     "lat": -6.85197,
+     "lon": 106.80147,
+     "district": "Kab. Sukabumi",
+     "days": {
+      "2021-02-20": 5.0,
+      "2021-02-21": 2.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Parakan Salak",
+     "id": "32021501a",
+     "lat": -6.8,
+     "lon": 106.7,
+     "district": "Kab. Sukabumi",
+     "days": {
+      "2021-02-20": 0.0,
+      "2021-02-21": 0.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Empl.  Cisalak",
+     "id": "32021502a",
+     "lat": -6.83739,
+     "lon": 106.66078,
+     "district": "Kab. Sukabumi",
+     "days": {
+      "2021-02-20": 0.0,
+      "2021-02-21": 0.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Kec. Cicurug",
+     "id": "32021601a",
+     "lat": -6.78731,
+     "lon": 106.77856,
+     "district": "Kab. Sukabumi",
+     "days": {
+      "2021-02-20": 0.0,
+      "2021-02-21": 20.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Manggis",
+     "id": "32021602a",
+     "lat": -6.77286,
+     "lon": 106.81358,
+     "district": "Kab. Sukabumi",
+     "days": {
+      "2021-02-20": 86.0,
+      "2021-02-21": 16.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Ciutara",
+     "id": "32021603a",
+     "lat": -6.79411,
+     "lon": 106.77828,
+     "district": "Kab. Sukabumi",
+     "days": {
+      "2021-02-20": 6.0,
+      "2021-02-21": 0.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Perbawati",
+     "id": "32023206a",
+     "lat": -6.85267,
+     "lon": 106.95286,
+     "district": "Kab. Sukabumi",
+     "days": {
+      "2021-02-20": 0.0,
+      "2021-02-21": 0.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Cibalagung Cianjur",
+     "id": "32030503a",
+     "lat": -6.76253,
+     "lon": 107.23281,
+     "district": "Kab. Cianjur",
+     "days": {
+      "2021-02-20": 19.5,
+      "2021-02-21": 11.5
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Sangiang_Cibarengkok",
+     "id": "32030504a",
+     "lat": -6.87269,
+     "lon": 107.2565,
+     "district": "Kab. Cianjur",
+     "days": {
+      "2021-02-20": 12.0,
+      "2021-02-21": 0.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "PSDA_Ciranjang",
+     "id": "32030505a",
+     "lat": -6.814,
+     "lon": 107.24531,
+     "district": "Kab. Cianjur",
+     "days": {
+      "2021-02-20": 21.0,
+      "2021-02-21": 0.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Bojong Picung_kec",
+     "id": "32030601a",
+     "lat": -6.85106,
+     "lon": 107.26867,
+     "district": "Kab. Cianjur",
+     "days": {
+      "2021-02-20": 38.0,
+      "2021-02-21": 10.5
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Cisokan",
+     "id": "32030605a",
+     "lat": -6.86331,
+     "lon": 107.23536,
+     "district": "Kab. Cianjur",
+     "days": {
+      "2021-02-20": 14.5,
+      "2021-02-21": 1.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Mande",
+     "id": "32030801a",
+     "lat": -6.76997,
+     "lon": 107.2,
+     "district": "Kab. Cianjur",
+     "days": {
+      "2021-02-20": 59.5,
+      "2021-02-21": 7.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Janggari",
+     "id": "32030803a",
+     "lat": -6.7515,
+     "lon": 107.25967,
+     "district": "Kab. Cianjur",
+     "days": {
+      "2021-02-20": 48.0,
+      "2021-02-21": 20.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Afd.Tanawati ( kb.Gedeh )",
+     "id": "32031102a",
+     "lat": -6.79847,
+     "lon": 107.04139,
+     "district": "Kab. Cianjur",
+     "days": {
+      "2021-02-20": 7.5,
+      "2021-02-21": 15.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Vada",
+     "id": "32031203a",
+     "lat": -6.73297,
+     "lon": 107.18328,
+     "district": "Kab. Cianjur",
+     "days": {
+      "2021-02-20": 0.0,
+      "2021-02-21": 0.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Maleber",
+     "id": "32031205a",
+     "lat": -6.719,
+     "lon": 107.24206,
+     "district": "Kab. Cianjur",
+     "days": {
+      "2021-02-20": 56.0,
+      "2021-02-21": 19.5
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Cikundul",
+     "id": "32031206a",
+     "lat": -6.72078,
+     "lon": 107.21083,
+     "district": "Kab. Cianjur",
+     "days": {
+      "2021-02-20": 46.0,
+      "2021-02-21": 14.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Alam Indah Bunga Nusantara",
+     "id": "32031302a",
+     "lat": -6.72619,
+     "lon": 107.07647,
+     "district": "Kab. Cianjur",
+     "days": {
+      "2021-02-20": 43.0,
+      "2021-02-21": 13.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Haur wangi_Cipeuyeum_Mekarwangi",
+     "id": "32032202a",
+     "lat": -6.81269,
+     "lon": 107.2565,
+     "district": "Kab. Cianjur",
+     "days": {
+      "2021-02-20": 10.0,
+      "2021-02-21": 8.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Ciptasari",
+     "id": "32150201a",
+     "lat": -6.50978,
+     "lon": 107.21825,
+     "district": "Kab. Karawang",
+     "days": {
+      "2021-02-20": 74.0,
+      "2021-02-21": 71.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Pataruman",
+     "id": "32150601a",
+     "lat": -6.22622,
+     "lon": 107.29764,
+     "district": "Kab. Karawang",
+     "days": {
+      "2021-02-20": 13.0,
+      "2021-02-21": 22.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Pacing Karawang",
+     "id": "32150603a",
+     "lat": -6.11658,
+     "lon": 107.27297,
+     "district": "Kab. Karawang",
+     "days": {
+      "2021-02-20": 4.0,
+      "2021-02-21": 66.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Pangakaran",
+     "id": "32150801a",
+     "lat": -6.02167,
+     "lon": 107.16086,
+     "district": "Kab. Karawang",
+     "days": {
+      "2021-02-20": 5.0,
+      "2021-02-21": 30.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Batu Jaya",
+     "id": "32150802a",
+     "lat": -6.10142,
+     "lon": 107.21758,
+     "district": "Kab. Karawang",
+     "days": {
+      "2021-02-20": 6.0,
+      "2021-02-21": 24.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Teluk Bango Karawang",
+     "id": "32150803a",
+     "lat": -6.09403,
+     "lon": 107.21061,
+     "district": "Kab. Karawang",
+     "days": {
+      "2021-02-20": 6.0,
+      "2021-02-21": 46.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Teluk Buyung",
+     "id": "32151201a",
+     "lat": -6.04761,
+     "lon": 107.13522,
+     "district": "Kab. Karawang",
+     "days": {
+      "2021-02-20": 5.0,
+      "2021-02-21": 2.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "BPP Tambun",
+     "id": "32160601a",
+     "lat": -6.21667,
+     "lon": 107.08331,
+     "district": "Kab. Bekasi",
+     "days": {
+      "2021-02-20": 0.0,
+      "2021-02-21": 0.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Cibitung",
+     "id": "32160701a",
+     "lat": -6.22767,
+     "lon": 107.09381,
+     "district": "Kab. Bekasi",
+     "days": {
+      "2021-02-20": 22.0,
+      "2021-02-21": 0.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Cipayung",
+     "id": "32160901a",
+     "lat": -6.30203,
+     "lon": 107.22694,
+     "district": "Kab. Bekasi",
+     "days": {
+      "2021-02-20": 95.0,
+      "2021-02-21": 26.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Bendung Cikarang",
+     "id": "32160903a",
+     "lat": -6.29219,
+     "lon": 107.11803,
+     "district": "Kab. Bekasi",
+     "days": {
+      "2021-02-20": 125.0,
+      "2021-02-21": 115.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Sie. Lemah Abang",
+     "id": "32160904a",
+     "lat": -6.26342,
+     "lon": 107.16417,
+     "district": "Kab. Bekasi",
+     "days": {
+      "2021-02-20": 47.0,
+      "2021-02-21": 33.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Bend. Lemah Abang",
+     "id": "32161101a",
+     "lat": -6.26833,
+     "lon": 107.18411,
+     "district": "Kab. Bekasi",
+     "days": {
+      "2021-02-20": 62.0,
+      "2021-02-21": 32.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Rengas Bandung",
+     "id": "32161102a",
+     "lat": -6.24503,
+     "lon": 107.22078,
+     "district": "Kab. Bekasi",
+     "days": {
+      "2021-02-20": 25.0,
+      "2021-02-21": 24.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Teluk Bango Bekasi",
+     "id": "32161201a",
+     "lat": -6.10433,
+     "lon": 107.23189,
+     "district": "Kab. Bekasi",
+     "days": {
+      "2021-02-20": 6.0,
+      "2021-02-21": 60.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Pacing Bekasi",
+     "id": "32161303a",
+     "lat": -6.14506,
+     "lon": 107.27722,
+     "district": "Kab. Bekasi",
+     "days": {
+      "2021-02-20": 5.0,
+      "2021-02-21": 5.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Pabayuran/ Kertasari",
+     "id": "32161304a",
+     "lat": -6.21361,
+     "lon": 107.27642,
+     "district": "Kab. Bekasi",
+     "days": {
+      "2021-02-20": 17.0,
+      "2021-02-21": 0.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Srengseng",
+     "id": "32161501a",
+     "lat": -6.1725,
+     "lon": 107.18014,
+     "district": "Kab. Bekasi",
+     "days": {
+      "2021-02-20": 22.0,
+      "2021-02-21": 22.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Tapak Serang",
+     "id": "32161601a",
+     "lat": -6.12964,
+     "lon": 107.06242,
+     "district": "Kab. Bekasi",
+     "days": {
+      "2021-02-20": 9.0,
+      "2021-02-21": 23.2
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Gabus",
+     "id": "32161701a",
+     "lat": -6.16736,
+     "lon": 107.04883,
+     "district": "Kab. Bekasi",
+     "days": {
+      "2021-02-20": 20.0,
+      "2021-02-21": 16.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Setu",
+     "id": "32161801a",
+     "lat": -6.34308,
+     "lon": 107.04378,
+     "district": "Kab. Bekasi",
+     "days": {
+      "2021-02-20": 202.0,
+      "2021-02-21": 34.5
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Bendung Cibeet",
+     "id": "32162003a",
+     "lat": -6.39128,
+     "lon": 107.22133,
+     "district": "Kab. Bekasi",
+     "days": {
+      "2021-02-20": 261.0,
+      "2021-02-21": 110.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Cibogo_cibarusah",
+     "id": "32162201a",
+     "lat": -6.42347,
+     "lon": 107.08611,
+     "district": "Kab. Bekasi",
+     "days": {
+      "2021-02-20": 165.0,
+      "2021-02-21": 80.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Bend. Cipamingkis",
+     "id": "32162202a",
+     "lat": -6.50269,
+     "lon": 107.06689,
+     "district": "Kab. Bogor",
+     "days": {
+      "2021-02-20": 80.0,
+      "2021-02-21": 40.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Empang",
+     "id": "32710101a",
+     "lat": -6.61169,
+     "lon": 106.79139,
+     "district": "Kota Bogor",
+     "days": {
+      "2021-02-20": 30.0,
+      "2021-02-21": 19.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Katulampa",
+     "id": "32710201a",
+     "lat": -6.63328,
+     "lon": 106.83419,
+     "district": "Kota Bogor",
+     "days": {
+      "2021-02-20": 34.0,
+      "2021-02-21": 0.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Kb. Percob. Cimanggu",
+     "id": "32710302a",
+     "lat": -6.57731,
+     "lon": 106.78814,
+     "district": "Kota Bogor",
+     "days": {
+      "2021-02-20": 31.0,
+      "2021-02-21": 0.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Kebun Raya Bogor",
+     "id": "32710501a",
+     "lat": -6.59878,
+     "lon": 106.79558,
+     "district": "Kota Bogor",
+     "days": {
+      "2021-02-20": 34.6,
+      "2021-02-21": 21.7
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Darmaga",
+     "id": "32710401a",
+     "lat": -6.55358,
+     "lon": 106.74983,
+     "district": "Kota Bogor",
+     "days": {
+      "2021-02-20": 25.2,
+      "2021-02-21": 36.4
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Rawa Dukuh",
+     "id": "32750102a",
+     "lat": -6.22614,
+     "lon": 107.02989,
+     "district": "Kota Bekasi",
+     "days": {
+      "2021-02-20": 0.0,
+      "2021-02-21": 36.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Kranji",
+     "id": "32750201a",
+     "lat": -6.22208,
+     "lon": 107.00361,
+     "district": "Kota Bekasi",
+     "days": {
+      "2021-02-20": 29.0,
+      "2021-02-21": 22.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Bendung Bekasi",
+     "id": "32750401a",
+     "lat": -6.24992,
+     "lon": 106.99775,
+     "district": "Kota Bekasi",
+     "days": {
+      "2021-02-20": 35.0,
+      "2021-02-21": 18.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Cikeas",
+     "id": "32750901a",
+     "lat": -6.30561,
+     "lon": 106.96225,
+     "district": "Kota Bekasi",
+     "days": {
+      "2021-02-20": 217.0,
+      "2021-02-21": 30.5
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Lab.Perikanan Depok",
+     "id": "32760102a",
+     "lat": -6.40022,
+     "lon": 106.81469,
+     "district": "Kota Depok",
+     "days": {
+      "2021-02-20": 62.0,
+      "2021-02-21": 27.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Beji Depok",
+     "id": "32760601a",
+     "lat": -6.38064,
+     "lon": 106.80656,
+     "district": "Kota Depok",
+     "days": {
+      "2021-02-20": 44.0,
+      "2021-02-21": 60.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Lanud Atang Sanjaya",
+     "id": "32011202a",
+     "lat": -6.54453,
+     "lon": 106.75531,
+     "district": "Kab. Bogor",
+     "days": {
+      "2021-02-20": 44.2,
+      "2021-02-21": 29.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Citeko",
+     "id": "32012508a",
+     "lat": -6.68619,
+     "lon": 106.92533,
+     "district": "Kab. Bogor",
+     "days": {
+      "2021-02-20": 59.0,
+      "2021-02-21": 40.7
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Pacet Cianjur",
+     "id": "32031001a",
+     "lat": -6.71264,
+     "lon": 107.00628,
+     "district": "Kab. Cianjur",
+     "days": {
+      "2021-02-20": 15.6,
+      "2021-02-21": 8.0
+     },
+     "source": "westjava2026"
+    }
+   ]
+  },
+  "2025-03-04": {
+   "days": [
+    "2025-03-04",
+    "2025-03-05"
+   ],
+   "gauges": [
+    {
+     "name": "Ciriung",
+     "id": "32010102a",
+     "lat": -6.46042,
+     "lon": 106.85642,
+     "district": "Kab. Bogor",
+     "days": {
+      "2025-03-04": 72.0,
+      "2025-03-05": 0.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "BP3K Jonggol",
+     "id": "32010603a",
+     "lat": -6.46789,
+     "lon": 107.06589,
+     "district": "Kab. Bogor",
+     "days": {
+      "2025-03-04": 124.0,
+      "2025-03-05": 0.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Dayeuh/Sukanagara",
+     "id": "32010606a",
+     "lat": -6.50997,
+     "lon": 107.01997,
+     "district": "Kab. Bogor",
+     "days": {
+      "2025-03-04": 24.0,
+      "2025-03-05": 0.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Klapanunggal",
+     "id": "32010701a",
+     "lat": -6.41422,
+     "lon": 106.96208,
+     "district": "Kab. Bogor",
+     "days": {
+      "2025-03-04": 35.0,
+      "2025-03-05": 0.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Situ Tungilis",
+     "id": "32010704a",
+     "lat": -6.41981,
+     "lon": 107.03128,
+     "district": "Kab. Bogor",
+     "days": {
+      "2025-03-04": 26.0,
+      "2025-03-05": 8.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Cariu",
+     "id": "32010802a",
+     "lat": -6.50422,
+     "lon": 107.13294,
+     "district": "Kab. Bogor",
+     "days": {
+      "2025-03-04": 84.0,
+      "2025-03-05": 0.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Sinar Rasa_Tanjung rasa",
+     "id": "32010803a",
+     "lat": -6.61978,
+     "lon": 107.15797,
+     "district": "Kab. Bogor",
+     "days": {
+      "2025-03-04": 128.0,
+      "2025-03-05": 0.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Jampang",
+     "id": "32011002a",
+     "lat": -6.48147,
+     "lon": 106.69467,
+     "district": "Kab. Bogor",
+     "days": {
+      "2025-03-04": 82.0,
+      "2025-03-05": 0.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Curug Serpong",
+     "id": "32011102a",
+     "lat": -6.38644,
+     "lon": 106.72664,
+     "district": "Kab. Bogor",
+     "days": {
+      "2025-03-04": 86.5,
+      "2025-03-05": 0.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Situ Kemang",
+     "id": "32011201a",
+     "lat": -6.49539,
+     "lon": 106.74158,
+     "district": "Kab. Bogor",
+     "days": {
+      "2025-03-04": 61.0,
+      "2025-03-05": 0.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Bojong Gede",
+     "id": "32011301a",
+     "lat": -6.5009,
+     "lon": 106.786,
+     "district": "Kab. Bogor",
+     "days": {
+      "2025-03-04": 150.0,
+      "2025-03-05": 0.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Cis Empang",
+     "id": "32011302a",
+     "lat": -6.45344,
+     "lon": 106.79908,
+     "district": "Kab. Bogor",
+     "days": {
+      "2025-03-04": 30.0,
+      "2025-03-05": 0.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Citayam",
+     "id": "32011303a",
+     "lat": -6.47039,
+     "lon": 106.80539,
+     "district": "Kab. Bogor",
+     "days": {
+      "2025-03-04": 103.4,
+      "2025-03-05": 0.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Perkeb. Cianten",
+     "id": "32011401a",
+     "lat": -6.72233,
+     "lon": 106.60378,
+     "district": "Kab. Bogor",
+     "days": {
+      "2025-03-04": 33.0,
+      "2025-03-05": 0.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Pamijahan",
+     "id": "32011404a",
+     "lat": -6.65961,
+     "lon": 106.70361,
+     "district": "Kab. Bogor",
+     "days": {
+      "2025-03-04": 53.0,
+      "2025-03-05": 52.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "PLTA Kracak_Power House",
+     "id": "32011405a",
+     "lat": -6.61692,
+     "lon": 106.64414,
+     "district": "Kab. Bogor",
+     "days": {
+      "2025-03-04": 30.0,
+      "2025-03-05": 1.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Bp3K  Leuwiliang",
+     "id": "32011406a",
+     "lat": -6.5635,
+     "lon": 106.62981,
+     "district": "Kab. Bogor",
+     "days": {
+      "2025-03-04": 47.0,
+      "2025-03-05": 1.5
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Dam Cianten",
+     "id": "32011407a",
+     "lat": -6.64144,
+     "lon": 106.63239,
+     "district": "Kab. Bogor",
+     "days": {
+      "2025-03-04": 37.0,
+      "2025-03-05": 0.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Cihideung",
+     "id": "32011504a",
+     "lat": -6.59339,
+     "lon": 106.71989,
+     "district": "Kab. Bogor",
+     "days": {
+      "2025-03-04": 54.0,
+      "2025-03-05": 23.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Cibodas",
+     "id": "32011505a",
+     "lat": -6.54739,
+     "lon": 106.69119,
+     "district": "Kab. Bogor",
+     "days": {
+      "2025-03-04": 69.0,
+      "2025-03-05": 33.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Cikluwung",
+     "id": "32011701a",
+     "lat": -6.643,
+     "lon": 106.64397,
+     "district": "Kab. Bogor",
+     "days": {
+      "2025-03-04": 20.0,
+      "2025-03-05": 0.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Citeureup Pamijahan",
+     "id": "32011702a",
+     "lat": -6.72297,
+     "lon": 106.65997,
+     "district": "Kab. Bogor",
+     "days": {
+      "2025-03-04": 60.0,
+      "2025-03-05": 5.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Perkeb. Jasinga",
+     "id": "32011904a",
+     "lat": -6.47344,
+     "lon": 106.468,
+     "district": "Kab. Bogor",
+     "days": {
+      "2025-03-04": 42.0,
+      "2025-03-05": 3.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Cigelung",
+     "id": "32011905a",
+     "lat": -6.52417,
+     "lon": 106.415,
+     "district": "Kab. Bogor",
+     "days": {
+      "2025-03-04": 63.0,
+      "2025-03-05": 12.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Parung Panjang",
+     "id": "32012002a",
+     "lat": -6.38,
+     "lon": 106.54997,
+     "district": "Kab. Bogor",
+     "days": {
+      "2025-03-04": 98.0,
+      "2025-03-05": 4.5
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Nanggung",
+     "id": "32012103a",
+     "lat": -6.5975,
+     "lon": 106.5395,
+     "district": "Kab. Bogor",
+     "days": {
+      "2025-03-04": 31.0,
+      "2025-03-05": 11.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Afd Bolang",
+     "id": "32012201a",
+     "lat": -6.43606,
+     "lon": 106.52236,
+     "district": "Kab. Bogor",
+     "days": {
+      "2025-03-04": 37.0,
+      "2025-03-05": 0.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Perkeb. Cikasungka",
+     "id": "32012202a",
+     "lat": -6.55278,
+     "lon": 106.53858,
+     "district": "Kab. Bogor",
+     "days": {
+      "2025-03-04": 45.5,
+      "2025-03-05": 7.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Empl. Toge",
+     "id": "32012205a",
+     "lat": -6.50942,
+     "lon": 106.50344,
+     "district": "Kab. Bogor",
+     "days": {
+      "2025-03-04": 0.0,
+      "2025-03-05": 0.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Ciawi",
+     "id": "32012401a",
+     "lat": -6.66236,
+     "lon": 106.85286,
+     "district": "Kab. Bogor",
+     "days": {
+      "2025-03-04": 129.0,
+      "2025-03-05": 0.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Naringgul",
+     "id": "32012506a",
+     "lat": -6.69847,
+     "lon": 106.98769,
+     "district": "Kab. Bogor",
+     "days": {
+      "2025-03-04": 112.0,
+      "2025-03-05": 0.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Cibeureum Bogor",
+     "id": "32012507a",
+     "lat": -6.70278,
+     "lon": 106.93797,
+     "district": "Kab. Bogor",
+     "days": {
+      "2025-03-04": 128.4,
+      "2025-03-05": 1.1
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Perk Gunung Mas",
+     "id": "32012511a",
+     "lat": -6.70914,
+     "lon": 106.96739,
+     "district": "Kab. Bogor",
+     "days": {
+      "2025-03-04": 133.0,
+      "2025-03-05": 0.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Gadog",
+     "id": "32012602a",
+     "lat": -6.65689,
+     "lon": 106.86383,
+     "district": "Kab. Bogor",
+     "days": {
+      "2025-03-04": 137.0,
+      "2025-03-05": 0.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Pondok Gedeh",
+     "id": "32012802a",
+     "lat": -6.73636,
+     "lon": 106.81525,
+     "district": "Kab. Bogor",
+     "days": {
+      "2025-03-04": 32.0,
+      "2025-03-05": 12.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Cibalagung Bogor",
+     "id": "32012902a",
+     "lat": -6.60386,
+     "lon": 106.78731,
+     "district": "Kota Bogor",
+     "days": {
+      "2025-03-04": 85.0,
+      "2025-03-05": 2.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Depok_BMKG_Sukmajaya",
+     "id": "32013301a",
+     "lat": -6.40531,
+     "lon": 106.84581,
+     "district": "Kota Depok",
+     "days": {
+      "2025-03-04": 106.0,
+      "2025-03-05": 2.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Perk. Kahuripan",
+     "id": "32013302a",
+     "lat": -6.44597,
+     "lon": 106.69119,
+     "district": "Kab. Bogor",
+     "days": {
+      "2025-03-04": 83.0,
+      "2025-03-05": 2.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "BPP Ciseeng",
+     "id": "32013303a",
+     "lat": -6.44614,
+     "lon": 106.68753,
+     "district": "Kab. Bogor",
+     "days": {
+      "2025-03-04": 61.0,
+      "2025-03-05": 0.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Perkebunan Cimulang",
+     "id": "32013401a",
+     "lat": -6.52589,
+     "lon": 106.71658,
+     "district": "Kab. Bogor",
+     "days": {
+      "2025-03-04": 55.0,
+      "2025-03-05": 12.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Cimulang_PU",
+     "id": "32013701a",
+     "lat": -6.52239,
+     "lon": 106.70572,
+     "district": "Kab. Bogor",
+     "days": {
+      "2025-03-04": 82.0,
+      "2025-03-05": 1.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Gunung Bunder",
+     "id": "32014001a",
+     "lat": -6.64258,
+     "lon": 106.68047,
+     "district": "Kab. Bogor",
+     "days": {
+      "2025-03-04": 36.0,
+      "2025-03-05": 10.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Goalpara",
+     "id": "32020401a",
+     "lat": -6.89419,
+     "lon": 106.96303,
+     "district": "Kab. Sukabumi",
+     "days": {
+      "2025-03-04": 3.0,
+      "2025-03-05": 0.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Batu Karut",
+     "id": "32020402a",
+     "lat": -6.88442,
+     "lon": 106.98503,
+     "district": "Kab. Sukabumi",
+     "days": {
+      "2025-03-04": 28.0,
+      "2025-03-05": 0.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Cikelat",
+     "id": "32020503a",
+     "lat": -6.88025,
+     "lon": 106.45817,
+     "district": "Kab. Sukabumi",
+     "days": {
+      "2025-03-04": 2.0,
+      "2025-03-05": 61.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Perkeb. Sukamaju",
+     "id": "32021101a",
+     "lat": -6.88311,
+     "lon": 106.77317,
+     "district": "Kab. Sukabumi",
+     "days": {
+      "2025-03-04": 1.0,
+      "2025-03-05": 7.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Parakan Salak",
+     "id": "32021501a",
+     "lat": -6.8,
+     "lon": 106.7,
+     "district": "Kab. Sukabumi",
+     "days": {
+      "2025-03-04": 6.5,
+      "2025-03-05": 0.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Empl.  Cisalak",
+     "id": "32021502a",
+     "lat": -6.83739,
+     "lon": 106.66078,
+     "district": "Kab. Sukabumi",
+     "days": {
+      "2025-03-04": 1.0,
+      "2025-03-05": 5.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Kec. Cicurug",
+     "id": "32021601a",
+     "lat": -6.78731,
+     "lon": 106.77856,
+     "district": "Kab. Sukabumi",
+     "days": {
+      "2025-03-04": 67.0,
+      "2025-03-05": 5.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Manggis",
+     "id": "32021602a",
+     "lat": -6.77286,
+     "lon": 106.81358,
+     "district": "Kab. Sukabumi",
+     "days": {
+      "2025-03-04": 16.0,
+      "2025-03-05": 0.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Ciutara",
+     "id": "32021603a",
+     "lat": -6.79411,
+     "lon": 106.77828,
+     "district": "Kab. Sukabumi",
+     "days": {
+      "2025-03-04": 15.0,
+      "2025-03-05": 0.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Perbawati",
+     "id": "32023206a",
+     "lat": -6.85267,
+     "lon": 106.95286,
+     "district": "Kab. Sukabumi",
+     "days": {
+      "2025-03-04": 8.0,
+      "2025-03-05": 0.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Cibalagung Cianjur",
+     "id": "32030503a",
+     "lat": -6.76253,
+     "lon": 107.23281,
+     "district": "Kab. Cianjur",
+     "days": {
+      "2025-03-04": 194.5,
+      "2025-03-05": 0.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Sangiang_Cibarengkok",
+     "id": "32030504a",
+     "lat": -6.87269,
+     "lon": 107.2565,
+     "district": "Kab. Cianjur",
+     "days": {
+      "2025-03-04": 37.5,
+      "2025-03-05": 0.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "PSDA_Ciranjang",
+     "id": "32030505a",
+     "lat": -6.814,
+     "lon": 107.24531,
+     "district": "Kab. Cianjur",
+     "days": {
+      "2025-03-04": 117.0,
+      "2025-03-05": 0.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Bojong Picung_kec",
+     "id": "32030601a",
+     "lat": -6.85106,
+     "lon": 107.26867,
+     "district": "Kab. Cianjur",
+     "days": {
+      "2025-03-04": 104.0,
+      "2025-03-05": 0.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Cisokan",
+     "id": "32030605a",
+     "lat": -6.86331,
+     "lon": 107.23536,
+     "district": "Kab. Cianjur",
+     "days": {
+      "2025-03-04": 56.5,
+      "2025-03-05": 1.5
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Mande",
+     "id": "32030801a",
+     "lat": -6.76997,
+     "lon": 107.2,
+     "district": "Kab. Cianjur",
+     "days": {
+      "2025-03-04": 126.0,
+      "2025-03-05": 0.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Janggari",
+     "id": "32030803a",
+     "lat": -6.7515,
+     "lon": 107.25967,
+     "district": "Kab. Cianjur",
+     "days": {
+      "2025-03-04": 69.0,
+      "2025-03-05": 0.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Afd.Tanawati ( kb.Gedeh )",
+     "id": "32031102a",
+     "lat": -6.79847,
+     "lon": 107.04139,
+     "district": "Kab. Cianjur",
+     "days": {
+      "2025-03-04": 17.0,
+      "2025-03-05": 0.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Vada",
+     "id": "32031203a",
+     "lat": -6.73297,
+     "lon": 107.18328,
+     "district": "Kab. Cianjur",
+     "days": {
+      "2025-03-04": 59.0,
+      "2025-03-05": 0.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Maleber",
+     "id": "32031205a",
+     "lat": -6.719,
+     "lon": 107.24206,
+     "district": "Kab. Cianjur",
+     "days": {
+      "2025-03-04": 100.0,
+      "2025-03-05": 0.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Cikundul",
+     "id": "32031206a",
+     "lat": -6.72078,
+     "lon": 107.21083,
+     "district": "Kab. Cianjur",
+     "days": {
+      "2025-03-04": 39.0,
+      "2025-03-05": 0.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Alam Indah Bunga Nusantara",
+     "id": "32031302a",
+     "lat": -6.72619,
+     "lon": 107.07647,
+     "district": "Kab. Cianjur",
+     "days": {
+      "2025-03-04": 24.0,
+      "2025-03-05": 0.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Haur wangi_Cipeuyeum_Mekarwangi",
+     "id": "32032202a",
+     "lat": -6.81269,
+     "lon": 107.2565,
+     "district": "Kab. Cianjur",
+     "days": {
+      "2025-03-04": 115.0,
+      "2025-03-05": 0.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Ciptasari",
+     "id": "32150201a",
+     "lat": -6.50978,
+     "lon": 107.21825,
+     "district": "Kab. Karawang",
+     "days": {
+      "2025-03-04": 76.0,
+      "2025-03-05": 0.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Tegalwaru",
+     "id": "32150202a",
+     "lat": -6.52586,
+     "lon": 107.22539,
+     "district": "Kab. Karawang",
+     "days": {
+      "2025-03-04": 72.0,
+      "2025-03-05": 0.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Pataruman",
+     "id": "32150601a",
+     "lat": -6.22622,
+     "lon": 107.29764,
+     "district": "Kab. Karawang",
+     "days": {
+      "2025-03-04": 27.0,
+      "2025-03-05": 0.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Pacing Karawang",
+     "id": "32150603a",
+     "lat": -6.11658,
+     "lon": 107.27297,
+     "district": "Kab. Karawang",
+     "days": {
+      "2025-03-04": 8.0,
+      "2025-03-05": 0.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Pangakaran",
+     "id": "32150801a",
+     "lat": -6.02167,
+     "lon": 107.16086,
+     "district": "Kab. Karawang",
+     "days": {
+      "2025-03-04": 47.0,
+      "2025-03-05": 0.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Batu Jaya",
+     "id": "32150802a",
+     "lat": -6.10142,
+     "lon": 107.21758,
+     "district": "Kab. Karawang",
+     "days": {
+      "2025-03-04": 31.0,
+      "2025-03-05": 1.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Teluk Bango Karawang",
+     "id": "32150803a",
+     "lat": -6.09403,
+     "lon": 107.21061,
+     "district": "Kab. Karawang",
+     "days": {
+      "2025-03-04": 2.0,
+      "2025-03-05": 0.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Teluk Buyung",
+     "id": "32151201a",
+     "lat": -6.04761,
+     "lon": 107.13522,
+     "district": "Kab. Karawang",
+     "days": {
+      "2025-03-04": 80.0,
+      "2025-03-05": 0.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "BPP Tambun",
+     "id": "32160601a",
+     "lat": -6.21667,
+     "lon": 107.08331,
+     "district": "Kab. Bekasi",
+     "days": {
+      "2025-03-04": 65.0,
+      "2025-03-05": 29.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Cibitung",
+     "id": "32160701a",
+     "lat": -6.22767,
+     "lon": 107.09381,
+     "district": "Kab. Bekasi",
+     "days": {
+      "2025-03-04": 63.0,
+      "2025-03-05": 23.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Babakan",
+     "id": "32160801a",
+     "lat": -6.12794,
+     "lon": 107.06122,
+     "district": "Kab. Bekasi",
+     "days": {
+      "2025-03-04": 40.5,
+      "2025-03-05": 8.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Cipayung",
+     "id": "32160901a",
+     "lat": -6.30203,
+     "lon": 107.22694,
+     "district": "Kab. Bekasi",
+     "days": {
+      "2025-03-04": 96.0,
+      "2025-03-05": 0.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Bendung Cikarang",
+     "id": "32160903a",
+     "lat": -6.29219,
+     "lon": 107.11803,
+     "district": "Kab. Bekasi",
+     "days": {
+      "2025-03-04": 85.0,
+      "2025-03-05": 2.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Sie. Lemah Abang",
+     "id": "32160904a",
+     "lat": -6.26342,
+     "lon": 107.16417,
+     "district": "Kab. Bekasi",
+     "days": {
+      "2025-03-04": 107.0,
+      "2025-03-05": 1.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Bend. Lemah Abang",
+     "id": "32161101a",
+     "lat": -6.26833,
+     "lon": 107.18411,
+     "district": "Kab. Bekasi",
+     "days": {
+      "2025-03-04": 134.0,
+      "2025-03-05": 0.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Rengas Bandung",
+     "id": "32161102a",
+     "lat": -6.24503,
+     "lon": 107.22078,
+     "district": "Kab. Bekasi",
+     "days": {
+      "2025-03-04": 106.0,
+      "2025-03-05": 0.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Teluk Bango Bekasi",
+     "id": "32161201a",
+     "lat": -6.10433,
+     "lon": 107.23189,
+     "district": "Kab. Bekasi",
+     "days": {
+      "2025-03-04": 28.0,
+      "2025-03-05": 0.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Pacing Bekasi",
+     "id": "32161303a",
+     "lat": -6.14506,
+     "lon": 107.27722,
+     "district": "Kab. Bekasi",
+     "days": {
+      "2025-03-04": 27.0,
+      "2025-03-05": 0.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Pabayuran/ Kertasari",
+     "id": "32161304a",
+     "lat": -6.21361,
+     "lon": 107.27642,
+     "district": "Kab. Bekasi",
+     "days": {
+      "2025-03-04": 22.0,
+      "2025-03-05": 0.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Srengseng",
+     "id": "32161501a",
+     "lat": -6.1725,
+     "lon": 107.18014,
+     "district": "Kab. Bekasi",
+     "days": {
+      "2025-03-04": 61.0,
+      "2025-03-05": 6.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Tapak Serang",
+     "id": "32161601a",
+     "lat": -6.12964,
+     "lon": 107.06242,
+     "district": "Kab. Bekasi",
+     "days": {
+      "2025-03-04": 51.5,
+      "2025-03-05": 6.5
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Gabus",
+     "id": "32161701a",
+     "lat": -6.16736,
+     "lon": 107.04883,
+     "district": "Kab. Bekasi",
+     "days": {
+      "2025-03-04": 85.0,
+      "2025-03-05": 7.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Setu",
+     "id": "32161801a",
+     "lat": -6.34308,
+     "lon": 107.04378,
+     "district": "Kab. Bekasi",
+     "days": {
+      "2025-03-04": 98.0,
+      "2025-03-05": 2.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Bendung Cibeet",
+     "id": "32162003a",
+     "lat": -6.39128,
+     "lon": 107.22133,
+     "district": "Kab. Bekasi",
+     "days": {
+      "2025-03-04": 86.0,
+      "2025-03-05": 0.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Cibogo_cibarusah",
+     "id": "32162201a",
+     "lat": -6.42347,
+     "lon": 107.08611,
+     "district": "Kab. Bekasi",
+     "days": {
+      "2025-03-04": 132.0,
+      "2025-03-05": 0.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Bend. Cipamingkis",
+     "id": "32162202a",
+     "lat": -6.50269,
+     "lon": 107.06689,
+     "district": "Kab. Bogor",
+     "days": {
+      "2025-03-04": 90.5,
+      "2025-03-05": 0.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Empang",
+     "id": "32710101a",
+     "lat": -6.61169,
+     "lon": 106.79139,
+     "district": "Kota Bogor",
+     "days": {
+      "2025-03-04": 123.0,
+      "2025-03-05": 0.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Katulampa",
+     "id": "32710201a",
+     "lat": -6.63328,
+     "lon": 106.83419,
+     "district": "Kota Bogor",
+     "days": {
+      "2025-03-04": 232.5,
+      "2025-03-05": 0.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Kb. Percob. Cimanggu",
+     "id": "32710302a",
+     "lat": -6.57731,
+     "lon": 106.78814,
+     "district": "Kota Bogor",
+     "days": {
+      "2025-03-04": 76.0,
+      "2025-03-05": 0.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Kebun Raya Bogor",
+     "id": "32710501a",
+     "lat": -6.59878,
+     "lon": 106.79558,
+     "district": "Kota Bogor",
+     "days": {
+      "2025-03-04": 98.0,
+      "2025-03-05": 0.5
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Darmaga",
+     "id": "32710401a",
+     "lat": -6.55358,
+     "lon": 106.74983,
+     "district": "Kota Bogor",
+     "days": {
+      "2025-03-04": 54.0,
+      "2025-03-05": 0.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Rawa Dukuh",
+     "id": "32750102a",
+     "lat": -6.22614,
+     "lon": 107.02989,
+     "district": "Kota Bekasi",
+     "days": {
+      "2025-03-04": 110.0,
+      "2025-03-05": 12.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Kranji",
+     "id": "32750201a",
+     "lat": -6.22208,
+     "lon": 107.00361,
+     "district": "Kota Bekasi",
+     "days": {
+      "2025-03-04": 59.0,
+      "2025-03-05": 40.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Bendung Bekasi",
+     "id": "32750401a",
+     "lat": -6.24992,
+     "lon": 106.99775,
+     "district": "Kota Bekasi",
+     "days": {
+      "2025-03-04": 68.0,
+      "2025-03-05": 25.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Cikeas",
+     "id": "32750901a",
+     "lat": -6.30561,
+     "lon": 106.96225,
+     "district": "Kota Bekasi",
+     "days": {
+      "2025-03-04": 119.0,
+      "2025-03-05": 23.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Lab.Perikanan Depok",
+     "id": "32760102a",
+     "lat": -6.40022,
+     "lon": 106.81469,
+     "district": "Kota Depok",
+     "days": {
+      "2025-03-04": 104.0,
+      "2025-03-05": 0.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Beji Depok",
+     "id": "32760601a",
+     "lat": -6.38064,
+     "lon": 106.80656,
+     "district": "Kota Depok",
+     "days": {
+      "2025-03-04": 114.5,
+      "2025-03-05": 0.4
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Lanud Atang Sanjaya",
+     "id": "32011202a",
+     "lat": -6.54453,
+     "lon": 106.75531,
+     "district": "Kab. Bogor",
+     "days": {
+      "2025-03-04": 69.1,
+      "2025-03-05": 0.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Citeko",
+     "id": "32012508a",
+     "lat": -6.68619,
+     "lon": 106.92533,
+     "district": "Kab. Bogor",
+     "days": {
+      "2025-03-04": 126.4,
+      "2025-03-05": 0.0
+     },
+     "source": "westjava2026"
+    },
+    {
+     "name": "Pacet Cianjur",
+     "id": "32031001a",
+     "lat": -6.71264,
+     "lon": 107.00628,
+     "district": "Kab. Cianjur",
+     "days": {
+      "2025-03-04": 26.0,
+      "2025-03-05": 0.0
+     },
+     "source": "westjava2026"
+    }
+   ]
+  }
+ }
+}

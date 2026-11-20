@@ -523,6 +523,34 @@
    "issue": "18",
    "pages": "4928–4937",
    "doi": "10.1002/hyp.9979"
+  },
+  {
+   "key": "saputra2026",
+   "type": "dataset",
+   "authors": [
+    "Saputra, H.",
+    "Dasanto, B.D.",
+    "Tarigan, S.D.",
+    "Santikayasa, I.P.",
+    "Darmawan, Y."
+   ],
+   "year": 2026,
+   "title": "Daily rainfall observations from 460 stations and flood event records across West Java, Indonesia (2020–2025), version 3 (CC BY 4.0)",
+   "publisher": "Mendeley Data",
+   "doi": "10.17632/d7j3s64vvr.3"
+  },
+  {
+   "key": "jica2022",
+   "type": "web",
+   "authors": [
+    "JICA"
+   ],
+   "org": true,
+   "short": "JICA",
+   "year": 2022,
+   "title": "The Project for Promoting Countermeasures against Land Subsidence in Jakarta: Flood Control Master Plan Implementation Promotion, Final Report (Table 2-14, daily rainfall of the January 2020 flood)",
+   "url": "https://openjicareport.jica.go.jp/pdf/1000049032_01.pdf",
+   "accessed": "20 November 2026"
   }
  ]
 }

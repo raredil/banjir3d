@@ -1,0 +1,40 @@
+name: Gauge rain (West Java, open)
+
+# Downloads the open West Java daily gauge dataset (BMKG stations, CC BY 4.0, doi:10.17632/d7j3s64vvr.3) with
+# verification/observed/gauges_fetch.py and publishes it as a release, because data.mendeley.com is not reachable from the cloud session.
+on:
+  workflow_dispatch:
+  push:
+    branches: ["claude/**", "ccr-**"]
+    paths: ["verification/observed/gauges_fetch.py", ".github/workflows/gauges.yml"]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: gauges-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  fetch:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: "3.13"
+      - run: python verification/observed/gauges_fetch.py "$RUNNER_TEMP/g"
+      - name: Publish release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          tag="gauges-westjava-$(date -u +%Y%m%d)-g${GITHUB_RUN_NUMBER}"
+          cd "$RUNNER_TEMP/g" && sha256sum -- * > SHA256SUMS && ls -la
+          "$GITHUB_WORKSPACE/.github/scripts/release.sh" create "$tag" "$GITHUB_SHA" "Gauge rain: West Java daily (doi:10.17632/d7j3s64vvr.3)" \
+            "Open dataset (CC BY 4.0), downloaded by verification/observed/gauges_fetch.py; manifest.json lists files and checksums. Run: ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}" \
+            "$RUNNER_TEMP"/g/*

@@ -20,7 +20,7 @@ on:
         default: "[0, 10, 20, 40]"
         required: true
       rain:
-        description: "era5, era5_land, chirps or imerg (imerg needs the EARTHDATA_TOKEN secret)"
+        description: "era5, era5_land, chirps, imerg or imerg_gauge (IMERG with amounts adjusted to published gauges, gauge_merge.py; imerg needs the EARTHDATA_TOKEN secret)"
         default: "era5_land"
         required: true
       k:
@@ -84,7 +84,7 @@ jobs:
           assert isinstance(am, list) and 0 < len(am) <= 3 and all(v in (1, 2, 3) for v in am)
           assert isinstance(ty, list) and 0 < len(ty) <= 2 and all(v in ("auto", "none") for v in ty)
           assert isinstance(pu, list) and 0 < len(pu) <= 2 and all(v in ("on", "off") for v in pu) and len(mi) * len(am) * len(pu) * len(ty) * len(sc) * len(dr) <= 8 and len(mi) * len(am) * len(pu) * len(ty) * len(sc) * len(dr) * len(se) <= 16
-          assert re.fullmatch(r"\d{4}-\d\d-\d\d", ev) and rain in ("era5", "era5_land", "chirps", "imerg") and k in "123456" and len(k) == 1
+          assert re.fullmatch(r"\d{4}-\d\d-\d\d", ev) and rain in ("era5", "era5_land", "chirps", "imerg", "imerg_gauge") and k in "123456" and len(k) == 1
           assert isinstance(dr, list) and 0 < len(dr) <= 8 and all(isinstance(v, (int, float)) and 0 <= v <= 500 for v in dr)
           assert isinstance(sc, list) and 0 < len(sc) * len(dr) <= 8 and all(isinstance(v, (int, float)) and 0.1 <= v <= 5 for v in sc)
           print(f"event={ev}\ndrains={json.dumps(dr)}\nrain={rain}\nk={k}\nscales={json.dumps(sc)}\nyears={json.dumps(ty)}\npumps={json.dumps(pu)}\namcs={json.dumps(am)}\nmicros={json.dumps(mi)}\nsens={json.dumps(se)}")
@@ -138,7 +138,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          case "$RAIN" in era5|era5_land|chirps|imerg) ;; *) echo "::error::bad rain"; exit 1 ;; esac
+          case "$RAIN" in era5|era5_land|chirps|imerg|imerg_gauge) ;; *) echo "::error::bad rain"; exit 1 ;; esac
           case "$K" in 1|2|3|4|5|6) ;; *) echo "::error::bad k"; exit 1 ;; esac
           [[ "$DRAIN" =~ ^[0-9]+(\.[0-9]+)?$ ]] || { echo "::error::bad drain"; exit 1; }
           [[ "$SCALE" =~ ^[0-9]+(\.[0-9]+)?$ ]] || { echo "::error::bad scale"; exit 1; }
@@ -157,6 +157,11 @@ jobs:
           gh release download "$ob" --repo "$GITHUB_REPOSITORY" -p observed.tar.gz -p SHA256SUMS
           grep ' observed.tar.gz$' SHA256SUMS | sha256sum -c && tar xzf observed.tar.gz
           echo "SRC=engine $ep, observed $ob" >> "$GITHUB_ENV"
+      - name: Gauge-adjusted IMERG (rain imerg_gauge)
+        if: env.RAIN == 'imerg_gauge'
+        run: |
+          python3 -I verification/observed/gauge_merge.py "$RUNNER_TEMP/in/$EVENT/rain_imerg.json" "$EVENT" "$RUNNER_TEMP/in/$EVENT/rain_imerg_gauge.json" \
+            --extra data/rain/gauges_westjava_events.json --report "$RUNNER_TEMP/in/gauge_merge.json"
       - name: Run the event
         working-directory: web
         run: |
@@ -170,6 +175,7 @@ jobs:
           cd "$RUNNER_TEMP/out"
           python3 -c "import json,os; s=json.load(open('summary.json')); s['sources']=os.environ['SRC']; json.dump(s,open('summary.json','w'),indent=1)"
           n="${EVENT}_${RAIN}_k${K}_d${DRAIN}"; [ "$SCALE" = "1" ] || n="${n}_s${SCALE}"; [ "$TY" = "auto" ] || n="${n}_t${TY}"; [ "$PUMPS" = "on" ] || n="${n}_poff"; [ "$AMC" = "2" ] || n="${n}_amc${AMC}"; [ "$MICRO" = "off" ] || n="${n}_mdr"; [ "$SENS" = "none" ] || n="${n}_${SENS}"
+          [ -f "$RUNNER_TEMP/in/gauge_merge.json" ] && cp "$RUNNER_TEMP/in/gauge_merge.json" "${n}_gauge_merge.json" && "$GITHUB_WORKSPACE/.github/scripts/release.sh" upload "$TAG" "${n}_gauge_merge.json"
           gzip -c hmax.f32 > "${n}_hmax.f32.gz" && gzip -c mask.u8 > "${n}_mask.u8.gz" && gzip -c landshare.u8 > "${n}_landshare.u8.gz" && cp summary.json "${n}_summary.json"
           "$GITHUB_WORKSPACE/.github/scripts/release.sh" upload "$TAG" "${n}_hmax.f32.gz" "${n}_mask.u8.gz" "${n}_landshare.u8.gz" "${n}_summary.json"
   score:

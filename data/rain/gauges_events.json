@@ -1,0 +1,431 @@
+{
+ "_about": "Published daily gauge rain for the validation floods. Each value is keyed by the date of its 07:00 WIB (00:00 UTC) reading, i.e. it is the rain of the 24 h before that time. Coordinates as published (2 decimals, ~1 km). Only gauges with published coordinates are used for gauge-adjusted rain (verification/observed/gauge_merge.py); the others are listed for checks.",
+ "sources": {
+  "jica2022": "JICA (2022) The Project for Promoting Countermeasures against Land Subsidence in Jakarta, Flood Control Master Plan Implementation Promotion, Final Report, Table 2-14 (daily 07-07 WIB; data from BMKG, BBWS-CC, PJT2). https://openjicareport.jica.go.jp/pdf/1000049032_01.pdf",
+  "bmkg2020": "BMKG measurements 31 Dec 2019 07:00 - 1 Jan 2020 07:00 WIB as quoted by detik.com 2 Jan 2020 (https://news.detik.com/berita/d-4843572) and BMKG press statement (Kompas 3 Jan 2020); no coordinates",
+  "bmkg2021": "BMKG values quoted by the DKI governor 20 Feb 2021 (journalarta.com/news/2021/02/20) and BBWS-CC (Media Indonesia 17 Mar 2021); no coordinates",
+  "bmkg2025": "BMKG recap 3 Mar 07:00 - 4 Mar 07:00 WIB (Tempo 4 Mar 2025; CNN Indonesia 4 Mar 2025); no coordinates"
+ },
+ "excluded": [
+  {
+   "name": "ARG Sukapura (Bekasi)",
+   "why": "JICA 107.9 mm (same as Kelapa Gading on the next row) vs 179.8 mm in the BMKG list quoted by detik: conflicting, left out"
+  },
+  {
+   "name": "Stasiun meteorologi Soekarno Hatta (JICA row 17)",
+   "why": "same coordinates and values as row 15 (AWS Digi Stamet Cengkareng): counted once"
+  }
+ ],
+ "events": {
+  "2020-01-01": {
+   "gauges": [
+    {
+     "name": "Gadog",
+     "lat": -6.65,
+     "lon": 106.87,
+     "admin": "BBWS-CC",
+     "days": {
+      "2020-01-01": 95.5,
+      "2020-01-02": 34.0,
+      "2020-01-03": 0.0
+     },
+     "source": "jica2022"
+    },
+    {
+     "name": "Kampung Kelapa",
+     "lat": -6.46,
+     "lon": 106.81,
+     "admin": "BBWS-CC",
+     "days": {
+      "2020-01-01": 148.5,
+      "2020-01-02": 6.1,
+      "2020-01-03": 0.0
+     },
+     "source": "jica2022"
+    },
+    {
+     "name": "Sumur Batu (Bogor)",
+     "lat": -6.57,
+     "lon": 106.88,
+     "admin": "BBWS-CC",
+     "days": {
+      "2020-01-01": 251.0,
+      "2020-01-02": 25.1,
+      "2020-01-03": 40.9
+     },
+     "source": "jica2022"
+    },
+    {
+     "name": "Cigudeg",
+     "lat": -6.55,
+     "lon": 106.53,
+     "admin": "BBWS-CC",
+     "days": {
+      "2020-01-01": 290.0,
+      "2020-01-02": 11.2,
+      "2020-01-03": 0.0
+     },
+     "source": "jica2022"
+    },
+    {
+     "name": "Kampus UI",
+     "lat": -6.36,
+     "lon": 106.82,
+     "admin": "BBWS-CC",
+     "days": {
+      "2020-01-01": 107.5,
+      "2020-01-02": 155.2,
+      "2020-01-03": 8.5
+     },
+     "source": "jica2022"
+    },
+    {
+     "name": "Lengkong Barang",
+     "lat": -6.46,
+     "lon": 106.73,
+     "admin": "BBWS-CC",
+     "days": {
+      "2020-01-01": 85.5,
+      "2020-01-02": 27.0,
+      "2020-01-03": 1.5
+     },
+     "source": "jica2022"
+    },
+    {
+     "name": "Jeruk Purut",
+     "lat": -6.28,
+     "lon": 106.81,
+     "admin": "BBWS-CC",
+     "days": {
+      "2020-01-01": 102.0,
+      "2020-01-02": 13.0,
+      "2020-01-03": 0.0
+     },
+     "source": "jica2022"
+    },
+    {
+     "name": "Villa Pamulang",
+     "lat": -6.34,
+     "lon": 106.72,
+     "admin": "BBWS-CC",
+     "days": {
+      "2020-01-01": 112.0,
+      "2020-01-02": 52.5,
+      "2020-01-03": 18.5
+     },
+     "source": "jica2022"
+    },
+    {
+     "name": "Cawang ARR",
+     "lat": -6.34,
+     "lon": 106.88,
+     "admin": "BBWS-CC",
+     "days": {
+      "2020-01-01": 109.0,
+      "2020-01-02": 51.0,
+      "2020-01-03": 0.0
+     },
+     "source": "jica2022"
+    },
+    {
+     "name": "Ranca Sumur ARR",
+     "lat": -6.29,
+     "lon": 106.4,
+     "admin": "BBWS-CC",
+     "days": {
+      "2020-01-01": 34.0,
+      "2020-01-02": 23.5,
+      "2020-01-03": 0.0
+     },
+     "source": "jica2022"
+    },
+    {
+     "name": "Sungai Cileungsi (WL 17)",
+     "lat": -6.45,
+     "lon": 106.92,
+     "admin": "PJT2",
+     "days": {
+      "2019-12-31": 0.0,
+      "2020-01-01": 164.5,
+      "2020-01-02": 84.0
+     },
+     "source": "jica2022"
+    },
+    {
+     "name": "Sungai Cikeas (WL 22)",
+     "lat": -6.37,
+     "lon": 106.94,
+     "admin": "PJT2",
+     "days": {
+      "2019-12-31": 0.0,
+      "2020-01-01": 316.0,
+      "2020-01-02": 53.0
+     },
+     "source": "jica2022"
+    },
+    {
+     "name": "Stamet Citeko",
+     "lat": -6.7,
+     "lon": 106.94,
+     "admin": "BMKG",
+     "days": {
+      "2019-12-31": 57.5,
+      "2020-01-01": 60.0,
+      "2020-01-02": 73.7
+     },
+     "source": "jica2022"
+    },
+    {
+     "name": "AWS Puspiptek Serpong",
+     "lat": -6.36,
+     "lon": 106.67,
+     "admin": "BMKG",
+     "days": {
+      "2019-12-31": 0.0,
+      "2020-01-01": 55.2,
+      "2020-01-02": 0.0
+     },
+     "source": "jica2022"
+    },
+    {
+     "name": "Stamet Soekarno-Hatta / Cengkareng",
+     "lat": -6.13,
+     "lon": 106.66,
+     "admin": "BMKG",
+     "days": {
+      "2019-12-31": 0.0,
+      "2020-01-01": 148.0,
+      "2020-01-02": 40.0
+     },
+     "source": "jica2022"
+    },
+    {
+     "name": "Stamet Kemayoran",
+     "lat": -6.16,
+     "lon": 106.84,
+     "admin": "BMKG",
+     "days": {
+      "2019-12-31": 0.0,
+      "2020-01-01": 145.0,
+      "2020-01-02": 0.0
+     },
+     "source": "jica2022"
+    },
+    {
+     "name": "Stamar Tanjung Priok",
+     "lat": -6.11,
+     "lon": 106.88,
+     "admin": "BMKG",
+     "days": {
+      "2019-12-31": 0.0,
+      "2020-01-01": 146.0,
+      "2020-01-02": 0.0
+     },
+     "source": "jica2022"
+    },
+    {
+     "name": "Staklim Pondok Betung (Tangerang Selatan)",
+     "lat": -6.26,
+     "lon": 106.75,
+     "admin": "BMKG",
+     "days": {
+      "2019-12-31": 0.0,
+      "2020-01-01": 208.9,
+      "2020-01-02": 0.0
+     },
+     "source": "jica2022"
+    },
+    {
+     "name": "Staklim Bogor",
+     "lat": -6.55,
+     "lon": 106.74,
+     "admin": "BMKG",
+     "days": {
+      "2019-12-31": 0.0,
+      "2020-01-01": 86.8,
+      "2020-01-02": 50.2
+     },
+     "source": "jica2022"
+    },
+    {
+     "name": "ARG Pulomas",
+     "lat": -6.17,
+     "lon": 106.88,
+     "admin": "BMKG",
+     "days": {
+      "2019-12-31": 0.0,
+      "2020-01-01": 110.2,
+      "2020-01-02": 0.0
+     },
+     "source": "jica2022"
+    },
+    {
+     "name": "ARG Kelapa Gading",
+     "lat": -6.17,
+     "lon": 106.91,
+     "admin": "BMKG",
+     "days": {
+      "2019-12-31": 0.8,
+      "2020-01-01": 107.9,
+      "2020-01-02": 0.0
+     },
+     "source": "jica2022"
+    },
+    {
+     "name": "ARG Manggarai",
+     "lat": -6.21,
+     "lon": 106.85,
+     "admin": "BMKG",
+     "days": {
+      "2019-12-31": 0.0,
+      "2020-01-01": 189.0,
+      "2020-01-02": 0.0
+     },
+     "source": "jica2022"
+    },
+    {
+     "name": "AWS Halim Perdanakusuma",
+     "lat": -6.26,
+     "lon": 106.9,
+     "admin": "BMKG",
+     "days": {
+      "2019-12-31": 0.0,
+      "2020-01-01": 377.0,
+      "2020-01-02": 0.0
+     },
+     "source": "jica2022"
+    },
+    {
+     "name": "ARG Tomang",
+     "lat": -6.17,
+     "lon": 106.78,
+     "admin": "BMKG",
+     "days": {
+      "2019-12-31": 0.0,
+      "2020-01-01": 225.6,
+      "2020-01-02": 0.0
+     },
+     "source": "jica2022"
+    },
+    {
+     "name": "ARG Lebak Bulus",
+     "lat": -6.3,
+     "lon": 106.78,
+     "admin": "BMKG",
+     "days": {
+      "2019-12-31": 0.0,
+      "2020-01-01": 107.4,
+      "2020-01-02": 0.0
+     },
+     "source": "jica2022"
+    },
+    {
+     "name": "ARG Ciganjur",
+     "lat": -6.34,
+     "lon": 106.8,
+     "admin": "BMKG",
+     "days": {
+      "2019-12-31": 0.0,
+      "2020-01-01": 110.4,
+      "2020-01-02": 42.4
+     },
+     "source": "jica2022"
+    },
+    {
+     "name": "AWS BSD",
+     "lat": -6.28,
+     "lon": 106.65,
+     "admin": "BMKG",
+     "days": {
+      "2019-12-31": 0.0,
+      "2020-01-01": 105.3,
+      "2020-01-02": 0.0
+     },
+     "source": "jica2022"
+    },
+    {
+     "name": "AWS Parung Bogor",
+     "lat": -6.42,
+     "lon": 106.73,
+     "admin": "BMKG",
+     "days": {
+      "2019-12-31": 0.0,
+      "2020-01-01": 98.3,
+      "2020-01-02": 45.7
+     },
+     "source": "jica2022"
+    }
+   ],
+   "no_coordinates": {
+    "date": "2020-01-01",
+    "source": "bmkg2020",
+    "mm": {
+     "AWS TMII": 335.2,
+     "Kembangan": 265,
+     "Pulogadung": 260,
+     "ARG Jatiasih": 259.6,
+     "Cikeas": 246,
+     "ARG Teluk Pucung": 234.6,
+     "Pos Hujan Bd Ciputat": 184.9,
+     "ARG Sukapura": 179.8,
+     "Pos Hujan Rorotan": 172,
+     "Pos Hujan Ragunan": 155,
+     "ARG Muara": 132.6,
+     "ARG Jagorawi": 131.5,
+     "Pos Hujan Teluk Naga": 106.5,
+     "AWS UI": 91.6,
+     "ARG Sepatan": 82,
+     "AWS IPB": 75.8,
+     "ARG Katulampa": 57.4,
+     "Stamet Curug": 54
+    }
+   }
+  },
+  "2021-02-20": {
+   "gauges": [
+    {
+     "name": "AWS Halim Perdanakusuma",
+     "lat": -6.26,
+     "lon": 106.9,
+     "admin": "BMKG",
+     "days": {
+      "2021-02-20": 176
+     },
+     "source": "bmkg2021; coordinates jica2022"
+    },
+    {
+     "name": "ARG Lebak Bulus",
+     "lat": -6.3,
+     "lon": 106.78,
+     "admin": "BMKG",
+     "days": {
+      "2021-02-20": 154
+     },
+     "source": "bmkg2021; coordinates jica2022"
+    }
+   ],
+   "no_coordinates": {
+    "date": "2021-02-20",
+    "source": "bmkg2021",
+    "mm": {
+     "Pasar Minggu": 226,
+     "Sunter Hulu": 197
+    }
+   }
+  },
+  "2025-03-04": {
+   "gauges": [],
+   "no_coordinates": {
+    "date": "2025-03-04",
+    "source": "bmkg2025",
+    "mm": {
+     "Katulampa": 225.0,
+     "AWS Cibeureum (Bogor)": 144.0,
+     "Angke Hulu": 140,
+     "Citeko": 126,
+     "Sumur Batu (Bekasi)": 208
+    }
+   }
+  }
+ }
+}
