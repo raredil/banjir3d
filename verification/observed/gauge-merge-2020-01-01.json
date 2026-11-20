@@ -1,0 +1,1821 @@
+{
+ "event": "2020-01-01",
+ "mode": "local",
+ "L_km": 10.0,
+ "grid_deg": 0.02,
+ "n_gauges": 120,
+ "mean_ratio_over_grid": 0.917,
+ "leave_one_out": {
+  "5.0": {
+   "n": 120,
+   "mae_adjusted_mm": 44.0,
+   "bias_adjusted_mm": -11.5,
+   "mae_imerg_mm": 53.2,
+   "bias_imerg_mm": 0.6
+  },
+  "10.0": {
+   "n": 120,
+   "mae_adjusted_mm": 43.4,
+   "bias_adjusted_mm": -12.6,
+   "mae_imerg_mm": 53.2,
+   "bias_imerg_mm": 0.6
+  },
+  "20.0": {
+   "n": 120,
+   "mae_adjusted_mm": 43.2,
+   "bias_adjusted_mm": -12.9,
+   "mae_imerg_mm": 53.2,
+   "bias_imerg_mm": 0.6
+  },
+  "mean_field": {
+   "n": 120,
+   "factor": 0.995,
+   "mae_adjusted_mm": 53.6,
+   "bias_adjusted_mm": -0.0
+  }
+ },
+ "gauges": [
+  {
+   "name": "Gadog",
+   "lon": 106.87,
+   "lat": -6.65,
+   "source": "jica2022",
+   "days": [
+    "2020-01-01",
+    "2020-01-02",
+    "2020-01-03"
+   ],
+   "gauge_mm": 129.5,
+   "imerg_mm": 135.2,
+   "ratio": 0.958,
+   "missing_hours_share": 0.07
+  },
+  {
+   "name": "Kampung Kelapa",
+   "lon": 106.81,
+   "lat": -6.46,
+   "source": "jica2022",
+   "days": [
+    "2020-01-01",
+    "2020-01-02",
+    "2020-01-03"
+   ],
+   "gauge_mm": 154.6,
+   "imerg_mm": 131.5,
+   "ratio": 1.175,
+   "missing_hours_share": 0.07
+  },
+  {
+   "name": "Sumur Batu (Bogor)",
+   "lon": 106.88,
+   "lat": -6.57,
+   "source": "jica2022",
+   "days": [
+    "2020-01-01",
+    "2020-01-02",
+    "2020-01-03"
+   ],
+   "gauge_mm": 317.0,
+   "imerg_mm": 134.9,
+   "ratio": 2.35,
+   "missing_hours_share": 0.07
+  },
+  {
+   "name": "Cigudeg",
+   "lon": 106.53,
+   "lat": -6.55,
+   "source": "jica2022",
+   "days": [
+    "2020-01-01",
+    "2020-01-02",
+    "2020-01-03"
+   ],
+   "gauge_mm": 301.2,
+   "imerg_mm": 109.4,
+   "ratio": 2.752,
+   "missing_hours_share": 0.07
+  },
+  {
+   "name": "Kampus UI",
+   "lon": 106.82,
+   "lat": -6.36,
+   "source": "jica2022",
+   "days": [
+    "2020-01-01",
+    "2020-01-02",
+    "2020-01-03"
+   ],
+   "gauge_mm": 271.2,
+   "imerg_mm": 154.6,
+   "ratio": 1.754,
+   "missing_hours_share": 0.07
+  },
+  {
+   "name": "Lengkong Barang",
+   "lon": 106.73,
+   "lat": -6.46,
+   "source": "jica2022",
+   "days": [
+    "2020-01-01",
+    "2020-01-02",
+    "2020-01-03"
+   ],
+   "gauge_mm": 114.0,
+   "imerg_mm": 131.2,
+   "ratio": 0.869,
+   "missing_hours_share": 0.07
+  },
+  {
+   "name": "Jeruk Purut",
+   "lon": 106.81,
+   "lat": -6.28,
+   "source": "jica2022",
+   "days": [
+    "2020-01-01",
+    "2020-01-02",
+    "2020-01-03"
+   ],
+   "gauge_mm": 115.0,
+   "imerg_mm": 162.4,
+   "ratio": 0.708,
+   "missing_hours_share": 0.07
+  },
+  {
+   "name": "Villa Pamulang",
+   "lon": 106.72,
+   "lat": -6.34,
+   "source": "jica2022",
+   "days": [
+    "2020-01-01",
+    "2020-01-02",
+    "2020-01-03"
+   ],
+   "gauge_mm": 183.0,
+   "imerg_mm": 139.4,
+   "ratio": 1.312,
+   "missing_hours_share": 0.07
+  },
+  {
+   "name": "Cawang ARR",
+   "lon": 106.88,
+   "lat": -6.34,
+   "source": "jica2022",
+   "days": [
+    "2020-01-01",
+    "2020-01-02",
+    "2020-01-03"
+   ],
+   "gauge_mm": 160.0,
+   "imerg_mm": 168.0,
+   "ratio": 0.952,
+   "missing_hours_share": 0.07
+  },
+  {
+   "name": "Ranca Sumur ARR",
+   "lon": 106.4,
+   "lat": -6.29,
+   "source": "jica2022",
+   "days": [
+    "2020-01-01",
+    "2020-01-02",
+    "2020-01-03"
+   ],
+   "gauge_mm": 57.5,
+   "imerg_mm": 108.2,
+   "ratio": 0.532,
+   "missing_hours_share": 0.07
+  },
+  {
+   "name": "Sungai Cileungsi (WL 17)",
+   "lon": 106.92,
+   "lat": -6.45,
+   "source": "jica2022",
+   "days": [
+    "2020-01-01",
+    "2020-01-02"
+   ],
+   "gauge_mm": 248.5,
+   "imerg_mm": 147.1,
+   "ratio": 1.689,
+   "missing_hours_share": 0.1
+  },
+  {
+   "name": "Sungai Cikeas (WL 22)",
+   "lon": 106.94,
+   "lat": -6.37,
+   "source": "jica2022",
+   "days": [
+    "2020-01-01",
+    "2020-01-02"
+   ],
+   "gauge_mm": 369.0,
+   "imerg_mm": 171.2,
+   "ratio": 2.156,
+   "missing_hours_share": 0.1
+  },
+  {
+   "name": "Stamet Citeko",
+   "lon": 106.94,
+   "lat": -6.7,
+   "source": "jica2022",
+   "days": [
+    "2020-01-01",
+    "2020-01-02"
+   ],
+   "gauge_mm": 133.7,
+   "imerg_mm": 117.7,
+   "ratio": 1.136,
+   "missing_hours_share": 0.1
+  },
+  {
+   "name": "AWS Puspiptek Serpong",
+   "lon": 106.67,
+   "lat": -6.36,
+   "source": "jica2022",
+   "days": [
+    "2020-01-01",
+    "2020-01-02"
+   ],
+   "gauge_mm": 55.2,
+   "imerg_mm": 125.2,
+   "ratio": 0.441,
+   "missing_hours_share": 0.1
+  },
+  {
+   "name": "Stamet Soekarno-Hatta / Cengkareng",
+   "lon": 106.66,
+   "lat": -6.13,
+   "source": "jica2022",
+   "days": [
+    "2020-01-01",
+    "2020-01-02"
+   ],
+   "gauge_mm": 188.0,
+   "imerg_mm": 119.6,
+   "ratio": 1.572,
+   "missing_hours_share": 0.1
+  },
+  {
+   "name": "Stamet Kemayoran",
+   "lon": 106.84,
+   "lat": -6.16,
+   "source": "jica2022",
+   "days": [
+    "2020-01-01",
+    "2020-01-02"
+   ],
+   "gauge_mm": 145.0,
+   "imerg_mm": 135.8,
+   "ratio": 1.067,
+   "missing_hours_share": 0.1
+  },
+  {
+   "name": "Stamar Tanjung Priok",
+   "lon": 106.88,
+   "lat": -6.11,
+   "source": "jica2022",
+   "days": [
+    "2020-01-01",
+    "2020-01-02"
+   ],
+   "gauge_mm": 146.0,
+   "imerg_mm": 128.2,
+   "ratio": 1.139,
+   "missing_hours_share": 0.1
+  },
+  {
+   "name": "Staklim Pondok Betung (Tangerang Selatan)",
+   "lon": 106.75,
+   "lat": -6.26,
+   "source": "jica2022",
+   "days": [
+    "2020-01-01",
+    "2020-01-02"
+   ],
+   "gauge_mm": 208.9,
+   "imerg_mm": 161.3,
+   "ratio": 1.295,
+   "missing_hours_share": 0.1
+  },
+  {
+   "name": "Staklim Bogor",
+   "lon": 106.74,
+   "lat": -6.55,
+   "source": "jica2022",
+   "days": [
+    "2020-01-01",
+    "2020-01-02"
+   ],
+   "gauge_mm": 137.0,
+   "imerg_mm": 128.6,
+   "ratio": 1.065,
+   "missing_hours_share": 0.1
+  },
+  {
+   "name": "ARG Pulomas",
+   "lon": 106.88,
+   "lat": -6.17,
+   "source": "jica2022",
+   "days": [
+    "2020-01-01",
+    "2020-01-02"
+   ],
+   "gauge_mm": 110.2,
+   "imerg_mm": 139.6,
+   "ratio": 0.789,
+   "missing_hours_share": 0.1
+  },
+  {
+   "name": "ARG Kelapa Gading",
+   "lon": 106.91,
+   "lat": -6.17,
+   "source": "jica2022",
+   "days": [
+    "2020-01-01",
+    "2020-01-02"
+   ],
+   "gauge_mm": 107.9,
+   "imerg_mm": 139.5,
+   "ratio": 0.774,
+   "missing_hours_share": 0.1
+  },
+  {
+   "name": "ARG Manggarai",
+   "lon": 106.85,
+   "lat": -6.21,
+   "source": "jica2022",
+   "days": [
+    "2020-01-01",
+    "2020-01-02"
+   ],
+   "gauge_mm": 189.0,
+   "imerg_mm": 151.4,
+   "ratio": 1.248,
+   "missing_hours_share": 0.1
+  },
+  {
+   "name": "AWS Halim Perdanakusuma",
+   "lon": 106.9,
+   "lat": -6.26,
+   "source": "jica2022",
+   "days": [
+    "2020-01-01",
+    "2020-01-02"
+   ],
+   "gauge_mm": 377.0,
+   "imerg_mm": 157.0,
+   "ratio": 2.401,
+   "missing_hours_share": 0.1
+  },
+  {
+   "name": "ARG Tomang",
+   "lon": 106.78,
+   "lat": -6.17,
+   "source": "jica2022",
+   "days": [
+    "2020-01-01",
+    "2020-01-02"
+   ],
+   "gauge_mm": 225.6,
+   "imerg_mm": 133.0,
+   "ratio": 1.696,
+   "missing_hours_share": 0.1
+  },
+  {
+   "name": "ARG Lebak Bulus",
+   "lon": 106.78,
+   "lat": -6.3,
+   "source": "jica2022",
+   "days": [
+    "2020-01-01",
+    "2020-01-02"
+   ],
+   "gauge_mm": 107.4,
+   "imerg_mm": 154.7,
+   "ratio": 0.694,
+   "missing_hours_share": 0.1
+  },
+  {
+   "name": "ARG Ciganjur",
+   "lon": 106.8,
+   "lat": -6.34,
+   "source": "jica2022",
+   "days": [
+    "2020-01-01",
+    "2020-01-02"
+   ],
+   "gauge_mm": 152.8,
+   "imerg_mm": 152.4,
+   "ratio": 1.003,
+   "missing_hours_share": 0.1
+  },
+  {
+   "name": "AWS BSD",
+   "lon": 106.65,
+   "lat": -6.28,
+   "source": "jica2022",
+   "days": [
+    "2020-01-01",
+    "2020-01-02"
+   ],
+   "gauge_mm": 105.3,
+   "imerg_mm": 142.6,
+   "ratio": 0.738,
+   "missing_hours_share": 0.1
+  },
+  {
+   "name": "AWS Parung Bogor",
+   "lon": 106.73,
+   "lat": -6.42,
+   "source": "jica2022",
+   "days": [
+    "2020-01-01",
+    "2020-01-02"
+   ],
+   "gauge_mm": 144.0,
+   "imerg_mm": 129.9,
+   "ratio": 1.109,
+   "missing_hours_share": 0.1
+  },
+  {
+   "name": "Ciriung",
+   "lon": 106.85642,
+   "lat": -6.46042,
+   "source": "westjava2026",
+   "days": [
+    "2020-01-01",
+    "2020-01-02",
+    "2020-01-03"
+   ],
+   "gauge_mm": 151.0,
+   "imerg_mm": 132.7,
+   "ratio": 1.138,
+   "missing_hours_share": 0.07
+  },
+  {
+   "name": "BP3K Jonggol",
+   "lon": 107.06589,
+   "lat": -6.46789,
+   "source": "westjava2026",
+   "days": [
+    "2020-01-01",
+    "2020-01-02",
+    "2020-01-03"
+   ],
+   "gauge_mm": 7.0,
+   "imerg_mm": 182.4,
+   "ratio": 0.25,
+   "missing_hours_share": 0.07
+  },
+  {
+   "name": "Dayeuh/Sukanagara",
+   "lon": 107.01997,
+   "lat": -6.50997,
+   "source": "westjava2026",
+   "days": [
+    "2020-01-01",
+    "2020-01-02",
+    "2020-01-03"
+   ],
+   "gauge_mm": 95.0,
+   "imerg_mm": 169.0,
+   "ratio": 0.562,
+   "missing_hours_share": 0.07
+  },
+  {
+   "name": "Klapanunggal",
+   "lon": 106.96208,
+   "lat": -6.41422,
+   "source": "westjava2026",
+   "days": [
+    "2020-01-01",
+    "2020-01-02",
+    "2020-01-03"
+   ],
+   "gauge_mm": 91.0,
+   "imerg_mm": 166.2,
+   "ratio": 0.548,
+   "missing_hours_share": 0.07
+  },
+  {
+   "name": "Situ Tungilis",
+   "lon": 107.03128,
+   "lat": -6.41981,
+   "source": "westjava2026",
+   "days": [
+    "2020-01-01",
+    "2020-01-02",
+    "2020-01-03"
+   ],
+   "gauge_mm": 101.0,
+   "imerg_mm": 186.3,
+   "ratio": 0.542,
+   "missing_hours_share": 0.07
+  },
+  {
+   "name": "Cariu",
+   "lon": 107.13294,
+   "lat": -6.50422,
+   "source": "westjava2026",
+   "days": [
+    "2020-01-01",
+    "2020-01-02",
+    "2020-01-03"
+   ],
+   "gauge_mm": 147.0,
+   "imerg_mm": 161.8,
+   "ratio": 0.909,
+   "missing_hours_share": 0.07
+  },
+  {
+   "name": "Sinar Rasa_Tanjung rasa",
+   "lon": 107.15797,
+   "lat": -6.61978,
+   "source": "westjava2026",
+   "days": [
+    "2020-01-01",
+    "2020-01-02",
+    "2020-01-03"
+   ],
+   "gauge_mm": 85.0,
+   "imerg_mm": 131.8,
+   "ratio": 0.645,
+   "missing_hours_share": 0.07
+  },
+  {
+   "name": "Jampang",
+   "lon": 106.69467,
+   "lat": -6.48147,
+   "source": "westjava2026",
+   "days": [
+    "2020-01-01",
+    "2020-01-02",
+    "2020-01-03"
+   ],
+   "gauge_mm": 32.0,
+   "imerg_mm": 130.0,
+   "ratio": 0.25,
+   "missing_hours_share": 0.07
+  },
+  {
+   "name": "Curug Serpong",
+   "lon": 106.72664,
+   "lat": -6.38644,
+   "source": "westjava2026",
+   "days": [
+    "2020-01-01",
+    "2020-01-02",
+    "2020-01-03"
+   ],
+   "gauge_mm": 36.0,
+   "imerg_mm": 134.7,
+   "ratio": 0.267,
+   "missing_hours_share": 0.07
+  },
+  {
+   "name": "Situ Kemang",
+   "lon": 106.74158,
+   "lat": -6.49539,
+   "source": "westjava2026",
+   "days": [
+    "2020-01-01",
+    "2020-01-02",
+    "2020-01-03"
+   ],
+   "gauge_mm": 98.0,
+   "imerg_mm": 133.0,
+   "ratio": 0.737,
+   "missing_hours_share": 0.07
+  },
+  {
+   "name": "Bojong Gede",
+   "lon": 106.786,
+   "lat": -6.5009,
+   "source": "westjava2026",
+   "days": [
+    "2020-01-01",
+    "2020-01-02",
+    "2020-01-03"
+   ],
+   "gauge_mm": 60.0,
+   "imerg_mm": 132.4,
+   "ratio": 0.453,
+   "missing_hours_share": 0.07
+  },
+  {
+   "name": "Cis Empang",
+   "lon": 106.79908,
+   "lat": -6.45344,
+   "source": "westjava2026",
+   "days": [
+    "2020-01-01",
+    "2020-01-02",
+    "2020-01-03"
+   ],
+   "gauge_mm": 75.0,
+   "imerg_mm": 131.6,
+   "ratio": 0.57,
+   "missing_hours_share": 0.07
+  },
+  {
+   "name": "Citayam",
+   "lon": 106.80539,
+   "lat": -6.47039,
+   "source": "westjava2026",
+   "days": [
+    "2020-01-01",
+    "2020-01-02",
+    "2020-01-03"
+   ],
+   "gauge_mm": 260.8,
+   "imerg_mm": 131.6,
+   "ratio": 1.982,
+   "missing_hours_share": 0.07
+  },
+  {
+   "name": "Perkeb. Cianten",
+   "lon": 106.60378,
+   "lat": -6.72233,
+   "source": "westjava2026",
+   "days": [
+    "2020-01-01",
+    "2020-01-02",
+    "2020-01-03"
+   ],
+   "gauge_mm": 147.5,
+   "imerg_mm": 93.2,
+   "ratio": 1.582,
+   "missing_hours_share": 0.07
+  },
+  {
+   "name": "Pamijahan",
+   "lon": 106.70361,
+   "lat": -6.65961,
+   "source": "westjava2026",
+   "days": [
+    "2020-01-01",
+    "2020-01-02",
+    "2020-01-03"
+   ],
+   "gauge_mm": 91.0,
+   "imerg_mm": 116.0,
+   "ratio": 0.784,
+   "missing_hours_share": 0.07
+  },
+  {
+   "name": "Bp3K  Leuwiliang",
+   "lon": 106.62981,
+   "lat": -6.5635,
+   "source": "westjava2026",
+   "days": [
+    "2020-01-01",
+    "2020-01-02",
+    "2020-01-03"
+   ],
+   "gauge_mm": 86.0,
+   "imerg_mm": 121.4,
+   "ratio": 0.708,
+   "missing_hours_share": 0.07
+  },
+  {
+   "name": "Cihideung",
+   "lon": 106.71989,
+   "lat": -6.59339,
+   "source": "westjava2026",
+   "days": [
+    "2020-01-01",
+    "2020-01-02",
+    "2020-01-03"
+   ],
+   "gauge_mm": 90.0,
+   "imerg_mm": 125.9,
+   "ratio": 0.715,
+   "missing_hours_share": 0.07
+  },
+  {
+   "name": "Cibodas",
+   "lon": 106.69119,
+   "lat": -6.54739,
+   "source": "westjava2026",
+   "days": [
+    "2020-01-01",
+    "2020-01-02",
+    "2020-01-03"
+   ],
+   "gauge_mm": 64.0,
+   "imerg_mm": 130.1,
+   "ratio": 0.492,
+   "missing_hours_share": 0.07
+  },
+  {
+   "name": "Citeureup Pamijahan",
+   "lon": 106.65997,
+   "lat": -6.72297,
+   "source": "westjava2026",
+   "days": [
+    "2020-01-01",
+    "2020-01-02",
+    "2020-01-03"
+   ],
+   "gauge_mm": 91.0,
+   "imerg_mm": 101.4,
+   "ratio": 0.898,
+   "missing_hours_share": 0.07
+  },
+  {
+   "name": "Perkeb. Jasinga",
+   "lon": 106.468,
+   "lat": -6.47344,
+   "source": "westjava2026",
+   "days": [
+    "2020-01-01",
+    "2020-01-02",
+    "2020-01-03"
+   ],
+   "gauge_mm": 100.0,
+   "imerg_mm": 118.3,
+   "ratio": 0.845,
+   "missing_hours_share": 0.07
+  },
+  {
+   "name": "Cigelung",
+   "lon": 106.415,
+   "lat": -6.52417,
+   "source": "westjava2026",
+   "days": [
+    "2020-01-01",
+    "2020-01-02",
+    "2020-01-03"
+   ],
+   "gauge_mm": 75.0,
+   "imerg_mm": 111.6,
+   "ratio": 0.672,
+   "missing_hours_share": 0.07
+  },
+  {
+   "name": "Parung Panjang",
+   "lon": 106.54997,
+   "lat": -6.38,
+   "source": "westjava2026",
+   "days": [
+    "2020-01-01",
+    "2020-01-02",
+    "2020-01-03"
+   ],
+   "gauge_mm": 51.5,
+   "imerg_mm": 133.5,
+   "ratio": 0.386,
+   "missing_hours_share": 0.07
+  },
+  {
+   "name": "Nanggung",
+   "lon": 106.5395,
+   "lat": -6.5975,
+   "source": "westjava2026",
+   "days": [
+    "2020-01-01",
+    "2020-01-02",
+    "2020-01-03"
+   ],
+   "gauge_mm": 265.0,
+   "imerg_mm": 102.8,
+   "ratio": 2.578,
+   "missing_hours_share": 0.07
+  },
+  {
+   "name": "Afd Bolang",
+   "lon": 106.52236,
+   "lat": -6.43606,
+   "source": "westjava2026",
+   "days": [
+    "2020-01-01",
+    "2020-01-02",
+    "2020-01-03"
+   ],
+   "gauge_mm": 98.0,
+   "imerg_mm": 124.7,
+   "ratio": 0.786,
+   "missing_hours_share": 0.07
+  },
+  {
+   "name": "Empl. Toge",
+   "lon": 106.50344,
+   "lat": -6.50942,
+   "source": "westjava2026",
+   "days": [
+    "2020-01-01",
+    "2020-01-02",
+    "2020-01-03"
+   ],
+   "gauge_mm": 153.0,
+   "imerg_mm": 116.0,
+   "ratio": 1.319,
+   "missing_hours_share": 0.07
+  },
+  {
+   "name": "Ciawi",
+   "lon": 106.85286,
+   "lat": -6.66236,
+   "source": "westjava2026",
+   "days": [
+    "2020-01-01",
+    "2020-01-02",
+    "2020-01-03"
+   ],
+   "gauge_mm": 180.5,
+   "imerg_mm": 130.7,
+   "ratio": 1.382,
+   "missing_hours_share": 0.07
+  },
+  {
+   "name": "Naringgul",
+   "lon": 106.98769,
+   "lat": -6.69847,
+   "source": "westjava2026",
+   "days": [
+    "2020-01-01",
+    "2020-01-02",
+    "2020-01-03"
+   ],
+   "gauge_mm": 116.0,
+   "imerg_mm": 125.1,
+   "ratio": 0.928,
+   "missing_hours_share": 0.07
+  },
+  {
+   "name": "Perk Gunung Mas",
+   "lon": 106.96739,
+   "lat": -6.70914,
+   "source": "westjava2026",
+   "days": [
+    "2020-01-01",
+    "2020-01-02",
+    "2020-01-03"
+   ],
+   "gauge_mm": 134.0,
+   "imerg_mm": 119.4,
+   "ratio": 1.122,
+   "missing_hours_share": 0.07
+  },
+  {
+   "name": "Gadog",
+   "lon": 106.86383,
+   "lat": -6.65689,
+   "source": "westjava2026",
+   "days": [
+    "2020-01-01",
+    "2020-01-02",
+    "2020-01-03"
+   ],
+   "gauge_mm": 144.0,
+   "imerg_mm": 132.8,
+   "ratio": 1.084,
+   "missing_hours_share": 0.07
+  },
+  {
+   "name": "Cibalagung Bogor",
+   "lon": 106.78731,
+   "lat": -6.60386,
+   "source": "westjava2026",
+   "days": [
+    "2020-01-01",
+    "2020-01-02",
+    "2020-01-03"
+   ],
+   "gauge_mm": 137.0,
+   "imerg_mm": 127.3,
+   "ratio": 1.076,
+   "missing_hours_share": 0.07
+  },
+  {
+   "name": "Depok_BMKG_Sukmajaya",
+   "lon": 106.84581,
+   "lat": -6.40531,
+   "source": "westjava2026",
+   "days": [
+    "2020-01-01",
+    "2020-01-02",
+    "2020-01-03"
+   ],
+   "gauge_mm": 183.0,
+   "imerg_mm": 146.1,
+   "ratio": 1.252,
+   "missing_hours_share": 0.07
+  },
+  {
+   "name": "BPP Ciseeng",
+   "lon": 106.68753,
+   "lat": -6.44614,
+   "source": "westjava2026",
+   "days": [
+    "2020-01-01",
+    "2020-01-02",
+    "2020-01-03"
+   ],
+   "gauge_mm": 66.0,
+   "imerg_mm": 129.8,
+   "ratio": 0.509,
+   "missing_hours_share": 0.07
+  },
+  {
+   "name": "Perkebunan Cimulang",
+   "lon": 106.71658,
+   "lat": -6.52589,
+   "source": "westjava2026",
+   "days": [
+    "2020-01-01",
+    "2020-01-02",
+    "2020-01-03"
+   ],
+   "gauge_mm": 32.0,
+   "imerg_mm": 132.1,
+   "ratio": 0.25,
+   "missing_hours_share": 0.07
+  },
+  {
+   "name": "Gunung Bunder",
+   "lon": 106.68047,
+   "lat": -6.64258,
+   "source": "westjava2026",
+   "days": [
+    "2020-01-01",
+    "2020-01-02",
+    "2020-01-03"
+   ],
+   "gauge_mm": 87.0,
+   "imerg_mm": 119.6,
+   "ratio": 0.728,
+   "missing_hours_share": 0.07
+  },
+  {
+   "name": "Goalpara",
+   "lon": 106.96303,
+   "lat": -6.89419,
+   "source": "westjava2026",
+   "days": [
+    "2020-01-01",
+    "2020-01-02",
+    "2020-01-03"
+   ],
+   "gauge_mm": 43.0,
+   "imerg_mm": 82.5,
+   "ratio": 0.521,
+   "missing_hours_share": 0.07
+  },
+  {
+   "name": "Batu Karut",
+   "lon": 106.98503,
+   "lat": -6.88442,
+   "source": "westjava2026",
+   "days": [
+    "2020-01-01",
+    "2020-01-02",
+    "2020-01-03"
+   ],
+   "gauge_mm": 189.0,
+   "imerg_mm": 94.7,
+   "ratio": 1.995,
+   "missing_hours_share": 0.07
+  },
+  {
+   "name": "Perkeb. Sukamaju",
+   "lon": 106.77317,
+   "lat": -6.88311,
+   "source": "westjava2026",
+   "days": [
+    "2020-01-01",
+    "2020-01-02",
+    "2020-01-03"
+   ],
+   "gauge_mm": 0.0,
+   "imerg_mm": 69.9,
+   "ratio": 0.25,
+   "missing_hours_share": 0.07
+  },
+  {
+   "name": "Sinagar",
+   "lon": 106.80147,
+   "lat": -6.85197,
+   "source": "westjava2026",
+   "days": [
+    "2020-01-01",
+    "2020-01-02",
+    "2020-01-03"
+   ],
+   "gauge_mm": 21.0,
+   "imerg_mm": 73.3,
+   "ratio": 0.286,
+   "missing_hours_share": 0.07
+  },
+  {
+   "name": "Parakan Salak",
+   "lon": 106.7,
+   "lat": -6.8,
+   "source": "westjava2026",
+   "days": [
+    "2020-01-01",
+    "2020-01-02",
+    "2020-01-03"
+   ],
+   "gauge_mm": 80.0,
+   "imerg_mm": 87.1,
+   "ratio": 0.918,
+   "missing_hours_share": 0.07
+  },
+  {
+   "name": "Empl.  Cisalak",
+   "lon": 106.66078,
+   "lat": -6.83739,
+   "source": "westjava2026",
+   "days": [
+    "2020-01-01",
+    "2020-01-02",
+    "2020-01-03"
+   ],
+   "gauge_mm": 66.0,
+   "imerg_mm": 80.4,
+   "ratio": 0.821,
+   "missing_hours_share": 0.07
+  },
+  {
+   "name": "Kec. Cicurug",
+   "lon": 106.77856,
+   "lat": -6.78731,
+   "source": "westjava2026",
+   "days": [
+    "2020-01-01",
+    "2020-01-02",
+    "2020-01-03"
+   ],
+   "gauge_mm": 37.0,
+   "imerg_mm": 93.8,
+   "ratio": 0.394,
+   "missing_hours_share": 0.07
+  },
+  {
+   "name": "Perbawati",
+   "lon": 106.95286,
+   "lat": -6.85267,
+   "source": "westjava2026",
+   "days": [
+    "2020-01-01",
+    "2020-01-02",
+    "2020-01-03"
+   ],
+   "gauge_mm": 32.0,
+   "imerg_mm": 76.9,
+   "ratio": 0.416,
+   "missing_hours_share": 0.07
+  },
+  {
+   "name": "Cibalagung Cianjur",
+   "lon": 107.23281,
+   "lat": -6.76253,
+   "source": "westjava2026",
+   "days": [
+    "2020-01-01",
+    "2020-01-02",
+    "2020-01-03"
+   ],
+   "gauge_mm": 13.5,
+   "imerg_mm": 84.0,
+   "ratio": 0.25,
+   "missing_hours_share": 0.07
+  },
+  {
+   "name": "Sangiang_Cibarengkok",
+   "lon": 107.2565,
+   "lat": -6.87269,
+   "source": "westjava2026",
+   "days": [
+    "2020-01-01",
+    "2020-01-02",
+    "2020-01-03"
+   ],
+   "gauge_mm": 60.0,
+   "imerg_mm": 57.0,
+   "ratio": 1.053,
+   "missing_hours_share": 0.07
+  },
+  {
+   "name": "PSDA_Ciranjang",
+   "lon": 107.24531,
+   "lat": -6.814,
+   "source": "westjava2026",
+   "days": [
+    "2020-01-01",
+    "2020-01-02",
+    "2020-01-03"
+   ],
+   "gauge_mm": 35.0,
+   "imerg_mm": 67.7,
+   "ratio": 0.517,
+   "missing_hours_share": 0.07
+  },
+  {
+   "name": "Bojong Picung_kec",
+   "lon": 107.26867,
+   "lat": -6.85106,
+   "source": "westjava2026",
+   "days": [
+    "2020-01-01",
+    "2020-01-02",
+    "2020-01-03"
+   ],
+   "gauge_mm": 44.5,
+   "imerg_mm": 57.0,
+   "ratio": 0.781,
+   "missing_hours_share": 0.07
+  },
+  {
+   "name": "Cisokan",
+   "lon": 107.23536,
+   "lat": -6.86331,
+   "source": "westjava2026",
+   "days": [
+    "2020-01-01",
+    "2020-01-02",
+    "2020-01-03"
+   ],
+   "gauge_mm": 10.0,
+   "imerg_mm": 58.7,
+   "ratio": 0.25,
+   "missing_hours_share": 0.07
+  },
+  {
+   "name": "Mande",
+   "lon": 107.2,
+   "lat": -6.76997,
+   "source": "westjava2026",
+   "days": [
+    "2020-01-01",
+    "2020-01-02",
+    "2020-01-03"
+   ],
+   "gauge_mm": 5.5,
+   "imerg_mm": 86.4,
+   "ratio": 0.25,
+   "missing_hours_share": 0.07
+  },
+  {
+   "name": "Janggari",
+   "lon": 107.25967,
+   "lat": -6.7515,
+   "source": "westjava2026",
+   "days": [
+    "2020-01-01",
+    "2020-01-02",
+    "2020-01-03"
+   ],
+   "gauge_mm": 14.0,
+   "imerg_mm": 84.8,
+   "ratio": 0.25,
+   "missing_hours_share": 0.07
+  },
+  {
+   "name": "Afd.Tanawati ( kb.Gedeh )",
+   "lon": 107.04139,
+   "lat": -6.79847,
+   "source": "westjava2026",
+   "days": [
+    "2020-01-01",
+    "2020-01-02",
+    "2020-01-03"
+   ],
+   "gauge_mm": 83.0,
+   "imerg_mm": 125.5,
+   "ratio": 0.661,
+   "missing_hours_share": 0.07
+  },
+  {
+   "name": "Vada",
+   "lon": 107.18328,
+   "lat": -6.73297,
+   "source": "westjava2026",
+   "days": [
+    "2020-01-01",
+    "2020-01-02",
+    "2020-01-03"
+   ],
+   "gauge_mm": 35.0,
+   "imerg_mm": 98.7,
+   "ratio": 0.355,
+   "missing_hours_share": 0.07
+  },
+  {
+   "name": "Maleber",
+   "lon": 107.24206,
+   "lat": -6.719,
+   "source": "westjava2026",
+   "days": [
+    "2020-01-01",
+    "2020-01-02",
+    "2020-01-03"
+   ],
+   "gauge_mm": 48.0,
+   "imerg_mm": 92.4,
+   "ratio": 0.52,
+   "missing_hours_share": 0.07
+  },
+  {
+   "name": "Cikundul",
+   "lon": 107.21083,
+   "lat": -6.72078,
+   "source": "westjava2026",
+   "days": [
+    "2020-01-01",
+    "2020-01-02",
+    "2020-01-03"
+   ],
+   "gauge_mm": 2.0,
+   "imerg_mm": 97.1,
+   "ratio": 0.25,
+   "missing_hours_share": 0.07
+  },
+  {
+   "name": "Alam Indah Bunga Nusantara",
+   "lon": 107.07647,
+   "lat": -6.72619,
+   "source": "westjava2026",
+   "days": [
+    "2020-01-01",
+    "2020-01-02",
+    "2020-01-03"
+   ],
+   "gauge_mm": 47.0,
+   "imerg_mm": 123.0,
+   "ratio": 0.382,
+   "missing_hours_share": 0.07
+  },
+  {
+   "name": "Haur wangi_Cipeuyeum_Mekarwangi",
+   "lon": 107.2565,
+   "lat": -6.81269,
+   "source": "westjava2026",
+   "days": [
+    "2020-01-01",
+    "2020-01-02",
+    "2020-01-03"
+   ],
+   "gauge_mm": 31.0,
+   "imerg_mm": 67.5,
+   "ratio": 0.459,
+   "missing_hours_share": 0.07
+  },
+  {
+   "name": "Ciptasari",
+   "lon": 107.21825,
+   "lat": -6.50978,
+   "source": "westjava2026",
+   "days": [
+    "2020-01-01",
+    "2020-01-02",
+    "2020-01-03"
+   ],
+   "gauge_mm": 103.0,
+   "imerg_mm": 150.2,
+   "ratio": 0.686,
+   "missing_hours_share": 0.07
+  },
+  {
+   "name": "Pataruman",
+   "lon": 107.29764,
+   "lat": -6.22622,
+   "source": "westjava2026",
+   "days": [
+    "2020-01-01",
+    "2020-01-02",
+    "2020-01-03"
+   ],
+   "gauge_mm": 101.0,
+   "imerg_mm": 127.7,
+   "ratio": 0.791,
+   "missing_hours_share": 0.07
+  },
+  {
+   "name": "Pacing Karawang",
+   "lon": 107.27297,
+   "lat": -6.11658,
+   "source": "westjava2026",
+   "days": [
+    "2020-01-01",
+    "2020-01-02",
+    "2020-01-03"
+   ],
+   "gauge_mm": 67.0,
+   "imerg_mm": 111.1,
+   "ratio": 0.603,
+   "missing_hours_share": 0.07
+  },
+  {
+   "name": "Pangakaran",
+   "lon": 107.16086,
+   "lat": -6.02167,
+   "source": "westjava2026",
+   "days": [
+    "2020-01-01",
+    "2020-01-02",
+    "2020-01-03"
+   ],
+   "gauge_mm": 91.0,
+   "imerg_mm": 101.0,
+   "ratio": 0.901,
+   "missing_hours_share": 0.07
+  },
+  {
+   "name": "Batu Jaya",
+   "lon": 107.21758,
+   "lat": -6.10142,
+   "source": "westjava2026",
+   "days": [
+    "2020-01-01",
+    "2020-01-02",
+    "2020-01-03"
+   ],
+   "gauge_mm": 89.0,
+   "imerg_mm": 110.7,
+   "ratio": 0.804,
+   "missing_hours_share": 0.07
+  },
+  {
+   "name": "Teluk Bango Karawang",
+   "lon": 107.21061,
+   "lat": -6.09403,
+   "source": "westjava2026",
+   "days": [
+    "2020-01-01",
+    "2020-01-02",
+    "2020-01-03"
+   ],
+   "gauge_mm": 89.0,
+   "imerg_mm": 109.8,
+   "ratio": 0.811,
+   "missing_hours_share": 0.07
+  },
+  {
+   "name": "Teluk Buyung",
+   "lon": 107.13522,
+   "lat": -6.04761,
+   "source": "westjava2026",
+   "days": [
+    "2020-01-01",
+    "2020-01-02",
+    "2020-01-03"
+   ],
+   "gauge_mm": 88.0,
+   "imerg_mm": 109.0,
+   "ratio": 0.808,
+   "missing_hours_share": 0.07
+  },
+  {
+   "name": "BPP Tambun",
+   "lon": 107.08331,
+   "lat": -6.21667,
+   "source": "westjava2026",
+   "days": [
+    "2020-01-01",
+    "2020-01-02",
+    "2020-01-03"
+   ],
+   "gauge_mm": 211.5,
+   "imerg_mm": 144.1,
+   "ratio": 1.468,
+   "missing_hours_share": 0.07
+  },
+  {
+   "name": "Cibitung",
+   "lon": 107.09381,
+   "lat": -6.22767,
+   "source": "westjava2026",
+   "days": [
+    "2020-01-01",
+    "2020-01-02",
+    "2020-01-03"
+   ],
+   "gauge_mm": 174.0,
+   "imerg_mm": 142.4,
+   "ratio": 1.222,
+   "missing_hours_share": 0.07
+  },
+  {
+   "name": "Cipayung",
+   "lon": 107.22694,
+   "lat": -6.30203,
+   "source": "westjava2026",
+   "days": [
+    "2020-01-01",
+    "2020-01-02",
+    "2020-01-03"
+   ],
+   "gauge_mm": 171.0,
+   "imerg_mm": 154.4,
+   "ratio": 1.108,
+   "missing_hours_share": 0.07
+  },
+  {
+   "name": "Bendung Cikarang",
+   "lon": 107.11803,
+   "lat": -6.29219,
+   "source": "westjava2026",
+   "days": [
+    "2020-01-01",
+    "2020-01-02",
+    "2020-01-03"
+   ],
+   "gauge_mm": 209.0,
+   "imerg_mm": 160.5,
+   "ratio": 1.303,
+   "missing_hours_share": 0.07
+  },
+  {
+   "name": "Sie. Lemah Abang",
+   "lon": 107.16417,
+   "lat": -6.26342,
+   "source": "westjava2026",
+   "days": [
+    "2020-01-01",
+    "2020-01-02",
+    "2020-01-03"
+   ],
+   "gauge_mm": 242.0,
+   "imerg_mm": 135.5,
+   "ratio": 1.786,
+   "missing_hours_share": 0.07
+  },
+  {
+   "name": "Bend. Lemah Abang",
+   "lon": 107.18411,
+   "lat": -6.26833,
+   "source": "westjava2026",
+   "days": [
+    "2020-01-01",
+    "2020-01-02",
+    "2020-01-03"
+   ],
+   "gauge_mm": 189.0,
+   "imerg_mm": 138.4,
+   "ratio": 1.365,
+   "missing_hours_share": 0.07
+  },
+  {
+   "name": "Rengas Bandung",
+   "lon": 107.22078,
+   "lat": -6.24503,
+   "source": "westjava2026",
+   "days": [
+    "2020-01-01",
+    "2020-01-02",
+    "2020-01-03"
+   ],
+   "gauge_mm": 142.0,
+   "imerg_mm": 129.1,
+   "ratio": 1.1,
+   "missing_hours_share": 0.07
+  },
+  {
+   "name": "Teluk Bango Bekasi",
+   "lon": 107.23189,
+   "lat": -6.10433,
+   "source": "westjava2026",
+   "days": [
+    "2020-01-01",
+    "2020-01-02",
+    "2020-01-03"
+   ],
+   "gauge_mm": 72.0,
+   "imerg_mm": 110.0,
+   "ratio": 0.655,
+   "missing_hours_share": 0.07
+  },
+  {
+   "name": "Pacing Bekasi",
+   "lon": 107.27722,
+   "lat": -6.14506,
+   "source": "westjava2026",
+   "days": [
+    "2020-01-01",
+    "2020-01-02",
+    "2020-01-03"
+   ],
+   "gauge_mm": 60.0,
+   "imerg_mm": 117.5,
+   "ratio": 0.511,
+   "missing_hours_share": 0.07
+  },
+  {
+   "name": "Pabayuran/ Kertasari",
+   "lon": 107.27642,
+   "lat": -6.21361,
+   "source": "westjava2026",
+   "days": [
+    "2020-01-01",
+    "2020-01-02",
+    "2020-01-03"
+   ],
+   "gauge_mm": 143.0,
+   "imerg_mm": 126.2,
+   "ratio": 1.133,
+   "missing_hours_share": 0.07
+  },
+  {
+   "name": "Srengseng",
+   "lon": 107.18014,
+   "lat": -6.1725,
+   "source": "westjava2026",
+   "days": [
+    "2020-01-01",
+    "2020-01-02",
+    "2020-01-03"
+   ],
+   "gauge_mm": 116.0,
+   "imerg_mm": 124.6,
+   "ratio": 0.931,
+   "missing_hours_share": 0.07
+  },
+  {
+   "name": "Tapak Serang",
+   "lon": 107.06242,
+   "lat": -6.12964,
+   "source": "westjava2026",
+   "days": [
+    "2020-01-01",
+    "2020-01-02",
+    "2020-01-03"
+   ],
+   "gauge_mm": 95.4,
+   "imerg_mm": 135.8,
+   "ratio": 0.702,
+   "missing_hours_share": 0.07
+  },
+  {
+   "name": "Gabus",
+   "lon": 107.04883,
+   "lat": -6.16736,
+   "source": "westjava2026",
+   "days": [
+    "2020-01-01",
+    "2020-01-02",
+    "2020-01-03"
+   ],
+   "gauge_mm": 270.0,
+   "imerg_mm": 144.8,
+   "ratio": 1.864,
+   "missing_hours_share": 0.07
+  },
+  {
+   "name": "Setu",
+   "lon": 107.04378,
+   "lat": -6.34308,
+   "source": "westjava2026",
+   "days": [
+    "2020-01-01",
+    "2020-01-02",
+    "2020-01-03"
+   ],
+   "gauge_mm": 262.0,
+   "imerg_mm": 194.6,
+   "ratio": 1.346,
+   "missing_hours_share": 0.07
+  },
+  {
+   "name": "Bendung Cibeet",
+   "lon": 107.22133,
+   "lat": -6.39128,
+   "source": "westjava2026",
+   "days": [
+    "2020-01-01",
+    "2020-01-02",
+    "2020-01-03"
+   ],
+   "gauge_mm": 190.0,
+   "imerg_mm": 168.4,
+   "ratio": 1.128,
+   "missing_hours_share": 0.07
+  },
+  {
+   "name": "Cibogo_cibarusah",
+   "lon": 107.08611,
+   "lat": -6.42347,
+   "source": "westjava2026",
+   "days": [
+    "2020-01-01",
+    "2020-01-02",
+    "2020-01-03"
+   ],
+   "gauge_mm": 280.0,
+   "imerg_mm": 185.6,
+   "ratio": 1.509,
+   "missing_hours_share": 0.07
+  },
+  {
+   "name": "Bend. Cipamingkis",
+   "lon": 107.06689,
+   "lat": -6.50269,
+   "source": "westjava2026",
+   "days": [
+    "2020-01-01",
+    "2020-01-02",
+    "2020-01-03"
+   ],
+   "gauge_mm": 180.0,
+   "imerg_mm": 175.0,
+   "ratio": 1.028,
+   "missing_hours_share": 0.07
+  },
+  {
+   "name": "Katulampa",
+   "lon": 106.83419,
+   "lat": -6.63328,
+   "source": "westjava2026",
+   "days": [
+    "2020-01-01",
+    "2020-01-02",
+    "2020-01-03"
+   ],
+   "gauge_mm": 123.0,
+   "imerg_mm": 130.9,
+   "ratio": 0.939,
+   "missing_hours_share": 0.07
+  },
+  {
+   "name": "Kb. Percob. Cimanggu",
+   "lon": 106.78814,
+   "lat": -6.57731,
+   "source": "westjava2026",
+   "days": [
+    "2020-01-01",
+    "2020-01-02",
+    "2020-01-03"
+   ],
+   "gauge_mm": 155.5,
+   "imerg_mm": 130.2,
+   "ratio": 1.194,
+   "missing_hours_share": 0.07
+  },
+  {
+   "name": "Kebun Raya Bogor",
+   "lon": 106.79558,
+   "lat": -6.59878,
+   "source": "westjava2026",
+   "days": [
+    "2020-01-01",
+    "2020-01-02",
+    "2020-01-03"
+   ],
+   "gauge_mm": 141.4,
+   "imerg_mm": 128.3,
+   "ratio": 1.102,
+   "missing_hours_share": 0.07
+  },
+  {
+   "name": "Darmaga",
+   "lon": 106.74983,
+   "lat": -6.55358,
+   "source": "westjava2026",
+   "days": [
+    "2020-01-01",
+    "2020-01-02",
+    "2020-01-03"
+   ],
+   "gauge_mm": 79.0,
+   "imerg_mm": 135.1,
+   "ratio": 0.585,
+   "missing_hours_share": 0.07
+  },
+  {
+   "name": "Rawa Dukuh",
+   "lon": 107.02989,
+   "lat": -6.22614,
+   "source": "westjava2026",
+   "days": [
+    "2020-01-01",
+    "2020-01-02",
+    "2020-01-03"
+   ],
+   "gauge_mm": 210.0,
+   "imerg_mm": 153.0,
+   "ratio": 1.373,
+   "missing_hours_share": 0.07
+  },
+  {
+   "name": "Kranji",
+   "lon": 107.00361,
+   "lat": -6.22208,
+   "source": "westjava2026",
+   "days": [
+    "2020-01-01",
+    "2020-01-02",
+    "2020-01-03"
+   ],
+   "gauge_mm": 219.0,
+   "imerg_mm": 150.6,
+   "ratio": 1.454,
+   "missing_hours_share": 0.07
+  },
+  {
+   "name": "Bendung Bekasi",
+   "lon": 106.99775,
+   "lat": -6.24992,
+   "source": "westjava2026",
+   "days": [
+    "2020-01-01",
+    "2020-01-02",
+    "2020-01-03"
+   ],
+   "gauge_mm": 204.0,
+   "imerg_mm": 153.9,
+   "ratio": 1.325,
+   "missing_hours_share": 0.07
+  },
+  {
+   "name": "Cikeas",
+   "lon": 106.96225,
+   "lat": -6.30561,
+   "source": "westjava2026",
+   "days": [
+    "2020-01-01",
+    "2020-01-02",
+    "2020-01-03"
+   ],
+   "gauge_mm": 282.5,
+   "imerg_mm": 167.2,
+   "ratio": 1.69,
+   "missing_hours_share": 0.07
+  },
+  {
+   "name": "Lab.Perikanan Depok",
+   "lon": 106.81469,
+   "lat": -6.40022,
+   "source": "westjava2026",
+   "days": [
+    "2020-01-01",
+    "2020-01-02",
+    "2020-01-03"
+   ],
+   "gauge_mm": 233.5,
+   "imerg_mm": 143.6,
+   "ratio": 1.626,
+   "missing_hours_share": 0.07
+  },
+  {
+   "name": "Beji Depok",
+   "lon": 106.80656,
+   "lat": -6.38064,
+   "source": "westjava2026",
+   "days": [
+    "2020-01-01",
+    "2020-01-02",
+    "2020-01-03"
+   ],
+   "gauge_mm": 196.0,
+   "imerg_mm": 146.8,
+   "ratio": 1.335,
+   "missing_hours_share": 0.07
+  },
+  {
+   "name": "Lanud Atang Sanjaya",
+   "lon": 106.75531,
+   "lat": -6.54453,
+   "source": "westjava2026",
+   "days": [
+    "2020-01-01",
+    "2020-01-02",
+    "2020-01-03"
+   ],
+   "gauge_mm": 43.4,
+   "imerg_mm": 135.3,
+   "ratio": 0.321,
+   "missing_hours_share": 0.07
+  },
+  {
+   "name": "Citeko",
+   "lon": 106.92533,
+   "lat": -6.68619,
+   "source": "westjava2026",
+   "days": [
+    "2020-01-01",
+    "2020-01-02",
+    "2020-01-03"
+   ],
+   "gauge_mm": 139.8,
+   "imerg_mm": 125.2,
+   "ratio": 1.117,
+   "missing_hours_share": 0.07
+  },
+  {
+   "name": "Pacet Cianjur",
+   "lon": 107.00628,
+   "lat": -6.71264,
+   "source": "westjava2026",
+   "days": [
+    "2020-01-01",
+    "2020-01-02",
+    "2020-01-03"
+   ],
+   "gauge_mm": 68.0,
+   "imerg_mm": 124.0,
+   "ratio": 0.548,
+   "missing_hours_share": 0.07
+  }
+ ]
+}

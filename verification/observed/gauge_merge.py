@@ -69,7 +69,7 @@ def gauge_totals(g, ends, series):
         d1 = datetime.fromisoformat(day).replace(tzinfo=timezone.utc)  # 07:00 WIB reading = 00:00 UTC
         d0 = d1 - timedelta(days=1)
         hrs = [h for h, t in enumerate(ends) if d0 < t <= d1]
-        if not hrs:
+        if len(hrs) < 18:  # a day mostly outside the IMERG window would set the ratio from hours IMERG does not have
             continue
         G += mm
         S += sum(series[h] for h in hrs)
