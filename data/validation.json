@@ -283,6 +283,35 @@
    ]
   },
   {
+   "id": "observed-gauge-rain",
+   "status": "partial",
+   "file": "verification/observed/gauge-rain-r03.json",
+   "id_txt": "Hujan alat ukur (20 Nov 2026): hujan satelit IMERG dikoreksi dengan angka harian alat ukur yang terbit terbuka (95–105 alat BMKG di Bogor, Depok, Bekasi; 28 alat dari laporan JICA untuk 2020; Halim dan Lebak Bulus untuk 2021). Waktu hujan tetap dari satelit, jumlahnya dari alat ukur. Uji sembunyikan-satu-alat: koreksi lebih tepat daripada satelit saja (galat rata-rata 53→43 mm, 35→32 mm, 35→27 mm). Dampak ke banjir kecil: 2021 sedikit lebih baik (kena laporan 39→47 %), 2020 hampir sama, 2025 sedikit lebih kering. Kedalaman di lokasi laporan tetap ~10 cm (laporan 55–70 cm). Jadi hujan bukan penyebab utama model terlalu dangkal; yang tersisa: tinggi tanah, kedalaman sungai, ukuran sel.",
+   "en_txt": "Gauge rain (20 Nov 2026): IMERG satellite rain adjusted to openly published daily gauge totals (95–105 BMKG gauges in Bogor, Depok and Bekasi; 28 gauges from the JICA report for 2020; Halim and Lebak Bulus for 2021). Timing from the satellite, amounts from the gauges. Leave-one-gauge-out test: the adjustment is closer than the satellite alone (mean error 53→43 mm, 35→32 mm, 35→27 mm). Effect on the floods is small: 2021 a little better (report hit 39→47 %), 2020 about the same, 2025 a little drier. Depth at the reports stays about 10 cm (reported 55–70 cm). So rain is not the main reason the model is too shallow; what remains: terrain, river depth, cell size.",
+   "metrics": [
+    [
+     "Report hit (~270 m window), IMERG → gauge-adjusted, 2020 · 2021 · 2025",
+     "49 → 50 % · 39 → 47 % · 39 → 35 %"
+    ],
+    [
+     "Fair random near reports, same",
+     "45 → 46 % · 26 → 32 % · 35 → 33 %"
+    ],
+    [
+     "Median depth at reports (m), same",
+     "0.10 → 0.10 · 0.06 → 0.10 · 0.07 → 0.05"
+    ],
+    [
+     "DKI flooded (km²), same",
+     "72.9 → 76.1 · 30.7 → 39.7 · 66.4 → 56.3"
+    ],
+    [
+     "Leave-one-gauge-out mean abs. error (mm), IMERG → adjusted",
+     "53.2 → 43.4 · 35.4 → 31.9 · 34.9 → 26.5"
+    ]
+   ]
+  },
+  {
    "id": "observed-corrected",
    "status": "old",
    "file": "verification/observed/scores-2020-01-01-imerg-v7.json",
