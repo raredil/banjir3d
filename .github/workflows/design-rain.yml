@@ -1,0 +1,53 @@
+name: Design rain (return periods, CHIRPS)
+
+# Return-period design rain for Jakarta (Next steps 1, owner question 4): reads 45 years of daily CHIRPS over DKI with HTTP range
+# requests (pipeline/design_rain_fetch.py; data.chc.ucsb.edu is not reachable from the cloud session), fits Gumbel and log-Pearson III
+# to the annual maxima and checks them against the open West Java gauges (pipeline/design_rain.py). Publishes a release.
+on:
+  workflow_dispatch:
+  push:
+    branches: ["claude/**", "ccr-**"]
+    paths: ["pipeline/design_rain.py", "pipeline/design_rain_fetch.py", ".github/workflows/design-rain.yml"]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: design-rain-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  design-rain:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 120
+    permissions:
+      contents: write
+    env:
+      GAUGE_TAG: gauges-westjava-20261120-g1
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: "3.13"
+      - run: pip install -r pipeline/requirements.txt scipy==1.18.1 openpyxl==3.1.5
+      - run: python pipeline/design_rain_fetch.py "$RUNNER_TEMP/dr" 1981 2025
+      - name: Gauges (open West Java set, earlier release)
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p "$RUNNER_TEMP/g"
+          for f in 01_Data-Ch-Jabar-2020-2025.xlsx 02_West_Java_Rainfall_Station_Metadata_Lengkap.xlsx; do
+            curl -sSfL --retry 3 -o "$RUNNER_TEMP/g/$f" "https://github.com/$GITHUB_REPOSITORY/releases/download/$GAUGE_TAG/$f"
+          done
+      - run: python pipeline/design_rain.py "$RUNNER_TEMP/dr/chirps_daily_jakarta.npz" "$RUNNER_TEMP/dr/manifest.json" "$RUNNER_TEMP/g" "$RUNNER_TEMP/dr/design_rain_jakarta.json"
+      - name: Publish release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          tag="design-rain-jakarta-$(date -u +%Y%m%d)-r${GITHUB_RUN_NUMBER}"
+          cd "$RUNNER_TEMP/dr" && sha256sum -- * > SHA256SUMS && ls -la
+          "$GITHUB_WORKSPACE/.github/scripts/release.sh" create "$tag" "$GITHUB_SHA" "Design rain: Jakarta return periods (CHIRPS 1981-2025)" \
+            "Made by pipeline/design_rain_fetch.py and pipeline/design_rain.py. CHIRPS v2.0 daily (doi:10.1038/sdata.2015.66); gauges doi:10.17632/d7j3s64vvr.3 (release $GAUGE_TAG). Run: ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}" \
+            "$RUNNER_TEMP"/dr/*
