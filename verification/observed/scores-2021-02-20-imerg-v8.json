@@ -1,0 +1,161 @@
+{
+ "event": "2021-02-20",
+ "source": "PetaBencana.id flood reports and flooded-area archive (aggregate scores only)",
+ "reported": {
+  "_about": "Impact the city reported; figures are used only after reported_excerpts.json (fetched by the Action) shows them in the page text.",
+  "pages": [
+   "https://rmol.id/nusantara/read/2021/02/21/476030/banjir-jakarta-dalam-angka-sejak-era-sutiyoso-hingga-anies-baswedan",
+   "https://www.cnnindonesia.com/nasional/20210221075059-20-608918/banjir-jakarta-33-rw-masih-tergenang",
+   "https://www.merahputih.com/post/read/75-rw-di-jakarta-tergenang-banjir-akibat-hujan-deras-sejak-jumat-malam"
+  ],
+  "flooded_km2": null,
+  "flooded_rw": null,
+  "status": "pages refused the Action (HTTP 403); search results only: 113 RW / 342 RT on 20 Feb 2021"
+ },
+ "n_flooded_area_records": 159,
+ "rw_shapes": 0,
+ "results": [
+  {
+   "run": "2021-02-20_imerg_k3_d0_poff",
+   "drain_mm_h": 0,
+   "rain": "rain_imerg.json",
+   "rain_scale": 1,
+   "terrain_year": 2021.1348173515983,
+   "pumps": false,
+   "pump_m3s": 664.8,
+   "amc": 2,
+   "infiltration": true,
+   "mean_rain_mm": 50.87964066556293,
+   "flooded_km2": 98.54730028414652,
+   "mass_error": 2.1085642026084194e-14,
+   "reports": {
+    "n_reports": 384,
+    "rule": "hit = model max depth >= 0.1 m on land (channels and sea excluded)",
+    "cell": {
+     "hit_rate": 0.19010416666666666,
+     "random_hit_rate": 0.06970456343972567,
+     "skill": 0.12942082535856902
+    },
+    "window_3x3_land": {
+     "hit_rate": 0.3932291666666667,
+     "random_hit_rate": 0.20935109469796886,
+     "skill": 0.23256602359862327
+    },
+    "legacy_window_with_channels": {
+     "hit_rate": 0.4010416666666667
+    },
+    "hit_rate": 0.3932291666666667,
+    "fair": {
+     "hit_rate": 0.3932291666666667,
+     "n": 384,
+     "wilson95": [
+      0.34566093214284066,
+      0.4429125473395048
+     ],
+     "block_bootstrap95": [
+      0.32180851063829785,
+      0.470274438963385
+     ],
+     "random_domain_land": 0.2598902740304141,
+     "random_near_reports": 0.26017330262147637,
+     "p_vs_domain_land": 7.80394350868606e-09,
+     "p_vs_near_reports": 8.427481706470584e-09,
+     "inside_dki": {
+      "n": 265,
+      "hit_rate": 0.29056603773584905,
+      "random_dki": 0.20935109469796886,
+      "p_vs_dki": 0.001097147745014003
+     },
+     "verdict": "better",
+     "rule": "verdict 'better' = p < 0.05 against both fair baselines; 'too_few' = fewer than 100 reports (a 10-point gain cannot be told from chance)"
+    },
+    "n_with_depth": 337,
+    "observed_median_m": 0.65,
+    "model_median_m": 0.057283587753772736,
+    "model_median_cell_m": 0.01334602851420641,
+    "depth_bias_m": -0.5596919770973241,
+    "depth_mae_m": 0.6039204562856686,
+    "depth_rmse_m": 0.7535127583815365,
+    "depth_note": "model depth = window_3x3_land value"
+   },
+   "micro": false,
+   "reports_micro_area": {
+    "n_reports": 119,
+    "rule": "hit = model max depth >= 0.1 m on land (channels and sea excluded)",
+    "cell": {
+     "hit_rate": 0.09243697478991597,
+     "random_hit_rate": 0.05278740157480315,
+     "skill": 0.041859212262413785
+    },
+    "window_3x3_land": {
+     "hit_rate": 0.31092436974789917,
+     "random_hit_rate": 0.21744881889763779,
+     "skill": 0.11944976010206064
+    },
+    "legacy_window_with_channels": {
+     "hit_rate": 0.31932773109243695
+    },
+    "hit_rate": 0.31092436974789917,
+    "n_with_depth": 104,
+    "observed_median_m": 0.915,
+    "model_median_m": 0.03549997694790363,
+    "model_median_cell_m": 0.010205441620200872,
+    "depth_bias_m": -0.823370786543864,
+    "depth_mae_m": 0.8428863120820517,
+    "depth_rmse_m": 0.9842758710195341,
+    "depth_note": "model depth = window_3x3_land value"
+   },
+   "micro_area_flooded_km2": 4.88,
+   "dki_flooded_km2": 30.683689411764703,
+   "dki_land_km2": 600.881474117647,
+   "genangan_dsda": {
+    "source": "Jakarta Satu, Dinas SDA DKI, layer Genangan (aggregates only)",
+    "window_utc": [
+     "2021-02-18 05:00:00+00:00",
+     "2021-02-22 05:00:00+00:00"
+    ],
+    "n_polygons": 37,
+    "hit_rate": 0.43243243243243246,
+    "median_model_depth_m": 0.043570324778556824,
+    "n_with_depth": 34,
+    "median_observed_depth_m": 0.4,
+    "median_model_depth_at_observed_m": 0.04704584740102291,
+    "mean_error_m": -0.19800980140400282,
+    "share_model_ge_half_observed": 0.3235294117647059
+   },
+   "rw_places": {
+    "source": "RW polygons: Shabrina et al. (2026), Zenodo 19456870, CC BY 4.0",
+    "n_rw": 2672,
+    "rw_share_threshold": 0.1,
+    "note": "RW without a record = not recorded (reports are incomplete): false_alarm_ratio is an upper bound",
+    "reports_or_dsda": {
+     "n_observed": 247,
+     "n_model": 258,
+     "hits": 39,
+     "hit_rate": 0.15789473684210525,
+     "false_alarm_ratio": 0.8488372093023255,
+     "csi": 0.08369098712446352,
+     "auc": 0.59020576818732
+    },
+    "reports": {
+     "n_observed": 157,
+     "n_model": 258,
+     "hits": 28,
+     "hit_rate": 0.17834394904458598,
+     "false_alarm_ratio": 0.8914728682170543,
+     "csi": 0.07235142118863049,
+     "auc": 0.5996277114383761
+    },
+    "dsda": {
+     "n_observed": 107,
+     "n_model": 258,
+     "hits": 14,
+     "hit_rate": 0.1308411214953271,
+     "false_alarm_ratio": 0.9457364341085271,
+     "csi": 0.039886039886039885,
+     "auc": 0.5724344610227542
+    }
+   }
+  }
+ ]
+}
